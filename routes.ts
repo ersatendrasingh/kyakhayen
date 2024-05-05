@@ -8,7 +8,7 @@ export const publicRoutes = [
   "/auth/new-verification",
   "/cart",
   "/checkout",
-  "/courses",
+  "/recipes",
 ];
 
 /**
@@ -36,7 +36,7 @@ export const apiAuthPrefix = "/api/";
  * Routes that start with this prefix are used for Course management purposes
  * @type {string}
  */
-export const coursePrefix = "/course/";
+export const recipePrefix = "/recipes/";
 
 /**
  * The prefix for Admin Dashboard routes
@@ -49,4 +49,4 @@ export const adminRoutePrefix = "/admin";
  * The default redirect path after logging in
  * @type {string}
  */
-export const DEFAULT_LOGIN_REDIRECT = "/admin/dashboard";
+export const DEFAULT_LOGIN_REDIRECT = "/user/dashboard";
