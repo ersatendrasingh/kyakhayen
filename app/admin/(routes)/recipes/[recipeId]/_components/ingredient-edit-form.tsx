@@ -42,7 +42,7 @@ const IngredientEditForm = ({
     }));
   };
   const formSchema = z.object({
-    quantity: z.string().min(1, { message: "Quantity is required" }),
+    quantity: z.coerce.number(),
     unitId: z.string().min(1),
     name: z.string().min(1, { message: "Name is required" }),
     notes: z.string().optional(),
@@ -73,7 +73,7 @@ const IngredientEditForm = ({
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: ingredient.name,
-      quantity: ingredient.quantity.toString(),
+      quantity: ingredient.quantity,
       unitId: ingredient.unitId.toString(),
       notes: ingredient.notes || "",
     },
@@ -91,6 +91,8 @@ const IngredientEditForm = ({
                 <FormItem>
                   <FormControl>
                     <Input
+                      type="number"
+                      step={0.01}
                       disabled={isSubmitting}
                       {...field}
                       placeholder="Qty"

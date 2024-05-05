@@ -36,7 +36,7 @@ interface IngredientsFormProps {
 }
 
 const formSchema = z.object({
-  quantity: z.string().min(1, { message: "Quantity is required" }),
+  quantity: z.coerce.number(),
   unitId: z.string().min(1),
   name: z.string().min(1, { message: "Name is required" }),
   notes: z.string().optional(),
@@ -58,7 +58,6 @@ export const IngredientsForm = ({
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: "",
-      quantity: "",
       unitId: "",
       notes: "",
     },
@@ -144,6 +143,8 @@ export const IngredientsForm = ({
                     <FormItem>
                       <FormControl>
                         <Input
+                          type="number"
+                          step={0.01}
                           disabled={isSubmitting}
                           {...field}
                           placeholder="Qty"
