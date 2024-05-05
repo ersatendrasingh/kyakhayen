@@ -6,7 +6,7 @@ import {
   apiAuthPrefix,
   authRoutes,
   publicRoutes,
-  coursePrefix,
+  recipePrefix,
 } from "@/routes";
 
 const { auth } = NextAuth(authConfig);
@@ -16,12 +16,12 @@ export default auth((req): any => {
   const isLoggedIn = !!req.auth;
 
   const isApiAuthRoute = nextUrl.pathname.startsWith(apiAuthPrefix);
-  const isCourseRoute = nextUrl.pathname.startsWith(coursePrefix);
+  const isRecipeRoute = nextUrl.pathname.startsWith(recipePrefix);
   const isPublicRoute = publicRoutes.includes(nextUrl.pathname);
   const isAuthRoute = authRoutes.includes(nextUrl.pathname);
 
   if (isApiAuthRoute) return null;
-  if (isCourseRoute) return null;
+  if (isRecipeRoute) return null;
   if (isAuthRoute) {
     if (isLoggedIn) {
       return Response.redirect(new URL(DEFAULT_LOGIN_REDIRECT, nextUrl));
