@@ -17,6 +17,11 @@ interface FileUploadProps {
   cuisineId?: string | null;
   allergyId?: string | null;
   prakritiId?: string | null;
+  healthGoalId?: string | null;
+  mealTimeId?: string | null;
+  nutrientId?: string | null;
+  diseaseId?: string | null;
+  dietTypeId?: string | null;
   acceptedFileTypes: string[];
   multiple?: boolean;
   onChange: (fileUrl: string) => void;
@@ -31,6 +36,11 @@ const FileUpload = ({
   cuisineId,
   allergyId,
   prakritiId,
+  healthGoalId,
+  mealTimeId,
+  nutrientId,
+  diseaseId,
+  dietTypeId,
   acceptedFileTypes,
   multiple,
   onChange,
@@ -71,6 +81,11 @@ const FileUpload = ({
       formData.append("cuisineId", cuisineId || "");
       formData.append("allergyId", allergyId || "");
       formData.append("prakritiId", prakritiId || "");
+      formData.append("healthGoalId", healthGoalId || "");
+      formData.append("mealTimeId", mealTimeId || "");
+      formData.append("nutrientId", nutrientId || "");
+      formData.append("diseaseId", diseaseId || "");
+      formData.append("dietTypeId", dietTypeId || "");
 
       const response = await axios.post("/api/s3upload", formData, {
         headers: {

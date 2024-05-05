@@ -28,7 +28,7 @@ const routes = [
       },
       {
         id: 3,
-        label: "Categories",
+        label: "Manage Categories",
         href: "/admin/recipes/categories",
       },
       {
@@ -56,8 +56,34 @@ const routes = [
         label: "Manage Prakriti",
         href: "/admin/recipes/prakriti",
       },
+      {
+        id: 9,
+        label: "Manage Health Goals",
+        href: "/admin/recipes/health-goals",
+      },
+      {
+        id: 10,
+        label: "Manage Diseases",
+        href: "/admin/recipes/diseases",
+      },
+      {
+        id: 11,
+        label: "Manage Meal Time",
+        href: "/admin/recipes/meal-time",
+      },
+      {
+        id: 12,
+        label: "Manage Nutrients",
+        href: "/admin/recipes/nutrients",
+      },
+      {
+        id: 13,
+        label: "Manage Diet Types",
+        href: "/admin/recipes/diet-types",
+      },
     ],
   },
+
   {
     id: 3,
     icon: CookingPot,

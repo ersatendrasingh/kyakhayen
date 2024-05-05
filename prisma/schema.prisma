@@ -8,24 +8,30 @@ datasource db {
 }
 
 model Recipes {
-  id                   String                @id @default(uuid())
-  title                String                @db.Text
-  slug                 String                @unique
-  description          String?               @db.LongText
-  imageUrl             String?
-  RecipeCategories     RecipeCategories?     @relation(fields: [recipeCategoriesId], references: [id])
-  recipeCategoriesId   String?
-  recipeDifficultyId   String?
-  recipeDifficulty     RecipeDifficulty?     @relation(fields: [recipeDifficultyId], references: [id])
-  recipeIngredients    RecipeIngredients[]
-  recipeMethods        RecipeMethods[]
-  recipeSeasons        RecipeSeasons?        @relation(fields: [recipeSeasonsId], references: [id])
-  recipeSeasonsId      String?
-  recipeCookingTime    RecipeCookingTime?
-  recipeCookingMethods RecipeCookingMethod[]
-  recipeCuisine        RecipeCuisines[]
-  recipeAllergies      RecipeAllergies[]
-  recipePrakriti       RecipePrakriti[]
+  id                    String                 @id @default(uuid())
+  title                 String                 @db.Text
+  slug                  String                 @unique
+  description           String?                @db.LongText
+  imageUrl              String?
+  RecipeCategories      RecipeCategories?      @relation(fields: [recipeCategoriesId], references: [id])
+  recipeCategoriesId    String?
+  recipeDifficultyId    String?
+  recipeDifficulty      RecipeDifficulty?      @relation(fields: [recipeDifficultyId], references: [id])
+  recipeIngredients     RecipeIngredients[]
+  recipeMethods         RecipeMethods[]
+  recipeSeasons         RecipeSeasons?         @relation(fields: [recipeSeasonsId], references: [id])
+  recipeSeasonsId       String?
+  recipeCookingTime     RecipeCookingTime?
+  recipeCookingMethods  RecipeCookingMethod[]
+  recipeCuisine         RecipeCuisines[]
+  recipeAllergies       RecipeAllergies[]
+  recipePrakriti        RecipePrakriti[]
+  recipeHealthGoals     recipeHealthGoals[]
+  recipeMealTime        recipeMealTime[]
+  recipeDisease         recipeDisease[]
+  recipeNutrient        recipeNutrient[]
+  recipeDietType        recipeDietType[]
+  recipeNutritionValues RecipeNutritionValues?
 
   isPublished Boolean @default(false)
 
@@ -51,7 +57,7 @@ model Units {
 model RecipeIngredients {
   id       String  @id @default(uuid())
   name     String
-  quantity Decimal
+  quantity Float
   notes    String? @db.Text
   unitId   String
   position Int
@@ -99,6 +105,19 @@ model RecipeCookingTime {
   @@unique([recipeId])
 }
 
+model RecipeNutritionValues {
+  id           String  @id @default(uuid())
+  calories     Float
+  carbohydrate Float
+  totalFat     Float
+  dietaryFiber Float
+  protein      Float
+  recipe       Recipes @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+  recipeId     String
+
+  @@unique([recipeId])
+}
+
 model CookingMethods {
   id                  String                @id @default(uuid())
   title               String
@@ -125,12 +144,12 @@ model Cuisines {
 }
 
 model RecipeCuisines {
-  id       String @id @default(uuid())
-  recipeId String
-  cusineId String
+  id        String @id @default(uuid())
+  recipeId  String
+  cuisineId String
 
   recipe  Recipes  @relation(fields: [recipeId], references: [id], onDelete: Cascade)
-  cuisine Cuisines @relation(fields: [cusineId], references: [id], onDelete: Cascade)
+  cuisine Cuisines @relation(fields: [cuisineId], references: [id], onDelete: Cascade)
 }
 
 model Allergies {
@@ -164,6 +183,86 @@ model RecipePrakriti {
   prakritiId String
   recipe     Recipes  @relation(fields: [recipeId], references: [id], onDelete: Cascade)
   prakriti   Prakriti @relation(fields: [prakritiId], references: [id], onDelete: Cascade)
+}
+
+model HealthGoals {
+  id                String              @id @default(uuid())
+  title             String
+  slug              String              @unique
+  imageUrl          String?
+  recipeHealthGoals recipeHealthGoals[]
+}
+
+model recipeHealthGoals {
+  id           String      @id @default(uuid())
+  recipeId     String
+  healthGoalId String
+  recipe       Recipes     @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+  healthGoals  HealthGoals @relation(fields: [healthGoalId], references: [id], onDelete: Cascade)
+}
+
+model MealTimes {
+  id             String           @id @default(uuid())
+  title          String
+  slug           String           @unique
+  imageUrl       String?
+  recipeMealTime recipeMealTime[]
+}
+
+model recipeMealTime {
+  id         String    @id @default(uuid())
+  recipeId   String
+  mealTimeId String
+  recipe     Recipes   @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+  mealTime   MealTimes @relation(fields: [mealTimeId], references: [id], onDelete: Cascade)
+}
+
+model Disease {
+  id            String          @id @default(uuid())
+  title         String
+  slug          String          @unique
+  imageUrl      String?
+  recipeDisease recipeDisease[]
+}
+
+model recipeDisease {
+  id        String  @id @default(uuid())
+  recipeId  String
+  diseaseId String
+  recipe    Recipes @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+  disease   Disease @relation(fields: [diseaseId], references: [id], onDelete: Cascade)
+}
+
+model Nutrient {
+  id             String           @id @default(uuid())
+  title          String
+  slug           String           @unique
+  imageUrl       String?
+  recipeNutrient recipeNutrient[]
+}
+
+model recipeNutrient {
+  id         String   @id @default(uuid())
+  recipeId   String
+  nutrientId String
+  recipe     Recipes  @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+  nutrient   Nutrient @relation(fields: [nutrientId], references: [id], onDelete: Cascade)
+}
+
+model DietTypes {
+  id             String           @id @default(uuid())
+  title          String
+  slug           String           @unique
+  imageUrl       String?
+  recipeDietType recipeDietType[]
+}
+
+model recipeDietType {
+  id         String    @id @default(uuid())
+  recipeId   String
+  dietTypeId String
+  recipe     Recipes   @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+  dietType   DietTypes @relation(fields: [dietTypeId], references: [id], onDelete: Cascade)
 }
 
 enum UserRole {

@@ -1,9 +1,7 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { toast } from "react-toastify";
 
-import { Button } from "@/components/ui/button";
-import FilePreviewList from "@/components/upload/file-preview-list";
 import ImagePreview from "./image-preview";
 
 interface UploadDropZoneProps {

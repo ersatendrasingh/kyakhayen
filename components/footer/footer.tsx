@@ -10,8 +10,11 @@ import {
 import Container from "@/components/container";
 import Logo from "@/components/logo";
 import Copyrights from "@/components/footer/copyrights";
+import { db } from "@/lib/db";
 
-const Footer = () => {
+const Footer = async () => {
+  const categories = await db.recipeCategories.findMany();
+
   return (
     <footer className="pt-16 bg-gray-200">
       <Container>
@@ -21,10 +24,11 @@ const Footer = () => {
               <Logo />
             </div>
             <p className="mt-4">
-              Unitus Health Academy, started by Dr Shikha Sharma, is an online
-              platform to bring different health sciences under one umbrella and
-              provide upskilling opportunities to health professionals and
-              health enthusiasts.
+              At Kya Khayen, we believe in the joy of cooking and the pleasure
+              of savoring delicious meals from around the world. Whether
+              you&apos;re a seasoned chef or a novice in the kitchen, Kya Khayen
+              is your go-to platform for discovering and sharing a wide variety
+              of mouthwatering recipes.
             </p>
           </div>
           <div className="flex flex-col my-4 md:my-0">
@@ -32,91 +36,80 @@ const Footer = () => {
               Quick Links
             </h3>
             <nav className="text-center md:text-left">
-              <Link href="#" className="block mb-2">
-                Terms And Conditions
+              <Link href="/" className="block mb-2">
+                Home
+              </Link>
+              <Link href="/recipes" className="block mb-2">
+                Recipes
               </Link>
               <Link href="#" className="block mb-2">
-                Privacy Policy
-              </Link>
-              <Link href="#" className="block mb-2">
-                Refund Policy
+                About
               </Link>
               <Link href="#" className="block mb-2">
                 Contact
               </Link>
               <Link href="#" className="block mb-2">
-                Raise your complaint
+                Privacy Policy
               </Link>
             </nav>
           </div>
           <div className="flex flex-col my-4 md:my-0">
             <h3 className="text-xl font-bold mb-3 text-center md:text-left">
-              Popular Courses
+              Recipe Categories
             </h3>
             <nav className="text-center md:text-left">
-              <Link href="#" className="block mb-2">
-                Vedique Nutrition Professional Program
-              </Link>
-              <Link href="#" className="block mb-2">
-                Personal Nutrition Course
-              </Link>
-              <Link href="#" className="block mb-2">
-                Vedique Detoxification Course
-              </Link>
-              <Link href="#" className="block mb-2">
-                Rainbow Nutrition for Balancing Chakras
-              </Link>
-              <Link href="#" className="block mb-2">
-                Nutrition for Kids
-              </Link>
+              {categories.map((category) => (
+                <Link
+                  key={category.id}
+                  href={`/recipes?k=${category.slug}&type=category`}
+                  className="block mb-2"
+                >
+                  {category.name}
+                </Link>
+              ))}
             </nav>
           </div>
           <div className="flex flex-col my-4 md:my-0">
             <h3 className="text-xl font-bold mb-3 text-center md:text-left">
-              Contact Us
+              Follow Us
             </h3>
-            <p className="mb-2 text-center md:text-left">
-              Phone: +91 9999 999 999
-            </p>
-            <p className="mb-2 text-center md:text-left">
-              Email: 8Hbqg@example.com
-            </p>
+
             <div className="flex items-center justify-center md:justify-start gap-3 mt-3">
               <a
-                href="https://www.facebook.com/Dr.ShikhasNutriHealth"
+                href="https://www.facebook.com/mailtokyakhayen"
                 target="_blank"
                 className="text-blue-500 hover:text-blue-700"
               >
                 <FaFacebook className="w-6 h-6" />
               </a>
-              <a
-                href="https://www.youtube.com/@DrShikhasOneHealth"
+              {/* <a
+                href="#"
                 target="_blank"
                 className="text-red-500 hover:text-red-700"
               >
                 <FaYoutube className="w-6 h-6" />
-              </a>
+              </a> */}
               <a
-                href="https://www.instagram.com/nutrihealthsystems/"
+                href="https://www.instagram.com/kyakhayen/"
                 target="_blank"
                 className="text-pink-500 hover:text-pink-700"
               >
                 <FaInstagram className="w-6 h-6" />
               </a>
               <a
-                href="https://twitter.com/nutrihealthsys"
+                href="https://twitter.com/kyakhayen"
                 target="_blank"
                 className="text-blue-400 hover:text-blue-600"
               >
                 <FaTwitter className="w-6 h-6" />
               </a>
-              <a
-                href="https://www.linkedin.com/in/dr-shikha-s-nutriwel-085a8733/"
+              {/* <a
+                href="#"
                 target="_blank"
                 className="text-blue-700 hover:text-blue-900"
               >
                 <FaLinkedin className="w-6 h-6" />
-              </a>
+              </a> */}
             </div>
           </div>
         </div>

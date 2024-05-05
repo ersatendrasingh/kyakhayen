@@ -1,11 +1,15 @@
 "use client";
 
 import {
+  CookingMethods,
+  Cuisines,
   RecipeCategories,
   RecipeCookingTime,
   RecipeDifficulty,
+  RecipeMethods as RecipeMethodType,
   RecipeSeasons,
   Recipes,
+  Units,
 } from "@prisma/client";
 import { Preview } from "../preview";
 import { AlarmClock } from "lucide-react";
@@ -13,12 +17,42 @@ import { FaSignal } from "react-icons/fa";
 import { MdFoodBank } from "react-icons/md";
 import { FaCloudSunRain } from "react-icons/fa";
 import { formatTime } from "@/lib/formatTime";
+import { GiCampCookingPot } from "react-icons/gi";
+import { PiBowlFoodFill } from "react-icons/pi";
+import RecipeFeatureItems from "./recipe-feature-items";
+import RecipeFeatureItem from "./recipe-feature-item";
 
+type RecipeIngredientType = {
+  id: string;
+  name: string;
+  quantity: number;
+  position: number;
+  recipeId: string;
+  unitId: string;
+  notes?: string | null;
+  unit: Units;
+};
+type RecipeCookingMethod = {
+  id: string;
+  cookingMethodId: string;
+  recipeId: string;
+  cookingMethod: CookingMethods;
+};
+type RecipeCuisines = {
+  id: string;
+  cuisineId: string;
+  recipeId: string;
+  cuisine: Cuisines;
+};
 type RecipeWithCategory = Recipes & {
   RecipeCategories: RecipeCategories | null;
+  recipeIngredients: RecipeIngredientType[];
+  recipeMethods: RecipeMethodType[];
   recipeCookingTime: RecipeCookingTime | null;
   recipeDifficulty: RecipeDifficulty | null;
   recipeSeasons: RecipeSeasons | null;
+  recipeCookingMethods: RecipeCookingMethod[] | null;
+  recipeCuisine: RecipeCuisines[] | null;
 };
 
 interface RecipeOverviewProps {
@@ -29,86 +63,100 @@ interface RecipeOverviewProps {
 const RecipeOverview = ({ recipe, quantity }: RecipeOverviewProps) => {
   return (
     <div className="w-full items-start justify-start ">
-      <div className="flex flex-wrap items-center justify-between gap-4 mt-2 border-b-2 border-gray-200 pb-4">
-        {recipe.recipeCookingTime?.prepTime && (
-          <p className="text-sm text-center">
-            <span className="font-bold text-blue-500">Preparation time</span>
-            <span className="flex items-center justify-center">
-              <AlarmClock className="w-6 h-6 pr-2" />
-              {formatTime(recipe.recipeCookingTime.prepTime)}
-            </span>
-          </p>
-        )}
-
-        {recipe.recipeCookingTime?.cookTime && (
-          <p className="text-sm text-center">
-            <span className="font-bold text-green-500">Cooking time</span>
-            <span className="flex items-center justify-center">
-              <AlarmClock className="w-6 h-6 pr-2" />
-              {formatTime(recipe.recipeCookingTime.cookTime)}
-            </span>
-          </p>
-        )}
-
-        {recipe.recipeCookingTime?.restTime && (
-          <p className="text-sm text-center">
-            <span className="font-bold text-orange-500">Rest time</span>
-            <span className="flex items-center justify-center">
-              <AlarmClock className="w-6 h-6 pr-2" />
-              {formatTime(recipe.recipeCookingTime.restTime)}
-            </span>
-          </p>
-        )}
-
-        <p className="text-sm text-center">
-          <span className="font-bold text-purple-500">Total time</span>
-          <span className="flex items-center justify-center ">
-            <AlarmClock className="w-6 h-6 pr-2" />
-            {recipe.recipeCookingTime &&
-              formatTime(
-                recipe.recipeCookingTime.prepTime +
-                  recipe.recipeCookingTime.cookTime +
-                  recipe.recipeCookingTime.restTime
-              )}
-          </span>
-        </p>
-      </div>
-      <div className="flex flex-wrap items-center justify-between gap-4 mt-2 border-b-2 border-gray-200 pb-5">
-        {recipe.recipeDifficultyId && (
-          <p className="text-sm text-center">
-            <span className="font-bold text-websecondary">
-              Difficulty level
-            </span>
-            <span className="flex items-center justify-center font-bold text-green-500">
-              <FaSignal className="w-6 h-6 pr-2 text-green-500" />
-              {recipe.recipeDifficulty?.title}
-            </span>
-          </p>
-        )}
-        {recipe.recipeSeasonsId && (
-          <p className="text-sm text-center">
-            <span className="font-bold text-websecondary">Best Season</span>
-            <span className="flex items-center justify-center font-bold text-blue-500">
-              <FaCloudSunRain className="w-6 h-6 pr-2 text-blue-500" />
-              {recipe.recipeSeasons?.title}
-            </span>
-          </p>
-        )}
-        {recipe.recipeDifficultyId && (
-          <p className="text-sm text-center">
-            <span className="font-bold text-websecondary">Serving size</span>
-            <span className="flex items-center justify-center font-bold text-purple-500">
-              <MdFoodBank className="w-8 h-8 pr-2 text-purple-500" />
-              {quantity}{" "}
-              <span className="text-purple-500">
-                {quantity > 1 ? "People" : "Person"}
+      {recipe.recipeCookingTime && (
+        <div className="flex flex-wrap items-center justify-between gap-4 mt-2 border-b-2 border-gray-200 pb-4">
+          {recipe.recipeCookingTime?.prepTime && (
+            <p className="text-sm text-center">
+              <span className="font-bold">Preparation time</span>
+              <span className="flex items-center justify-center">
+                <AlarmClock className="w-6 h-6 pr-2" />
+                {formatTime(recipe.recipeCookingTime.prepTime)}
               </span>
-            </span>
-          </p>
+            </p>
+          )}
+
+          {recipe.recipeCookingTime?.cookTime && (
+            <p className="text-sm text-center">
+              <span className="font-bold ">Cooking time</span>
+              <span className="flex items-center justify-center">
+                <AlarmClock className="w-6 h-6 pr-2" />
+                {formatTime(recipe.recipeCookingTime.cookTime)}
+              </span>
+            </p>
+          )}
+
+          {recipe.recipeCookingTime?.restTime && (
+            <p className="text-sm text-center">
+              <span className="font-bold ">Rest time</span>
+              <span className="flex items-center justify-center">
+                <AlarmClock className="w-6 h-6 pr-2" />
+                {formatTime(recipe.recipeCookingTime.restTime)}
+              </span>
+            </p>
+          )}
+          {recipe.recipeCookingTime && (
+            <p className="text-sm text-center">
+              <span className="font-bold ">Total time</span>
+              <span className="flex items-center justify-center ">
+                <AlarmClock className="w-6 h-6 pr-2" />
+                {recipe.recipeCookingTime &&
+                  formatTime(
+                    recipe.recipeCookingTime.prepTime +
+                      recipe.recipeCookingTime.cookTime +
+                      recipe.recipeCookingTime.restTime
+                  )}
+              </span>
+            </p>
+          )}
+        </div>
+      )}
+
+      <div>
+        <RecipeFeatureItem
+          title="Serving size"
+          icon={<MdFoodBank className="w-6 h-6 pr-2" />}
+          values={quantity + " " + (quantity > 1 ? "People" : "Person")}
+        />
+        {recipe.recipeDifficulty && (
+          <RecipeFeatureItem
+            title="Difficulty level"
+            icon={<FaSignal className="w-6 h-6 pr-2" />}
+            values={recipe.recipeDifficulty?.title}
+          />
+        )}
+        {recipe.recipeSeasons && (
+          <RecipeFeatureItem
+            title="Best Season"
+            icon={<FaCloudSunRain className="w-6 h-6 pr-2" />}
+            values={recipe.recipeSeasons?.title}
+          />
+        )}
+
+        {recipe.recipeCookingMethods &&
+          recipe.recipeCookingMethods?.length > 0 && (
+            <RecipeFeatureItems
+              title="Cooking method"
+              icon={<GiCampCookingPot className="w-6 h-6 pr-2" />}
+              values={recipe.recipeCookingMethods.map(
+                (method) => method.cookingMethod.title
+              )}
+            />
+          )}
+        {recipe.recipeCuisine && recipe.recipeCuisine?.length > 0 && (
+          <RecipeFeatureItems
+            title="Cuisines"
+            icon={<PiBowlFoodFill className="w-6 h-6 pr-2" />}
+            values={recipe.recipeCuisine.map((method) => method.cuisine.title)}
+          />
         )}
       </div>
-      <h1 className="text-2xl font-bold mt-4">Description</h1>
-      {recipe.description && <Preview value={recipe.description} />}
+
+      {recipe.description && (
+        <>
+          <h1 className="text-2xl font-bold mt-4">Description</h1>
+          <Preview value={recipe.description} />
+        </>
+      )}
     </div>
   );
 };

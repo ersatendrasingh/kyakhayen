@@ -1,8 +1,11 @@
 import {
+  CookingMethods,
+  Cuisines,
   RecipeCategories,
   RecipeCookingTime,
   RecipeDifficulty,
   RecipeMethods,
+  RecipeNutritionValues,
   RecipeSeasons,
   Recipes,
   Units,
@@ -21,13 +24,31 @@ type RecipeIngredients = {
   notes?: string | null;
   unit: Units;
 };
+
+type RecipeCookingMethod = {
+  id: string;
+  cookingMethodId: string;
+  recipeId: string;
+  cookingMethod: CookingMethods;
+};
+
+type RecipeCuisines = {
+  id: string;
+  cuisineId: string;
+  recipeId: string;
+  cuisine: Cuisines;
+};
+
 type RecipeWithCategory = Recipes & {
   RecipeCategories: RecipeCategories | null;
   recipeIngredients: RecipeIngredients[];
   recipeMethods: RecipeMethods[];
   recipeCookingTime: RecipeCookingTime | null;
+  recipeNutritionValues: RecipeNutritionValues | null;
   recipeDifficulty: RecipeDifficulty | null;
   recipeSeasons: RecipeSeasons | null;
+  recipeCookingMethods: RecipeCookingMethod[] | null;
+  recipeCuisine: RecipeCuisines[] | null;
 };
 
 export const getRecipeBySlug = async ({
@@ -63,7 +84,18 @@ export const getRecipeBySlug = async ({
             position: "asc",
           },
         },
+        recipeCookingMethods: {
+          include: {
+            cookingMethod: true,
+          },
+        },
+        recipeCuisine: {
+          include: {
+            cuisine: true,
+          },
+        },
         recipeCookingTime: true,
+        recipeNutritionValues: true,
         recipeDifficulty: true,
         recipeSeasons: true,
       },

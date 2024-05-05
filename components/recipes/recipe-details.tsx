@@ -10,10 +10,14 @@ import Coursefaculty from "@/components/recipes/course-faculty";
 import CourseCareer from "@/components/recipes/course-career";
 import CourseOverview from "@/components/recipes/recipe-overview";
 import {
+  CookingMethods,
+  Cuisines,
   RecipeCategories,
   RecipeCookingTime,
   RecipeDifficulty,
   RecipeMethods as RecipeMethodType,
+  RecipeNutritionValues,
+  RecipeSeasons,
   Recipes,
   Units,
 } from "@prisma/client";
@@ -22,6 +26,7 @@ import Container from "@/components/container";
 import RecipeContent from "@/components/recipes/recipe-ingredients";
 import RecipeIngredients from "@/components/recipes/recipe-ingredients";
 import RecipeMethods from "./recipe-methods";
+import RecipeNutritionFacts from "./recipe-nutrition-facts";
 
 const menuItems = [
   {
@@ -40,14 +45,6 @@ const menuItems = [
     title: "Nutrition Facts",
     id: 4,
   },
-  {
-    title: "FAQs",
-    id: 5,
-  },
-  {
-    title: "Notes",
-    id: 6,
-  },
 ];
 type RecipeIngredientType = {
   id: string;
@@ -59,12 +56,28 @@ type RecipeIngredientType = {
   notes?: string | null;
   unit: Units;
 };
+type RecipeCookingMethod = {
+  id: string;
+  cookingMethodId: string;
+  recipeId: string;
+  cookingMethod: CookingMethods;
+};
+type RecipeCuisines = {
+  id: string;
+  cuisineId: string;
+  recipeId: string;
+  cuisine: Cuisines;
+};
 type RecipeWithCategory = Recipes & {
   RecipeCategories: RecipeCategories | null;
   recipeIngredients: RecipeIngredientType[];
   recipeMethods: RecipeMethodType[];
   recipeCookingTime: RecipeCookingTime | null;
+  recipeNutritionValues: RecipeNutritionValues | null;
   recipeDifficulty: RecipeDifficulty | null;
+  recipeSeasons: RecipeSeasons | null;
+  recipeCookingMethods: RecipeCookingMethod[] | null;
+  recipeCuisine: RecipeCuisines[] | null;
 };
 
 interface RecipeDetailsProps {
@@ -201,23 +214,15 @@ const RecipeDetails = ({ recipe }: RecipeDetailsProps) => {
                 <h2 className="text-xl font-bold text-gray-800 border-b-2 border-gray-200 pb-2 mb-4">
                   Nutrition Facts
                 </h2>
-                {/* <Coursefaculty /> */}
-              </>
-            )}
-            {item.title === "FAQs" && (
-              <>
-                <h2 className="text-xl font-bold text-gray-800 border-b-2 border-gray-200 pb-2 mb-4">
-                  FAQs
-                </h2>
-                {/* <CourseFaqs faqs={course.faqs} /> */}
-              </>
-            )}
-            {item.title === "Notes" && (
-              <>
-                <h2 className="text-xl font-bold text-gray-800 border-b-2 border-gray-200 pb-2 mb-4">
-                  Notes
-                </h2>
-                {/* <CourseCareer /> */}
+                {recipe.recipeNutritionValues ? (
+                  <RecipeNutritionFacts
+                    recipeNutritionFacts={recipe.recipeNutritionValues}
+                  />
+                ) : (
+                  <p className="text-sm font-medium text-center text-websecondary-500">
+                    No nutrition facts available for this recipe.
+                  </p>
+                )}
               </>
             )}
           </div>
