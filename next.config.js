@@ -22,6 +22,7 @@ module.exports = withPWA({
   images: {
     domains: [
       "kyakhayen-dev.s3.ap-south-1.amazonaws.com",
+      "kyakhayen-prod.s3.ap-south-1.amazonaws.com",
       "localhost",
       "via.placeholder.com",
       "lh3.googleusercontent.com",
