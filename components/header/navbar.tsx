@@ -15,22 +15,22 @@ const navbarItems = [
   },
   {
     label: "Meals",
-    href: "/meals",
+    href: "/recipes",
     hasChild: false,
   },
   {
     label: "Ingredients",
-    href: "/ingredients",
+    href: "/recipes",
     hasChild: false,
   },
   {
     label: "Cuisines",
-    href: "/cusines",
+    href: "/recipes",
     hasChild: false,
   },
   {
-    label: "Healthy Lifestyle",
-    href: "/helthy-lifestyle",
+    label: "Healthy Recipes",
+    href: "/recipes",
     hasChild: false,
   },
 ];

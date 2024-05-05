@@ -43,12 +43,6 @@ export const UserButton = () => {
             </DropdownMenuItem>
           </Link>
 
-          <Link href="/user/orders">
-            <DropdownMenuItem className="cursor-pointer">
-              <ShoppingBag className="h-4 w-4 mr-2" />
-              My Orders
-            </DropdownMenuItem>
-          </Link>
           <Link href="/user/settings">
             <DropdownMenuItem className="cursor-pointer">
               <Settings className="h-4 w-4 mr-2" />

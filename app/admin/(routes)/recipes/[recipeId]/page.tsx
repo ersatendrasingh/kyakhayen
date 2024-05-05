@@ -24,6 +24,15 @@ import { DifficultyForm } from "./_components/difficulty-form";
 import { RecipeTimeForm } from "./_components/recipe-time-form";
 import { SeasonsForm } from "./_components/seasons-form";
 import { CuisinesForm } from "./_components/cuisines-form";
+import { RecipeCookingMethodForm } from "./_components/recipe-cooking-method-form";
+import { RecipeAllergyForm } from "./_components/recipe-allergy-form";
+import { RecipePrakritiForm } from "./_components/recipe-prakriti-form";
+import { RecipeHealthGoalForm } from "./_components/recipe-health-goal-form";
+import { RecipeDiseaseForm } from "./_components/recipe-disease-form";
+import { RecipeMealTimeForm } from "./_components/recipe-meal-time-form";
+import { RecipeNutrientForm } from "./_components/recipe-nutrient-form";
+import { RecipeDietTypeForm } from "./_components/recipe-diet-type-form";
+import { RecipeNutritionValuesForm } from "./_components/recipe-nutrition-values-form";
 
 // import { FAQForm } from "./_components/faq-form";
 // import { CourseDetailsForm } from "./_components/course-details-form";
@@ -50,6 +59,52 @@ const RecipeIdPage = async ({ params }: { params: { recipeId: string } }) => {
         },
       },
       recipeCookingTime: true,
+      recipeNutritionValues: true,
+      recipeCuisine: {
+        include: {
+          cuisine: true,
+        },
+      },
+      recipeCookingMethods: {
+        include: {
+          cookingMethod: true,
+        },
+      },
+      recipeAllergies: {
+        include: {
+          allergies: true,
+        },
+      },
+      recipePrakriti: {
+        include: {
+          prakriti: true,
+        },
+      },
+      recipeHealthGoals: {
+        include: {
+          healthGoals: true,
+        },
+      },
+      recipeDisease: {
+        include: {
+          disease: true,
+        },
+      },
+      recipeMealTime: {
+        include: {
+          mealTime: true,
+        },
+      },
+      recipeNutrient: {
+        include: {
+          nutrient: true,
+        },
+      },
+      recipeDietType: {
+        include: {
+          dietType: true,
+        },
+      },
     },
   });
 
@@ -67,6 +122,116 @@ const RecipeIdPage = async ({ params }: { params: { recipeId: string } }) => {
   const difficultyLavels = await db.recipeDifficulty.findMany();
   const seasons = await db.recipeSeasons.findMany();
   const cuisines = await db.cuisines.findMany();
+  const cookingMethods = await db.cookingMethods.findMany();
+  const allergies = await db.allergies.findMany();
+  const prakritis = await db.prakriti.findMany();
+  const healthGoals = await db.healthGoals.findMany();
+  const diseases = await db.disease.findMany();
+  const mealTimes = await db.mealTimes.findMany();
+  const nutrients = await db.nutrient.findMany();
+  const dietTypes = await db.dietTypes.findMany();
+
+  const cuisinesData = recipe.recipeCuisine.map((cuisine) => ({
+    id: cuisine.id,
+    recipeId: recipe.id,
+    cuisineId: cuisine.cuisineId,
+    cuisine: {
+      id: cuisine.cuisine.id,
+      title: cuisine.cuisine.title,
+      slug: cuisine.cuisine.slug,
+      imageUrl: cuisine.cuisine.imageUrl,
+    },
+  }));
+  const cookingMethodsData = recipe.recipeCookingMethods.map(
+    (cookingMethod) => ({
+      id: cookingMethod.id,
+      recipeId: recipe.id,
+      cookingMethodId: cookingMethod.cookingMethodId,
+      cookingMethod: {
+        id: cookingMethod.cookingMethod.id,
+        title: cookingMethod.cookingMethod.title,
+        slug: cookingMethod.cookingMethod.slug,
+        imageUrl: cookingMethod.cookingMethod.imageUrl,
+      },
+    })
+  );
+  const allergiesData = recipe.recipeAllergies.map((allergy) => ({
+    id: allergy.id,
+    recipeId: recipe.id,
+    allergyId: allergy.allergyId,
+    allergy: {
+      id: allergy.allergies.id,
+      title: allergy.allergies.title,
+      slug: allergy.allergies.slug,
+      imageUrl: allergy.allergies.imageUrl,
+    },
+  }));
+  const prakritiData = recipe.recipePrakriti.map((prakriti) => ({
+    id: prakriti.id,
+    recipeId: recipe.id,
+    prakritiId: prakriti.prakritiId,
+    prakriti: {
+      id: prakriti.prakriti.id,
+      title: prakriti.prakriti.title,
+      slug: prakriti.prakriti.slug,
+      imageUrl: prakriti.prakriti.imageUrl,
+    },
+  }));
+  const healthGoalData = recipe.recipeHealthGoals.map((healthGoal) => ({
+    id: healthGoal.id,
+    recipeId: recipe.id,
+    healthGoalId: healthGoal.healthGoalId,
+    healthGoal: {
+      id: healthGoal.healthGoals.id,
+      title: healthGoal.healthGoals.title,
+      slug: healthGoal.healthGoals.slug,
+      imageUrl: healthGoal.healthGoals.imageUrl,
+    },
+  }));
+  const diseaseData = recipe.recipeDisease.map((disease) => ({
+    id: disease.id,
+    recipeId: recipe.id,
+    diseaseId: disease.diseaseId,
+    disease: {
+      id: disease.disease.id,
+      title: disease.disease.title,
+      slug: disease.disease.slug,
+      imageUrl: disease.disease.imageUrl,
+    },
+  }));
+  const mealTimeData = recipe.recipeMealTime.map((mealTime) => ({
+    id: mealTime.id,
+    recipeId: recipe.id,
+    mealTimeId: mealTime.mealTimeId,
+    mealTime: {
+      id: mealTime.mealTime.id,
+      title: mealTime.mealTime.title,
+      slug: mealTime.mealTime.slug,
+      imageUrl: mealTime.mealTime.imageUrl,
+    },
+  }));
+  const nutrientData = recipe.recipeNutrient.map((nutrient) => ({
+    id: nutrient.id,
+    recipeId: recipe.id,
+    nutrientId: nutrient.nutrientId,
+    nutrient: {
+      id: nutrient.nutrient.id,
+      title: nutrient.nutrient.title,
+      slug: nutrient.nutrient.slug,
+      imageUrl: nutrient.nutrient.imageUrl,
+    },
+  }));
+  const dietTypeData = recipe.recipeDietType.map((dietType) => ({
+    id: dietType.id,
+    recipeId: recipe.id,
+    dietTypeId: dietType.dietTypeId,
+    dietType: {
+      id: dietType.dietType.id,
+      title: dietType.dietType.title,
+      slug: dietType.dietType.slug,
+      imageUrl: dietType.dietType.imageUrl,
+    },
+  }));
 
   const requiredFields = [
     recipe.title,
@@ -138,15 +303,12 @@ const RecipeIdPage = async ({ params }: { params: { recipeId: string } }) => {
                 value: season.id,
               }))}
             />
-            <CuisinesForm
+
+            <RecipeTimeForm initialData={recipe} recipeId={recipe.id} />
+            <RecipeNutritionValuesForm
               initialData={recipe}
               recipeId={recipe.id}
-              options={cuisines.map((cuisine) => ({
-                label: cuisine.title,
-                value: cuisine.id,
-              }))}
             />
-            <RecipeTimeForm initialData={recipe} recipeId={recipe.id} />
           </div>
           <div className="space-y-6">
             <div>
@@ -168,6 +330,82 @@ const RecipeIdPage = async ({ params }: { params: { recipeId: string } }) => {
                 <h2 className="text-md">Recipe Methods</h2>
               </div>
               <MethodsForm initialData={recipe} recipeId={recipe.id} />
+              <div className="flex items-center mt-4 gap-x-2">
+                <IconBadge icon={ListChecks} />
+                <h2 className="text-md">Recipe Tags</h2>
+              </div>
+              <CuisinesForm
+                initialData={cuisinesData}
+                recipeId={recipe.id}
+                options={cuisines.map((cuisine) => ({
+                  label: cuisine.title,
+                  value: cuisine.id,
+                }))}
+              />
+              <RecipeCookingMethodForm
+                initialData={cookingMethodsData}
+                recipeId={recipe.id}
+                options={cookingMethods.map((cookingMethod) => ({
+                  label: cookingMethod.title,
+                  value: cookingMethod.id,
+                }))}
+              />
+              <RecipeAllergyForm
+                initialData={allergiesData}
+                recipeId={recipe.id}
+                options={allergies.map((allergy) => ({
+                  label: allergy.title,
+                  value: allergy.id,
+                }))}
+              />
+              <RecipePrakritiForm
+                initialData={prakritiData}
+                recipeId={recipe.id}
+                options={prakritis.map((prakriti) => ({
+                  label: prakriti.title,
+                  value: prakriti.id,
+                }))}
+              />
+              <RecipeHealthGoalForm
+                initialData={healthGoalData}
+                recipeId={recipe.id}
+                options={healthGoals.map((healthGoal) => ({
+                  label: healthGoal.title,
+                  value: healthGoal.id,
+                }))}
+              />
+              <RecipeDiseaseForm
+                initialData={diseaseData}
+                recipeId={recipe.id}
+                options={diseases.map((disease) => ({
+                  label: disease.title,
+                  value: disease.id,
+                }))}
+              />
+              <RecipeMealTimeForm
+                initialData={mealTimeData}
+                recipeId={recipe.id}
+                options={mealTimes.map((mealTime) => ({
+                  label: mealTime.title,
+                  value: mealTime.id,
+                }))}
+              />
+              <RecipeNutrientForm
+                initialData={nutrientData}
+                recipeId={recipe.id}
+                options={nutrients.map((nutrient) => ({
+                  label: nutrient.title,
+                  value: nutrient.id,
+                }))}
+              />
+              <RecipeDietTypeForm
+                initialData={dietTypeData}
+                recipeId={recipe.id}
+                options={dietTypes.map((dietType) => ({
+                  label: dietType.title,
+                  value: dietType.id,
+                }))}
+              />
             </div>
           </div>
         </div>

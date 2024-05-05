@@ -7,39 +7,41 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel";
-import CourseCard from "@/components/courses/course-card";
-import CourseContainer from "@/components/courses/course-container";
-import { Categories, Courses } from "@prisma/client";
 
-type CourseWithProgressWithCategory = Courses & {
-  category: Categories | null;
-  chapters: { id: string }[];
-  progress: number | null;
+import RecipeCard from "@/components/recipes/recipe-card";
+import Container from "@/components/container";
+import { RecipeCategories, Recipes } from "@prisma/client";
+
+type RecipeWithCategory = Recipes & {
+  RecipeCategories: RecipeCategories | null;
 };
 
 interface RelatedCourseProps {
-  relatedCourses: CourseWithProgressWithCategory[];
+  relatedRecipes: RecipeWithCategory[];
 }
 
-const RelatedCourseSlider = ({ relatedCourses }: RelatedCourseProps) => {
+const RelatedRecipeSlider = ({ relatedRecipes }: RelatedCourseProps) => {
   return (
     <div className="w-full mt-8 ">
-      <CourseContainer>
+      <Container>
         <div className="bg-white p-4 rounded-md shadow-sm transition">
-          <h2 className="text-2xl font-bold mb-4">Related Courses</h2>
+          <h2 className="text-2xl font-bold mb-4">Related Recipes For You</h2>
         </div>
         <div className="w-full mt-5 relative">
           <Carousel
             opts={{
               align: "start",
             }}
-            className="w-full max-w-sm"
+            className="w-full "
           >
             <CarouselContent>
-              {relatedCourses.map((course, index) => (
-                <CarouselItem key={index}>
+              {relatedRecipes.map((recipe, index) => (
+                <CarouselItem
+                  key={index}
+                  className="pl-1 md:basis-1/2 lg:basis-1/3"
+                >
                   <div className="p-1">
-                    <CourseCard course={course} />
+                    <RecipeCard recipe={recipe} />
                   </div>
                 </CarouselItem>
               ))}
@@ -48,9 +50,9 @@ const RelatedCourseSlider = ({ relatedCourses }: RelatedCourseProps) => {
             <CarouselNext className="absolute top-1/2 transform -translate-y-1/2 right-2 cursor-pointer" />
           </Carousel>
         </div>
-      </CourseContainer>
+      </Container>
     </div>
   );
 };
 
-export default RelatedCourseSlider;
+export default RelatedRecipeSlider;

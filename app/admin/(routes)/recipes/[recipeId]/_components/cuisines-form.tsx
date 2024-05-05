@@ -13,25 +13,36 @@ import axios from "axios";
 import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem } from "@/components/ui/form";
 
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 
-import { Recipes } from "@prisma/client";
+import { Cuisines, RecipeCuisines, Recipes } from "@prisma/client";
+import { MultiSelect } from "@/components/ui/multi-select";
+import { Badge } from "@/components/ui/badge";
 
 interface CuisinesFormProps {
-  initialData: Recipes;
+  initialData: {
+    id: string;
+    recipeId: string;
+    cuisineId: string;
+    cuisine: {
+      id: string;
+      title: string;
+      slug: string;
+      imageUrl: string | null;
+    };
+  }[];
+
   recipeId: string;
   options: { label: string; value: string }[];
 }
 
+const recipeSchema = z.object({
+  label: z.string(),
+  value: z.string(),
+});
+
 const formSchema = z.object({
-  recipeSeasonsId: z.string().min(1),
+  recipeCuisineId: z.array(recipeSchema).min(1),
 });
 
 export const CuisinesForm = ({
@@ -48,13 +59,26 @@ export const CuisinesForm = ({
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      recipeSeasonsId: initialData?.recipeSeasonsId || "",
+      recipeCuisineId: [],
     },
   });
+  const getRandomColor = () => {
+    const letters = "0123456789ABCDEF";
+    let color = "#";
+    for (let i = 0; i < 6; i++) {
+      color += letters[Math.floor(Math.random() * 16)];
+    }
+    return color;
+  };
   const { isSubmitting, isValid } = form.formState;
+
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
-      await axios.patch(`/api/recipes/${recipeId}`, values);
+      const cuisineValues = values.recipeCuisineId.map(
+        (cuisine) => cuisine.value
+      );
+
+      await axios.post(`/api/recipes/${recipeId}/cuisines`, { cuisineValues });
       toast.success("Recipe cuisines updated successfully", {
         position: "top-center",
         autoClose: 5000,
@@ -69,9 +93,6 @@ export const CuisinesForm = ({
     }
   };
 
-  const selectedOption = options.find(
-    (option) => option.value === initialData.recipeSeasonsId
-  );
   return (
     <div className="mt-6 border rounded-md p-4 bg-slate-100">
       <div className="flex items-center justify-between font-medium">
@@ -81,7 +102,7 @@ export const CuisinesForm = ({
             <>Cancel</>
           ) : (
             <>
-              {initialData.recipeDifficultyId ? (
+              {initialData.length > 0 ? (
                 <>
                   <Pencil className="w-6 h-6 pr-2" /> Edit cuisines
                 </>
@@ -96,15 +117,21 @@ export const CuisinesForm = ({
         </Button>
       </div>
       {!isEditing && (
-        <p
-          className={cn(
-            "text-sm mt-2",
-            !initialData.recipeSeasonsId && "italic text-slate-500"
+        <>
+          {initialData.length > 0 ? (
+            initialData.map((cuisine) => (
+              <Badge
+                key={cuisine.cuisine.id}
+                variant="default"
+                className="mx-1 bg-websecondary text-white"
+              >
+                {cuisine.cuisine.title}
+              </Badge>
+            ))
+          ) : (
+            <span>No cuisines selected</span>
           )}
-        >
-          <FaCloudSunRain className="w-4 h-4 mr-3 inline" />
-          {selectedOption?.label || "No season selected"}
-        </p>
+        </>
       )}
       {isEditing && (
         <Form {...form}>
@@ -114,24 +141,19 @@ export const CuisinesForm = ({
           >
             <FormField
               control={form.control}
-              name="recipeSeasonsId"
+              name="recipeCuisineId"
               render={({ field }) => (
                 <FormItem>
                   <FormControl>
-                    <Select onValueChange={field.onChange}>
-                      <SelectTrigger className="w-full h-12">
-                        <SelectValue placeholder="Select a season" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {options.map((option) => {
-                          return (
-                            <SelectItem key={option.label} value={option.value}>
-                              {option.label}
-                            </SelectItem>
-                          );
-                        })}
-                      </SelectContent>
-                    </Select>
+                    <MultiSelect
+                      options={options}
+                      placeholder="Select cuisines"
+                      onChange={field.onChange}
+                      defaultValues={initialData.map((cuisine) => ({
+                        value: cuisine.cuisine.id,
+                        label: cuisine.cuisine.title,
+                      }))}
+                    />
                   </FormControl>
                 </FormItem>
               )}

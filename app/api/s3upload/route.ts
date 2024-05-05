@@ -19,6 +19,11 @@ export async function POST(req: Request) {
     const cuisineId = formData.get("cuisineId") as string | null;
     const allergyId = formData.get("allergyId") as string | null;
     const prakritiId = formData.get("prakritiId") as string | null;
+    const healthGoalId = formData.get("healthGoalId") as string | null;
+    const mealTimeId = formData.get("mealTimeId") as string | null;
+    const diseaseId = formData.get("diseaseId") as string | null;
+    const nutrientId = formData.get("nutrientId") as string | null;
+    const dietTypeId = formData.get("dietTypeId") as string | null;
 
     const filesMap: Record<string, File[]> = {};
     formData.forEach((value: File | string | Blob, key: string) => {
@@ -93,6 +98,61 @@ export async function POST(req: Request) {
             }
           } else if (prakritiId) {
             const fileName = `prakriti/${prakritiId}/${file.name}`;
+            const uploadedData = await uploadFileToS3(
+              fileContent as Buffer,
+              file.type,
+              fileName
+            );
+            if (uploadedData) {
+              const imageUrl = `https://${process.env.AWS_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${fileName}`;
+              uploadedImageUrls.push(imageUrl);
+            }
+          } else if (healthGoalId) {
+            const fileName = `healthGoals/${healthGoalId}/${file.name}`;
+            const uploadedData = await uploadFileToS3(
+              fileContent as Buffer,
+              file.type,
+              fileName
+            );
+            if (uploadedData) {
+              const imageUrl = `https://${process.env.AWS_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${fileName}`;
+              uploadedImageUrls.push(imageUrl);
+            }
+          } else if (mealTimeId) {
+            const fileName = `mealTimes/${mealTimeId}/${file.name}`;
+            const uploadedData = await uploadFileToS3(
+              fileContent as Buffer,
+              file.type,
+              fileName
+            );
+            if (uploadedData) {
+              const imageUrl = `https://${process.env.AWS_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${fileName}`;
+              uploadedImageUrls.push(imageUrl);
+            }
+          } else if (diseaseId) {
+            const fileName = `diseases/${diseaseId}/${file.name}`;
+            const uploadedData = await uploadFileToS3(
+              fileContent as Buffer,
+              file.type,
+              fileName
+            );
+            if (uploadedData) {
+              const imageUrl = `https://${process.env.AWS_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${fileName}`;
+              uploadedImageUrls.push(imageUrl);
+            }
+          } else if (nutrientId) {
+            const fileName = `nutrients/${nutrientId}/${file.name}`;
+            const uploadedData = await uploadFileToS3(
+              fileContent as Buffer,
+              file.type,
+              fileName
+            );
+            if (uploadedData) {
+              const imageUrl = `https://${process.env.AWS_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${fileName}`;
+              uploadedImageUrls.push(imageUrl);
+            }
+          } else if (dietTypeId) {
+            const fileName = `dietTypes/${dietTypeId}/${file.name}`;
             const uploadedData = await uploadFileToS3(
               fileContent as Buffer,
               file.type,

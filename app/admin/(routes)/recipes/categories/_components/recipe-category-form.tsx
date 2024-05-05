@@ -90,7 +90,7 @@ const RecipeCategoryForm = () => {
                   <FormControl>
                     <Input
                       disabled={isSubmitting}
-                      placeholder="e.g. 'Weight Loss Recipes'"
+                      placeholder="e.g. 'Veg'"
                       {...field}
                     />
                   </FormControl>

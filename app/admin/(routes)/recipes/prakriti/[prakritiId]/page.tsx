@@ -44,7 +44,7 @@ const PrakritiIdPage = async ({
             <div>
               <div className="flex items-center gap-x-2">
                 <IconBadge icon={ListChecks} />
-                <h2 className="text-md">Cooking Method Image</h2>
+                <h2 className="text-md">Prakriti Image</h2>
               </div>
               <ImageForm initialData={prakriti} prakritiId={prakriti.id} />
             </div>

@@ -43,16 +43,16 @@ const MobileMenu = () => {
         </div>
         <div>
           <Link
-            href="/courses"
+            href="/recipes"
             className="flex flex-col items-center justify-center"
           >
             <button className="flex flex-col items-center justify-center">
               <PiBookOpenTextLight size={24} className="mb-1" />
-              <span className="text-xs">Courses</span>
+              <span className="text-xs">Recipes</span>
             </button>
           </Link>
         </div>
-        <div>
+        {/* <div>
           <Sheet>
             <SheetTrigger className="flex flex-col items-center justify-center">
               <span className="relative inline-block">
@@ -72,7 +72,7 @@ const MobileMenu = () => {
               <CartDetails />
             </SheetContent>
           </Sheet>
-        </div>
+        </div> */}
         <div>
           {user ? (
             <Link href="/user/dashboard">

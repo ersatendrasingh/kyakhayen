@@ -85,7 +85,7 @@ export const CategoryNameForm = ({
                   <FormControl>
                     <Input
                       disabled={isSubmitting}
-                      placeholder="e.g. 'Weight loss recipes'"
+                      placeholder="e.g. 'Veg'"
                       {...field}
                     />
                   </FormControl>

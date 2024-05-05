@@ -10,28 +10,28 @@ const navbarItems = [
     hasChild: false,
   },
   {
-    label: "Courses",
-    href: "/courses",
+    label: "Recipes",
+    href: "/recipes",
     hasChild: false,
   },
   {
-    label: "Alumni",
-    href: "/alumni",
+    label: "Meals",
+    href: "/recipes",
     hasChild: false,
   },
   {
-    label: "Student Speaks",
-    href: "/student-speaks",
+    label: "Ingredients",
+    href: "/recipes",
     hasChild: false,
   },
   {
-    label: "Career",
-    href: "/career",
+    label: "Cuisines",
+    href: "/recipes",
     hasChild: false,
   },
   {
-    label: "Faculty",
-    href: "/faculty",
+    label: "Healthy Recipes",
+    href: "/recipes",
     hasChild: false,
   },
 ];
