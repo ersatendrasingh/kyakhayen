@@ -27,7 +27,7 @@ const MethodIdPage = async ({
     return redirect("/");
   }
 
-  const requiredFields = [method.title, method.description];
+  const requiredFields = [method.title];
   const totalFields = requiredFields.length;
   const completedFields = requiredFields.filter(Boolean).length;
   const completedText = `(${completedFields}/${totalFields})`;
