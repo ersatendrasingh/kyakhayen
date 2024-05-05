@@ -24,7 +24,7 @@ export async function PATCH(
       return NextResponse.json("Method not found", { status: 404 });
     }
 
-    if (!method.title || !method.description) {
+    if (!method.title) {
       return NextResponse.json("Missing required fields", { status: 400 });
     }
 
