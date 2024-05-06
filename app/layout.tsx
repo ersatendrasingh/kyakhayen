@@ -15,6 +15,7 @@ const poppins = Poppins({
 });
 
 export const metadata: Metadata = {
+  manifest: "/manifest.json",
   title:
     "Kya Khayen - Your Ultimate Global Recipe Hub: Desi, International, and Fusion Flavors",
   description:

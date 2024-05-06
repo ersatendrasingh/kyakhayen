@@ -16,25 +16,8 @@ interface CartItemProps {
 }
 
 const CartItems = ({ item }: CartItemProps) => {
-  const [itemPrice, setItemPrice] = useState(item.price);
   const { userCurrency, userCountry } = useUserCountry();
 
-  useEffect(() => {
-    const handlePriceExchange = async (price: number, userCurrency: string) => {
-      try {
-        const exchangedValue = await exchangePrice(price, userCurrency);
-        setItemPrice(exchangedValue);
-      } catch (error) {
-        console.error("Error exchanging price:", error);
-
-        setItemPrice(price);
-      }
-    };
-    if (!userCountry) return;
-    userCountry !== "IN"
-      ? handlePriceExchange(item.int_price, userCurrency)
-      : handlePriceExchange(item.price, userCurrency);
-  }, [userCurrency, userCountry, item.price, item.int_price]);
   const { updateQuantityInCart, removeFromCart } = useCart();
 
   return (
@@ -54,9 +37,7 @@ const CartItems = ({ item }: CartItemProps) => {
           <p className="text-lg font-bold mb-2">
             <Link href={`/course/${item.slug}`}>{item.title}</Link>
           </p>
-          <p className="pb-2 text-sm">
-            {formatCurrency(itemPrice * item.quantity, userCurrency)}
-          </p>
+
           <div className="flex items-center">
             <button
               onClick={() => updateQuantityInCart(item.id, item.quantity - 1)}
