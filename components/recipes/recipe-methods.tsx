@@ -31,11 +31,24 @@ const RecipeMethods = ({ recipeMethods }: RecipeMethodsProps) => {
         <ul>
           {recipeMethods.map((method, index) => (
             <li key={method.id} className="flex flex-col py-2">
-              <div className="flex items-center mb-3">
-                <span className="text-lg font-semibold bg-websecondary-500 text-white rounded-full w-8 h-8 flex items-center justify-center mr-2">
-                  {index + 1}
-                </span>
-                <p className="text-lg font-semibold">{method.title}</p>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center mb-3">
+                  <span className="text-lg font-semibold bg-websecondary-500 text-white rounded-full w-8 h-8 flex items-center justify-center mr-2">
+                    {index + 1}
+                  </span>
+                </div>
+                <div className="flex items-center mb-3">
+                  <p
+                    className={cn(
+                      "text-lg font-semibold",
+                      checkedMethod.includes(method.id)
+                        ? "text-websecondary-500 line-through opacity-75"
+                        : "text-foreground"
+                    )}
+                  >
+                    {method.title}
+                  </p>
+                </div>
               </div>
               {method.description && (
                 <Preview

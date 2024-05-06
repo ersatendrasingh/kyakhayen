@@ -21,7 +21,7 @@ const RecipeSidebarWidget = ({
   return (
     <div className="bg-white p-4 right-0 border-2 rounded-md transition shadow-md mb-6">
       <h3 className="text-lg text-websecondary font-semibold mb-2">{title}</h3>
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-3 md:grid-cols-4 gap-4">
         {widgetItems &&
           widgetItems.map((widget) => (
             <Link

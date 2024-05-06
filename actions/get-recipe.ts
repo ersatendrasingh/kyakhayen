@@ -80,6 +80,9 @@ export const getRecipeBySlug = async ({
           },
         },
         recipeMethods: {
+          where: {
+            isPublished: true,
+          },
           orderBy: {
             position: "asc",
           },

@@ -64,7 +64,7 @@ const RecipeOverview = ({ recipe, quantity }: RecipeOverviewProps) => {
   return (
     <div className="w-full items-start justify-start ">
       {recipe.recipeCookingTime && (
-        <div className="flex flex-wrap items-center justify-between gap-4 mt-2 border-b-2 border-gray-200 pb-4">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-2 border-b-2 border-gray-200 pb-4">
           {recipe.recipeCookingTime?.prepTime && (
             <p className="text-sm text-center">
               <span className="font-bold">Preparation time</span>
