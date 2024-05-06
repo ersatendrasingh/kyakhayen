@@ -17,25 +17,7 @@ interface CartItemProps {
 }
 
 const CartItems = ({ item }: CartItemProps) => {
-  const [itemPrice, setItemPrice] = useState(item.price);
   const { userCurrency, userCountry } = useUserCountry();
-
-  useEffect(() => {
-    const handlePriceExchange = async (price: number, userCurrency: string) => {
-      try {
-        const exchangedValue = await exchangePrice(price, userCurrency);
-        setItemPrice(exchangedValue);
-      } catch (error) {
-        console.error("Error exchanging price:", error);
-        // Handle the error here if needed
-        setItemPrice(price); // Return the original price in case of error
-      }
-    };
-    if (!userCountry) return;
-    userCountry !== "IN"
-      ? handlePriceExchange(item.int_price, userCurrency)
-      : handlePriceExchange(item.price, userCurrency);
-  }, [userCurrency, userCountry, item.price, item.int_price]);
 
   const { updateQuantityInCart, removeFromCart } = useCart();
 
@@ -55,9 +37,7 @@ const CartItems = ({ item }: CartItemProps) => {
         <td className="border border-b border-r px-4 py-2 font-bold">
           <Link href={`/course/${item.slug}`}>{item.title}</Link>
         </td>
-        <td className="border border-b border-r px-4 py-2">
-          {formatCurrency(itemPrice, userCurrency)}
-        </td>
+
         <td className="border border-b border-r px-4 py-2 text-center">
           <div className="flex flex-col md:flex-row items-center justify-center">
             <button
@@ -75,9 +55,7 @@ const CartItems = ({ item }: CartItemProps) => {
             </button>
           </div>
         </td>
-        <td className="border border-b border-r px-4 py-2">
-          {formatCurrency(itemPrice * item.quantity, userCurrency)}
-        </td>
+
         <td className="border border-b border-r px-4 py-2">
           <button
             onClick={() => removeFromCart(item.id)}

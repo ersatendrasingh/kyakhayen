@@ -1,16 +1,17 @@
 /** @type {import('next').NextConfig} */
-const withPWA = require("next-pwa")({
+const withPWA = require("@ducanh2912/next-pwa").default({
   dest: "public",
-  register: true,
-  skipWaiting: true,
-  disable: process.env.NODE_ENV === "development",
-});
-module.exports = withPWA({
-  reactStrictMode: true,
+  cacheOnFrontEndNav: true,
+  aggressiveFrontEndNavCaching: true,
+  reloadOnOnline: true,
   swcMinify: true,
-  compiler: {
-    styledComponents: true,
+  disable: process.env.NODE_ENV === "development",
+  workboxOptions: {
+    disableDevLogs: true,
   },
+});
+
+const NextConfig = {
   ...(process.env.NODE_ENV === "production" && {
     typescript: {
       ignoreBuildErrors: true,
@@ -28,4 +29,5 @@ module.exports = withPWA({
       "lh3.googleusercontent.com",
     ],
   },
-});
+};
+module.exports = withPWA(NextConfig);

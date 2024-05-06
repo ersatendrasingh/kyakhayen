@@ -10,10 +10,42 @@ import {
 
 import RecipeCard from "@/components/recipes/recipe-card";
 import Container from "@/components/container";
-import { RecipeCategories, Recipes } from "@prisma/client";
+import {
+  RecipeCategories,
+  RecipeCookingTime,
+  RecipeDifficulty,
+  Recipes,
+} from "@prisma/client";
+type RecipeDietType = {
+  id: string;
+  recipeId: string;
+  dietTypeId: string;
+  dietType: {
+    id: string;
+    title: string;
+    slug: string;
+    imageUrl: string | null;
+  };
+};
+
+type RecipeNutrient = {
+  id: string;
+  recipeId: string;
+  nutrientId: string;
+  nutrient: {
+    id: string;
+    title: string;
+    slug: string;
+    imageUrl: string | null;
+  };
+};
 
 type RecipeWithCategory = Recipes & {
   RecipeCategories: RecipeCategories | null;
+  recipeCookingTime: RecipeCookingTime | null;
+  recipeDifficulty: RecipeDifficulty | null;
+  recipeDietType: RecipeDietType[] | null;
+  recipeNutrient: RecipeNutrient[] | null;
 };
 
 interface RelatedCourseProps {

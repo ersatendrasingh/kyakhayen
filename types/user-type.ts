@@ -1,5 +1,3 @@
-import { Purchase, User, UserRole } from "@prisma/client";
-interface UserDataWithPurchase extends User {
-  purchase: Purchase[];
-}
+import { User, UserRole } from "@prisma/client";
+interface UserDataWithPurchase extends User {}
 export type userType = UserDataWithPurchase;

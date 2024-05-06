@@ -3,12 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 
 import MenuItem from "@/components/recipes/menu-item";
-import CourseContent from "@/components/recipes/recipe-ingredients";
-import RecipeDetailsContent from "@/components/recipes/course-details-content";
-import CourseFaqs from "@/components/recipes/course-faqs";
-import Coursefaculty from "@/components/recipes/course-faculty";
-import CourseCareer from "@/components/recipes/course-career";
-import CourseOverview from "@/components/recipes/recipe-overview";
+
 import {
   CookingMethods,
   Cuisines,

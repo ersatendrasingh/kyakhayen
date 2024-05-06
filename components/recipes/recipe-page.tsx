@@ -4,7 +4,6 @@ import Image from "next/image";
 
 import { cn } from "@/lib/utils";
 
-import CourseDetails from "@/components/courses/course-details";
 import { RecipeCategories, Recipes } from "@prisma/client";
 import Container from "@/components/container";
 
