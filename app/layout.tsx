@@ -17,10 +17,9 @@ const poppins = Poppins({
 });
 
 const meta = {
-  title:
-    "Kya Khayen - Your Ultimate Global Recipe Hub: Desi, International, and Fusion Flavors",
+  title: "Kya Khayen - Your Ultimate Global Recipe Hub",
   description:
-    "Kya Khayen brings the best of global cuisines to your fingertips. From the warmth of Indian kitchens to the sophistication of international flavors, find inspiration for every meal.",
+    "Kya Khayen offers global cuisines at your fingertips. Discover meal inspiration, nutrition plans, and healthy recipes from around the world.",
   image: `${process.env.NEXT_PUBLIC_APP_URL}/meta-images/home.png`,
   keywords: [
     "kya khayen healthy recipes",

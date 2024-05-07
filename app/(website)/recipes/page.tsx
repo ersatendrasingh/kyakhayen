@@ -9,7 +9,7 @@ import { Metadata } from "next";
 const meta = {
   title: "Recipes - KyaKhayen: Explore 5 Billion+ Culinary Creations",
   description:
-    "Dive into a world of gastronomic delights with WhatToCook's Recipes page. Discover over 5 billion culinary creations, ranging from traditional family favorites to innovative fusion dishes.",
+    "Explore diverse recipes at Kya Khayen. Find nutrition-packed meals, diet plans, and healthy recipes for every taste bud.",
   image: `${process.env.NEXT_PUBLIC_APP_URL}/meta-images/recipe-page.jpg`,
   keywords: [
     "kya khayen healthy recipes",

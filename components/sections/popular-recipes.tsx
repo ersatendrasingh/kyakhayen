@@ -9,7 +9,7 @@ const PopularRecipes = async () => {
   return (
     <div className="w-full flex items-center justify-center pt-12 pb-10 mt-10 mb-10 bg-[#f9f9ff]">
       <Container>
-        <h3 className="text-3xl font-bold text-center text-webprimary mb-10">
+        <h3 className="text-3xl font-bold text-center text-websecondary mb-10">
           Popular Recipes For You
         </h3>
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">

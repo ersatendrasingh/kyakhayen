@@ -32,9 +32,9 @@ const Footer = async () => {
             </p>
           </div>
           <div className="flex flex-col my-4 md:my-0">
-            <h3 className="text-xl font-bold mb-3 text-center md:text-left">
+            <h4 className="text-xl font-bold mb-3 text-center md:text-left">
               Quick Links
-            </h3>
+            </h4>
             <nav className="text-center md:text-left">
               <Link href="/" className="block mb-2">
                 Home
@@ -54,9 +54,9 @@ const Footer = async () => {
             </nav>
           </div>
           <div className="flex flex-col my-4 md:my-0">
-            <h3 className="text-xl font-bold mb-3 text-center md:text-left">
+            <h5 className="text-xl font-bold mb-3 text-center md:text-left">
               Recipe Categories
-            </h3>
+            </h5>
             <nav className="text-center md:text-left">
               {categories.map((category) => (
                 <Link
@@ -70,9 +70,9 @@ const Footer = async () => {
             </nav>
           </div>
           <div className="flex flex-col my-4 md:my-0">
-            <h3 className="text-xl font-bold mb-3 text-center md:text-left">
+            <h6 className="text-xl font-bold mb-3 text-center md:text-left">
               Follow Us
-            </h3>
+            </h6>
 
             <div className="flex items-center justify-center md:justify-start gap-3 mt-3">
               <a

@@ -38,7 +38,7 @@ export async function generateMetadata(
   // Meta description length limit set karna
   const metaDescription = plainTextDescription!.substring(0, 160);
   return {
-    title: recipe?.title,
+    title: `${recipe?.title} - KyaKhayen`,
     description: metaDescription,
     keywords: [
       "kya khayen healthy recipes",

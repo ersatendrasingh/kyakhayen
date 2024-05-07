@@ -17,9 +17,9 @@ const HomeCategory = ({ title, widgetItems }: HomeCategoryProps) => {
   return (
     <div className="w-full flex items-center justify-center pt-6 pb-10 ">
       <Container>
-        <h3 className="text-3xl font-bold text-center text-websecondary mb-10">
+        <h2 className="text-3xl font-bold text-center text-websecondary mb-10">
           {title}
-        </h3>
+        </h2>
         <div className="grid grid-cols-2 md:grid-cols-5 gap-6">
           {widgetItems &&
             widgetItems.map((widget) => (
