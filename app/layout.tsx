@@ -32,7 +32,7 @@ export default async function RootLayout({
   return (
     <SessionProvider session={session}>
       <html lang="en">
-        <GoogleAnalytics gaId="G-EVWL88ZL1C" />
+        <GoogleAnalytics gaId={process.env.GOOGLE_ANALYTICS_ID as string} />
         <body className={`${poppins.variable}`} suppressHydrationWarning={true}>
           <ConfettiProvider />
           <ToastContainer />
