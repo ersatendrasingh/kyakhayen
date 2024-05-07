@@ -16,12 +16,49 @@ const poppins = Poppins({
   weight: ["100", "200", "300", "400", "500", "600", "700", "800", "900"],
 });
 
-export const metadata: Metadata = {
-  manifest: "/manifest.json",
+const meta = {
   title:
     "Kya Khayen - Your Ultimate Global Recipe Hub: Desi, International, and Fusion Flavors",
   description:
-    "Kya Khayen brings the best of global cuisines to your fingertips. From the warmth of Indian kitchens to the sophistication of international flavors, find inspiration for every meal. Dive into our vast collection of 5 billion+ recipes, curated with a blend of tradition and innovation.",
+    "Kya Khayen brings the best of global cuisines to your fingertips. From the warmth of Indian kitchens to the sophistication of international flavors, find inspiration for every meal.",
+  image: `${process.env.NEXT_PUBLIC_APP_URL}/meta-images/home-page.jpg`,
+  keywords: [
+    "kya khayen healthy recipes",
+    "healthy diet plan for weight loss",
+    "best diet plan for weight loss",
+    "diet meal plans for weight loss",
+    "healthy breakfast recipe for weight loss",
+    "healthy diet plans",
+  ],
+};
+
+export const metadata: Metadata = {
+  manifest: "/manifest.json",
+  title: meta.title,
+  description: meta.description,
+  keywords: meta.keywords,
+  openGraph: {
+    title: meta.title,
+    description: meta.description,
+    url: process.env.NEXT_PUBLIC_APP_URL,
+    locale: "en-US",
+    siteName: meta.title,
+    type: "website",
+    images: [
+      {
+        url: meta.image,
+      },
+    ],
+  },
+  twitter: {
+    title: meta.title,
+    description: meta.description,
+    images: [meta.image],
+    card: "summary_large_image",
+  },
+  alternates: {
+    canonical: process.env.NEXT_PUBLIC_APP_URL,
+  },
 };
 
 export default async function RootLayout({
