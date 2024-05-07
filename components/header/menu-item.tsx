@@ -38,9 +38,9 @@ const MenuItem = ({ label, href, subItems }: MenuItemProps) => {
         <div>
           <div
             className={cn(
-              "flex items-center gap-x-2 py-3 text-sm font-[500] pl-6 transition-all text-sky-700 hover:bg-sky-500/10 hover:text-sky-700 border-b border-slate-200",
+              "flex items-center gap-x-2 py-3 text-sm font-[500] pl-6 transition-all text-websecondary hover:bg-rose-500/10 hover:text-websecondary border-b border-slate-200",
               isActive &&
-                "bg-sky-500 text-white hover:bg-sky-700 hover:text-white"
+                "bg-websecondary-500 text-white hover:bg-websecondary-500 hover:text-white"
             )}
             onClick={subItems ? handleSubMenuToggle : undefined}
           >
@@ -60,9 +60,9 @@ const MenuItem = ({ label, href, subItems }: MenuItemProps) => {
                   <Link
                     href={item.href}
                     className={cn(
-                      "flex items-center gap-x-2 py-3 text-sm font-[500] pl-6 transition-all text-sky-700 hover:bg-sky-500/10 hover:text-sky-700 border-b border-slate-200",
+                      "flex items-center gap-x-2 py-3 text-sm font-[500] pl-6 transition-all text-websecondary hover:bg-rose-500/10 hover:text-websecondary border-b border-slate-200",
                       isActive &&
-                        "bg-sky-500 text-white hover:bg-sky-700 hover:text-white"
+                        "bg-websecondary text-white hover:bg-websecondary-500 hover:text-white"
                     )}
                   >
                     {item.label}
@@ -77,9 +77,9 @@ const MenuItem = ({ label, href, subItems }: MenuItemProps) => {
           <Link
             href={href}
             className={cn(
-              "flex items-center py-3 gap-x-2 text-sm font-[500] pl-6 transition-all text-sky-700 hover:bg-sky-500/10 hover:text-sky-700 border-b border-slate-200",
+              "flex items-center py-3 gap-x-2 text-sm font-[500] pl-6 transition-all text-websecondary hover:bg-rose-500/10 hover:text-websecondary border-b border-slate-200",
               isActive &&
-                "bg-sky-500 text-white hover:bg-sky-700 hover:text-white"
+                "bg-websecondary text-white hover:bg-websecondary-500 hover:text-white"
             )}
           >
             {label}

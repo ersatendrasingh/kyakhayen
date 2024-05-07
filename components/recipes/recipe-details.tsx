@@ -135,95 +135,93 @@ const RecipeDetails = ({ recipe }: RecipeDetailsProps) => {
   };
 
   return (
-    <Container>
-      <div className="relative">
-        <div className="sticky top-[70px] z-10 bg-white w-full rounded-md shadow-sm transition my-4 py-4 flex overflow-x-auto ">
-          {menuItems.map((item) => (
-            <MenuItem
-              key={item.id}
-              tabTitle={item.title}
-              isActive={activeTab === item.title}
-              onClick={() => handleTabClick(item.title)}
-              className="flex-shrink-0"
-            />
-          ))}
-        </div>
-
+    <div className="relative">
+      <div className="sticky top-[70px] z-10 bg-white w-full rounded-md shadow-sm transition my-4 py-4 flex overflow-x-auto ">
         {menuItems.map((item) => (
-          <div
+          <MenuItem
             key={item.id}
-            id={item.title}
-            ref={sectionRefs[item.title]}
-            className={`tab-content bg-white w-full rounded-md shadow-sm transition my-4 p-4 ${
-              activeTab === item.title ? "active" : ""
-            }`}
-          >
-            {item.title === "Overview" && (
-              <>
-                <h2 className="text-xl font-bold text-gray-800 border-b-2 border-gray-200 pb-2 mb-4">
-                  About {recipe.title}
-                </h2>
-                <RecipeOverview recipe={recipe} quantity={quantity} />
-              </>
-            )}
-            {item.title === "Ingredients" && (
-              <>
-                <div className="flex items-center justify-between mb-4 border-b-2 border-gray-200">
-                  <h2 className="text-xl font-bold text-gray-800  pb-2">
-                    Ingredients
-                  </h2>
-                  <div className="flex items-center pb-2">
-                    <span className="text-md px-2">Serving size:</span>
-                    <button
-                      onClick={() => updateQuantity(quantity - 1)}
-                      className="px-2 py-1 rounded-md bg-red-500 text-white text-sm mr-2"
-                    >
-                      -
-                    </button>
-                    <span className="text-lg px-2">{quantity}</span>
-                    <button
-                      onClick={() => updateQuantity(quantity + 1)}
-                      className="px-2 py-1 bg-emerald-500 text-white rounded-md text-sm ml-2"
-                    >
-                      +
-                    </button>
-                  </div>
-                </div>
-
-                <RecipeIngredients
-                  recipeIngredients={recipe.recipeIngredients}
-                  quantity={quantity}
-                />
-              </>
-            )}
-            {item.title === "Methods" && (
-              <>
-                <h2 className="text-xl font-bold text-gray-800 border-b-2 border-gray-200 pb-2 mb-4">
-                  Methods
-                </h2>
-                <RecipeMethods recipeMethods={recipe.recipeMethods} />
-              </>
-            )}
-            {item.title === "Nutrition Facts" && (
-              <>
-                <h2 className="text-xl font-bold text-gray-800 border-b-2 border-gray-200 pb-2 mb-4">
-                  Nutrition Facts
-                </h2>
-                {recipe.recipeNutritionValues ? (
-                  <RecipeNutritionFacts
-                    recipeNutritionFacts={recipe.recipeNutritionValues}
-                  />
-                ) : (
-                  <p className="text-sm font-medium text-center text-websecondary-500">
-                    No nutrition facts available for this recipe.
-                  </p>
-                )}
-              </>
-            )}
-          </div>
+            tabTitle={item.title}
+            isActive={activeTab === item.title}
+            onClick={() => handleTabClick(item.title)}
+            className="flex-shrink-0"
+          />
         ))}
       </div>
-    </Container>
+
+      {menuItems.map((item) => (
+        <div
+          key={item.id}
+          id={item.title}
+          ref={sectionRefs[item.title]}
+          className={`tab-content bg-white w-full rounded-md shadow-sm transition my-4 p-4 ${
+            activeTab === item.title ? "active" : ""
+          }`}
+        >
+          {item.title === "Overview" && (
+            <>
+              <h2 className="text-xl font-bold text-gray-800 border-b-2 border-gray-200 pb-2 mb-4">
+                About {recipe.title}
+              </h2>
+              <RecipeOverview recipe={recipe} quantity={quantity} />
+            </>
+          )}
+          {item.title === "Ingredients" && (
+            <>
+              <div className="flex items-center justify-between mb-4 border-b-2 border-gray-200">
+                <h2 className="text-xl font-bold text-gray-800  pb-2">
+                  Ingredients
+                </h2>
+                <div className="flex items-center pb-2">
+                  <span className="text-md px-2">Serving size:</span>
+                  <button
+                    onClick={() => updateQuantity(quantity - 1)}
+                    className="px-2 py-1 rounded-md bg-red-500 text-white text-sm mr-2"
+                  >
+                    -
+                  </button>
+                  <span className="text-lg px-2">{quantity}</span>
+                  <button
+                    onClick={() => updateQuantity(quantity + 1)}
+                    className="px-2 py-1 bg-emerald-500 text-white rounded-md text-sm ml-2"
+                  >
+                    +
+                  </button>
+                </div>
+              </div>
+
+              <RecipeIngredients
+                recipeIngredients={recipe.recipeIngredients}
+                quantity={quantity}
+              />
+            </>
+          )}
+          {item.title === "Methods" && (
+            <>
+              <h2 className="text-xl font-bold text-gray-800 border-b-2 border-gray-200 pb-2 mb-4">
+                Methods
+              </h2>
+              <RecipeMethods recipeMethods={recipe.recipeMethods} />
+            </>
+          )}
+          {item.title === "Nutrition Facts" && (
+            <>
+              <h2 className="text-xl font-bold text-gray-800 border-b-2 border-gray-200 pb-2 mb-4">
+                Nutrition Facts
+              </h2>
+              {recipe.recipeNutritionValues ? (
+                <RecipeNutritionFacts
+                  recipeNutritionFacts={recipe.recipeNutritionValues}
+                />
+              ) : (
+                <p className="text-sm font-medium text-center text-websecondary-500">
+                  No nutrition facts available for this recipe.
+                </p>
+              )}
+            </>
+          )}
+        </div>
+      ))}
+    </div>
   );
 };
 

@@ -10,6 +10,17 @@ export const metadata: Metadata = {
   title: "Recipes - KyaKhayen: Explore 5 Billion+ Culinary Creations",
   description:
     "Dive into a world of gastronomic delights with WhatToCook's Recipes page. Discover over 5 billion culinary creations, ranging from traditional family favorites to innovative fusion dishes.",
+  keywords: [
+    "kyakhayen",
+    "kya khayen",
+    "kya khayen recipes",
+    "kya khayen healthy recipes",
+    "nutrition diet plan",
+    "meal plans for weight loss",
+    "diet plan for weight loss",
+    "weight loss diet plan for women",
+    "healthy diet plans",
+  ],
 };
 const RecipePage = async ({
   params,

@@ -12,6 +12,7 @@ import RelatedRecipeSlider from "@/components/recipes/related-recipe-slider";
 import RecipeSidebar from "@/components/recipes/recipe-sidebar";
 import { db } from "@/lib/db";
 import { Metadata, ResolvingMetadata } from "next";
+import Container from "@/components/container";
 
 type Props = {
   params: { recipeSlug: string };
@@ -37,6 +38,10 @@ export async function generateMetadata(
     title: recipe?.title,
     description: recipe?.description,
     keywords: [
+      "kyakhayen",
+      "kya khayen",
+      "kya khayen recipes",
+      "kya khayen healthy recipes",
       "nutrition diet plan",
       "meal plans for weight loss",
       "diet plan for weight loss",
@@ -90,22 +95,24 @@ const SingleRecipePage = async ({
   });
   return (
     <div className="w-full bg-slate-100 pb-8">
-      <div className=" flex flex-col lg:flex-row">
-        <div className="w-full lg:w-4/6">
-          <BannerCard
-            recipe={recipe}
-            className="py-10 lg:py-8 mb-7 md:mb-2 xl:mb-2"
-          />
-          <RecipeDetails recipe={recipe} />
+      <Container>
+        <div className="flex flex-col md:flex-row ">
+          <div className="w-full lg:w-4/6 mr-0 lg:mr-8">
+            <BannerCard
+              recipe={recipe}
+              className="py-10 lg:py-8 mb-7 md:mb-2 xl:mb-2"
+            />
+            <RecipeDetails recipe={recipe} />
+          </div>
+          <div className="w-full lg:w-2/6">
+            <RecipeSidebar
+              recipeCategories={recipeCategories}
+              recipeMealTimes={recipeMealTimes}
+            />
+          </div>
         </div>
-        <div className="w-full lg:w-2/6 lg:pr-20">
-          <RecipeSidebar
-            recipeCategories={recipeCategories}
-            recipeMealTimes={recipeMealTimes}
-          />
-        </div>
-      </div>
-      <RelatedRecipeSlider relatedRecipes={relatedRecipes} />
+        <RelatedRecipeSlider relatedRecipes={relatedRecipes} />
+      </Container>
     </div>
   );
 };

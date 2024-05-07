@@ -19,7 +19,7 @@ export const Header = () => {
             <div className="hidden md:block">
               <Navbar />
             </div>
-            {/* Cart Icon */}
+
             <div className="flex items-center gap-4">
               <SearchIcon />
 
