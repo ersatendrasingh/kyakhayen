@@ -6,22 +6,48 @@ import RecipeCard from "@/components/recipes/recipe-card";
 import { db } from "@/lib/db";
 import { Metadata } from "next";
 
-export const metadata: Metadata = {
+const meta = {
   title: "Recipes - KyaKhayen: Explore 5 Billion+ Culinary Creations",
   description:
     "Dive into a world of gastronomic delights with WhatToCook's Recipes page. Discover over 5 billion culinary creations, ranging from traditional family favorites to innovative fusion dishes.",
+  image: `${process.env.NEXT_PUBLIC_APP_URL}/meta-images/recipe-page.jpg`,
   keywords: [
-    "kyakhayen",
-    "kya khayen",
-    "kya khayen recipes",
     "kya khayen healthy recipes",
-    "nutrition diet plan",
-    "meal plans for weight loss",
-    "diet plan for weight loss",
-    "weight loss diet plan for women",
+    "healthy diet plan for weight loss",
+    "best diet plan for weight loss",
+    "diet meal plans for weight loss",
+    "healthy breakfast recipe for weight loss",
     "healthy diet plans",
   ],
 };
+
+export const metadata: Metadata = {
+  title: meta.title,
+  description: meta.description,
+  keywords: meta.keywords,
+  openGraph: {
+    title: meta.title,
+    description: meta.description,
+    url: `${process.env.NEXT_PUBLIC_APP_URL}/recipes`,
+
+    type: "website",
+    images: [
+      {
+        url: meta.image,
+      },
+    ],
+  },
+  twitter: {
+    title: meta.title,
+    description: meta.description,
+    images: [meta.image],
+    card: "summary_large_image",
+  },
+  alternates: {
+    canonical: `${process.env.NEXT_PUBLIC_APP_URL}/recipes`,
+  },
+};
+
 const RecipePage = async ({
   params,
   searchParams,

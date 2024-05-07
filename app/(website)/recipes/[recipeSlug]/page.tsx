@@ -38,18 +38,28 @@ export async function generateMetadata(
     title: recipe?.title,
     description: recipe?.description,
     keywords: [
-      "kyakhayen",
-      "kya khayen",
-      "kya khayen recipes",
       "kya khayen healthy recipes",
-      "nutrition diet plan",
-      "meal plans for weight loss",
-      "diet plan for weight loss",
-      "weight loss diet plan for women",
+      "healthy diet plan for weight loss",
+      "best diet plan for weight loss",
+      "diet meal plans for weight loss",
+      "healthy breakfast recipe for weight loss",
       "healthy diet plans",
     ],
     openGraph: {
+      title: recipe?.title,
+      description: recipe?.description!.substring(0, 160),
+      url: `${process.env.NEXT_PUBLIC_APP_URL}/recipes/${recipeSlug}`,
+      type: "article",
       images: [recipe?.imageUrl as string, ...previousImages],
+    },
+    twitter: {
+      title: recipe?.title,
+      description: recipe?.description!.substring(0, 160),
+      images: [recipe?.imageUrl as string, ...previousImages],
+      card: "summary_large_image",
+    },
+    alternates: {
+      canonical: `${process.env.NEXT_PUBLIC_APP_URL}/recipes/${recipeSlug}`,
     },
   };
 }
