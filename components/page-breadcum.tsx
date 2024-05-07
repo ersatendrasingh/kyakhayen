@@ -20,7 +20,9 @@ const PageBreadcum = ({ currentPage }: PageBreadcumProps) => {
     <Breadcrumb className="flex items-center justify-center md:items-start md:justify-start py-4 text-white font-bold">
       <BreadcrumbList>
         <BreadcrumbItem>
-          <BreadcrumbLink href="/">Home</BreadcrumbLink>
+          <BreadcrumbLink href="/" className="text-white">
+            Home
+          </BreadcrumbLink>
         </BreadcrumbItem>
         <BreadcrumbSeparator>
           <SlashIcon />

@@ -20,13 +20,17 @@ const RecipeBreadcum = ({ currentRecipe }: RecipeBreadcumProps) => {
     <Breadcrumb className="flex items-center justify-center md:items-start md:justify-start py-4 font-bold">
       <BreadcrumbList>
         <BreadcrumbItem>
-          <BreadcrumbLink href="/">Home</BreadcrumbLink>
+          <BreadcrumbLink href="/" className="text-websecondary">
+            Home
+          </BreadcrumbLink>
         </BreadcrumbItem>
         <BreadcrumbSeparator>
           <SlashIcon />
         </BreadcrumbSeparator>
         <BreadcrumbItem>
-          <BreadcrumbLink href="/recipes">Recipes</BreadcrumbLink>
+          <BreadcrumbLink href="/recipes" className="text-websecondary">
+            Recipes
+          </BreadcrumbLink>
         </BreadcrumbItem>
         <BreadcrumbSeparator>
           <SlashIcon />
