@@ -31,7 +31,7 @@ const RecipeMethods = ({ recipeMethods }: RecipeMethodsProps) => {
         <ul>
           {recipeMethods.map((method, index) => (
             <li key={method.id} className="flex flex-col py-2">
-              <div className="flex items-center justify-between">
+              <div className="flex items-center">
                 <div className="flex items-center mb-3">
                   <span className="text-lg font-semibold bg-websecondary-500 text-white rounded-full w-8 h-8 flex items-center justify-center mr-2">
                     {index + 1}
