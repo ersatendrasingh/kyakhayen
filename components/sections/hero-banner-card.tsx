@@ -32,9 +32,9 @@ export default function HeroBannerCard({ banner, className }: BannerProps) {
     >
       <Container>
         <div className="text-center">
-          <h2 className="text-3xl lg:text-3xl xl:text-5xl mb-3 font-bold transition-all duration-1000 ease-in-out transform animate-slide-in text-websecondary">
+          <h1 className="text-3xl lg:text-3xl xl:text-5xl mb-3 font-bold transition-all duration-1000 ease-in-out transform animate-slide-in text-websecondary">
             {banner.title}
-          </h2>
+          </h1>
 
           <span className="text-sm sm:text-sm md:text-xl p-2 mb-4 rounded-full text-webprimary">
             {banner.spanTxt}
