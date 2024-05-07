@@ -1,6 +1,6 @@
 {
-  "name": "Kya Khayen",
-  "short_name": "Kya Khayen",
+  "name": "Kya Khayen? - Your Ultimate Global Recipe Hub",
+  "short_name": "Kya Khayen?",
   "icons": [
     {
       "src": "/icons-192.png",
@@ -19,8 +19,8 @@
       "type": "image/png"
     }
   ],
-  "theme_color": "#FFFFFF",
-  "background_color": "#FFFFFF",
+  "theme_color": "#ef4542",
+  "background_color": "#ef4542",
   "start_url": "/",
   "display": "standalone",
   "orientation": "portrait"

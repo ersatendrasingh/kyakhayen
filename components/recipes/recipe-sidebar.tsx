@@ -16,18 +16,16 @@ const RecipeSidebar = ({
 }: RecipeSidebarProps) => {
   return (
     <div className="w-full py-10 lg:py-8 mb-7 md:mb-2 xl:mb-2">
-      <Container>
-        <RecipeSidebarWidget
-          title="Recipe by food preference"
-          widgetItems={recipeCategories}
-          type="category"
-        />
-        <RecipeSidebarWidget
-          title="Recipe by meal time"
-          widgetItems={recipeMealTimes}
-          type="mealTime"
-        />
-      </Container>
+      <RecipeSidebarWidget
+        title="Recipe by food preference"
+        widgetItems={recipeCategories}
+        type="category"
+      />
+      <RecipeSidebarWidget
+        title="Recipe by meal time"
+        widgetItems={recipeMealTimes}
+        type="mealTime"
+      />
     </div>
   );
 };

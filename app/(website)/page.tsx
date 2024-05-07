@@ -28,6 +28,10 @@ export const metadata: Metadata = {
   description:
     "Explore a world of culinary delights with our vast collection of recipes. From traditional cuisines to international favorites, find inspiration for every meal.",
   keywords: [
+    "kyakhayen",
+    "kya khayen",
+    "kya khayen recipes",
+    "kya khayen healthy recipes",
     "healthy diet plan for weight loss",
     "best diet plan for weight loss",
     "diet meal plans for weight loss",
