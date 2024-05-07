@@ -33,10 +33,13 @@ export async function generateMetadata(
 
   // optionally access and extend (rather than replace) parent metadata
   const previousImages = (await parent).openGraph?.images || [];
+  const plainTextDescription = recipe?.description!.replace(/<[^>]*>/g, "");
 
+  // Meta description length limit set karna
+  const metaDescription = plainTextDescription!.substring(0, 160);
   return {
     title: recipe?.title,
-    description: recipe?.description,
+    description: metaDescription,
     keywords: [
       "kya khayen healthy recipes",
       "healthy diet plan for weight loss",
@@ -47,14 +50,14 @@ export async function generateMetadata(
     ],
     openGraph: {
       title: recipe?.title,
-      description: recipe?.description!.substring(0, 160),
+      description: metaDescription,
       url: `${process.env.NEXT_PUBLIC_APP_URL}/recipes/${recipeSlug}`,
       type: "article",
       images: [recipe?.imageUrl as string, ...previousImages],
     },
     twitter: {
       title: recipe?.title,
-      description: recipe?.description!.substring(0, 160),
+      description: metaDescription,
       images: [recipe?.imageUrl as string, ...previousImages],
       card: "summary_large_image",
     },
