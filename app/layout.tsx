@@ -21,7 +21,7 @@ const meta = {
     "Kya Khayen - Your Ultimate Global Recipe Hub: Desi, International, and Fusion Flavors",
   description:
     "Kya Khayen brings the best of global cuisines to your fingertips. From the warmth of Indian kitchens to the sophistication of international flavors, find inspiration for every meal.",
-  image: `${process.env.NEXT_PUBLIC_APP_URL}/meta-images/home-page.jpg`,
+  image: `${process.env.NEXT_PUBLIC_APP_URL}/meta-images/home.png`,
   keywords: [
     "kya khayen healthy recipes",
     "healthy diet plan for weight loss",
