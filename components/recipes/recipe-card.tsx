@@ -100,7 +100,13 @@ const RecipeCard = ({ recipe }: RecipeCardProps) => {
               {recipe.recipeDifficultyId && (
                 <div
                   className={cn(
-                    "bg-blue-500 text-white px-2 py-1 rounded-md text-xs font-semibold mr-2"
+                    "bg-blue-500 text-white px-2 py-1 rounded-md text-xs font-semibold mr-2",
+                    recipe.recipeDifficulty?.title === "Beginner" &&
+                      "bg-blue-500",
+                    recipe.recipeDifficulty?.title === "Intermediate" &&
+                      "bg-green-500",
+                    recipe.recipeDifficulty?.title === "Advanced" &&
+                      "bg-red-500"
                   )}
                 >
                   {recipe.recipeDifficulty && recipe.recipeDifficulty.title}
