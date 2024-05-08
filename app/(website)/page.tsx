@@ -20,7 +20,7 @@ const homeBanner: Banner = {
   description:
     "Unitus Health Academy, started by Dr Shikha Sharma,  is an online platform to bring different health sciences under one umbrella and provide upskilling opportunities to health professionals and health enthusiasts.",
   btnTxt: "Explore Courses",
-  image: "/assets/images/home-banner-2.webp",
+  image: "/assets/images/home-banner-3.webp",
 };
 const meta = {
   title: "Kya Khayen - Your Ultimate Global Recipe Hub",

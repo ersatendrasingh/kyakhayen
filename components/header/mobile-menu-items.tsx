@@ -1,7 +1,7 @@
 "use client";
 
 import MenuItem from "@/components/header/menu-item";
-import { SearchInput } from "@/components/header/search-input";
+import Logo from "@/components/logo";
 
 const navbarItems = [
   {
@@ -40,7 +40,7 @@ export const MobileMenuItems = () => {
   return (
     <nav className="flex flex-col h-full border-r shadow-sm overflow-y-auto ">
       <div className="border-b p-4 mt-6">
-        <SearchInput />
+        <Logo />
       </div>
       <div className="flex flex-col w-full">
         {navbarItems.map((item) => (

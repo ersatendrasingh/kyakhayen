@@ -6,6 +6,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { IoIosArrowForward } from "react-icons/io";
 
 import { cn } from "@/lib/utils";
+import { SheetClose } from "@/components/ui/sheet";
 
 interface SubMenuItemProps {
   label: string;
@@ -57,16 +58,18 @@ const MenuItem = ({ label, href, subItems }: MenuItemProps) => {
             <ul className="pl-6">
               {subItems.map((item, index) => (
                 <li key={index} className="text-sm text-gray-700">
-                  <Link
-                    href={item.href}
-                    className={cn(
-                      "flex items-center gap-x-2 py-3 text-sm font-[500] pl-6 transition-all text-websecondary hover:bg-rose-500/10 hover:text-websecondary border-b border-slate-200",
-                      isActive &&
-                        "bg-websecondary text-white hover:bg-websecondary-500 hover:text-white"
-                    )}
-                  >
-                    {item.label}
-                  </Link>
+                  <SheetClose asChild>
+                    <Link
+                      href={item.href}
+                      className={cn(
+                        "flex items-center gap-x-2 py-3 text-sm font-[500] pl-6 transition-all text-websecondary hover:bg-rose-500/10 hover:text-websecondary border-b border-slate-200",
+                        isActive &&
+                          "bg-websecondary text-white hover:bg-websecondary-500 hover:text-white"
+                      )}
+                    >
+                      {item.label}
+                    </Link>
+                  </SheetClose>
                 </li>
               ))}
             </ul>
@@ -74,16 +77,18 @@ const MenuItem = ({ label, href, subItems }: MenuItemProps) => {
         </div>
       ) : (
         <div>
-          <Link
-            href={href}
-            className={cn(
-              "flex items-center py-3 gap-x-2 text-sm font-[500] pl-6 transition-all text-websecondary hover:bg-rose-500/10 hover:text-websecondary border-b border-slate-200",
-              isActive &&
-                "bg-websecondary text-white hover:bg-websecondary-500 hover:text-white"
-            )}
-          >
-            {label}
-          </Link>
+          <SheetClose asChild>
+            <Link
+              href={href}
+              className={cn(
+                "flex items-center py-3 gap-x-2 text-sm font-[500] pl-6 transition-all text-websecondary hover:bg-rose-500/10 hover:text-websecondary border-b border-slate-200",
+                isActive &&
+                  "bg-websecondary text-white hover:bg-websecondary-500 hover:text-white"
+              )}
+            >
+              {label}
+            </Link>
+          </SheetClose>
         </div>
       )}
     </div>

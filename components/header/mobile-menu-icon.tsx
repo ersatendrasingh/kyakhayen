@@ -4,6 +4,7 @@ import { FaBars } from "react-icons/fa";
 
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { MobileMenuItems } from "@/components/header/mobile-menu-items";
+
 const MobileMenuIcon = () => {
   return (
     <div className="block md:hidden rounded-full border border-slate-300 p-3">

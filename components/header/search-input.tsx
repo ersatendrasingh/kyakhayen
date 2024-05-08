@@ -35,14 +35,16 @@ export const SearchInput = () => {
   }, [debouncedValue, currentCategoryId, router, pathname]);
 
   return (
-    <div className="relative mt-3">
-      <Search className="h-10 w-10 absolute top-3 left-3 text-slate-600" />
-      <Input
-        onChange={(e) => setValue(e.target.value)}
-        value={value}
-        className="w-full md:w-[600px] h-16 pl-16 rounded-full bg-slate-100 focus-visible:ring-slate-200"
-        placeholder="Search for a recipe..."
-      />
+    <div className="flex w-full md:w-[600px] items-center justify-center">
+      <div className="relative mt-3 w-full items-center justify-center">
+        <Search className="h-10 w-10 absolute top-3 left-3 text-slate-600" />
+        <Input
+          onChange={(e) => setValue(e.target.value)}
+          value={value}
+          className="w-full md:w-[600px] h-16 pl-16 rounded-full bg-slate-100 focus-visible:ring-slate-200"
+          placeholder="Search for a recipe..."
+        />
+      </div>
     </div>
   );
 };
