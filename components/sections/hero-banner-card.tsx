@@ -28,6 +28,7 @@ export default function HeroBannerCard({ banner, className }: BannerProps) {
       style={{
         backgroundImage: `url(${banner.image})`,
         backgroundSize: "cover",
+        backgroundPosition: "center",
       }}
     >
       <Container>
@@ -36,7 +37,7 @@ export default function HeroBannerCard({ banner, className }: BannerProps) {
             {banner.title}
           </h1>
 
-          <span className="text-sm sm:text-sm md:text-xl p-2 mb-4 rounded-full text-webprimary">
+          <span className="text-sm sm:text-sm md:text-xl p-2 mb-4 rounded-full text-black">
             {banner.spanTxt}
           </span>
           <SearchInput />

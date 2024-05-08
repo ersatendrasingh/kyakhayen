@@ -4,7 +4,7 @@ import Logo from "@/components/logo";
 import Container from "@/components/container";
 import { Navbar } from "@/components/header/navbar";
 import Usermenu from "@/components/header/user-menu";
-import CartIcon from "@/components/header/cart-icon";
+
 import SearchIcon from "@/components/header/search-icon";
 import MobileMenuIcon from "@/components/header/mobile-menu-icon";
 
