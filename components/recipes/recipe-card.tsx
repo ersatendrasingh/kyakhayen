@@ -65,7 +65,7 @@ const RecipeCard = ({ recipe }: RecipeCardProps) => {
   return (
     <div
       ref={ref}
-      className={`max-w-sm rounded-md overflow-hidden shadow-lg transform transition-transform hover:shadow-xl hover:-translate-y-1 ${
+      className={`max-w-sm min-h-[348px] rounded-md overflow-hidden shadow-lg transform transition-transform hover:shadow-xl hover:-translate-y-1 ${
         isInView ? "animate-slide-up" : ""
       }`}
     >
