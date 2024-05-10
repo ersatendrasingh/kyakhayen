@@ -9,27 +9,27 @@ import { ConfirmModal } from "@/components/modals/confirm-modal";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 
-interface UnitActionsProps {
-  unitId: string;
+interface CategoryActionsProps {
+  categoryId: string;
 }
 
-export const UnitActions = ({ unitId }: UnitActionsProps) => {
+export const CategoryActions = ({ categoryId }: CategoryActionsProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
   const onDelete = async () => {
     try {
       setIsLoading(true);
-      await axios.delete(`/api/recipes/units/${unitId}`);
-      toast.success("Unit deleted successfully", {
+      await axios.delete(`/api/ingredients/categories/${categoryId}`);
+      toast.success("Ingredient category deleted successfully", {
         position: "top-center",
         autoClose: 5000,
       });
 
-      router.push(`/admin/recipes/units`);
+      router.push(`/admin/ingredients/categories`);
       router.refresh();
     } catch (error) {
-      toast.error("Something went wrong while deleting unit", {
+      toast.error("Something went wrong while deleting ingredient category", {
         position: "top-center",
         autoClose: 5000,
       });

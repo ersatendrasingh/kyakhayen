@@ -265,6 +265,51 @@ model recipeDietType {
   dietType   DietTypes @relation(fields: [dietTypeId], references: [id], onDelete: Cascade)
 }
 
+model Ingredients {
+  id                   String @id @default(uuid())
+  name                 String
+  calories             Float?
+  carbohydrate         Float?
+  totalFat             Float?
+  dietaryFiber         Float?
+  protein              Float?
+  vitaminA             Float?
+  ascorbicAcids        Float?
+  vitaminD             Float?
+  tocopherolEquivalent Float?
+  vitaminK             Float?
+  thiamine             Float?
+  riboflavin           Float?
+  totalB6              Float?
+  folates              Float?
+  calcium              Float?
+  iron                 Float?
+  phophorus            Float?
+  potassium            Float?
+  sodium               Float?
+  zinc                 Float?
+
+  isPublished Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  IngredientCategories   IngredientCategories? @relation(fields: [ingredientCategoriesId], references: [id])
+  ingredientCategoriesId String?
+}
+
+model IngredientCategories {
+  id         String        @id @default(uuid())
+  name       String        @unique
+  slug       String        @unique
+  ingredient Ingredients[]
+}
+
+model IngredientsForm {
+  id   String @id @default(uuid())
+  name String @unique
+}
+
 enum UserRole {
   ADMIN
   USER

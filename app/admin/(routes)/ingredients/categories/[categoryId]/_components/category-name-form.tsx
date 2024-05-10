@@ -13,18 +13,21 @@ import { Pencil } from "lucide-react";
 import { useState } from "react";
 import axios from "axios";
 
-interface UnitNameFormProps {
+interface CategoryNameFormProps {
   initialData: {
-    title: string;
+    name: string;
   };
-  unitId: string;
+  categoryId: string;
 }
 
 const formSchema = z.object({
-  title: z.string().min(1, { message: "Unit name is required" }),
+  name: z.string().min(1, { message: "Category name is required" }),
 });
 
-export const UnitNameForm = ({ initialData, unitId }: UnitNameFormProps) => {
+export const CategoryNameForm = ({
+  initialData,
+  categoryId,
+}: CategoryNameFormProps) => {
   const [isEditing, setIsEditing] = useState(false);
 
   const toggleEdit = () => setIsEditing((current) => !current);
@@ -38,15 +41,15 @@ export const UnitNameForm = ({ initialData, unitId }: UnitNameFormProps) => {
   const { isSubmitting, isValid } = form.formState;
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
-      await axios.patch(`/api/recipes/units/${unitId}`, values);
-      toast.success("Unit name updated successfully", {
+      await axios.patch(`/api/ingredients/categories/${categoryId}`, values);
+      toast.success("Category name updated successfully", {
         position: "top-center",
         autoClose: 5000,
       });
       toggleEdit();
       router.refresh();
     } catch {
-      toast.error("Something went wrong while updating unit name", {
+      toast.error("Something went wrong while updating category name", {
         position: "top-center",
         autoClose: 5000,
       });
@@ -55,7 +58,7 @@ export const UnitNameForm = ({ initialData, unitId }: UnitNameFormProps) => {
   return (
     <div className="mt-6 border rounded-md p-4 bg-slate-100">
       <div className="flex items-center justify-between font-medium">
-        Unit name
+        Category name
         <Button onClick={toggleEdit} variant="ghost">
           {isEditing ? (
             <>Cancel</>
@@ -67,7 +70,7 @@ export const UnitNameForm = ({ initialData, unitId }: UnitNameFormProps) => {
           )}
         </Button>
       </div>
-      {!isEditing && <p className="text-sm mt-2">{initialData.title}</p>}
+      {!isEditing && <p className="text-sm mt-2">{initialData.name}</p>}
       {isEditing && (
         <Form {...form}>
           <form
@@ -76,13 +79,13 @@ export const UnitNameForm = ({ initialData, unitId }: UnitNameFormProps) => {
           >
             <FormField
               control={form.control}
-              name="title"
+              name="name"
               render={({ field }) => (
                 <FormItem>
                   <FormControl>
                     <Input
                       disabled={isSubmitting}
-                      placeholder="e.g. 'Kilograms'"
+                      placeholder="e.g. 'Fruits and Vegetables'"
                       {...field}
                     />
                   </FormControl>

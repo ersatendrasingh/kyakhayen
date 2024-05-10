@@ -13,21 +13,18 @@ import { Pencil } from "lucide-react";
 import { useState } from "react";
 import axios from "axios";
 
-interface UnitShortNameFormProps {
+interface UnitNameFormProps {
   initialData: {
-    shortName: string;
+    title: string;
   };
   unitId: string;
 }
 
 const formSchema = z.object({
-  shortName: z.string().min(1, { message: "Unit short name is required" }),
+  title: z.string().min(1, { message: "Unit name is required" }),
 });
 
-export const UnitShortNameForm = ({
-  initialData,
-  unitId,
-}: UnitShortNameFormProps) => {
+export const UnitNameForm = ({ initialData, unitId }: UnitNameFormProps) => {
   const [isEditing, setIsEditing] = useState(false);
 
   const toggleEdit = () => setIsEditing((current) => !current);
@@ -41,15 +38,15 @@ export const UnitShortNameForm = ({
   const { isSubmitting, isValid } = form.formState;
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
-      await axios.patch(`/api/recipes/units/${unitId}`, values);
-      toast.success("Unit short name updated successfully", {
+      await axios.patch(`/api/ingredients/units/${unitId}`, values);
+      toast.success("Unit name updated successfully", {
         position: "top-center",
         autoClose: 5000,
       });
       toggleEdit();
       router.refresh();
     } catch {
-      toast.error("Something went wrong while updating unit short name", {
+      toast.error("Something went wrong while updating unit name", {
         position: "top-center",
         autoClose: 5000,
       });
@@ -58,19 +55,19 @@ export const UnitShortNameForm = ({
   return (
     <div className="mt-6 border rounded-md p-4 bg-slate-100">
       <div className="flex items-center justify-between font-medium">
-        Unit short name
+        Unit name
         <Button onClick={toggleEdit} variant="ghost">
           {isEditing ? (
             <>Cancel</>
           ) : (
             <>
               <Pencil className="w-6 h-6 pr-2" />
-              Edit short name
+              Edit name
             </>
           )}
         </Button>
       </div>
-      {!isEditing && <p className="text-sm mt-2">{initialData.shortName}</p>}
+      {!isEditing && <p className="text-sm mt-2">{initialData.title}</p>}
       {isEditing && (
         <Form {...form}>
           <form
@@ -79,13 +76,13 @@ export const UnitShortNameForm = ({
           >
             <FormField
               control={form.control}
-              name="shortName"
+              name="title"
               render={({ field }) => (
                 <FormItem>
                   <FormControl>
                     <Input
                       disabled={isSubmitting}
-                      placeholder="e.g. 'KG'"
+                      placeholder="e.g. 'Kilograms'"
                       {...field}
                     />
                   </FormControl>

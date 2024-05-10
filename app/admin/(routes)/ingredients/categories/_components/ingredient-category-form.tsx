@@ -4,14 +4,13 @@ import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
+
 import axios from "axios";
 import { toast } from "react-toastify";
 import { Button } from "@/components/ui/button";
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -20,35 +19,33 @@ import {
 import { Input } from "@/components/ui/input";
 
 const formSchema = z.object({
-  title: z.string().min(1, { message: "Category Name is required" }),
-  shortName: z.string().min(1, { message: "Short name is required" }),
+  name: z.string().min(1, { message: "Category Name is required" }),
 });
 
-const UnitsForm = () => {
+const IngredientCategoryForm = () => {
   const router = useRouter();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      title: "",
-      shortName: "",
+      name: "",
     },
   });
   const { isSubmitting, isValid } = form.formState;
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
-      const response = await axios.post("/api/recipes/units", values);
+      const response = await axios.post("/api/ingredients/categories", values);
       if (response.status === 200) {
         form.reset();
 
         router.refresh();
-        toast.success("Units created successfully", {
+        toast.success("Ingredient category created successfully", {
           position: "top-center",
           autoClose: 5000,
         });
       }
     } catch {
-      toast.error("Something went wrong while creating units", {
+      toast.error("Something went wrong while creating ingredient category", {
         position: "top-center",
         autoClose: 5000,
       });
@@ -58,7 +55,7 @@ const UnitsForm = () => {
   return (
     <div className="p-6">
       <div>
-        <h1 className="text-2xl">Manage Units</h1>
+        <h1 className="text-2xl">Ingredients Category</h1>
 
         <Form {...form}>
           <form
@@ -67,32 +64,14 @@ const UnitsForm = () => {
           >
             <FormField
               control={form.control}
-              name="title"
+              name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Unit Name</FormLabel>
+                  <FormLabel>Category Name</FormLabel>
                   <FormControl>
                     <Input
                       disabled={isSubmitting}
-                      placeholder="e.g. 'Kilograms'"
-                      {...field}
-                    />
-                  </FormControl>
-
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="shortName"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Short Name</FormLabel>
-                  <FormControl>
-                    <Input
-                      disabled={isSubmitting}
-                      placeholder="e.g. 'KG'"
+                      placeholder="e.g. 'Fruits & Vegetables'"
                       {...field}
                     />
                   </FormControl>
@@ -114,4 +93,4 @@ const UnitsForm = () => {
   );
 };
 
-export default UnitsForm;
+export default IngredientCategoryForm;
