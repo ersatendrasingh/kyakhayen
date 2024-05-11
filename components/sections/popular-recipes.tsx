@@ -1,7 +1,6 @@
 import { GetRecipes } from "@/actions/get-recipes";
 import Container from "@/components/container";
-
-import RecipeCard from "../recipes/recipe-card";
+import RecipeCard from "@/components/recipes/recipe-card";
 
 const PopularRecipes = async () => {
   const recipes = await GetRecipes({});

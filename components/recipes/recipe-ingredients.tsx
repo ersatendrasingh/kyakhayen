@@ -2,24 +2,32 @@
 
 import {
   RecipeIngredients as RecipeIngredientsType,
+  IngredientsForm as IngredientsFormType,
+  Ingredients,
   Units,
 } from "@prisma/client";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 
-type RecipeIngredients = {
-  id: string;
-  name: string;
-  quantity: number;
-  position: number;
-  recipeId: string;
-  unitId: string;
-  notes?: string | null;
-  unit: Units;
+// type RecipeIngredients = {
+//   id: string;
+//   name: string;
+//   quantity: number;
+//   position: number;
+//   recipeId: string;
+//   unitId: string;
+//   notes?: string | null;
+//   unit: Units;
+// };
+
+type RecipeIngredientType = RecipeIngredientsType & {
+  unit?: Units;
+  ingredientForm?: IngredientsFormType;
+  ingredient?: Ingredients;
 };
 interface RecipeIngredientsProps {
-  recipeIngredients: RecipeIngredients[];
+  recipeIngredients: RecipeIngredientType[];
   quantity: number;
 }
 
@@ -70,8 +78,10 @@ const RecipeIngredients = ({
                   {Number(ingredient.quantity) * quantity}
                 </span>
                 <span className="mr-1">{ingredient.unit?.title}</span>
-                <span className="mr-1">{ingredient.name}</span>
-                <span className="mr-1">({ingredient.notes})</span>
+                <span className="mr-1">{ingredient.ingredient?.name}</span>
+                <span className="mr-1">
+                  ({ingredient.ingredientForm?.name})
+                </span>
               </label>
             </li>
           ))}

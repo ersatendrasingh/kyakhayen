@@ -8,30 +8,31 @@ datasource db {
 }
 
 model Recipes {
-  id                    String                 @id @default(uuid())
-  title                 String                 @db.Text
-  slug                  String                 @unique
-  description           String?                @db.LongText
-  imageUrl              String?
-  RecipeCategories      RecipeCategories?      @relation(fields: [recipeCategoriesId], references: [id])
-  recipeCategoriesId    String?
-  recipeDifficultyId    String?
-  recipeDifficulty      RecipeDifficulty?      @relation(fields: [recipeDifficultyId], references: [id])
-  recipeIngredients     RecipeIngredients[]
-  recipeMethods         RecipeMethods[]
-  recipeSeasons         RecipeSeasons?         @relation(fields: [recipeSeasonsId], references: [id])
-  recipeSeasonsId       String?
-  recipeCookingTime     RecipeCookingTime?
-  recipeCookingMethods  RecipeCookingMethod[]
-  recipeCuisine         RecipeCuisines[]
-  recipeAllergies       RecipeAllergies[]
-  recipePrakriti        RecipePrakriti[]
-  recipeHealthGoals     recipeHealthGoals[]
-  recipeMealTime        recipeMealTime[]
-  recipeDisease         recipeDisease[]
-  recipeNutrient        recipeNutrient[]
-  recipeDietType        recipeDietType[]
-  recipeNutritionValues RecipeNutritionValues?
+  id                   String                 @id @default(uuid())
+  title                String                 @db.Text
+  slug                 String                 @unique
+  description          String?                @db.LongText
+  imageUrl             String?
+  RecipeCategories     RecipeCategories?      @relation(fields: [recipeCategoriesId], references: [id])
+  recipeCategoriesId   String?
+  recipeDifficultyId   String?
+  recipeSeasonsId      String?
+  recipeDifficulty     RecipeDifficulty?      @relation(fields: [recipeDifficultyId], references: [id])
+  recipeIngredients    RecipeIngredients[]
+  recipeMethods        RecipeMethods[]
+  recipeHealthBenefits RecipeHealthBenefits[]
+  recipeSeasons        RecipeSeasons?         @relation(fields: [recipeSeasonsId], references: [id])
+  recipeCookingTime    RecipeCookingTime?
+  recipeCookingMethods RecipeCookingMethod[]
+  recipeCuisine        RecipeCuisines[]
+  recipeAllergies      RecipeAllergies[]
+  recipePrakriti       RecipePrakriti[]
+  recipeHealthGoals    recipeHealthGoals[]
+  recipeMealTime       recipeMealTime[]
+  recipeDisease        recipeDisease[]
+  recipeNutrient       recipeNutrient[]
+  recipeDietType       recipeDietType[]
+  recipeRecipeType     recipeRecipeType[]
 
   isPublished Boolean @default(false)
 
@@ -48,22 +49,25 @@ model RecipeCategories {
 }
 
 model Units {
-  id                String              @id @default(uuid())
-  title             String              @unique
-  shortName         String              @unique
-  RecipeIngredients RecipeIngredients[]
+  id                         String                       @id @default(uuid())
+  title                      String                       @unique
+  shortName                  String                       @unique
+  RecipeIngredients          RecipeIngredients[]
+  IngredientUnitMeasurements IngredientUnitMeasurements[]
 }
 
 model RecipeIngredients {
-  id       String  @id @default(uuid())
-  name     String
-  quantity Float
-  notes    String? @db.Text
-  unitId   String
-  position Int
-  unit     Units   @relation(fields: [unitId], references: [id])
-  recipeId String
-  recipe   Recipes @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+  id             String          @id @default(uuid())
+  ingredientId   String
+  ingredient     Ingredients     @relation(fields: [ingredientId], references: [id])
+  quantity       Float
+  formId         String
+  ingredientForm IngredientsForm @relation(fields: [formId], references: [id])
+  unitId         String
+  position       Int
+  unit           Units           @relation(fields: [unitId], references: [id])
+  recipeId       String
+  recipe         Recipes         @relation(fields: [recipeId], references: [id], onDelete: Cascade)
 }
 
 model RecipeMethods {
@@ -80,6 +84,14 @@ model RecipeMethods {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model RecipeHealthBenefits {
+  id       String  @id @default(uuid())
+  title    String  @db.Text
+  position Int
+  recipeId String
+  recipe   Recipes @relation(fields: [recipeId], references: [id], onDelete: Cascade)
 }
 
 model RecipeDifficulty {
@@ -101,19 +113,6 @@ model RecipeCookingTime {
   restTime Int
   recipe   Recipes @relation(fields: [recipeId], references: [id], onDelete: Cascade)
   recipeId String
-
-  @@unique([recipeId])
-}
-
-model RecipeNutritionValues {
-  id           String  @id @default(uuid())
-  calories     Float
-  carbohydrate Float
-  totalFat     Float
-  dietaryFiber Float
-  protein      Float
-  recipe       Recipes @relation(fields: [recipeId], references: [id], onDelete: Cascade)
-  recipeId     String
 
   @@unique([recipeId])
 }
@@ -263,6 +262,79 @@ model recipeDietType {
   dietTypeId String
   recipe     Recipes   @relation(fields: [recipeId], references: [id], onDelete: Cascade)
   dietType   DietTypes @relation(fields: [dietTypeId], references: [id], onDelete: Cascade)
+}
+
+model RecipeTypes {
+  id               String             @id @default(uuid())
+  title            String
+  slug             String             @unique
+  imageUrl         String?
+  recipeRecipeType recipeRecipeType[]
+}
+
+model recipeRecipeType {
+  id           String      @id @default(uuid())
+  recipeId     String
+  recipeTypeId String
+  recipe       Recipes     @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+  recipeType   RecipeTypes @relation(fields: [recipeTypeId], references: [id], onDelete: Cascade)
+}
+
+model Ingredients {
+  id                   String @id @default(uuid())
+  name                 String
+  calories             Float?
+  carbohydrate         Float?
+  totalFat             Float?
+  dietaryFiber         Float?
+  protein              Float?
+  vitaminA             Float?
+  ascorbicAcids        Float?
+  vitaminD             Float?
+  tocopherolEquivalent Float?
+  vitaminK             Float?
+  thiamine             Float?
+  riboflavin           Float?
+  totalB6              Float?
+  folates              Float?
+  calcium              Float?
+  iron                 Float?
+  phophorus            Float?
+  potassium            Float?
+  sodium               Float?
+  zinc                 Float?
+
+  IngredientCategories   IngredientCategories? @relation(fields: [ingredientCategoriesId], references: [id])
+  ingredientCategoriesId String?
+  RecipeIngredients      RecipeIngredients[]
+
+  isPublished Boolean @default(false)
+
+  createdAt                  DateTime                     @default(now())
+  updatedAt                  DateTime                     @updatedAt
+  IngredientUnitMeasurements IngredientUnitMeasurements[]
+}
+
+model IngredientUnitMeasurements {
+  id           String      @id @default(uuid())
+  ingredientId String
+  unitId       String
+  unit         Units       @relation(fields: [unitId], references: [id])
+  ingredient   Ingredients @relation(fields: [ingredientId], references: [id])
+  values       Float
+}
+
+model IngredientCategories {
+  id         String        @id @default(uuid())
+  name       String        @unique
+  slug       String        @unique
+  ingredient Ingredients[]
+}
+
+model IngredientsForm {
+  id                String              @id @default(uuid())
+  name              String              @unique
+  RecipeIngredients RecipeIngredients[]
 }
 
 enum UserRole {

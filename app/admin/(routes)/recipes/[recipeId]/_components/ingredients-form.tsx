@@ -5,47 +5,62 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
-import { Loader2, Pencil, PlusCircleIcon } from "lucide-react";
+import Select from "react-select";
+
+import { Loader2, PlusCircleIcon } from "lucide-react";
 import { useState } from "react";
 import axios from "axios";
-import { RecipeIngredients, Recipes, Units } from "@prisma/client";
+import {
+  Ingredients,
+  IngredientsForm as IngredientsFormType,
+  RecipeIngredients,
+  Recipes,
+  Units,
+} from "@prisma/client";
 
 import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem } from "@/components/ui/form";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+
 import { Input } from "@/components/ui/input";
 
 import { cn } from "@/lib/utils";
-import ChapterList from "./ingredients-list";
+
 import IngredientsList from "./ingredients-list";
+
 type RecipeIngredient = RecipeIngredients & {
   unit: Units;
+  ingredientForm: IngredientsFormType;
+  ingredient: Ingredients;
 };
 interface IngredientsFormProps {
   initialData: Recipes & {
     recipeIngredients: RecipeIngredient[];
   };
   recipeId: string;
-  options: { title: string; shortName: string; value: string }[];
+  options: { label: string; value: string }[];
+  ingredients: {
+    value: string;
+    label: string;
+  }[];
+  forms: {
+    value: string;
+    label: string;
+  }[];
 }
 
 const formSchema = z.object({
   quantity: z.coerce.number(),
   unitId: z.string().min(1),
-  name: z.string().min(1, { message: "Name is required" }),
-  notes: z.string().optional(),
+  ingredientId: z.string().min(1),
+  formId: z.string().min(1),
 });
 
 export const IngredientsForm = ({
   initialData,
   recipeId,
   options,
+  ingredients,
+  forms,
 }: IngredientsFormProps) => {
   const [isCreating, setIsCreating] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
@@ -57,9 +72,9 @@ export const IngredientsForm = ({
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      name: "",
+      ingredientId: "",
       unitId: "",
-      notes: "",
+      formId: "",
     },
   });
   const { isSubmitting, isValid } = form.formState;
@@ -107,6 +122,11 @@ export const IngredientsForm = ({
     router.push(`/admin/recipes/${recipeId}/ingredients/${id}`);
   };
 
+  const selectOptions = ingredients.map((option) => ({
+    label: option.label,
+    value: option.value,
+  }));
+
   return (
     <div className="relative mt-6 border rounded-md p-4 bg-slate-100">
       {isUpdating && (
@@ -135,7 +155,31 @@ export const IngredientsForm = ({
             className="mt-4 space-y-4"
           >
             <div className="flex flex-wrap -mx-2 mb-4">
-              <div className="w-full md:w-1/6 px-2 mb-4 md:mb-0">
+              <div className="w-full px-2 mb-4 md:mb-0">
+                <FormField
+                  control={form.control}
+                  name="ingredientId"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormControl>
+                        <Select
+                          options={selectOptions}
+                          value={ingredients.find(
+                            (option) => option.value === field.value
+                          )}
+                          onChange={(selectedOption) => {
+                            field.onChange(selectedOption?.value);
+                          }}
+                          placeholder="Select Ingredient"
+                        />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+              </div>
+            </div>
+            <div className="flex flex-wrap -mx-2 mb-4">
+              <div className="w-full md:w-1/5 px-2 mb-4 md:mb-0">
                 <FormField
                   control={form.control}
                   name="quantity"
@@ -154,68 +198,45 @@ export const IngredientsForm = ({
                   )}
                 />
               </div>
-              <div className="w-full md:w-1/6 px-2 mb-4 md:mb-0">
+              <div className="w-full md:w-2/5 px-2 mb-4 md:mb-0">
                 <FormField
                   control={form.control}
                   name="unitId"
                   render={({ field }) => (
                     <FormItem>
                       <FormControl>
-                        <Select onValueChange={field.onChange}>
-                          <SelectTrigger className="w-full h-10">
-                            <SelectValue placeholder="Unit" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {options.length > 0 && (
-                              <SelectItem value="placeholder" disabled>
-                                Unit
-                              </SelectItem>
-                            )}
-                            {options.map((option) => {
-                              return (
-                                <SelectItem
-                                  key={option.value}
-                                  value={option.value}
-                                >
-                                  {`${option.title} (${option.shortName})`}
-                                </SelectItem>
-                              );
-                            })}
-                          </SelectContent>
-                        </Select>
-                      </FormControl>
-                    </FormItem>
-                  )}
-                />
-              </div>
-              <div className="w-full md:w-1/3 px-2 mb-4 md:mb-0">
-                <FormField
-                  control={form.control}
-                  name="name"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormControl>
-                        <Input
-                          disabled={isSubmitting}
-                          {...field}
-                          placeholder="Ingredient name"
+                        <Select
+                          options={options}
+                          value={options.find(
+                            (option) => option.value === field.value
+                          )}
+                          onChange={(selectedOption) => {
+                            field.onChange(selectedOption?.value);
+                          }}
+                          placeholder="Select Unit"
                         />
                       </FormControl>
                     </FormItem>
                   )}
                 />
               </div>
-              <div className="w-full md:w-1/3 px-2 mb-4 md:mb-0">
+
+              <div className="w-full md:w-2/5 px-2 mb-4 md:mb-0">
                 <FormField
                   control={form.control}
-                  name="notes"
+                  name="formId"
                   render={({ field }) => (
                     <FormItem>
                       <FormControl>
-                        <Input
-                          disabled={isSubmitting}
-                          {...field}
-                          placeholder="Notes"
+                        <Select
+                          options={forms}
+                          value={forms.find(
+                            (formData) => formData.value === field.value
+                          )}
+                          onChange={(selectedOption) => {
+                            field.onChange(selectedOption?.value);
+                          }}
+                          placeholder="Select Form"
                         />
                       </FormControl>
                     </FormItem>
@@ -250,6 +271,8 @@ export const IngredientsForm = ({
             recipeId={recipeId}
             items={initialData.recipeIngredients || []}
             options={options}
+            ingredientsData={ingredients}
+            forms={forms}
           />
         </div>
       )}

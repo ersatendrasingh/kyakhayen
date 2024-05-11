@@ -22,6 +22,7 @@ interface FileUploadProps {
   nutrientId?: string | null;
   diseaseId?: string | null;
   dietTypeId?: string | null;
+  recipeTypeId?: string | null;
   acceptedFileTypes: string[];
   multiple?: boolean;
   onChange: (fileUrl: string) => void;
@@ -41,6 +42,7 @@ const FileUpload = ({
   nutrientId,
   diseaseId,
   dietTypeId,
+  recipeTypeId,
   acceptedFileTypes,
   multiple,
   onChange,
@@ -86,6 +88,7 @@ const FileUpload = ({
       formData.append("nutrientId", nutrientId || "");
       formData.append("diseaseId", diseaseId || "");
       formData.append("dietTypeId", dietTypeId || "");
+      formData.append("recipeTypeId", recipeTypeId || "");
 
       const response = await axios.post("/api/s3upload", formData, {
         headers: {

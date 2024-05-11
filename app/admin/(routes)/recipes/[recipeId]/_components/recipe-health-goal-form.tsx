@@ -5,8 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
-import { FaCloudSunRain } from "react-icons/fa";
-import { Pencil, PlusCircleIcon, Signal } from "lucide-react";
+import { Pencil, PlusCircleIcon } from "lucide-react";
 import { useState } from "react";
 import axios from "axios";
 

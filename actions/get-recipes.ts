@@ -1,72 +1,6 @@
-import {
-  CookingMethods,
-  Cuisines,
-  DietTypes,
-  Nutrient,
-  RecipeCategories,
-  RecipeCookingTime,
-  RecipeDifficulty,
-  RecipeMethods,
-  RecipeNutritionValues,
-  RecipeSeasons,
-  Recipes,
-  Units,
-} from "@prisma/client";
-
 import { db } from "@/lib/db";
-import { currentUser } from "@/lib/auth";
 
-type RecipeIngredients = {
-  id: string;
-  name: string;
-  quantity: number;
-  position: number;
-  recipeId: string;
-  unitId: string;
-  notes?: string | null;
-  unit: Units;
-};
-
-type RecipeCookingMethod = {
-  id: string;
-  cookingMethodId: string;
-  recipeId: string;
-  cookingMethod: CookingMethods;
-};
-
-type RecipeCuisines = {
-  id: string;
-  cuisineId: string;
-  recipeId: string;
-  cuisine: Cuisines;
-};
-
-type RecipeDietType = {
-  id: string;
-  dietTypeId: string;
-  recipeId: string;
-  dietType: DietTypes;
-};
-type RecipeNutrient = {
-  id: string;
-  recipeId: string;
-  nutrientId: string;
-  nutrient: Nutrient;
-};
-
-type RecipeWithCategory = Recipes & {
-  RecipeCategories: RecipeCategories | null;
-  recipeIngredients: RecipeIngredients[];
-  recipeMethods: RecipeMethods[];
-  recipeCookingTime: RecipeCookingTime | null;
-  recipeNutritionValues: RecipeNutritionValues | null;
-  recipeDifficulty: RecipeDifficulty | null;
-  recipeSeasons: RecipeSeasons | null;
-  recipeCookingMethods: RecipeCookingMethod[] | null;
-  recipeCuisine: RecipeCuisines[] | null;
-  recipeDietType: RecipeDietType[] | null;
-  recipeNutrient: RecipeNutrient[] | null;
-};
+import { RecipeWithCategory } from "@/types/recipe";
 
 type GetRecipes = {
   title?: string;
@@ -101,12 +35,23 @@ export const GetRecipes = async ({
           recipeIngredients: {
             include: {
               unit: true,
+              ingredientForm: true,
+              ingredient: {
+                include: {
+                  IngredientUnitMeasurements: true,
+                },
+              },
             },
             orderBy: {
               position: "asc",
             },
           },
           recipeMethods: {
+            orderBy: {
+              position: "asc",
+            },
+          },
+          recipeHealthBenefits: {
             orderBy: {
               position: "asc",
             },
@@ -126,13 +71,18 @@ export const GetRecipes = async ({
               dietType: true,
             },
           },
+          recipeRecipeType: {
+            include: {
+              recipeType: true,
+            },
+          },
           recipeNutrient: {
             include: {
               nutrient: true,
             },
           },
           recipeCookingTime: true,
-          recipeNutritionValues: true,
+
           recipeDifficulty: true,
           recipeSeasons: true,
         },
@@ -162,12 +112,23 @@ export const GetRecipes = async ({
           recipeIngredients: {
             include: {
               unit: true,
+              ingredientForm: true,
+              ingredient: {
+                include: {
+                  IngredientUnitMeasurements: true,
+                },
+              },
             },
             orderBy: {
               position: "asc",
             },
           },
           recipeMethods: {
+            orderBy: {
+              position: "asc",
+            },
+          },
+          recipeHealthBenefits: {
             orderBy: {
               position: "asc",
             },
@@ -187,13 +148,18 @@ export const GetRecipes = async ({
               dietType: true,
             },
           },
+          recipeRecipeType: {
+            include: {
+              recipeType: true,
+            },
+          },
           recipeNutrient: {
             include: {
               nutrient: true,
             },
           },
           recipeCookingTime: true,
-          recipeNutritionValues: true,
+
           recipeDifficulty: true,
           recipeSeasons: true,
         },
@@ -215,12 +181,23 @@ export const GetRecipes = async ({
           recipeIngredients: {
             include: {
               unit: true,
+              ingredientForm: true,
+              ingredient: {
+                include: {
+                  IngredientUnitMeasurements: true,
+                },
+              },
             },
             orderBy: {
               position: "asc",
             },
           },
           recipeMethods: {
+            orderBy: {
+              position: "asc",
+            },
+          },
+          recipeHealthBenefits: {
             orderBy: {
               position: "asc",
             },
@@ -240,13 +217,18 @@ export const GetRecipes = async ({
               dietType: true,
             },
           },
+          recipeRecipeType: {
+            include: {
+              recipeType: true,
+            },
+          },
           recipeNutrient: {
             include: {
               nutrient: true,
             },
           },
           recipeCookingTime: true,
-          recipeNutritionValues: true,
+
           recipeDifficulty: true,
           recipeSeasons: true,
         },

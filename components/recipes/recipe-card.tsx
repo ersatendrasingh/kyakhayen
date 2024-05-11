@@ -4,48 +4,11 @@ import Image from "next/image";
 import { useInView } from "react-intersection-observer";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-
-import {
-  RecipeCategories,
-  RecipeCookingTime,
-  RecipeDifficulty,
-  Recipes,
-} from "@prisma/client";
-import { cn } from "@/lib/utils";
 import { AlarmClock } from "lucide-react";
+
+import { cn } from "@/lib/utils";
 import { formatTime } from "@/lib/formatTime";
-
-type RecipeDietType = {
-  id: string;
-  recipeId: string;
-  dietTypeId: string;
-  dietType: {
-    id: string;
-    title: string;
-    slug: string;
-    imageUrl: string | null;
-  };
-};
-
-type RecipeNutrient = {
-  id: string;
-  recipeId: string;
-  nutrientId: string;
-  nutrient: {
-    id: string;
-    title: string;
-    slug: string;
-    imageUrl: string | null;
-  };
-};
-
-type RecipeWithCategory = Recipes & {
-  RecipeCategories: RecipeCategories | null;
-  recipeCookingTime: RecipeCookingTime | null;
-  recipeDifficulty: RecipeDifficulty | null;
-  recipeDietType: RecipeDietType[] | null;
-  recipeNutrient: RecipeNutrient[] | null;
-};
+import { RecipeWithCategory } from "@/types/recipe";
 
 interface RecipeCardProps {
   recipe: RecipeWithCategory;
@@ -162,8 +125,6 @@ const RecipeCard = ({ recipe }: RecipeCardProps) => {
                 </>
               )}
             </div>
-
-            {/* Add any other relevant details here */}
           </div>
         </div>
       </Link>

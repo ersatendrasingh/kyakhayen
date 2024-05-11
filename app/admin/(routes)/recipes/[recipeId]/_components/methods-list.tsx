@@ -109,7 +109,7 @@ const MethodsList = ({
                     className={cn(
                       "flex items-center gap-x-2 bg-slate-200 border-slate-200 border text-slate-700 rounded-md mb-4 text-sm",
                       method.isPublished &&
-                        "bg-rose-100 border-rose-200 text-rose-700"
+                        "bg-emerald-100 border-emerald-200 text-emerald-700"
                     )}
                     ref={provided.innerRef}
                     {...provided.draggableProps}
@@ -118,7 +118,7 @@ const MethodsList = ({
                       className={cn(
                         "px-2 py-3 border-r border-r-slate-200 hover:bg-slate-300 rounded-l-md transition",
                         method.isPublished &&
-                          "border-r-rose-200 hover:bg-rose-200"
+                          "border-r-emerald-200 hover:bg-emerald-200"
                       )}
                       {...provided.dragHandleProps}
                     >
@@ -130,7 +130,7 @@ const MethodsList = ({
                       <Badge
                         className={cn(
                           "bg-slate-500",
-                          method.isPublished && "bg-rose-700"
+                          method.isPublished && "bg-emerald-700"
                         )}
                       >
                         {method.isPublished ? "Published" : "Draft"}

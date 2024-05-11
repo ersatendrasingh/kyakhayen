@@ -1,6 +1,6 @@
 "use client";
 
-import { CookingPot, LayoutDashboard } from "lucide-react";
+import { CookingPot, LayoutDashboard, Salad } from "lucide-react";
 import { AdminSidebarItem } from "./admin-sidebar-item";
 
 const routes = [
@@ -31,74 +31,95 @@ const routes = [
         label: "Manage Categories",
         href: "/admin/recipes/categories",
       },
+
       {
         id: 4,
-        label: "Manage Units",
-        href: "/admin/recipes/units",
-      },
-      {
-        id: 5,
         label: "Manage Cooking Methods",
         href: "/admin/recipes/cooking-methods",
       },
       {
-        id: 6,
+        id: 5,
         label: "Manage Cuisines",
         href: "/admin/recipes/cuisines",
       },
       {
-        id: 7,
+        id: 6,
         label: "Manage Allergies",
         href: "/admin/recipes/allergies",
       },
       {
-        id: 8,
+        id: 7,
         label: "Manage Prakriti",
         href: "/admin/recipes/prakriti",
       },
       {
-        id: 9,
+        id: 8,
         label: "Manage Health Goals",
         href: "/admin/recipes/health-goals",
       },
       {
-        id: 10,
+        id: 9,
         label: "Manage Diseases",
         href: "/admin/recipes/diseases",
       },
       {
-        id: 11,
+        id: 10,
         label: "Manage Meal Time",
         href: "/admin/recipes/meal-time",
       },
       {
-        id: 12,
+        id: 11,
         label: "Manage Nutrients",
         href: "/admin/recipes/nutrients",
       },
       {
-        id: 13,
+        id: 12,
         label: "Manage Diet Types",
         href: "/admin/recipes/diet-types",
+      },
+      {
+        id: 13,
+        label: "Manage Recipe Types",
+        href: "/admin/recipes/recipe-types",
+      },
+      {
+        id: 14,
+        label: "Manage Recipe Health Benefits",
+        href: "/admin/recipes/recipe-health-benefits",
       },
     ],
   },
 
   {
     id: 3,
-    icon: CookingPot,
-    label: "Coupons",
-    href: "/admin/coupons",
+    icon: Salad,
+    label: "Recipe Ingredients",
+    href: "/admin/ingredients",
     subMenuItems: [
       {
         id: 1,
-        label: "View All Coupons",
-        href: "/admin/coupons",
+        label: "View All Ingredients",
+        href: "/admin/ingredients",
       },
       {
         id: 2,
-        label: "Add New coupon",
-        href: "/admin/coupons/create",
+        label: "Add New ingredient",
+        href: "/admin/ingredients/create",
+      },
+      {
+        id: 3,
+        label: "Manage Ingredient Forms",
+        href: "/admin/ingredients/forms",
+      },
+      {
+        id: 3,
+        label: "Manage Ingredient Units",
+        href: "/admin/ingredients/units",
+      },
+      {
+        id: 3,
+        label: "Manage Ingredient Categories",
+        href: "/admin/ingredients/categories",
       },
     ],
   },

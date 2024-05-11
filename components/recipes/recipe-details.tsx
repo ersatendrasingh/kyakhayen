@@ -11,17 +11,20 @@ import {
   RecipeCookingTime,
   RecipeDifficulty,
   RecipeMethods as RecipeMethodType,
-  RecipeNutritionValues,
   RecipeSeasons,
   Recipes,
+  RecipeIngredients as RecipeIngredientsType,
+  IngredientsForm as IngredientsFormType,
+  Ingredients,
   Units,
+  IngredientUnitMeasurements,
 } from "@prisma/client";
 import RecipeOverview from "@/components/recipes/recipe-overview";
-import Container from "@/components/container";
-import RecipeContent from "@/components/recipes/recipe-ingredients";
 import RecipeIngredients from "@/components/recipes/recipe-ingredients";
 import RecipeMethods from "./recipe-methods";
 import RecipeNutritionFacts from "./recipe-nutrition-facts";
+import { RecipeWithCategory } from "@/types/recipe";
+import RecipeHealthBenefits from "./recipe-health-benefits";
 
 const menuItems = [
   {
@@ -40,40 +43,11 @@ const menuItems = [
     title: "Nutrition Facts",
     id: 4,
   },
+  {
+    title: "Health Benefits",
+    id: 5,
+  },
 ];
-type RecipeIngredientType = {
-  id: string;
-  name: string;
-  quantity: number;
-  position: number;
-  recipeId: string;
-  unitId: string;
-  notes?: string | null;
-  unit: Units;
-};
-type RecipeCookingMethod = {
-  id: string;
-  cookingMethodId: string;
-  recipeId: string;
-  cookingMethod: CookingMethods;
-};
-type RecipeCuisines = {
-  id: string;
-  cuisineId: string;
-  recipeId: string;
-  cuisine: Cuisines;
-};
-type RecipeWithCategory = Recipes & {
-  RecipeCategories: RecipeCategories | null;
-  recipeIngredients: RecipeIngredientType[];
-  recipeMethods: RecipeMethodType[];
-  recipeCookingTime: RecipeCookingTime | null;
-  recipeNutritionValues: RecipeNutritionValues | null;
-  recipeDifficulty: RecipeDifficulty | null;
-  recipeSeasons: RecipeSeasons | null;
-  recipeCookingMethods: RecipeCookingMethod[] | null;
-  recipeCuisine: RecipeCuisines[] | null;
-};
 
 interface RecipeDetailsProps {
   recipe: RecipeWithCategory;
@@ -86,8 +60,7 @@ const RecipeDetails = ({ recipe }: RecipeDetailsProps) => {
     Ingredients: useRef<HTMLDivElement>(null),
     Methods: useRef<HTMLDivElement>(null),
     "Nutrition Facts": useRef<HTMLDivElement>(null),
-    FAQs: useRef<HTMLDivElement>(null),
-    Notes: useRef<HTMLDivElement>(null),
+    "Health Benefits": useRef<HTMLDivElement>(null),
   };
   const [quantity, setQuantity] = useState(1);
 
@@ -133,7 +106,17 @@ const RecipeDetails = ({ recipe }: RecipeDetailsProps) => {
       tabElement.scrollIntoView({ behavior: "smooth", block: "start" });
     }
   };
+  const shouldRenderHealthBenefits = recipe.recipeHealthBenefits.length > 0;
 
+  // Remove "Health Benefits" item if condition is false
+  if (!shouldRenderHealthBenefits) {
+    const healthBenefitsIndex = menuItems.findIndex(
+      (item) => item.title === "Health Benefits"
+    );
+    if (healthBenefitsIndex !== -1) {
+      menuItems.splice(healthBenefitsIndex, 1);
+    }
+  }
   return (
     <div className="relative">
       <div className="sticky top-[70px] z-10 bg-white w-full rounded-md shadow-sm transition my-4 py-4 flex overflow-x-auto ">
@@ -208,9 +191,9 @@ const RecipeDetails = ({ recipe }: RecipeDetailsProps) => {
               <h2 className="text-xl font-bold text-gray-800 border-b-2 border-gray-200 pb-2 mb-4">
                 Nutrition Facts
               </h2>
-              {recipe.recipeNutritionValues ? (
+              {recipe.recipeIngredients ? (
                 <RecipeNutritionFacts
-                  recipeNutritionFacts={recipe.recipeNutritionValues}
+                  recipeIngredients={recipe.recipeIngredients}
                 />
               ) : (
                 <p className="text-sm font-medium text-center text-websecondary-500">
@@ -219,6 +202,24 @@ const RecipeDetails = ({ recipe }: RecipeDetailsProps) => {
               )}
             </>
           )}
+
+          {recipe.recipeHealthBenefits.length > 0 &&
+            item.title === "Health Benefits" && (
+              <>
+                <h2 className="text-xl font-bold text-gray-800 border-b-2 border-gray-200 pb-2 mb-4">
+                  Health Benefits
+                </h2>
+                {recipe.recipeHealthBenefits ? (
+                  <RecipeHealthBenefits
+                    recipeHealthBenefits={recipe.recipeHealthBenefits}
+                  />
+                ) : (
+                  <p className="text-sm font-medium text-center text-websecondary-500">
+                    No health benefits available for this recipe.
+                  </p>
+                )}
+              </>
+            )}
         </div>
       ))}
     </div>

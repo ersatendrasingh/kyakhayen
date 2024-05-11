@@ -5,13 +5,7 @@ import { RecipeIngredients } from "@prisma/client";
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem } from "@/components/ui/form";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import Select from "react-select";
 import { Input } from "@/components/ui/input";
 import axios from "axios";
 import { toast } from "react-toastify";
@@ -19,7 +13,15 @@ import { useRouter } from "next/navigation";
 interface IngredientEditFormProps {
   ingredient: RecipeIngredients;
   onCancel: () => void;
-  options: { title: string; shortName: string; value: string }[];
+  options: { label: string; value: string }[];
+  ingredientsData: {
+    value: string;
+    label: string;
+  }[];
+  forms: {
+    value: string;
+    label: string;
+  }[];
   onSave: (updatedIngredient: RecipeIngredients) => void;
 }
 const IngredientEditForm = ({
@@ -27,6 +29,8 @@ const IngredientEditForm = ({
   onCancel,
   onSave,
   options,
+  ingredientsData,
+  forms,
 }: IngredientEditFormProps) => {
   const [editedIngredient, setEditedIngredient] = useState(ingredient);
 
@@ -44,8 +48,8 @@ const IngredientEditForm = ({
   const formSchema = z.object({
     quantity: z.coerce.number(),
     unitId: z.string().min(1),
-    name: z.string().min(1, { message: "Name is required" }),
-    notes: z.string().optional(),
+    ingredientId: z.string().min(1),
+    formId: z.string().min(1),
   });
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
@@ -72,10 +76,10 @@ const IngredientEditForm = ({
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      name: ingredient.name,
+      ingredientId: ingredient.ingredientId.toString(),
       quantity: ingredient.quantity,
       unitId: ingredient.unitId.toString(),
-      notes: ingredient.notes || "",
+      formId: ingredient.formId.toString(),
     },
   });
   const { isSubmitting, isValid } = form.formState;
@@ -83,7 +87,31 @@ const IngredientEditForm = ({
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="mt-4 space-y-4">
         <div className="flex flex-wrap -mx-2 mb-4">
-          <div className="w-full md:w-1/6 px-2 mb-4 md:mb-0">
+          <div className="w-full px-2 mb-4 md:mb-0">
+            <FormField
+              control={form.control}
+              name="ingredientId"
+              render={({ field }) => (
+                <FormItem>
+                  <FormControl>
+                    <Select
+                      options={ingredientsData}
+                      value={ingredientsData.find(
+                        (option) => option.value === field.value
+                      )}
+                      onChange={(selectedOption) => {
+                        field.onChange(selectedOption?.value);
+                      }}
+                      placeholder="Select Ingredient"
+                    />
+                  </FormControl>
+                </FormItem>
+              )}
+            />
+          </div>
+        </div>
+        <div className="flex flex-wrap -mx-2 mb-4">
+          <div className="w-full md:w-1/5 px-2 mb-4 md:mb-0">
             <FormField
               control={form.control}
               name="quantity"
@@ -102,7 +130,7 @@ const IngredientEditForm = ({
               )}
             />
           </div>
-          <div className="w-full md:w-1/6 px-2 mb-4 md:mb-0">
+          <div className="w-full md:w-2/5 px-2 mb-4 md:mb-0">
             <FormField
               control={form.control}
               name="unitId"
@@ -110,60 +138,37 @@ const IngredientEditForm = ({
                 <FormItem>
                   <FormControl>
                     <Select
-                      onValueChange={field.onChange}
-                      value={form.getValues("unitId")}
-                    >
-                      <SelectTrigger className="w-full h-10">
-                        <SelectValue placeholder="Unit" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {options.length > 0 && (
-                          <SelectItem value="placeholder" disabled>
-                            Unit
-                          </SelectItem>
-                        )}
-                        {options.map((option) => {
-                          return (
-                            <SelectItem key={option.value} value={option.value}>
-                              {`${option.title} (${option.shortName})`}
-                            </SelectItem>
-                          );
-                        })}
-                      </SelectContent>
-                    </Select>
-                  </FormControl>
-                </FormItem>
-              )}
-            />
-          </div>
-          <div className="w-full md:w-1/3 px-2 mb-4 md:mb-0">
-            <FormField
-              control={form.control}
-              name="name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormControl>
-                    <Input
-                      disabled={isSubmitting}
-                      {...field}
-                      placeholder="Ingredient name"
+                      options={options}
+                      value={options.find(
+                        (option) => option.value === field.value
+                      )}
+                      onChange={(selectedOption) => {
+                        field.onChange(selectedOption?.value);
+                      }}
+                      placeholder="Select Unit"
                     />
                   </FormControl>
                 </FormItem>
               )}
             />
           </div>
-          <div className="w-full md:w-1/3 px-2 mb-4 md:mb-0">
+
+          <div className="w-full md:w-2/5 px-2 mb-4 md:mb-0">
             <FormField
               control={form.control}
-              name="notes"
+              name="formId"
               render={({ field }) => (
                 <FormItem>
                   <FormControl>
-                    <Input
-                      disabled={isSubmitting}
-                      {...field}
-                      placeholder="Notes"
+                    <Select
+                      options={forms}
+                      value={forms.find(
+                        (formData) => formData.value === field.value
+                      )}
+                      onChange={(selectedOption) => {
+                        field.onChange(selectedOption?.value);
+                      }}
+                      placeholder="Select Form"
                     />
                   </FormControl>
                 </FormItem>
