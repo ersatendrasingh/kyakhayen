@@ -10,6 +10,7 @@ import { Banner } from "@/components/banner";
 import { IngredientActions } from "./_components/ingredient-actions";
 import { MacrosForm } from "./_components/macros-form";
 import { MicrosForm } from "./_components/micros-form";
+import { UnitMeasurementForm } from "./_components/unit-measurement-form";
 
 const IngredientIdPage = async ({
   params,
@@ -19,6 +20,13 @@ const IngredientIdPage = async ({
   const ingredient = await db.ingredients.findUnique({
     where: {
       id: params.ingredientId,
+    },
+    include: {
+      IngredientUnitMeasurements: {
+        include: {
+          unit: true,
+        },
+      },
     },
   });
 
@@ -31,6 +39,7 @@ const IngredientIdPage = async ({
       name: "asc",
     },
   });
+  const units = await db.units.findMany({ orderBy: { title: "asc" } });
 
   const requiredFields = [ingredient.name, ingredient.ingredientCategoriesId];
 
@@ -83,6 +92,18 @@ const IngredientIdPage = async ({
               <h2 className="text-md">Ingredients Macros</h2>
             </div>
             <MacrosForm initialData={ingredient} ingredientId={ingredient.id} />
+            <div className="flex items-center gap-x-2 mt-6">
+              <IconBadge icon={ListChecks} />
+              <h2 className="text-md">Unit Measurement</h2>
+            </div>
+            <UnitMeasurementForm
+              initialData={ingredient}
+              options={units.map((unit) => ({
+                label: unit.title,
+                value: unit.id,
+              }))}
+              ingredientId={ingredient.id}
+            />
           </div>
           <div className="space-y-6">
             <div>

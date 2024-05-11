@@ -3,10 +3,8 @@ import { getRecipeBySlug } from "@/actions/get-recipe";
 import BannerCard from "@/components/recipes/banner-card";
 import RecipeDetails from "@/components/recipes/recipe-details";
 
-import StickySidebar from "@/components/recipes/sticky-sidebar";
 import { currentUser } from "@/lib/auth";
-import { RecipeCategories, RecipeIngredients, Recipes } from "@prisma/client";
-import { Decimal } from "@prisma/client/runtime/library";
+
 import { GetRecipes } from "@/actions/get-recipes";
 import RelatedRecipeSlider from "@/components/recipes/related-recipe-slider";
 import RecipeSidebar from "@/components/recipes/recipe-sidebar";
@@ -67,10 +65,6 @@ export async function generateMetadata(
   };
 }
 
-type RecipeWithCategory = Recipes & {
-  RecipeCategories: RecipeCategories;
-  recipeIngredients: RecipeIngredients[];
-};
 const SingleRecipePage = async ({
   params,
   searchParams,
@@ -94,7 +88,6 @@ const SingleRecipePage = async ({
   if (!recipe) {
     throw new Error("Recipe not found");
   }
-  const { id, title, imageUrl } = recipe;
 
   const recipeCategories = await db.recipeCategories.findMany({
     orderBy: {

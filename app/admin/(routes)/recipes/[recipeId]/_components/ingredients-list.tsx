@@ -1,6 +1,11 @@
 "use client";
 
-import { RecipeIngredients, Units } from "@prisma/client";
+import {
+  Ingredients,
+  RecipeIngredients,
+  Units,
+  IngredientsForm as IngredientsFormType,
+} from "@prisma/client";
 import { useEffect, useState } from "react";
 import {
   DragDropContext,
@@ -21,6 +26,8 @@ import { useRouter } from "next/navigation";
 
 type RecipeIngredient = RecipeIngredients & {
   unit?: Units;
+  ingredientForm?: IngredientsFormType;
+  ingredient?: Ingredients;
 };
 
 interface IngredientsListProps {
@@ -28,7 +35,15 @@ interface IngredientsListProps {
   onReorder: (updateData: { id: string; position: number }[]) => void;
   items: RecipeIngredient[];
   recipeId: string;
-  options: { title: string; shortName: string; value: string }[];
+  options: { label: string; value: string }[];
+  ingredientsData: {
+    value: string;
+    label: string;
+  }[];
+  forms: {
+    value: string;
+    label: string;
+  }[];
 }
 
 const IngredientsList = ({
@@ -37,6 +52,8 @@ const IngredientsList = ({
   onEdit,
   options,
   recipeId,
+  ingredientsData,
+  forms,
 }: IngredientsListProps) => {
   const [isMounted, setIsMounted] = useState(false);
   const [ingredients, setIngredients] = useState(items);
@@ -120,14 +137,14 @@ const IngredientsList = ({
                 {(provided) => (
                   <div
                     className={cn(
-                      "flex items-center gap-x-2   border bg-rose-100 border-rose-200 text-rose-700 rounded-md mb-4 text-sm"
+                      "flex items-center gap-x-2   border bg-emerald-100 border-emerald-200 text-emerald-700 rounded-md mb-4 text-sm font-semibold"
                     )}
                     ref={provided.innerRef}
                     {...provided.draggableProps}
                   >
                     <div
                       className={cn(
-                        "px-2 py-3 border-r  rounded-l-md transition border-r-rose-200 hover:bg-rose-200",
+                        "px-2 py-3 border-r  rounded-l-md transition border-r-emerald-200 hover:bg-emerald-200",
                         editingIngredientId === ingredient.id && "hidden"
                       )}
                       {...provided.dragHandleProps}
@@ -139,6 +156,8 @@ const IngredientsList = ({
                         <IngredientEditForm
                           ingredient={ingredient}
                           options={options}
+                          ingredientsData={ingredientsData}
+                          forms={forms}
                           onCancel={handleEditCancel}
                           onSave={(updatedIngredient) => {
                             // Update the ingredient in the list
@@ -157,7 +176,7 @@ const IngredientsList = ({
                       </div>
                     ) : (
                       <>
-                        {`${ingredient.quantity} ${ingredient.unit?.title} ${ingredient.name} (${ingredient.notes})`}
+                        {`${ingredient.quantity} ${ingredient.unit?.title} ${ingredient.ingredient?.name} (${ingredient.ingredientForm?.name})`}
                         <div className="ml-auto pr-2 flex items-center gap-x-2">
                           <div title="Edit">
                             <Pencil

@@ -36,7 +36,6 @@ export const metadata: Metadata = {
   title: meta.title,
   description: meta.description,
   keywords: meta.keywords,
-  themeColor: "#ef4542",
   openGraph: {
     title: meta.title,
     description: meta.description,

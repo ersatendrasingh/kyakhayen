@@ -1,350 +1,187 @@
 "use client";
 
-import * as z from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
-import { useRouter } from "next/navigation";
-import { toast } from "react-toastify";
-import { AlarmClock, Pencil, PlusCircleIcon } from "lucide-react";
-import { useState } from "react";
-import axios from "axios";
-
-import { Button } from "@/components/ui/button";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-
-import { RecipeNutritionValues, Recipes } from "@prisma/client";
-import { formatTime } from "@/lib/formatTime";
-
-import Image from "next/image";
+import { RecipeIngredientType } from "@/types/recipe";
 
 interface RecipeNutritionValuesFormProps {
-  initialData: Recipes & {
-    recipeNutritionValues: RecipeNutritionValues | null;
-  };
-  recipeId: string;
+  initialData: RecipeIngredientType[];
 }
-
-const formSchema = z.object({
-  calories: z.coerce.number(),
-  carbohydrate: z.coerce.number(),
-  totalFat: z.coerce.number(),
-  dietaryFiber: z.coerce.number(),
-  protein: z.coerce.number(),
-});
 
 export const RecipeNutritionValuesForm = ({
   initialData,
-  recipeId,
 }: RecipeNutritionValuesFormProps) => {
-  const [isEditing, setIsEditing] = useState(false);
+  let totalCalories = 0;
+  let totalCarbohydrate = 0;
+  let totalProtein = 0;
+  let totalFiber = 0;
+  let totalFat = 0;
+  let totalVitaminA = 0;
+  let totalVitaminD = 0;
+  let totalVitaminK = 0;
+  let totalAscorbicAcids = 0;
+  let totalTocopherolEquivalent = 0;
+  let totalThiamine = 0;
+  let totalRiboflavin = 0;
+  let totalTotalB6 = 0;
+  let totalFolates = 0;
+  let totalCalcium = 0;
+  let totalIron = 0;
+  let totalPhophorus = 0;
+  let totalPotassium = 0;
+  let totalSodium = 0;
+  let totalZinc = 0;
 
-  const toggleEdit = () => setIsEditing((current) => !current);
+  initialData.forEach((ingredient) => {
+    const unitMeasurements = ingredient.ingredient.IngredientUnitMeasurements;
+    const matchingUnit = unitMeasurements.find(
+      (measurement) => measurement.unitId === ingredient.unitId
+    );
+    let adjustedQuantity = ingredient.quantity;
+    if (matchingUnit) {
+      adjustedQuantity = matchingUnit
+        ? matchingUnit?.values * ingredient.quantity
+        : ingredient.quantity;
+    } else {
+      adjustedQuantity = ingredient.quantity;
+    }
 
-  const router = useRouter();
-
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      calories: initialData.recipeNutritionValues?.calories || undefined,
-      carbohydrate:
-        initialData.recipeNutritionValues?.carbohydrate || undefined,
-      totalFat: initialData.recipeNutritionValues?.totalFat || undefined,
-      dietaryFiber:
-        initialData.recipeNutritionValues?.dietaryFiber || undefined,
-      protein: initialData.recipeNutritionValues?.protein || undefined,
-    },
+    const adjustedCalories =
+      ((ingredient.ingredient.calories || 0) / 100) * adjustedQuantity;
+    const adjustedCarbohydrate =
+      ((ingredient.ingredient.carbohydrate || 0) / 100) * adjustedQuantity;
+    const adjustedProtein =
+      ((ingredient.ingredient.protein || 0) / 100) * adjustedQuantity;
+    const adjustedFiber =
+      ((ingredient.ingredient.dietaryFiber || 0) / 100) * adjustedQuantity;
+    const adjustedFat =
+      ((ingredient.ingredient.totalFat || 0) / 100) * adjustedQuantity;
+    const adjustedVitaminA =
+      ((ingredient.ingredient.vitaminA || 0) / 100) * adjustedQuantity;
+    const adjustedVitaminD =
+      ((ingredient.ingredient.vitaminD || 0) / 100) * adjustedQuantity;
+    const adjustedVitaminK =
+      ((ingredient.ingredient.vitaminK || 0) / 100) * adjustedQuantity;
+    const adjustedAscorbicAcids =
+      ((ingredient.ingredient.ascorbicAcids || 0) / 100) * adjustedQuantity;
+    const adjustedTocopherolEquivalent =
+      ((ingredient.ingredient.tocopherolEquivalent || 0) / 100) *
+      adjustedQuantity;
+    const adjustedThiamine =
+      ((ingredient.ingredient.thiamine || 0) / 100) * adjustedQuantity;
+    const adjustedRiboflavin =
+      ((ingredient.ingredient.riboflavin || 0) / 100) * adjustedQuantity;
+    const adjustedTotalB6 =
+      ((ingredient.ingredient.totalB6 || 0) / 100) * adjustedQuantity;
+    const adjustedFolates =
+      ((ingredient.ingredient.folates || 0) / 100) * adjustedQuantity;
+    const adjustedCalcium =
+      ((ingredient.ingredient.calcium || 0) / 100) * adjustedQuantity;
+    const adjustedIron =
+      ((ingredient.ingredient.iron || 0) / 100) * adjustedQuantity;
+    const adjustedPhophorus =
+      ((ingredient.ingredient.phophorus || 0) / 100) * adjustedQuantity;
+    const adjustedPotassium =
+      ((ingredient.ingredient.potassium || 0) / 100) * adjustedQuantity;
+    const adjustedSodium =
+      ((ingredient.ingredient.sodium || 0) / 100) * adjustedQuantity;
+    const adjustedZinc =
+      ((ingredient.ingredient.zinc || 0) / 100) * adjustedQuantity;
+    // Add adjusted nutrition values to total
+    totalCalories += adjustedCalories;
+    totalCarbohydrate += adjustedCarbohydrate;
+    totalProtein += adjustedProtein;
+    totalFiber += adjustedFiber;
+    totalFat += adjustedFat;
+    totalVitaminA += adjustedVitaminA;
+    totalVitaminD += adjustedVitaminD;
+    totalVitaminK += adjustedVitaminK;
+    totalAscorbicAcids += adjustedAscorbicAcids;
+    totalTocopherolEquivalent += adjustedTocopherolEquivalent;
+    totalThiamine += adjustedThiamine;
+    totalRiboflavin += adjustedRiboflavin;
+    totalTotalB6 += adjustedTotalB6;
+    totalFolates += adjustedFolates;
+    totalCalcium += adjustedCalcium;
+    totalIron += adjustedIron;
+    totalPhophorus += adjustedPhophorus;
+    totalPotassium += adjustedPotassium;
+    totalSodium += adjustedSodium;
+    totalZinc += adjustedZinc;
   });
 
-  const { isSubmitting, isValid } = form.formState;
-
-  const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    try {
-      await axios.post(
-        `/api/recipes/${recipeId}/recipe-nutrition-values`,
-        values
-      );
-      toast.success("Recipe nutrition values updated successfully", {
-        position: "top-center",
-        autoClose: 5000,
-      });
-      toggleEdit();
-      router.refresh();
-    } catch {
-      toast.error(
-        "Something went wrong while updating recipe nutrition values",
-        {
-          position: "top-center",
-          autoClose: 5000,
-        }
-      );
-    }
-  };
   return (
     <div className="mt-6 border rounded-md p-4 bg-slate-100">
       <div className="flex items-center justify-between font-medium">
-        Recipe Nutrition Values
-        <Button onClick={toggleEdit} variant="ghost">
-          {isEditing ? (
-            <>Cancel</>
-          ) : (
-            <>
-              {initialData.recipeNutritionValues ? (
-                <>
-                  <Pencil className="w-6 h-6 pr-2" /> Edit nutrition values
-                </>
-              ) : (
-                <>
-                  <PlusCircleIcon className="w-6 h-6 pr-2" />
-                  Set nutrition values
-                </>
-              )}
-            </>
-          )}
-        </Button>
+        Recipe Macros Values
       </div>
-      {!isEditing && (
-        <div className="flex flex-wrap items-center justify-between gap-4 mt-2">
-          {initialData.recipeNutritionValues?.calories ? (
-            <p className="text-sm text-center">
-              <span className="font-bold">Calories</span>
-              <span className="flex items-center justify-center">
-                <Image
-                  src="/assets/images/calories-icon.png"
-                  alt="Calories Icon"
-                  width={25}
-                  height={25}
-                  className="pr-2"
-                />
 
-                {initialData.recipeNutritionValues?.calories}
-              </span>
-            </p>
-          ) : (
-            <p className="text-sm italic text-slate-500 text-center">
-              <span className="font-bold">Calories</span>
-              <span className="flex items-center justify-center">
-                No calories value set yet
-              </span>
-            </p>
-          )}
-
-          {initialData.recipeNutritionValues?.carbohydrate ? (
-            <p className="text-sm text-center">
-              <span className="font-bold">Carbohydrate</span>
-              <span className="flex items-center justify-center">
-                <Image
-                  src="/assets/images/carbohydrate-icon.png"
-                  alt="Calories Icon"
-                  width={25}
-                  height={25}
-                  className="pr-2"
-                />
-                {initialData.recipeNutritionValues?.carbohydrate}
-              </span>
-            </p>
-          ) : (
-            <p className="text-sm italic text-slate-500 text-center">
-              <span className="font-bold">Carbohydrate</span>
-              <span className="flex items-center justify-center">
-                No carbohydrate value set yet
-              </span>
-            </p>
-          )}
-
-          {initialData.recipeNutritionValues?.totalFat ? (
-            <p className="text-sm text-center">
-              <span className="font-bold">Total Fat</span>
-              <span className="flex items-center justify-center">
-                <Image
-                  src="/assets/images/fat-icon.png"
-                  alt="Calories Icon"
-                  width={25}
-                  height={25}
-                  className="pr-2"
-                />
-                {initialData.recipeNutritionValues?.totalFat}
-              </span>
-            </p>
-          ) : (
-            <p className="text-sm italic text-slate-500 text-center">
-              <span className="font-bold">Total Fat</span>
-              <span className="flex items-center justify-center">
-                No total fat value set yet
-              </span>
-            </p>
-          )}
-
-          {initialData.recipeNutritionValues?.dietaryFiber ? (
-            <p className="text-sm text-center">
-              <span className="font-bold">Dietary Fiber</span>
-              <span className="flex items-center justify-center">
-                <Image
-                  src="/assets/images/fiber-icon.png"
-                  alt="Calories Icon"
-                  width={25}
-                  height={25}
-                  className="pr-2"
-                />
-                {initialData.recipeNutritionValues?.dietaryFiber}
-              </span>
-            </p>
-          ) : (
-            <p className="text-sm italic text-slate-500 text-center">
-              <span className="font-bold">Dietary Fiber</span>
-              <span className="flex items-center justify-center">
-                No dietary fiber value set yet
-              </span>
-            </p>
-          )}
-          {initialData.recipeNutritionValues?.protein ? (
-            <p className="text-sm text-center">
-              <span className="font-bold">Protein</span>
-              <span className="flex items-center justify-center">
-                <Image
-                  src="/assets/images/protein-icon.png"
-                  alt="Calories Icon"
-                  width={25}
-                  height={25}
-                  className="pr-2"
-                />
-                {initialData.recipeNutritionValues?.protein}
-              </span>
-            </p>
-          ) : (
-            <p className="text-sm italic text-slate-500 text-center">
-              <span className="font-bold">Protein</span>
-              <span className="flex items-center justify-center">
-                No protein value set yet
-              </span>
-            </p>
-          )}
+      <div className="flex flex-wrap items-center justifxy-between gap-2 mt-2">
+        <div className="text-sm bg-green-500/20 border-green-500 border p-2 rounded-md">
+          Calories: {totalCalories.toFixed(2)} kcal
         </div>
-      )}
-      {isEditing && (
-        <Form {...form}>
-          <form
-            onSubmit={form.handleSubmit(onSubmit)}
-            className="mt-4 space-y-4"
-          >
-            <FormField
-              control={form.control}
-              name="calories"
-              render={({ field }) => (
-                <FormItem>
-                  <FormControl>
-                    <>
-                      <FormLabel>Calories</FormLabel>
-                      <Input
-                        type="number"
-                        step={0.1}
-                        disabled={isSubmitting}
-                        {...field}
-                        placeholder="Set recipe calories value"
-                      />
-                    </>
-                  </FormControl>
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="carbohydrate"
-              render={({ field }) => (
-                <FormItem>
-                  <FormControl>
-                    <>
-                      <FormLabel>Carbohydrate</FormLabel>
-                      <Input
-                        type="number"
-                        step={0.1}
-                        disabled={isSubmitting}
-                        {...field}
-                        placeholder="Set recipe carbohydrate value"
-                      />
-                    </>
-                  </FormControl>
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="totalFat"
-              render={({ field }) => (
-                <FormItem>
-                  <FormControl>
-                    <>
-                      <FormLabel>Total Fat</FormLabel>
-                      <Input
-                        type="number"
-                        step={0.1}
-                        disabled={isSubmitting}
-                        {...field}
-                        placeholder="Set recipe total fat"
-                      />
-                    </>
-                  </FormControl>
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="dietaryFiber"
-              render={({ field }) => (
-                <FormItem>
-                  <FormControl>
-                    <>
-                      <FormLabel>Dietary Fiber</FormLabel>
-                      <Input
-                        type="number"
-                        step={0.1}
-                        disabled={isSubmitting}
-                        {...field}
-                        placeholder="Set recipe dietary fiber"
-                      />
-                    </>
-                  </FormControl>
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="protein"
-              render={({ field }) => (
-                <FormItem>
-                  <FormControl>
-                    <>
-                      <FormLabel>Protein</FormLabel>
-                      <Input
-                        type="number"
-                        step={0.1}
-                        disabled={isSubmitting}
-                        {...field}
-                        placeholder="Set recipe protein"
-                      />
-                    </>
-                  </FormControl>
-                </FormItem>
-              )}
-            />
-            <div className="flex items-center justify-end gap-x-2">
-              <Button
-                type="submit"
-                disabled={isSubmitting || !isValid}
-                className="pt-2"
-              >
-                Save
-              </Button>
-            </div>
-          </form>
-        </Form>
-      )}
+        <div className="text-sm bg-green-500/20 border-green-500 border p-2 rounded-md">
+          Carbohydrate: {totalCarbohydrate.toFixed(2)} g
+        </div>
+        <div className="text-sm bg-green-500/20 border-green-500 border p-2 rounded-md">
+          Total Fat: {totalFat.toFixed(2)} g
+        </div>
+        <div className="text-sm bg-green-500/20 border-green-500 border p-2 rounded-md">
+          Dietary Fiber: {totalFiber.toFixed(2)} g
+        </div>
+        <div className="text-sm bg-green-500/20 border-green-500 border p-2 rounded-md">
+          Protein: {totalProtein.toFixed(2)} g
+        </div>
+      </div>
+      <div className="flex items-center justify-between font-medium mt-6">
+        Recipe Micros Values
+      </div>
+
+      <div className="flex flex-wrap items-center justifxy-between gap-2 mt-2">
+        <div className="text-sm bg-green-500/20 border-green-500 border p-2 rounded-md">
+          Vitamin A : {totalVitaminA.toFixed(1)} μg
+        </div>
+        <div className="text-sm bg-green-500/20 border-green-500 border p-2 rounded-md">
+          Ascorbic acids (C) : {totalAscorbicAcids.toFixed(1)} mg
+        </div>
+        <div className="text-sm bg-green-500/20 border-green-500 border p-2 rounded-md">
+          Vitamin D : {totalVitaminD.toFixed(1)} μg
+        </div>
+        <div className="text-sm bg-green-500/20 border-green-500 border p-2 rounded-md">
+          Tocopherol equivalent (E) : {totalTocopherolEquivalent.toFixed(1)} mg
+        </div>
+        <div className="text-sm bg-green-500/20 border-green-500 border p-2 rounded-md">
+          Vitamin K : {totalCalories.toFixed(1)} μg
+        </div>
+        <div className="text-sm bg-green-500/20 border-green-500 border p-2 rounded-md">
+          Thiamine (B1) : {totalThiamine.toFixed(1)} mg
+        </div>
+        <div className="text-sm bg-green-500/20 border-green-500 border p-2 rounded-md">
+          Riboflavin (B2) : {totalRiboflavin.toFixed(1)} mg
+        </div>
+        <div className="text-sm bg-green-500/20 border-green-500 border p-2 rounded-md">
+          Total B6 : {totalTotalB6.toFixed(1)} mg
+        </div>
+        <div className="text-sm bg-green-500/20 border-green-500 border p-2 rounded-md">
+          Folates (B9) : {totalFolates.toFixed(1)} µg
+        </div>
+        <div className="text-sm bg-green-500/20 border-green-500 border p-2 rounded-md">
+          Calcium (Ca) : {totalCalcium.toFixed(1)} mg
+        </div>
+        <div className="text-sm bg-green-500/20 border-green-500 border p-2 rounded-md">
+          Iron (Fe) : {totalIron.toFixed(1)} mg
+        </div>
+        <div className="text-sm bg-green-500/20 border-green-500 border p-2 rounded-md">
+          Phophorus (P) : {totalPhophorus.toFixed(1)} mg
+        </div>
+        <div className="text-sm bg-green-500/20 border-green-500 border p-2 rounded-md">
+          Potassium (K) : {totalPotassium.toFixed(1)} mg
+        </div>
+        <div className="text-sm bg-green-500/20 border-green-500 border p-2 rounded-md">
+          Sodium (Na) : {totalSodium.toFixed(1)} mg
+        </div>
+        <div className="text-sm bg-green-500/20 border-green-500 border p-2 rounded-md">
+          Zinc (Zn) : {totalZinc.toFixed(1)} mg
+        </div>
+      </div>
     </div>
   );
 };

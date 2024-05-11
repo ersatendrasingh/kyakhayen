@@ -9,6 +9,9 @@ import {
   RecipeMethods as RecipeMethodType,
   RecipeSeasons,
   Recipes,
+  RecipeIngredients as RecipeIngredientsType,
+  IngredientsForm as IngredientsFormType,
+  Ingredients,
   Units,
 } from "@prisma/client";
 import { Preview } from "../preview";
@@ -22,15 +25,10 @@ import { PiBowlFoodFill } from "react-icons/pi";
 import RecipeFeatureItems from "./recipe-feature-items";
 import RecipeFeatureItem from "./recipe-feature-item";
 
-type RecipeIngredientType = {
-  id: string;
-  name: string;
-  quantity: number;
-  position: number;
-  recipeId: string;
-  unitId: string;
-  notes?: string | null;
-  unit: Units;
+type RecipeIngredientType = RecipeIngredientsType & {
+  unit?: Units;
+  ingredientForm?: IngredientsFormType;
+  ingredient?: Ingredients;
 };
 type RecipeCookingMethod = {
   id: string;

@@ -24,6 +24,7 @@ export async function POST(req: Request) {
     const diseaseId = formData.get("diseaseId") as string | null;
     const nutrientId = formData.get("nutrientId") as string | null;
     const dietTypeId = formData.get("dietTypeId") as string | null;
+    const recipeTypeId = formData.get("recipeTypeId") as string | null;
 
     const filesMap: Record<string, File[]> = {};
     formData.forEach((value: File | string | Blob, key: string) => {
@@ -153,6 +154,17 @@ export async function POST(req: Request) {
             }
           } else if (dietTypeId) {
             const fileName = `dietTypes/${dietTypeId}/${file.name}`;
+            const uploadedData = await uploadFileToS3(
+              fileContent as Buffer,
+              file.type,
+              fileName
+            );
+            if (uploadedData) {
+              const imageUrl = `https://${process.env.AWS_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${fileName}`;
+              uploadedImageUrls.push(imageUrl);
+            }
+          } else if (recipeTypeId) {
+            const fileName = `recipeTypes/${recipeTypeId}/${file.name}`;
             const uploadedData = await uploadFileToS3(
               fileContent as Buffer,
               file.type,

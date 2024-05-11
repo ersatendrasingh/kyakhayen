@@ -1,55 +1,6 @@
-import {
-  CookingMethods,
-  Cuisines,
-  RecipeCategories,
-  RecipeCookingTime,
-  RecipeDifficulty,
-  RecipeMethods,
-  RecipeNutritionValues,
-  RecipeSeasons,
-  Recipes,
-  Units,
-} from "@prisma/client";
-
 import { db } from "@/lib/db";
 import { currentUser } from "@/lib/auth";
-
-type RecipeIngredients = {
-  id: string;
-  name: string;
-  quantity: number;
-  position: number;
-  recipeId: string;
-  unitId: string;
-  notes?: string | null;
-  unit: Units;
-};
-
-type RecipeCookingMethod = {
-  id: string;
-  cookingMethodId: string;
-  recipeId: string;
-  cookingMethod: CookingMethods;
-};
-
-type RecipeCuisines = {
-  id: string;
-  cuisineId: string;
-  recipeId: string;
-  cuisine: Cuisines;
-};
-
-type RecipeWithCategory = Recipes & {
-  RecipeCategories: RecipeCategories | null;
-  recipeIngredients: RecipeIngredients[];
-  recipeMethods: RecipeMethods[];
-  recipeCookingTime: RecipeCookingTime | null;
-  recipeNutritionValues: RecipeNutritionValues | null;
-  recipeDifficulty: RecipeDifficulty | null;
-  recipeSeasons: RecipeSeasons | null;
-  recipeCookingMethods: RecipeCookingMethod[] | null;
-  recipeCuisine: RecipeCuisines[] | null;
-};
+import { RecipeWithCategory } from "@/types/recipe";
 
 export const getRecipeBySlug = async ({
   recipeSlug,
@@ -74,6 +25,12 @@ export const getRecipeBySlug = async ({
         recipeIngredients: {
           include: {
             unit: true,
+            ingredientForm: true,
+            ingredient: {
+              include: {
+                IngredientUnitMeasurements: true,
+              },
+            },
           },
           orderBy: {
             position: "asc",
@@ -87,6 +44,26 @@ export const getRecipeBySlug = async ({
             position: "asc",
           },
         },
+        recipeHealthBenefits: {
+          orderBy: {
+            position: "asc",
+          },
+        },
+        recipeRecipeType: {
+          include: {
+            recipeType: true,
+          },
+        },
+        recipeDietType: {
+          include: {
+            dietType: true,
+          },
+        },
+        recipeNutrient: {
+          include: {
+            nutrient: true,
+          },
+        },
         recipeCookingMethods: {
           include: {
             cookingMethod: true,
@@ -98,7 +75,7 @@ export const getRecipeBySlug = async ({
           },
         },
         recipeCookingTime: true,
-        recipeNutritionValues: true,
+
         recipeDifficulty: true,
         recipeSeasons: true,
       },
