@@ -52,8 +52,6 @@ export async function POST(
         },
       });
     }
-
-    console.log(updatedUnitMeasurements);
     return NextResponse.json(updatedUnitMeasurements, { status: 200 });
 
     return NextResponse.json(unitMeasurements, { status: 200 });

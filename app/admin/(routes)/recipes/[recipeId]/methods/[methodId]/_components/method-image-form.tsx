@@ -29,7 +29,6 @@ export const MethodImageForm = ({
 
   const onSubmit = async (fileUrl: string) => {
     const imageUrl = { imageUrl: fileUrl.toString() };
-    console.log(imageUrl);
     try {
       await axios.patch(
         `/api/recipes/${recipeId}/methods/${methodId}`,
