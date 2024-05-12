@@ -5,9 +5,9 @@ export const formatDate = (date: Date) => {
     month: "short",
     day: "numeric",
     year: "numeric",
-    hour: "numeric",
-    minute: "numeric",
-    hour12: true,
+    // hour: "numeric",
+    // minute: "numeric",
+    // hour12: true,
   });
 
   return formatDate;
