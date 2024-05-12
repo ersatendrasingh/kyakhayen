@@ -1,3 +1,4 @@
+import { Metadata, ResolvingMetadata } from "next";
 import { getRecipeBySlug } from "@/actions/get-recipe";
 
 import BannerCard from "@/components/recipes/banner-card";
@@ -5,12 +6,12 @@ import RecipeDetails from "@/components/recipes/recipe-details";
 
 import { currentUser } from "@/lib/auth";
 
-import { GetRecipes } from "@/actions/get-recipes";
 import RelatedRecipeSlider from "@/components/recipes/related-recipe-slider";
 import RecipeSidebar from "@/components/recipes/recipe-sidebar";
 import { db } from "@/lib/db";
-import { Metadata, ResolvingMetadata } from "next";
+
 import Container from "@/components/container";
+import { GetRelatedRecipes } from "@/actions/get-related-recipe";
 
 type Props = {
   params: { recipeSlug: string };
@@ -81,14 +82,15 @@ const SingleRecipePage = async ({
 
   const userId = user?.id;
 
-  const relatedRecipes = await GetRecipes({});
-
   const recipe = await getRecipeBySlug({ recipeSlug: slug as string });
 
   if (!recipe) {
     throw new Error("Recipe not found");
   }
-
+  const relatedRecipes = await GetRelatedRecipes({
+    searchSlug: slug as string,
+    categoryId: recipe?.recipeCategoriesId as string,
+  });
   const recipeCategories = await db.recipeCategories.findMany({
     orderBy: {
       name: "asc",

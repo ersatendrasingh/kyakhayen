@@ -66,7 +66,11 @@ export const metadata: Metadata = {
 };
 
 export default async function Home() {
-  const recipeCategories = await db.recipeCategories.findMany({});
+  const recipeCategories = await db.recipeCategories.findMany({
+    orderBy: {
+      position: "asc",
+    },
+  });
 
   return (
     <div>
