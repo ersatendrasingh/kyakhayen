@@ -18,6 +18,11 @@ import { cn } from "@/lib/utils";
 
 export const columns: ColumnDef<Recipes>[] = [
   {
+    accessorKey: "serialNumber",
+    header: "Sl. No.",
+    cell: ({ row }) => <div>{row.index + 1}</div>,
+  },
+  {
     accessorKey: "title",
     header: ({ column }) => {
       return (
