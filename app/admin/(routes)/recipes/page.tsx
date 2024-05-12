@@ -4,7 +4,7 @@ import { db } from "@/lib/db";
 const RecipesPage = async () => {
   const recipes = await db.recipes.findMany({
     orderBy: {
-      createdAt: "asc",
+      createdAt: "desc",
     },
   });
   return (
