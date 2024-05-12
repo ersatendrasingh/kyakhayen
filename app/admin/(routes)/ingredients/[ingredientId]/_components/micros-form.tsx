@@ -118,7 +118,7 @@ export const MicrosForm = ({ initialData, ingredientId }: MicrosFormProps) => {
       );
     }
   };
-  console.log(initialData);
+
   return (
     <div className="mt-6 border rounded-md p-4 bg-slate-100">
       <div className="flex items-center justify-between font-medium">
