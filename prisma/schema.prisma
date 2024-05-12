@@ -45,6 +45,7 @@ model RecipeCategories {
   name     String    @unique
   slug     String    @unique
   imageUrl String?
+  position Int?
   recipe   Recipes[]
 }
 
