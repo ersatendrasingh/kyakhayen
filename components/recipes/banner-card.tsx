@@ -40,7 +40,7 @@ const BannerCard = ({ recipe, className }: BannerCardProps) => {
           <RecipeAuthor
             authorName="Kyakhayen?"
             authorPhoto={guestAuthor}
-            lastUpdateDate="March 25, 2024"
+            lastUpdateDate={recipe.updatedAt}
           />
 
           <div className="mb-4 lg:mb-0 text-center lg:text-left">

@@ -1,5 +1,6 @@
 "use client";
 
+import { formatDate } from "@/lib/formatDate";
 import { CalendarDays } from "lucide-react";
 import Image, { StaticImageData } from "next/image";
 import Link from "next/link";
@@ -7,7 +8,7 @@ import Link from "next/link";
 interface RecipeAuthorProps {
   authorName: string;
   authorPhoto: StaticImageData;
-  lastUpdateDate: string;
+  lastUpdateDate: Date;
 }
 
 const RecipeAuthor = ({
@@ -31,7 +32,7 @@ const RecipeAuthor = ({
       <div className="flex items-center ml-4 mb-2 md:mb-0 ">
         <CalendarDays className="w-4 h-4 mr-1" />
         <p className="text-md">
-          <span className="text-gray-500">{lastUpdateDate}</span>
+          <span className="text-gray-500">{formatDate(lastUpdateDate)}</span>
         </p>
       </div>
     </div>
