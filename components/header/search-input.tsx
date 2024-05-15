@@ -5,7 +5,6 @@ import { Input } from "@/components/ui/input";
 import { useDebounce } from "@/hooks/use-debounce";
 import { GetRecipes } from "@/actions/get-recipes";
 import { Search } from "lucide-react";
-import { SheetClose } from "../ui/sheet";
 
 export const SearchInput = ({ onClose }: { onClose: () => void }) => {
   const [value, setValue] = useState("");
