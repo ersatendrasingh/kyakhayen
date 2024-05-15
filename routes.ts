@@ -9,6 +9,7 @@ export const publicRoutes = [
   "/cart",
   "/checkout",
   "/recipes",
+  "/search",
 ];
 
 /**
