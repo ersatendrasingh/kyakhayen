@@ -17,9 +17,72 @@ export const GetSearchedRecipes = async ({
     const recipes = await db.recipes.findMany({
       where: {
         isPublished: true,
-        title: {
-          contains: k,
-        },
+        OR: [
+          {
+            RecipeCategories: {
+              name: {
+                contains: k,
+              },
+            },
+          },
+          {
+            recipeMealTime: {
+              some: {
+                mealTime: {
+                  title: {
+                    contains: k,
+                  },
+                },
+              },
+            },
+          },
+          {
+            recipeCuisine: {
+              some: {
+                cuisine: {
+                  title: {
+                    contains: k,
+                  },
+                },
+              },
+            },
+          },
+
+          {
+            recipeDietType: {
+              some: {
+                dietType: {
+                  title: {
+                    contains: k,
+                  },
+                },
+              },
+            },
+          },
+          {
+            recipeRecipeType: {
+              some: {
+                recipeType: {
+                  title: {
+                    contains: k,
+                  },
+                },
+              },
+            },
+          },
+          {
+            recipeSeasons: {
+              title: {
+                contains: k,
+              },
+            },
+          },
+          {
+            title: {
+              contains: k,
+            },
+          },
+        ],
       },
       include: {
         RecipeCategories: true,

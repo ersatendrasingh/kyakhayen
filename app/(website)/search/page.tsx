@@ -1,10 +1,9 @@
-import { GetRecipes } from "@/actions/get-recipes";
 import { GetSearchedRecipes } from "@/actions/get-searched-recipes";
 import Container from "@/components/container";
 import { PageHeader } from "@/components/page-header";
-import { NoRecipesFound } from "@/components/recipes/np-recipe-found";
+import { NoRecipesFound } from "@/components/recipes/no-recipe-found";
 import RecipeCard from "@/components/recipes/recipe-card";
-import { db } from "@/lib/db";
+
 import { Metadata } from "next";
 
 const meta = {
@@ -54,7 +53,7 @@ const SearchPage = async ({
   searchParams,
 }: {
   params: { recipeSlug: string };
-  searchParams: { k?: string; type?: string };
+  searchParams: { k?: string };
 }) => {
   const recipes = await GetSearchedRecipes({
     k: searchParams.k || undefined,
@@ -65,7 +64,6 @@ const SearchPage = async ({
       <PageHeader title="Recipes" className="py-12" />
       <div className="py-12 bg-slate-100">
         <Container>
-          {recipes.length === 0 && <NoRecipesFound key={searchParams.k!} />}
           {searchParams && (
             <div className="mb-4">
               <div className="flex items-center gap-x-2">
@@ -76,6 +74,9 @@ const SearchPage = async ({
                 )}
               </div>
             </div>
+          )}
+          {recipes.length === 0 && (
+            <NoRecipesFound keyparam={searchParams.k || ""} />
           )}
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
             {recipes.map((recipe, index) => (
