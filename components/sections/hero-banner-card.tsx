@@ -46,14 +46,17 @@ export default function HeroBannerCard({ banner, className }: BannerProps) {
             {banner.spanTxt}
           </span>
           {/* <SearchInput /> */}
-          <div className="pt-10 relative">
+
+          <div className="flex w-full md:w-[600px] items-center justify-center">
             <Sheet open={open} onOpenChange={setOpen}>
-              <SheetTrigger className="flex-col items-center justify-center hidden md:flex">
-                <Search className="h-6 w-6 absolute top-13 left-3 text-slate-600" />
-                <Input
-                  className="w-full md:w-[600px] h-12 pl-16 rounded-full bg-white"
-                  placeholder="Search for recipes..."
-                />
+              <SheetTrigger className="flex-col items-center justify-center">
+                <div className="relative mt-3 w-full items-start justify-start">
+                  <Search className="h-6 w-6 absolute top-3 left-3 text-slate-600" />
+                  <Input
+                    className="w-full md:w-[600px] h-12 pl-16 rounded-full bg-white"
+                    placeholder="Search for recipes..."
+                  />
+                </div>
               </SheetTrigger>
               <SheetContent
                 side="top"
@@ -63,7 +66,6 @@ export default function HeroBannerCard({ banner, className }: BannerProps) {
               </SheetContent>
             </Sheet>
           </div>
-          <div className="mt-10"></div>
         </div>
       </Container>
     </div>
