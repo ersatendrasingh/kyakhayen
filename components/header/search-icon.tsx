@@ -8,7 +8,7 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
 const SearchIcon = () => {
   const [open, setOpen] = useState(false);
-  console.log(open);
+
   return (
     <div className="relative">
       <Sheet open={open} onOpenChange={setOpen}>
