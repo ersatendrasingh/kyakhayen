@@ -121,3 +121,6 @@ body,
   background: #ffc0c0; /* Color of the scrollbar track */
   border-radius: 10px;
 }
+.focus-visible\:ring-ring:focus-visible {
+  --tw-ring-color: none !important;
+}

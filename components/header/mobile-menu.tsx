@@ -10,8 +10,10 @@ import { MobileMenuItems } from "@/components/header/mobile-menu-items";
 import { LoginButton } from "@/components/auth/login-button";
 import { useCurrentUser } from "@/hooks/use-current-user";
 import { SearchInput } from "@/components/header/search-input";
+import { useState } from "react";
 
 const MobileMenu = () => {
+  const [open, setOpen] = useState(false);
   const user = useCurrentUser();
 
   return (
@@ -37,7 +39,7 @@ const MobileMenu = () => {
           </Link>
         </div>
         <div>
-          <Sheet>
+          <Sheet open={open} onOpenChange={setOpen}>
             <SheetTrigger className="flex flex-col items-center justify-center">
               <FaSearch size={24} className="mb-1" />
               <span className="text-xs">Search</span>
@@ -46,7 +48,7 @@ const MobileMenu = () => {
               side="top"
               className="flex flex-row items-center justify-center w-full"
             >
-              <SearchInput />
+              <SearchInput onClose={() => setOpen(false)} />
             </SheetContent>
           </Sheet>
         </div>
