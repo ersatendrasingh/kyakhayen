@@ -124,3 +124,79 @@ body,
 .focus-visible\:ring-ring:focus-visible {
   --tw-ring-color: none !important;
 }
+
+.swiper-button-prev,
+.swiper-button-next {
+  width: 40px !important;
+  height: 40px !important;
+  background-color: white;
+  color: red !important; /* Text color */
+  border-radius: 50% !important; /* Circle shape */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  font-size: 1.5rem;
+  transition: background-color 0.3s;
+}
+.swiper-button-prev:after,
+.swiper-button-next:after {
+  font-size: small !important;
+}
+.swiper-button-disabled {
+  display: none !important; /* Hide hidden buttons */
+}
+
+.swiper-button-prev:hover,
+.swiper-button-next:hover {
+  background-color: lightgray; /* Change background color on hover */
+}
+
+/* CSS for sliding in from the right and out to the left */
+.slide-next-enter {
+  opacity: 0;
+  transform: translateX(100%);
+}
+
+.slide-next-enter-active {
+  opacity: 1;
+  transform: translateX(0);
+  transition: opacity 0.5s, transform 0.5s;
+}
+
+.slide-next-exit {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.slide-next-exit-active {
+  opacity: 0;
+  transform: translateX(-100%);
+  transition: opacity 0.5s, transform 0.5s;
+}
+
+/* CSS for sliding in from the left and out to the right */
+.slide-prev-enter {
+  opacity: 0;
+  transform: translateX(-100%);
+}
+
+.slide-prev-enter-active {
+  opacity: 1;
+  transform: translateX(0);
+  transition: opacity 0.5s, transform 0.5s;
+}
+
+.slide-prev-exit {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.slide-prev-exit-active {
+  opacity: 0;
+  transform: translateX(100%);
+  transition: opacity 0.5s, transform 0.5s;
+}
+.parent-container {
+  overflow-x: hidden;
+}

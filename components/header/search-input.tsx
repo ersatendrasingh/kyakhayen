@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { useDebounce } from "@/hooks/use-debounce";
 import { GetRecipes } from "@/actions/get-recipes";
 import { Search } from "lucide-react";
+import { db } from "@/lib/db";
 
 export const SearchInput = ({ onClose }: { onClose: () => void }) => {
   const [value, setValue] = useState("");
@@ -22,8 +23,10 @@ export const SearchInput = ({ onClose }: { onClose: () => void }) => {
     const fetchSuggestions = async () => {
       try {
         const recipes = await GetRecipes({});
+
         const titles = recipes.map((recipe) => recipe.title);
         const uniqueTitles = Array.from(new Set(titles));
+
         setSuggestions(uniqueTitles);
       } catch (error) {
         console.error("Error fetching recipes:", error);

@@ -1,14 +1,15 @@
+import { Metadata } from "next";
+
 import HeroBannerCard from "@/components/sections/hero-banner-card";
 import HomeCategory from "@/components/sections/home-category";
+import PersonalizationForm from "@/components/sections/personalization-form";
 import PopularRecipes from "@/components/sections/popular-recipes";
 import { db } from "@/lib/db";
-import { Metadata } from "next";
-import Head from "next/head";
+
 type Banner = {
   id: number;
   title: string;
   spanTxt: string;
-  description: string;
   btnTxt: string;
   image: string;
 };
@@ -17,8 +18,6 @@ const homeBanner: Banner = {
   id: 1,
   title: "Explore Kya Khayen?",
   spanTxt: "Search healthy recipes to enjoy with your friends and family.",
-  description:
-    "Unitus Health Academy, started by Dr Shikha Sharma,  is an online platform to bring different health sciences under one umbrella and provide upskilling opportunities to health professionals and health enthusiasts.",
   btnTxt: "Explore Courses",
   image: "/assets/images/home-banner-3.webp",
 };
@@ -72,11 +71,45 @@ export default async function Home() {
     },
   });
 
+  const cuisines = await db.cuisines.findMany({
+    orderBy: {
+      title: "asc",
+    },
+  });
+
+  const allergies = await db.allergies.findMany({
+    orderBy: {
+      title: "asc",
+    },
+  });
+
+  const healthGoals = await db.healthGoals.findMany({
+    orderBy: {
+      title: "asc",
+    },
+  });
+  const cookingSkills = await db.recipeDifficulty.findMany({
+    orderBy: {
+      position: "asc",
+    },
+  });
+  const genders = await db.gender.findMany({
+    orderBy: {
+      position: "asc",
+    },
+  });
+
   return (
     <div>
-      <HeroBannerCard
+      <PersonalizationForm
         banner={homeBanner}
-        className="md:py-36 py-10 md:mb-4 xl:mb-4"
+        cuisines={cuisines}
+        allergies={allergies}
+        healthGoals={healthGoals}
+        cookingSkills={cookingSkills}
+        foodPreferences={recipeCategories}
+        genders={genders}
+        className="md:py-12 py-10 md:mb-4 xl:mb-4"
       />
       <HomeCategory title="Recipe Categories" widgetItems={recipeCategories} />
       <PopularRecipes />

@@ -47,7 +47,7 @@ export default function HeroBannerCard({ banner, className }: BannerProps) {
           </span>
           {/* <SearchInput /> */}
 
-          <div className="flex w-full md:w-[600px] items-center justify-center">
+          <div className="flex w-full md:w-[600px] items-center mt-5 justify-center">
             <Sheet open={open} onOpenChange={setOpen}>
               <SheetTrigger className="flex w-full">
                 <div className="relative mt-3 w-full items-start justify-start">
