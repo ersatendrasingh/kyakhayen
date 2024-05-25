@@ -9,6 +9,7 @@ import NextTopLoader from "nextjs-toploader";
 import "./globals.css";
 import { auth } from "@/auth";
 import { ConfettiProvider } from "@/components/providers/confetti-provider";
+
 const poppins = Poppins({
   subsets: ["latin"],
   display: "swap",

@@ -47,6 +47,7 @@ model RecipeCategories {
   imageUrl String?
   position Int?
   recipe   Recipes[]
+  User     User[]
 }
 
 model Units {
@@ -96,9 +97,12 @@ model RecipeHealthBenefits {
 }
 
 model RecipeDifficulty {
-  id      String    @id @default(uuid())
-  title   String
-  Recipes Recipes[]
+  id       String    @id @default(uuid())
+  title    String
+  imageUrl String?
+  position Int?
+  Recipes  Recipes[]
+  User     User[]
 }
 
 model RecipeSeasons {
@@ -141,6 +145,7 @@ model Cuisines {
   slug          String           @unique
   imageUrl      String?
   recipeCuisine RecipeCuisines[]
+  userCuisines  UserCuisines[]
 }
 
 model RecipeCuisines {
@@ -158,6 +163,7 @@ model Allergies {
   slug            String            @unique
   imageUrl        String?
   recipeAllergies RecipeAllergies[]
+  UserAllrgies    UserAllrgies[]
 }
 
 model RecipeAllergies {
@@ -170,11 +176,13 @@ model RecipeAllergies {
 }
 
 model Prakriti {
-  id             String           @id @default(uuid())
-  title          String
-  slug           String           @unique
-  imageUrl       String?
-  recipePrakriti RecipePrakriti[]
+  id                     String                   @id @default(uuid())
+  title                  String
+  slug                   String                   @unique
+  imageUrl               String?
+  recipePrakriti         RecipePrakriti[]
+  PrakritiQuestionOption PrakritiQuestionOption[]
+  User                   User[]
 }
 
 model RecipePrakriti {
@@ -191,6 +199,7 @@ model HealthGoals {
   slug              String              @unique
   imageUrl          String?
   recipeHealthGoals recipeHealthGoals[]
+  UserHealthGoals   UserHealthGoals[]
 }
 
 model recipeHealthGoals {
@@ -353,6 +362,26 @@ model User {
   password              String?
   role                  UserRole               @default(USER)
   accounts              Account[]
+  heightFt              Int?
+  heightInch            Int?
+  heightCm              Int?
+  weightKg              Int?
+  weightLbs             Int?
+  bmi                   Float?
+  dob                   DateTime?
+  age                   Int?
+  genderId              String?
+  gender                Gender?                @relation(fields: [genderId], references: [id])
+  foodPreferenceId      String?
+  foodPreference        RecipeCategories?      @relation(fields: [foodPreferenceId], references: [id])
+  cookingSkillId        String?
+  cookingSkill          RecipeDifficulty?      @relation(fields: [cookingSkillId], references: [id])
+  prakritiId            String?
+  userPrakriti          Prakriti?              @relation(fields: [prakritiId], references: [id])
+  prakriti              UserPrakriti[]
+  userCuisines          UserCuisines[]
+  UserAllrgies          UserAllrgies[]
+  UserHealthGoals       UserHealthGoals[]
   isTwoFactorEnabled    Boolean                @default(false)
   twoFactorConfirmation TwoFactorConfirmation?
 
@@ -412,4 +441,74 @@ model TwoFactorConfirmation {
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId])
+}
+
+model Gender {
+  id       String  @id @default(uuid())
+  title    String
+  imageUrl String?
+  position Int?
+  User     User[]
+}
+
+model PrakritiQuestion {
+  id          String                   @id @default(uuid())
+  question    String
+  isPublished Boolean                  @default(false)
+  options     PrakritiQuestionOption[]
+}
+
+model PrakritiQuestionOption {
+  id         String            @id @default(uuid())
+  value      String
+  questionId String
+  prakritiId String
+  position   Int
+  parkriti   Prakriti          @relation(fields: [prakritiId], references: [id])
+  question   PrakritiQuestion? @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  @@index([questionId])
+  @@index([prakritiId])
+}
+
+model UserPrakriti {
+  id         String @id @default(uuid())
+  userId     String
+  user       User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  questionId String
+  prakritiId String
+  optionId   String
+}
+
+model UserCuisines {
+  id        String   @id @default(uuid())
+  userId    String
+  cuisineId String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  cuisine   Cuisines @relation(fields: [cuisineId], references: [id], onDelete: Cascade)
+
+  @@index([cuisineId])
+  @@index([userId])
+}
+
+model UserAllrgies {
+  id        String    @id @default(uuid())
+  userId    String
+  allergyId String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  allergy   Allergies @relation(fields: [allergyId], references: [id], onDelete: Cascade)
+
+  @@index([allergyId])
+  @@index([userId])
+}
+
+model UserHealthGoals {
+  id           String      @id @default(uuid())
+  userId       String
+  healthGoalId String
+  user         User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  healthGoal   HealthGoals @relation(fields: [healthGoalId], references: [id], onDelete: Cascade)
+
+  @@index([healthGoalId])
+  @@index([userId])
 }

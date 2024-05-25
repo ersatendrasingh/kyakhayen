@@ -9,7 +9,7 @@ const database = new PrismaClient();
 
 const seed = async () => {
   try {
-    await database.RecipeDifficulty.createMany({
+    await database.Gender.createMany({
       // data: [
       //   { title: "Fall" },
       //   { title: "Winter" },
@@ -18,9 +18,8 @@ const seed = async () => {
       //   { title: "Suitable throughout the year" },
       // ],
       data: [
-        { title: "Beginner" },
-        { title: "Intermediate" },
-        { title: "Advanced" },
+        { title: "Male", position: 1 },
+        { title: "Female", position: 2 },
       ],
     });
     console.log("successfully seeded recipe difficulties");
