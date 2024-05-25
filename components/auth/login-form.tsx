@@ -26,7 +26,6 @@ import { SubmitButton } from "@/components/submit-button";
 import { DEFAULT_LOGIN_REDIRECT } from "@/routes";
 import { collectPersonalizationData } from "@/hooks/use-user-personalization";
 import axios from "axios";
-import useHandlePostLogin from "@/hooks/use-handle-post-login";
 
 interface LoginFormProps {
   callBackUrl?: string;
