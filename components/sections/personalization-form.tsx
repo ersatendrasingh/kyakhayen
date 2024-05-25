@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, createRef, RefObject } from "react";
 import { Search } from "lucide-react";
-import { useRef } from "react";
+
 import { CSSTransition, TransitionGroup } from "react-transition-group";
 
 import { cn } from "@/lib/utils";
@@ -28,8 +28,19 @@ import {
   Gender as GenderType,
   RecipeCategories,
   RecipeDifficulty,
+  PrakritiQuestionOption,
+  PrakritiQuestion,
 } from "@prisma/client";
+import { PrakritiQuestionForm } from "../user-personalization/prakriti-question-form";
 
+import { useCurrentUser } from "@/hooks/use-current-user";
+import axios from "axios";
+import { LoginButton } from "../auth/login-button";
+import { usePathname, useRouter } from "next/navigation";
+import { collectPersonalizationData } from "@/hooks/use-user-personalization";
+interface PrakritiQuestionType extends PrakritiQuestion {
+  options: PrakritiQuestionOption[];
+}
 interface BannerProps {
   banner: {
     id: number;
@@ -45,6 +56,7 @@ interface BannerProps {
   cookingSkills: RecipeDifficulty[];
   foodPreferences: RecipeCategories[];
   genders: GenderType[];
+  prakritiQuestions: PrakritiQuestionType[];
 }
 
 const getSavedStep = (): number => {
@@ -66,9 +78,10 @@ export default function PersonalizationForm({
   cookingSkills,
   foodPreferences,
   genders,
+  prakritiQuestions,
 }: BannerProps) {
   const [open, setOpen] = useState(false);
-  const [step, setStep] = useState(() => getSavedStep());
+  const [step, setStep] = useState<number>(() => getSavedStep());
   const [direction, setDirection] = useState("next");
   const [isFormValid, setIsFormValid] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -81,9 +94,16 @@ export default function PersonalizationForm({
   const genderRef = useRef(null);
   const dateOfBirthRef = useRef(null);
   const heightWeightRef = useRef(null);
+  const dynamicRefs = useRef<Array<RefObject<HTMLDivElement | null>>>(
+    prakritiQuestions.map(() => createRef())
+  );
+
+  const router = useRouter();
+  const pathname = usePathname();
+
+  const user = useCurrentUser();
 
   useEffect(() => {
-    // Simulate loading delay
     const timer = setTimeout(() => {
       setLoading(false);
     }, 500);
@@ -107,7 +127,27 @@ export default function PersonalizationForm({
     setDirection("prev");
     setStep((prevStep) => prevStep - 1);
   };
+  const stepCount = 8 + prakritiQuestions.length;
+  const isAllStepsCompleted = step === stepCount;
 
+  const handleDoneButtonClick = async () => {
+    if (!user) {
+      console.log("User is not logged in");
+      localStorage.setItem("needsPersonalizationUpdate", "true");
+      const encodedCallbackUrl = encodeURIComponent(pathname || "");
+      router.push("/auth/login?callbackUrl=" + encodedCallbackUrl);
+    } else {
+      console.log("User is logged in. Proceeding to next step...");
+      try {
+        const data = collectPersonalizationData();
+
+        const response = await axios.patch("/api/user/personalization", data);
+        console.log("Saved");
+      } catch (error) {
+        console.error("Error:", error);
+      }
+    }
+  };
   return (
     <div
       className={cn(
@@ -321,6 +361,43 @@ export default function PersonalizationForm({
                   </div>
                 </CSSTransition>
               )}
+
+              {step > 8 &&
+                prakritiQuestions.length > 0 &&
+                prakritiQuestions.map(
+                  (question, index) =>
+                    step === 9 + index && (
+                      <CSSTransition
+                        key={`prakriti-${index}`}
+                        nodeRef={
+                          dynamicRefs.current[
+                            index
+                          ] as RefObject<HTMLDivElement>
+                        }
+                        timeout={500}
+                        classNames={
+                          direction === "next" ? "slide-next" : "slide-prev"
+                        }
+                        unmountOnExit
+                      >
+                        <div
+                          ref={
+                            dynamicRefs.current[
+                              index
+                            ] as RefObject<HTMLDivElement>
+                          }
+                          className="absolute w-full h-full flex items-center justify-center"
+                        >
+                          <PrakritiQuestionForm
+                            title={question.question}
+                            options={question.options}
+                            questionId={question.id}
+                            setIsFormValid={setIsFormValid}
+                          />
+                        </div>
+                      </CSSTransition>
+                    )
+                )}
             </TransitionGroup>
           </div>
           <div className="w-full flex items-center justify-center mt-5 space-x-4">
@@ -336,14 +413,24 @@ export default function PersonalizationForm({
                     Back
                   </Button>
                 )}
-                <Button
-                  variant="main"
-                  size="main"
-                  onClick={nextStep}
-                  disabled={!isFormValid}
-                >
-                  Next
-                </Button>
+                {isAllStepsCompleted ? (
+                  <Button
+                    variant="main"
+                    size="main"
+                    onClick={handleDoneButtonClick}
+                  >
+                    Done
+                  </Button>
+                ) : (
+                  <Button
+                    variant="main"
+                    size="main"
+                    onClick={nextStep}
+                    disabled={!isFormValid}
+                  >
+                    Next
+                  </Button>
+                )}
               </>
             )}
           </div>

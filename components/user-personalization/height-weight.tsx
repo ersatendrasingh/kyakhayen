@@ -18,18 +18,27 @@ const getSavedData = (): {
   weightLbs: string;
 } => {
   try {
-    const savedHeightWeight = localStorage.getItem("HW");
-    return savedHeightWeight
-      ? JSON.parse(savedHeightWeight)
-      : {
-          heightFt: "",
-          heightInch: "",
-          heightCm: "",
-          weightKg: "",
-          weightLbs: "",
-        };
+    const userData = localStorage.getItem("userData");
+    if (userData) {
+      const parsedUserData = JSON.parse(userData);
+
+      if (parsedUserData.heightWeight) {
+        const { heightFt, heightInch, heightCm, weightKg, weightLbs } =
+          parsedUserData.heightWeight;
+        return { heightFt, heightInch, heightCm, weightKg, weightLbs };
+      }
+    }
+
+    return {
+      heightFt: "",
+      heightInch: "",
+      heightCm: "",
+      weightKg: "",
+      weightLbs: "",
+    };
   } catch (error) {
     console.error("Error parsing saved height and weight:", error);
+
     return {
       heightFt: "",
       heightInch: "",
@@ -39,6 +48,7 @@ const getSavedData = (): {
     };
   }
 };
+
 const HeightWeight = ({ title, setIsFormValid }: HeightWeightProps) => {
   const [heightUnit, setHeightUnit] = useState<"ft-in" | "cm">("ft-in");
   const [weightUnit, setWeightUnit] = useState<"kg" | "lbs">("kg");
@@ -104,11 +114,22 @@ const HeightWeight = ({ title, setIsFormValid }: HeightWeightProps) => {
       weightKg,
       weightLbs,
     };
-    localStorage.setItem("HW", JSON.stringify(formData));
+
+    const existingUserData = JSON.parse(
+      localStorage.getItem("userData") || "{}"
+    );
+
+    const updatedUserData = {
+      ...existingUserData,
+      heightWeight: formData,
+    };
+
+    localStorage.setItem("userData", JSON.stringify(updatedUserData));
     const parsedHeightFt = parseInt(heightFt);
     const parsedHeightInch = parseInt(heightInch);
     const parsedHeightCm = parseInt(heightCm);
     const parsedWeightKg = parseInt(weightKg);
+    const parsedWeightLbs = parseInt(weightLbs);
     const isValidHeightRange =
       (heightUnit === "ft-in" &&
         ((parsedHeightFt >= 3 && parsedHeightFt <= 6) ||
@@ -116,7 +137,8 @@ const HeightWeight = ({ title, setIsFormValid }: HeightWeightProps) => {
       (heightUnit === "cm" && parsedHeightCm >= 100 && parsedHeightCm <= 210);
     setIsValidHeight(isValidHeightRange);
     const isValidWeightRange =
-      weightUnit === "kg" && parsedWeightKg >= 35 && parsedWeightKg <= 180;
+      (weightUnit === "kg" && parsedWeightKg >= 35 && parsedWeightKg <= 180) ||
+      (weightUnit === "lbs" && parsedWeightLbs >= 77 && parsedWeightLbs <= 397);
     setIsValidWeight(isValidWeightRange);
     const isFormValid = isValidHeightRange && isValidWeightRange;
 

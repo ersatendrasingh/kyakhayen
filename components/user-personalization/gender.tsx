@@ -20,8 +20,12 @@ interface GenderProps {
 
 const getSavedGender = (): string | null => {
   try {
-    const savedGender = localStorage.getItem("SG");
-    return savedGender ? JSON.parse(savedGender) : null;
+    const userData = localStorage.getItem("userData");
+    if (userData) {
+      const parsedUserData = JSON.parse(userData);
+      return parsedUserData.gender || null;
+    }
+    return null;
   } catch (error) {
     console.error("Error parsing saved gender:", error);
     return null;
@@ -40,11 +44,16 @@ const Gender = ({ genders, title, setIsFormValid }: GenderProps) => {
   }, []);
 
   useEffect(() => {
-    if (selectedGender) {
-      localStorage.setItem("SG", JSON.stringify(selectedGender));
-    } else {
-      localStorage.removeItem("SG");
-    }
+    const existingUserData = JSON.parse(
+      localStorage.getItem("userData") || "{}"
+    );
+
+    const updatedUserData = {
+      ...existingUserData,
+      gender: selectedGender,
+    };
+
+    localStorage.setItem("userData", JSON.stringify(updatedUserData));
     setIsFormValid(!!selectedGender);
   }, [selectedGender, setIsFormValid]);
 

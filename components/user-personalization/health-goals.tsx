@@ -20,8 +20,12 @@ interface HealthGoalsProps {
 }
 const getSavedHealthGoals = (): string[] => {
   try {
-    const savedHealthGoals = localStorage.getItem("SHG");
-    return savedHealthGoals ? JSON.parse(savedHealthGoals) : [];
+    const userData = localStorage.getItem("userData");
+    if (userData) {
+      const parsedUserData = JSON.parse(userData);
+      return parsedUserData.healthGoals || [];
+    }
+    return [];
   } catch (error) {
     console.error("Error parsing saved health goals:", error);
     return [];
@@ -42,7 +46,17 @@ const HealthGoals = ({
     setLoading(false);
   }, []);
   useEffect(() => {
-    localStorage.setItem("SHG", JSON.stringify(selectedHealthGoals));
+    const existingUserData = JSON.parse(
+      localStorage.getItem("userData") || "{}"
+    );
+
+    const updatedUserData = {
+      ...existingUserData,
+      healthGoals: selectedHealthGoals,
+    };
+
+    localStorage.setItem("userData", JSON.stringify(updatedUserData));
+
     setIsFormValid(selectedHealthGoals.length > 0);
   }, [selectedHealthGoals, setIsFormValid]);
   const toggleHealthGoalSelection = (healthGoalId: string) => {

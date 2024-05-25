@@ -19,8 +19,12 @@ interface AllergiesProps {
 }
 const getSavedAllergies = (): string[] => {
   try {
-    const savedAllergies = localStorage.getItem("SA");
-    return savedAllergies ? JSON.parse(savedAllergies) : [];
+    const userData = localStorage.getItem("userData");
+    if (userData) {
+      const parsedUserData = JSON.parse(userData);
+      return parsedUserData.allergies || [];
+    }
+    return [];
   } catch (error) {
     console.error("Error parsing saved allergies:", error);
     return [];
@@ -37,7 +41,17 @@ const Allergies = ({ allergies, title, setIsFormValid }: AllergiesProps) => {
     setLoading(false); // Set loading state to false after loading
   }, []);
   useEffect(() => {
-    localStorage.setItem("SA", JSON.stringify(selectedAllergies));
+    const existingUserData = JSON.parse(
+      localStorage.getItem("userData") || "{}"
+    );
+
+    const updatedUserData = {
+      ...existingUserData,
+      allergies: selectedAllergies,
+    };
+
+    localStorage.setItem("userData", JSON.stringify(updatedUserData));
+
     setIsFormValid(selectedAllergies.length > 0); // Update validation status
   }, [selectedAllergies, setIsFormValid]);
 

@@ -13,25 +13,47 @@ import {
 } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { parseDate } from "@/hooks/use-user-personalization";
 
 interface GenderProps {
   title: string;
   setIsFormValid: (isValid: boolean) => void;
 }
-
-const DateOfBirth = ({ title, setIsFormValid }: GenderProps) => {
-  const [date, setDate] = useState<Date | undefined>(() => {
-    if (typeof window !== "undefined") {
-      const savedDate = localStorage.getItem("dob");
-      return savedDate ? new Date(savedDate) : undefined;
+const getSavedDob = (): Date | undefined => {
+  try {
+    const userData = localStorage.getItem("userData");
+    if (userData) {
+      const parsedUserData = JSON.parse(userData);
+      const dateObject = parseDate(parsedUserData.dob);
+      return new Date(dateObject);
     }
     return undefined;
-  });
+  } catch (error) {
+    console.error("Error parsing saved dob:", error);
+    return undefined;
+  }
+};
+const DateOfBirth = ({ title, setIsFormValid }: GenderProps) => {
+  const [date, setDate] = useState<Date | undefined>(() => getSavedDob());
   const [loading, setLoading] = useState(true);
   const [popoverOpen, setPopoverOpen] = useState(false);
+
+  useEffect(() => {
+    setLoading(false);
+  }, []);
+
   useEffect(() => {
     if (date) {
-      localStorage.setItem("dob", date.toLocaleDateString());
+      const existingUserData = JSON.parse(
+        localStorage.getItem("userData") || "{}"
+      );
+
+      const updatedUserData = {
+        ...existingUserData,
+        dob: date.toLocaleDateString(),
+      };
+
+      localStorage.setItem("userData", JSON.stringify(updatedUserData));
       setLoading(false);
     }
   }, [date]);
@@ -45,15 +67,6 @@ const DateOfBirth = ({ title, setIsFormValid }: GenderProps) => {
       setIsFormValid(false);
     }
   }, [loading, date, setIsFormValid]);
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      const savedDate = localStorage.getItem("dob");
-      if (savedDate) {
-        setDate(new Date(savedDate));
-      }
-      setLoading(false);
-    }
-  }, []);
 
   if (loading) {
     return (

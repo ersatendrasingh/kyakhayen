@@ -18,13 +18,17 @@ interface CookingSkillsProps {
   title: string;
   setIsFormValid: (isValid: boolean) => void;
 }
-const getSavedCookingSkills = (): string[] => {
+const getSavedCookingSkills = (): string | null => {
   try {
-    const savedCookingSkills = localStorage.getItem("SCS");
-    return savedCookingSkills ? JSON.parse(savedCookingSkills) : [];
+    const userData = localStorage.getItem("userData");
+    if (userData) {
+      const parsedUserData = JSON.parse(userData);
+      return parsedUserData.cookingSkill || null;
+    }
+    return null;
   } catch (error) {
     console.error("Error parsing saved cooking skills:", error);
-    return [];
+    return null;
   }
 };
 
@@ -33,30 +37,37 @@ const CookingSkills = ({
   title,
   setIsFormValid,
 }: CookingSkillsProps) => {
-  const [selectedCookingSkills, setSelectedCookingSkills] = useState<string[]>(
-    () => getSavedCookingSkills()
-  );
+  const [selectedCookingSkill, setSelectedCookingSkill] = useState<
+    string | null
+  >(() => getSavedCookingSkills());
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     setLoading(false);
   }, []);
   useEffect(() => {
-    localStorage.setItem("SCS", JSON.stringify(selectedCookingSkills));
-    setIsFormValid(selectedCookingSkills.length > 0);
-  }, [selectedCookingSkills, setIsFormValid]);
+    const existingUserData = JSON.parse(
+      localStorage.getItem("userData") || "{}"
+    );
 
-  const toggleCookingSkillsSelection = (cookingSkillId: string) => {
-    if (selectedCookingSkills.includes(cookingSkillId)) {
-      setSelectedCookingSkills(
-        selectedCookingSkills.filter((id) => id !== cookingSkillId)
-      );
+    const updatedUserData = {
+      ...existingUserData,
+      cookingSkill: selectedCookingSkill,
+    };
+
+    localStorage.setItem("userData", JSON.stringify(updatedUserData));
+    setIsFormValid(!!selectedCookingSkill);
+  }, [selectedCookingSkill, setIsFormValid]);
+  const toggleCookingSkillSelection = (cookingSkillId: string) => {
+    if (selectedCookingSkill === cookingSkillId) {
+      setSelectedCookingSkill(null);
     } else {
-      setSelectedCookingSkills([...selectedCookingSkills, cookingSkillId]);
+      setSelectedCookingSkill(cookingSkillId);
     }
   };
-  const isAllergySelected = (cookingSkillId: string) =>
-    selectedCookingSkills.includes(cookingSkillId);
+  const isCookingSkillSelected = (cookingSkillId: string) =>
+    selectedCookingSkill === cookingSkillId;
+
   if (loading) {
     return (
       <div className="w-full flex items-center justify-between">
@@ -87,7 +98,7 @@ const CookingSkills = ({
             {cookingSkills.map((cookingSkill) => (
               <SwiperSlide
                 key={cookingSkill.id}
-                onClick={() => toggleCookingSkillsSelection(cookingSkill.id)}
+                onClick={() => toggleCookingSkillSelection(cookingSkill.id)}
                 className={cn(
                   "rounded-full p-2 min-w-[150px] text-center hover:text-websecondary hover:border-300 transition duration-300 text-sm font-semibold relative cursor-pointer"
                 )}
@@ -106,7 +117,7 @@ const CookingSkills = ({
                   <span
                     className={cn(
                       "absolute inset-0 bg-black opacity-40 rounded-full transition-opacity duration-300",
-                      isAllergySelected(cookingSkill.id) &&
+                      isCookingSkillSelected(cookingSkill.id) &&
                         "bg-red-500 opacity-100 text-white"
                     )}
                   ></span>

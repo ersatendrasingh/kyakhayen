@@ -22,8 +22,12 @@ interface FoodPreferencesProps {
 
 const getSavedFoodPreference = (): string | null => {
   try {
-    const savedFoodPreference = localStorage.getItem("SFP");
-    return savedFoodPreference ? JSON.parse(savedFoodPreference) : null;
+    const userData = localStorage.getItem("userData");
+    if (userData) {
+      const parsedUserData = JSON.parse(userData);
+      return parsedUserData.foodPreference || null;
+    }
+    return null;
   } catch (error) {
     console.error("Error parsing saved food preference:", error);
     return null;
@@ -46,11 +50,16 @@ const FoodPreferences = ({
   }, []);
 
   useEffect(() => {
-    if (selectedFoodPreference) {
-      localStorage.setItem("SFP", JSON.stringify(selectedFoodPreference));
-    } else {
-      localStorage.removeItem("SFP");
-    }
+    const existingUserData = JSON.parse(
+      localStorage.getItem("userData") || "{}"
+    );
+
+    const updatedUserData = {
+      ...existingUserData,
+      foodPreference: selectedFoodPreference,
+    };
+
+    localStorage.setItem("userData", JSON.stringify(updatedUserData));
     setIsFormValid(!!selectedFoodPreference); // Update validation status
   }, [selectedFoodPreference, setIsFormValid]);
 

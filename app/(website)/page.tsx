@@ -5,6 +5,7 @@ import HomeCategory from "@/components/sections/home-category";
 import PersonalizationForm from "@/components/sections/personalization-form";
 import PopularRecipes from "@/components/sections/popular-recipes";
 import { db } from "@/lib/db";
+import { getPrakritiQuestions } from "@/actions/get-prakriti-questions";
 
 type Banner = {
   id: number;
@@ -99,6 +100,8 @@ export default async function Home() {
     },
   });
 
+  const prakritiQuestions = await getPrakritiQuestions();
+
   return (
     <div>
       <PersonalizationForm
@@ -108,6 +111,7 @@ export default async function Home() {
         healthGoals={healthGoals}
         cookingSkills={cookingSkills}
         foodPreferences={recipeCategories}
+        prakritiQuestions={prakritiQuestions}
         genders={genders}
         className="md:py-12 py-10 md:mb-4 xl:mb-4"
       />

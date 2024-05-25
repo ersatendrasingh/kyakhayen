@@ -20,8 +20,12 @@ interface CuisinesProps {
 }
 const getSavedCuisines = (): string[] => {
   try {
-    const savedCuisines = localStorage.getItem("selectedCuisines");
-    return savedCuisines ? JSON.parse(savedCuisines) : [];
+    const userData = localStorage.getItem("userData");
+    if (userData) {
+      const parsedUserData = JSON.parse(userData);
+      return parsedUserData.cuisines || [];
+    }
+    return [];
   } catch (error) {
     console.error("Error parsing saved cuisines:", error);
     return [];
@@ -39,7 +43,16 @@ const Cuisines = ({ cuisines, title, setIsFormValid }: CuisinesProps) => {
   }, []);
 
   useEffect(() => {
-    localStorage.setItem("selectedCuisines", JSON.stringify(selectedCuisines));
+    const existingUserData = JSON.parse(
+      localStorage.getItem("userData") || "{}"
+    );
+
+    const updatedUserData = {
+      ...existingUserData,
+      cuisines: selectedCuisines,
+    };
+
+    localStorage.setItem("userData", JSON.stringify(updatedUserData));
     setIsFormValid(selectedCuisines.length > 0);
   }, [selectedCuisines, setIsFormValid]);
 
