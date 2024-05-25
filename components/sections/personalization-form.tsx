@@ -162,7 +162,7 @@ export default function PersonalizationForm({
     >
       <Container>
         <div className="w-full flex flex-col items-center justify-center text-center relative">
-          <div className="flex w-full my-3 justify-center">
+          <div className="hidden md:flex w-full my-3 justify-center">
             <Sheet open={open} onOpenChange={setOpen}>
               <SheetTrigger>
                 <div className="relative mt-3 w-full">
