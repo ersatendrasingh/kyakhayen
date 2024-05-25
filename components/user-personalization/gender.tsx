@@ -11,6 +11,7 @@ import "swiper/css/navigation";
 import "swiper/css/pagination";
 import { Navigation, Mousewheel, Keyboard } from "swiper/modules";
 import { Skeleton } from "@/components/ui/skeleton";
+import useWindowSize from "@/hooks/use-window-size";
 
 interface GenderProps {
   genders: GenderType[];
@@ -36,7 +37,7 @@ const Gender = ({ genders, title, setIsFormValid }: GenderProps) => {
     getSavedGender()
   );
   const [loading, setLoading] = useState(true);
-
+  const { width } = useWindowSize();
   useEffect(() => {
     const savedGender = getSavedGender();
     setSelectedGender(savedGender);
@@ -66,14 +67,16 @@ const Gender = ({ genders, title, setIsFormValid }: GenderProps) => {
   };
 
   const isGenderSelected = (genderId: string) => selectedGender === genderId;
-
+  const isMobile = width !== undefined && width <= 767;
   if (loading) {
     return (
       <div className="w-full flex items-center justify-between">
-        <Skeleton className="h-32 w-32 bg-red-100 rounded-full" />
-        <Skeleton className="h-32 w-32 bg-red-100 rounded-full" />
-        <Skeleton className="h-32 w-32 bg-red-100 rounded-full" />
-        <Skeleton className="h-32 w-32 bg-red-100 rounded-full" />
+        <Skeleton className="h-32 w-32 bg-red-100 rounded-full mx-3" />
+        <Skeleton className="h-32 w-32 bg-red-100 rounded-full mx-3" />
+        <Skeleton className="h-32 w-32 bg-red-100 rounded-full mx-3 hidden md:flex" />
+        <Skeleton className="h-32 w-32 bg-red-100 rounded-full mx-3 hidden md:flex" />
+        <Skeleton className="h-32 w-32 bg-red-100 rounded-full mx-3 hidden md:flex" />
+        <Skeleton className="h-32 w-32 bg-red-100 rounded-full mx-3 hidden md:flex" />
       </div>
     );
   }
@@ -83,42 +86,44 @@ const Gender = ({ genders, title, setIsFormValid }: GenderProps) => {
       <h1 className="text-2xl xl:text-3xl mb-3 font-semibold transition-all duration-1000 ease-in-out transform animate-slide-in text-websecondary">
         {title}
       </h1>
-      <div className="mt-10 px-5">
-        <div className="w-full max-w-screen-xl mx-auto">
-          <Swiper
-            className="w-full"
-            cssMode={true}
-            spaceBetween={20}
-            slidesPerView={5}
-            navigation={true}
-            mousewheel={true}
-            keyboard={true}
-            modules={[Navigation, Mousewheel, Keyboard]}
-          >
-            {genders.map((gender) => (
-              <SwiperSlide
-                key={gender.id}
-                onClick={() => toggleGenderSelection(gender.id)}
-                className={cn(
-                  "rounded-full bg-slate-200 p-5 text-center min-w-[150px] hover:text-websecondary hover:border-300 transition duration-300 text-sm font-semibold relative cursor-pointer",
-                  isGenderSelected(gender.id) &&
-                    "bg-red-500 opacity-100 text-white"
-                )}
-              >
-                <div className="relative overflow-hidden group">
-                  <Image
-                    src={
-                      gender.imageUrl || "/assets/images/default-category.jpg"
-                    }
-                    alt={gender.title || "Gender Image"}
-                    width={150}
-                    height={150}
-                  />
-                </div>
-              </SwiperSlide>
-            ))}
-          </Swiper>
-        </div>
+
+      <div
+        className={cn(
+          "w-full md:w-[320px]  flex items-center justify-center",
+          isMobile && "max-w-[320px]"
+        )}
+      >
+        <Swiper
+          className="w-full"
+          cssMode={true}
+          spaceBetween={20}
+          slidesPerView={2}
+          navigation={true}
+          mousewheel={true}
+          keyboard={true}
+          modules={[Navigation, Mousewheel, Keyboard]}
+        >
+          {genders.map((gender) => (
+            <SwiperSlide
+              key={gender.id}
+              onClick={() => toggleGenderSelection(gender.id)}
+              className={cn(
+                "rounded-full bg-slate-200 p-5 text-center w-[120px] md:w-[150px] hover:text-websecondary hover:border-300 transition duration-300 text-sm font-semibold relative cursor-pointer",
+                isGenderSelected(gender.id) &&
+                  "bg-red-500 opacity-100 text-white"
+              )}
+            >
+              <div className="relative overflow-hidden group">
+                <Image
+                  src={gender.imageUrl || "/assets/images/default-category.jpg"}
+                  alt={gender.title || "Gender Image"}
+                  width={150}
+                  height={150}
+                />
+              </div>
+            </SwiperSlide>
+          ))}
+        </Swiper>
       </div>
     </div>
   );

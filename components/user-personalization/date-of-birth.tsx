@@ -71,10 +71,12 @@ const DateOfBirth = ({ title, setIsFormValid }: GenderProps) => {
   if (loading) {
     return (
       <div className="w-full flex items-center justify-between">
-        <Skeleton className="h-32 w-32 bg-red-100 rounded-full" />
-        <Skeleton className="h-32 w-32 bg-red-100 rounded-full" />
-        <Skeleton className="h-32 w-32 bg-red-100 rounded-full" />
-        <Skeleton className="h-32 w-32 bg-red-100 rounded-full" />
+        <Skeleton className="h-32 w-32 bg-red-100 rounded-full mx-3" />
+        <Skeleton className="h-32 w-32 bg-red-100 rounded-full mx-3" />
+        <Skeleton className="h-32 w-32 bg-red-100 rounded-full mx-3 hidden md:flex" />
+        <Skeleton className="h-32 w-32 bg-red-100 rounded-full mx-3 hidden md:flex" />
+        <Skeleton className="h-32 w-32 bg-red-100 rounded-full mx-3 hidden md:flex" />
+        <Skeleton className="h-32 w-32 bg-red-100 rounded-full mx-3 hidden md:flex" />
       </div>
     );
   }
@@ -93,7 +95,7 @@ const DateOfBirth = ({ title, setIsFormValid }: GenderProps) => {
                 onClick={() => setPopoverOpen(true)}
                 variant={"outline"}
                 className={cn(
-                  "w-[600px] pl-3 text-left font-normal",
+                  "w-full pl-3 text-left font-normal",
                   !date && "text-muted-foreground"
                 )}
               >

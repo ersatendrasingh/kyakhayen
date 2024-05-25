@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -10,6 +9,7 @@ interface HeightWeightProps {
   title: string;
   setIsFormValid: (isValid: boolean) => void;
 }
+
 const getSavedData = (): {
   heightFt: string;
   heightInch: string;
@@ -21,14 +21,12 @@ const getSavedData = (): {
     const userData = localStorage.getItem("userData");
     if (userData) {
       const parsedUserData = JSON.parse(userData);
-
       if (parsedUserData.heightWeight) {
         const { heightFt, heightInch, heightCm, weightKg, weightLbs } =
           parsedUserData.heightWeight;
         return { heightFt, heightInch, heightCm, weightKg, weightLbs };
       }
     }
-
     return {
       heightFt: "",
       heightInch: "",
@@ -38,7 +36,6 @@ const getSavedData = (): {
     };
   } catch (error) {
     console.error("Error parsing saved height and weight:", error);
-
     return {
       heightFt: "",
       heightInch: "",
@@ -72,6 +69,7 @@ const HeightWeight = ({ title, setIsFormValid }: HeightWeightProps) => {
     setIsWeightChecked(!isWeightChecked);
     setWeightUnit(isWeightChecked ? "kg" : "lbs");
   };
+
   useEffect(() => {
     setLoading(false);
   }, []);
@@ -125,21 +123,27 @@ const HeightWeight = ({ title, setIsFormValid }: HeightWeightProps) => {
     };
 
     localStorage.setItem("userData", JSON.stringify(updatedUserData));
+
     const parsedHeightFt = parseInt(heightFt);
     const parsedHeightInch = parseInt(heightInch);
     const parsedHeightCm = parseInt(heightCm);
     const parsedWeightKg = parseInt(weightKg);
     const parsedWeightLbs = parseInt(weightLbs);
+
     const isValidHeightRange =
       (heightUnit === "ft-in" &&
         ((parsedHeightFt >= 3 && parsedHeightFt <= 6) ||
           (parsedHeightFt === 6 && parsedHeightInch <= 11))) ||
       (heightUnit === "cm" && parsedHeightCm >= 100 && parsedHeightCm <= 210);
+
     setIsValidHeight(isValidHeightRange);
+
     const isValidWeightRange =
       (weightUnit === "kg" && parsedWeightKg >= 35 && parsedWeightKg <= 180) ||
       (weightUnit === "lbs" && parsedWeightLbs >= 77 && parsedWeightLbs <= 397);
+
     setIsValidWeight(isValidWeightRange);
+
     const isFormValid = isValidHeightRange && isValidWeightRange;
 
     setIsFormValid(isFormValid);
@@ -157,24 +161,26 @@ const HeightWeight = ({ title, setIsFormValid }: HeightWeightProps) => {
   if (loading) {
     return (
       <div className="w-full flex items-center justify-between">
-        <Skeleton className="h-32 w-32 bg-red-100 rounded-full" />
-        <Skeleton className="h-32 w-32 bg-red-100 rounded-full" />
-        <Skeleton className="h-32 w-32 bg-red-100 rounded-full" />
-        <Skeleton className="h-32 w-32 bg-red-100 rounded-full" />
+        <Skeleton className="h-32 w-32 bg-red-100 rounded-full mx-3" />
+        <Skeleton className="h-32 w-32 bg-red-100 rounded-full mx-3" />
+        <Skeleton className="h-32 w-32 bg-red-100 rounded-full mx-3 hidden md:flex" />
+        <Skeleton className="h-32 w-32 bg-red-100 rounded-full mx-3 hidden md:flex" />
+        <Skeleton className="h-32 w-32 bg-red-100 rounded-full mx-3 hidden md:flex" />
+        <Skeleton className="h-32 w-32 bg-red-100 rounded-full mx-3 hidden md:flex" />
       </div>
     );
   }
 
   return (
-    <div className="w-full">
-      <h1 className="text-2xl xl:text-3xl mb-3 font-semibold transition-all duration-1000 ease-in-out transform animate-slide-in text-websecondary">
+    <div className="w-full flex flex-col items-center justify-center">
+      <h1 className="text-xl xl:text-3xl mb-3 font-semibold transition-all duration-1000 ease-in-out transform animate-slide-in text-websecondary">
         {title}
       </h1>
 
-      <div className="mt-2 px-5">
+      <div className="w-[320px] md:w-full">
         {/* Height Section */}
-        <div className="flex flex-col">
-          <div className="flex items-center my-2 space-x-2">
+        <div className="flex flex-col w-full">
+          <div className="flex items-center mb-2 space-x-2">
             <Switch
               id="height-unit-switch"
               checked={isHeightChecked}
@@ -185,19 +191,19 @@ const HeightWeight = ({ title, setIsFormValid }: HeightWeightProps) => {
             />
             <Label
               htmlFor="height-unit-switch"
-              className="ml-2 text-sm text-websecondary"
+              className="ml-2 text-xs text-websecondary"
             >
               {isHeightChecked ? "CM" : "FT/INCH"}
             </Label>
           </div>
           {heightUnit === "ft-in" && (
-            <div className="flex space-x-4">
+            <div className="flex space-x-2">
               <input
                 type="number"
                 placeholder="Feet"
                 value={heightFt}
                 onChange={(e) => setHeightFt(e.target.value)}
-                className="w-1/2 p-3 rounded-full"
+                className="w-1/2 p-2 md:p-3  rounded-md md:rounded-full border border-gray-300"
               />
               <input
                 type="number"
@@ -212,7 +218,7 @@ const HeightWeight = ({ title, setIsFormValid }: HeightWeightProps) => {
                     setHeightInch(value);
                   }
                 }}
-                className="w-1/2 p-3 rounded-full"
+                className="w-1/2 p-2 md:p-3  rounded-md md:rounded-full border border-gray-300"
                 min="0"
                 max="11"
                 step="1"
@@ -225,19 +231,18 @@ const HeightWeight = ({ title, setIsFormValid }: HeightWeightProps) => {
               placeholder="Centimeters"
               value={heightCm}
               onChange={(e) => setHeightCm(e.target.value)}
-              className="w-full p-3 rounded-full"
+              className="w-full p-2 md:p-3  rounded-md md:rounded-full border border-gray-300"
             />
           )}
           {isValidHeight ? null : (
-            <div className="text-red-500 text-sm mt-1 ml-1">
-              Height should be between 100 and 210 cm or 3&apos;0&apos;&apos;
-              and 6&apos;11&apos;&apos;.
+            <div className="text-red-500 text-xs mt-1 ml-1">
+              Height should be between 100 and 210 cm.
             </div>
           )}
         </div>
 
         {/* Weight Section */}
-        <div className="flex flex-col">
+        <div className="flex flex-col mt-2 w-full">
           <div className="flex items-center my-2 space-x-2">
             <Switch
               id="weight-unit-switch"
@@ -249,7 +254,7 @@ const HeightWeight = ({ title, setIsFormValid }: HeightWeightProps) => {
             />
             <Label
               htmlFor="weight-unit-switch"
-              className="ml-2 text-sm text-websecondary"
+              className="ml-2 text-xs text-websecondary"
             >
               {isWeightChecked ? "LBS" : "KG"}
             </Label>
@@ -260,7 +265,7 @@ const HeightWeight = ({ title, setIsFormValid }: HeightWeightProps) => {
               placeholder="Kilograms"
               value={weightKg}
               onChange={(e) => setWeightKg(e.target.value)}
-              className="w-full p-3 rounded-full"
+              className="w-full p-2 md:p-3  rounded-md md:rounded-full border border-gray-300"
             />
           )}
           {weightUnit === "lbs" && (
@@ -269,11 +274,11 @@ const HeightWeight = ({ title, setIsFormValid }: HeightWeightProps) => {
               placeholder="Pounds"
               value={weightLbs}
               onChange={(e) => setWeightLbs(e.target.value)}
-              className="w-full p-3 rounded-full"
+              className="w-full p-2 md:p-3  rounded-md md:rounded-full border border-gray-300"
             />
           )}
           {isValidWeight ? null : (
-            <div className="text-red-500 text-sm mt-1 ml-1">
+            <div className="text-red-500 text-xs mt-1 ml-1">
               Weight should be between 35 and 180 kg.
             </div>
           )}

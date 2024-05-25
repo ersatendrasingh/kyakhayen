@@ -84,10 +84,12 @@ export const PrakritiQuestionForm = ({
   if (loading) {
     return (
       <div className="w-full flex items-center justify-between">
-        <Skeleton className="h-32 w-32 bg-red-100 rounded-full" />
-        <Skeleton className="h-32 w-32 bg-red-100 rounded-full" />
-        <Skeleton className="h-32 w-32 bg-red-100 rounded-full" />
-        <Skeleton className="h-32 w-32 bg-red-100 rounded-full" />
+        <Skeleton className="h-32 w-32 bg-red-100 rounded-full mx-3" />
+        <Skeleton className="h-32 w-32 bg-red-100 rounded-full mx-3" />
+        <Skeleton className="h-32 w-32 bg-red-100 rounded-full mx-3 hidden md:flex" />
+        <Skeleton className="h-32 w-32 bg-red-100 rounded-full mx-3 hidden md:flex" />
+        <Skeleton className="h-32 w-32 bg-red-100 rounded-full mx-3 hidden md:flex" />
+        <Skeleton className="h-32 w-32 bg-red-100 rounded-full mx-3 hidden md:flex" />
       </div>
     );
   }
@@ -96,17 +98,16 @@ export const PrakritiQuestionForm = ({
       <h1 className="text-2xl xl:text-3xl mb-3 font-semibold transition-all duration-1000 ease-in-out transform animate-slide-in text-websecondary">
         {title}
       </h1>
-      <div className="space-y-2">
+      <div className="w-[320px] md:w-full  flex flex-col  space-y-2 mx-auto">
         {options.map((option) => (
           <div key={option.id} className="flex items-center justify-center">
             <Button
               variant={selectedOption === option.id ? "default" : "outline"}
               className={cn(
-                "p-4 rounded-full border", // Base button styles
+                "p-6 rounded-full border w-full md:w-[600px] break-words whitespace-normal", // Base button styles
                 selectedOption === option.id
                   ? "bg-websecondary text-white hover:bg-websecondary hover:text-white hover:border-websecondary"
-                  : "bg-white text-websecondary border-websecondary hover:bg-gray-200 hover:text-websecondary hover:border-websecondary",
-                "min-w-[600px]" // Minimum width for all buttons
+                  : "bg-white text-websecondary border-websecondary hover:bg-gray-200 hover:text-websecondary hover:border-websecondary"
               )}
               onClick={() =>
                 handleOptionClick(
