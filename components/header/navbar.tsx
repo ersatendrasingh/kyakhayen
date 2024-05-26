@@ -29,8 +29,8 @@ const navbarItems = [
     hasChild: false,
   },
   {
-    label: "Healthy Recipes",
-    href: "/recipes",
+    label: "Meal Plan",
+    href: "/meal-plan",
     hasChild: false,
   },
 ];
