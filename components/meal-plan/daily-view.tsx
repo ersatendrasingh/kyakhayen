@@ -49,22 +49,22 @@ const DailyView = ({ date }: DailyViewProps) => {
   if (loading) {
     return (
       <div className="bg-white p-4 rounded-lg shadow-md flex flex-col items-center justify-center h-64">
-        <h2 className="text-2xl font-semibold mb-4">
+        <h2 className="text-md font-semibold mb-4">
           Meals for {date.toDateString()}
         </h2>
-        <Image src="/assets/menu.gif" alt="Loading" width={200} height={200} />
+        <Image src="/assets/cook.gif" alt="Loading" width={200} height={200} />
       </div>
     );
   }
   return (
-    <div className="bg-white p-4 rounded-lg shadow-md">
-      <h2 className="text-2xl font-semibold mb-4">
+    <div className="bg-white p-4 rounded-lg">
+      <h2 className="text-md font-semibold text-center mb-4">
         Meals for {date.toDateString()}
       </h2>
       {mealTimes.map((mealTime) => (
         <div key={mealTime.id} className="mb-4">
           <button
-            className="text-lg bg-webprimary p-2 pl-5 rounded-full w-full text-white font-bold mb-2 flex justify-between items-center transition-transform duration-300"
+            className="bg-webprimary p-2 pl-5 rounded-full w-full text-white text-sm font-medium mb-2 flex justify-between items-center transition-transform duration-300"
             onClick={() => handleMealTimeClick(mealTime.slug)}
           >
             {mealTime.title}
