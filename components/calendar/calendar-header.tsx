@@ -32,7 +32,7 @@ const CalendarHeader: React.FC<CalendarHeaderProps> = ({
   });
   const start = isMobile ? mobileStartOfWeek : desktopStartOfWeek;
 
-  const numDaysToShow = isMobile ? 2 : 7;
+  const numDaysToShow = isMobile ? 3 : 7;
 
   const days = Array.from({ length: numDaysToShow }, (_, index) =>
     addDays(start, index)
@@ -64,10 +64,12 @@ const CalendarHeader: React.FC<CalendarHeaderProps> = ({
                     : " text-gray-900"
                 }  hover:bg-websecondary-200`}
               >
-                <div className="text-center font-bold">
+                <div className="text-center text-sm font-medium">
                   {format(day, "EEE")}
                 </div>
-                <div className="text-center">{format(day, "dd MMM")}</div>
+                <div className="text-center text-sm">
+                  {format(day, "dd MMM")}
+                </div>
               </div>
             ))}
           </div>

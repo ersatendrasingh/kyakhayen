@@ -50,7 +50,7 @@ const MealPlanCard = ({ recipe }: MealPlanCardProps) => {
         <div className="relative w-24 h-24 md:w-36 md:h-36">
           <Image
             className="rounded-md object-cover"
-            src={recipe.imageUrl || "https://via.placeholder.com/200x200"}
+            src={recipe.imageUrl || "/assets/images/default-recipe.jpg"}
             alt={recipe.title || "Recipe Image"}
             fill
           />
