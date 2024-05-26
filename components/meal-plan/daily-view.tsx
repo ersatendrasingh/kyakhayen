@@ -64,7 +64,7 @@ const DailyView = ({ date }: DailyViewProps) => {
       {mealTimes.map((mealTime) => (
         <div key={mealTime.id} className="mb-4">
           <button
-            className="text-lg bg-webprimary p-4 rounded-full w-full text-white font-bold mb-2 flex justify-between items-center transition-transform duration-300"
+            className="text-lg bg-webprimary p-2 pl-5 rounded-full w-full text-white font-bold mb-2 flex justify-between items-center transition-transform duration-300"
             onClick={() => handleMealTimeClick(mealTime.slug)}
           >
             {mealTime.title}
