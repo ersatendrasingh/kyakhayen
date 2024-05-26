@@ -17,7 +17,7 @@ interface PageBreadcumProps {
 
 const PageBreadcum = ({ currentPage }: PageBreadcumProps) => {
   return (
-    <Breadcrumb className="flex items-center justify-center md:items-start md:justify-start py-4 text-white font-bold">
+    <Breadcrumb className="flex items-center justify-center  py-2 text-white font-bold">
       <BreadcrumbList>
         <BreadcrumbItem>
           <BreadcrumbLink href="/" className="text-white">

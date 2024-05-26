@@ -5,6 +5,7 @@ import { LiaChevronLeftSolid } from "react-icons/lia";
 import { LiaChevronRightSolid } from "react-icons/lia";
 import useWindowSize from "@/hooks/use-window-size";
 import { Skeleton } from "../ui/skeleton";
+import Container from "../container";
 
 interface CalendarHeaderProps {
   selectedDate: Date | null;
@@ -44,7 +45,7 @@ const CalendarHeader: React.FC<CalendarHeaderProps> = ({
       {loading ? (
         <Skeleton className="w-full h-16 rounded-full" />
       ) : (
-        <div className="flex justify-between items-center mb-4 px-4 bg-gray-100 rounded-full">
+        <div className="flex justify-between items-center mx-2 md:mx-0 mb-4 px-4 bg-gray-100 rounded-full">
           <button
             onClick={onPrevDay}
             className="p-2 bg-gray-300 rounded-full shadow hover:bg-gray-400"
@@ -56,7 +57,7 @@ const CalendarHeader: React.FC<CalendarHeaderProps> = ({
               <div
                 key={index}
                 onClick={() => onDayClick(day)}
-                className={`cursor-pointer p-6 px-10 ${
+                className={`cursor-pointer p-2 md:p-3 md:px-10 ${
                   format(day, "yyyy-MM-dd") ===
                   format(currentDate, "yyyy-MM-dd")
                     ? "bg-websecondary text-white shadow-md rounded-xl"
