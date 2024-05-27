@@ -73,6 +73,7 @@ export const {
         session.user.createdAt = token.createdAt as Date;
         session.user.updateAt = token.updateAt as Date;
         session.user.isOAuth = token.isOAuth as boolean;
+        session.user.isPersonalised = token.isPersonalised as boolean;
       }
 
       return session;
@@ -91,6 +92,7 @@ export const {
       token.email = existingUser.email;
       token.role = existingUser.role;
       token.phoneNumber = existingUser.phoneNumber;
+      token.isPersonalised = existingUser.isPersonalised;
       token.createdAt = existingUser.createdAt;
       token.updateAt = existingUser.updateAt;
 

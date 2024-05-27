@@ -109,7 +109,7 @@ const DateOfBirth = ({ title, setIsFormValid }: GenderProps) => {
                 mode="single"
                 captionLayout="dropdown-buttons"
                 fromYear={1970}
-                toYear={2023}
+                toYear={2020}
                 selected={date}
                 onSelect={(selectedDate) => {
                   setDate(selectedDate ?? undefined);

@@ -2,11 +2,11 @@ import axios from "axios";
 import { useRouter } from "next/navigation";
 interface UserData {
   cuisines?: string;
-  allergies?: string; // allergies
-  cookingSkill?: string; // health goals
-  foodPreference?: string; // food preferences
-  healthGoals?: string; // cooking skill
-  gender?: string; // gender
+  allergies?: string;
+  cookingSkill?: string;
+  foodPreference?: string;
+  healthGoals?: string;
+  gender?: string;
   dob?: string;
   heightWeight?: string;
   prakritiSelections?: string;
@@ -54,7 +54,6 @@ export const collectPersonalizationData = () => {
     formattedDate = parseDate(rawDate);
     age = calculateAge(rawDate);
   }
-
   const data = {
     cuisines: parsedUserData.cuisines || {},
     allergies: parsedUserData.allergies || "",

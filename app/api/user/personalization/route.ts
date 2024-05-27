@@ -8,6 +8,42 @@ interface PrakritiSelection {
   questionId: string;
   optionId: string;
 }
+
+function isPersonalizationComplete(user: any): boolean {
+  const requiredFields = [
+    "dob",
+    "age",
+    "genderId",
+    "foodPreferenceId",
+    "cookingSkillId",
+    "heightFt",
+    "heightInch",
+    "heightCm",
+    "weightKg",
+    "weightLbs",
+  ];
+
+  for (const field of requiredFields) {
+    if (!user[field]) {
+      return false;
+    }
+  }
+
+  const requiredArrays = [
+    "userCuisines",
+    "UserHealthGoals",
+    "UserAllrgies",
+    "userPrakriti",
+  ];
+  for (const arrayField of requiredArrays) {
+    if (!user[arrayField] || user[arrayField].length === 0) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
 export async function PATCH(req: Request) {
   try {
     const user = await currentUser();
@@ -133,8 +169,25 @@ export async function PATCH(req: Request) {
         weightLbs,
         bmi: roundedBMI,
       },
+      include: {
+        userCuisines: true,
+        UserHealthGoals: true,
+        UserAllrgies: true,
+        userPrakriti: true,
+      },
     });
 
+    // Check if personalization is complete
+    const isPersonalised = isPersonalizationComplete(updatedUser);
+    console.log("isPersonalised", isPersonalised);
+    await db.user.update({
+      where: {
+        id: user.id,
+      },
+      data: {
+        isPersonalised,
+      },
+    });
     return NextResponse.json(updatedUser, {
       status: 200,
     });

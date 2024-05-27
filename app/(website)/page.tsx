@@ -6,6 +6,9 @@ import PersonalizationForm from "@/components/sections/personalization-form";
 import PopularRecipes from "@/components/sections/popular-recipes";
 import { db } from "@/lib/db";
 import { getPrakritiQuestions } from "@/actions/get-prakriti-questions";
+import { currentUser } from "@/lib/auth";
+import { useCurrentUser } from "@/hooks/use-current-user";
+import HomeBanner from "@/components/sections/home-banner";
 
 type Banner = {
   id: number;
@@ -13,7 +16,56 @@ type Banner = {
   spanTxt: string;
   btnTxt: string;
   image: string;
+  href?: string;
+  points?: string[];
 };
+
+const banners = [
+  {
+    id: 1,
+    title: "Download Our App",
+    spanTxt: "Get the best features at your fingertips!",
+    btnTxt: "Download Now",
+    image: "/assets/images/home-banner-app-download.webp",
+    href: "/",
+    points: [
+      "Personalized Meal Plans",
+      "Exclusive Recipes",
+      "Nutritional Insights",
+      "Community Support",
+      "Real-Time Notifications",
+      "Offline Access",
+      "User-Friendly Interface",
+      "Enjoy a seamless and enjoyable user experience",
+    ],
+  },
+  {
+    id: 2,
+    title: "Meal Plans",
+    spanTxt: "Reach your goals with custom meal plans.",
+    btnTxt: "Get Started",
+    image: "/assets/images/meal-plan.webp",
+    href: "/meal-plan",
+    points: [
+      "Weekly plans with easy-to-follow recipes",
+      "Adjustable serving sizes",
+      "Calorie and macronutrient tracking",
+      "Track your daily intake and meet your health goals",
+      "Meal prep tips and hacks",
+      "Detailed nutritional information for every recipe",
+      "Save your favorite recipes and meal plans offline",
+      "Flexible and easy to modify",
+    ],
+  },
+  // {
+  //   id: 3,
+  //   title: "Personalize Yourself",
+  //   spanTxt: "Get your meal plan free",
+  //   description: "Some description about personalization",
+  //   btnTxt: "Get Started",
+  //   image: "/assets/images/home-banner-personalization.webp", // replace with your image path
+  // },
+];
 
 const homeBanner: Banner = {
   id: 1,
@@ -104,8 +156,9 @@ export default async function Home() {
 
   return (
     <div>
-      <PersonalizationForm
+      <HomeBanner
         banner={homeBanner}
+        banners={banners}
         cuisines={cuisines}
         allergies={allergies}
         healthGoals={healthGoals}
@@ -113,7 +166,6 @@ export default async function Home() {
         foodPreferences={recipeCategories}
         prakritiQuestions={prakritiQuestions}
         genders={genders}
-        className="md:py-12 py-10 md:mb-4 xl:mb-4"
       />
       <HomeCategory title="Recipe Categories" widgetItems={recipeCategories} />
       <PopularRecipes />

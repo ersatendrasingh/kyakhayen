@@ -87,40 +87,52 @@ body,
   * {
     @apply border-border;
   }
+
   body {
     @apply bg-background text-foreground;
   }
 }
+
 .ql-container {
   font-size: 16px !important;
   font-family: var(--font-poppins) !important;
   font-weight: 400 !important;
 }
+
 .ql-editor {
   padding: 0 !important;
   line-height: 28px !important;
   color: #3e3e3e !important;
 }
+
 ::-webkit-scrollbar {
-  width: 10px; /* Width of the scrollbar */
-  height: 10px; /* Height of the scrollbar */
+  width: 10px;
+  /* Width of the scrollbar */
+  height: 10px;
+  /* Height of the scrollbar */
   scrollbar-color: #999 #ccc;
   border: 1px solid #ccc;
 
   box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
 }
+
 ::-webkit-scrollbar-corner {
-  background: #ccc; /* Color of the scrollbar corner */
+  background: #ccc;
+  /* Color of the scrollbar corner */
 }
+
 ::-webkit-scrollbar-thumb {
-  background: #ea0909; /* Color of the scrollbar thumb */
+  background: #ea0909;
+  /* Color of the scrollbar thumb */
   border-radius: 10px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #ffc0c0; /* Color of the scrollbar track */
+  background: #ffc0c0;
+  /* Color of the scrollbar track */
   border-radius: 10px;
 }
+
 .focus-visible\:ring-ring:focus-visible {
   --tw-ring-color: none !important;
 }
@@ -130,8 +142,10 @@ body,
   width: 40px !important;
   height: 40px !important;
   background-color: white;
-  color: red !important; /* Text color */
-  border-radius: 50% !important; /* Circle shape */
+  color: red !important;
+  /* Text color */
+  border-radius: 50% !important;
+  /* Circle shape */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -139,17 +153,21 @@ body,
   font-size: 1.5rem;
   transition: background-color 0.3s;
 }
+
 .swiper-button-prev:after,
 .swiper-button-next:after {
   font-size: small !important;
 }
+
 .swiper-button-disabled {
-  display: none !important; /* Hide hidden buttons */
+  display: none !important;
+  /* Hide hidden buttons */
 }
 
 .swiper-button-prev:hover,
 .swiper-button-next:hover {
-  background-color: lightgray; /* Change background color on hover */
+  background-color: lightgray;
+  /* Change background color on hover */
 }
 
 /* CSS for sliding in from the right and out to the left */
@@ -197,6 +215,11 @@ body,
   transform: translateX(100%);
   transition: opacity 0.5s, transform 0.5s;
 }
+
 .parent-container {
   overflow-x: hidden;
+}
+
+.swiper-pagination-bullet-active {
+  background-color: #c21e1d !important;
 }
