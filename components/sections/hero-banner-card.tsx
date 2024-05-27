@@ -1,48 +1,24 @@
 "use client";
 
-import { useState, useEffect, useRef, createRef, RefObject } from "react";
+import { useState } from "react";
 import { Search } from "lucide-react";
 
-import { CSSTransition, TransitionGroup } from "react-transition-group";
-
 import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
-import Cuisines from "@/components/user-personalization/cuisines";
-import Allergies from "@/components/user-personalization/allergies";
-import HealthGoals from "@/components/user-personalization/health-goals";
-import CookingSkills from "@/components/user-personalization/cooking-skills";
-import FoodPreferences from "@/components/user-personalization/food-preferences";
-import Gender from "@/components/user-personalization/gender";
-import { Skeleton } from "@/components/ui/skeleton";
-import DateOfBirth from "@/components/user-personalization/date-of-birth";
-import HeightWeight from "@/components/user-personalization/height-weight";
+
 import Container from "@/components/container";
 import { Input } from "@/components/ui/input";
 import { SearchInput } from "@/components/header/search-input";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import DownloadOurApp from "@/components/sections/slider/download-our-app";
 
-import {
-  Allergies as AllergiesType,
-  Cuisines as CuisinesType,
-  HealthGoals as HealthGoalType,
-  Gender as GenderType,
-  RecipeCategories,
-  RecipeDifficulty,
-  PrakritiQuestionOption,
-  PrakritiQuestion,
-} from "@prisma/client";
-import { PrakritiQuestionForm } from "../user-personalization/prakriti-question-form";
-
-import { useCurrentUser } from "@/hooks/use-current-user";
-import axios from "axios";
-import { LoginButton } from "../auth/login-button";
-import { usePathname, useRouter } from "next/navigation";
-import { collectPersonalizationData } from "@/hooks/use-user-personalization";
-import DownloadOurApp from "./slider/download-our-app";
-interface PrakritiQuestionType extends PrakritiQuestion {
-  options: PrakritiQuestionOption[];
-}
-interface BannerProps {
+interface HeroBannerCardProps {
+  banner: {
+    id: number;
+    title: string;
+    spanTxt: string;
+    btnTxt: string;
+    image: string;
+  };
   banners: {
     id: number;
     title: string;
@@ -55,10 +31,11 @@ interface BannerProps {
   className?: string;
 }
 
-export default function PersonalizationForm({
+export default function HeroBannerCard({
+  banner,
   banners,
   className,
-}: BannerProps) {
+}: HeroBannerCardProps) {
   const [open, setOpen] = useState(false);
 
   return (
@@ -68,7 +45,7 @@ export default function PersonalizationForm({
         className
       )}
       style={{
-        backgroundImage: `url("assets/images/home-banner-3.webp")`,
+        backgroundImage: `url(${banner.image})`,
         backgroundSize: "cover",
         backgroundPosition: "center",
       }}

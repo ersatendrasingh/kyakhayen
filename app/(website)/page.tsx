@@ -6,6 +6,9 @@ import PersonalizationForm from "@/components/sections/personalization-form";
 import PopularRecipes from "@/components/sections/popular-recipes";
 import { db } from "@/lib/db";
 import { getPrakritiQuestions } from "@/actions/get-prakriti-questions";
+import { currentUser } from "@/lib/auth";
+import { useCurrentUser } from "@/hooks/use-current-user";
+import HomeBanner from "@/components/sections/home-banner";
 
 type Banner = {
   id: number;
@@ -153,9 +156,9 @@ export default async function Home() {
 
   return (
     <div>
-      <HeroBannerCard banners={banners} />
-      {/* <PersonalizationForm
+      <HomeBanner
         banner={homeBanner}
+        banners={banners}
         cuisines={cuisines}
         allergies={allergies}
         healthGoals={healthGoals}
@@ -163,8 +166,7 @@ export default async function Home() {
         foodPreferences={recipeCategories}
         prakritiQuestions={prakritiQuestions}
         genders={genders}
-        className="md:py-12 py-10 md:mb-4 xl:mb-4"
-      /> */}
+      />
       <HomeCategory title="Recipe Categories" widgetItems={recipeCategories} />
       <PopularRecipes />
     </div>

@@ -35,9 +35,10 @@ import { PrakritiQuestionForm } from "../user-personalization/prakriti-question-
 
 import { useCurrentUser } from "@/hooks/use-current-user";
 import axios from "axios";
-import { LoginButton } from "../auth/login-button";
+
 import { usePathname, useRouter } from "next/navigation";
 import { collectPersonalizationData } from "@/hooks/use-user-personalization";
+import OverlayLoader from "../loader/overlay-loader";
 interface PrakritiQuestionType extends PrakritiQuestion {
   options: PrakritiQuestionOption[];
 }
@@ -132,17 +133,23 @@ export default function PersonalizationForm({
 
   const handleDoneButtonClick = async () => {
     if (!user) {
-      console.log("User is not logged in");
       localStorage.setItem("needsPersonalizationUpdate", "true");
       const encodedCallbackUrl = encodeURIComponent(pathname || "");
       router.push("/auth/login?callbackUrl=" + encodedCallbackUrl);
     } else {
       console.log("User is logged in. Proceeding to next step...");
       try {
+        setLoading(true);
         const data = collectPersonalizationData();
 
         const response = await axios.patch("/api/user/personalization", data);
-        console.log("Saved");
+        if (response.status === 200) {
+          setLoading(true);
+          localStorage.setItem("personalization", "true");
+          localStorage.removeItem("userData");
+          localStorage.removeItem("currentStep");
+          router.push("/meal-plan");
+        }
       } catch (error) {
         console.error("Error:", error);
       }
@@ -160,6 +167,8 @@ export default function PersonalizationForm({
         backgroundPosition: "center",
       }}
     >
+      {loading && <OverlayLoader isLoading={loading} />}
+
       <Container>
         <div className="w-full flex flex-col items-center justify-center text-center relative">
           <div className="hidden md:flex w-full my-3 justify-center">
@@ -417,6 +426,7 @@ export default function PersonalizationForm({
                   <Button
                     variant="main"
                     size="main"
+                    disabled={!isFormValid}
                     onClick={handleDoneButtonClick}
                   >
                     Done

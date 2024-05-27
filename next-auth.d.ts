@@ -13,6 +13,7 @@ export type ExtendedUser = DefaultSession["user"] & {
   role: UserRole;
   purchases: Purchase[];
   isTwoFactorEnabled: boolean;
+  isPersonalised: boolean;
   isOAuth: boolean;
 };
 

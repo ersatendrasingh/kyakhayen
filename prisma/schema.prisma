@@ -383,6 +383,7 @@ model User {
   UserAllrgies          UserAllrgies[]
   UserHealthGoals       UserHealthGoals[]
   isTwoFactorEnabled    Boolean                @default(false)
+  isPersonalised        Boolean                @default(false)
   twoFactorConfirmation TwoFactorConfirmation?
 
   createdAt DateTime @default(now())
