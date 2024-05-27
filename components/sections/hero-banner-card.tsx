@@ -1,59 +1,87 @@
 "use client";
 
-import { cn } from "@/lib/utils";
-import Link from "next/link";
-import { Button } from "../ui/button";
-
-import Image from "next/image";
-import Container from "@/components/container";
-import { Input } from "../ui/input";
-import { SearchInput } from "../header/search-input";
-import { Sheet, SheetContent, SheetTrigger } from "../ui/sheet";
-import { FaSearch } from "react-icons/fa";
+import { useState, useEffect, useRef, createRef, RefObject } from "react";
 import { Search } from "lucide-react";
-import { useState } from "react";
 
+import { CSSTransition, TransitionGroup } from "react-transition-group";
+
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import Cuisines from "@/components/user-personalization/cuisines";
+import Allergies from "@/components/user-personalization/allergies";
+import HealthGoals from "@/components/user-personalization/health-goals";
+import CookingSkills from "@/components/user-personalization/cooking-skills";
+import FoodPreferences from "@/components/user-personalization/food-preferences";
+import Gender from "@/components/user-personalization/gender";
+import { Skeleton } from "@/components/ui/skeleton";
+import DateOfBirth from "@/components/user-personalization/date-of-birth";
+import HeightWeight from "@/components/user-personalization/height-weight";
+import Container from "@/components/container";
+import { Input } from "@/components/ui/input";
+import { SearchInput } from "@/components/header/search-input";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+
+import {
+  Allergies as AllergiesType,
+  Cuisines as CuisinesType,
+  HealthGoals as HealthGoalType,
+  Gender as GenderType,
+  RecipeCategories,
+  RecipeDifficulty,
+  PrakritiQuestionOption,
+  PrakritiQuestion,
+} from "@prisma/client";
+import { PrakritiQuestionForm } from "../user-personalization/prakriti-question-form";
+
+import { useCurrentUser } from "@/hooks/use-current-user";
+import axios from "axios";
+import { LoginButton } from "../auth/login-button";
+import { usePathname, useRouter } from "next/navigation";
+import { collectPersonalizationData } from "@/hooks/use-user-personalization";
+import DownloadOurApp from "./slider/download-our-app";
+interface PrakritiQuestionType extends PrakritiQuestion {
+  options: PrakritiQuestionOption[];
+}
 interface BannerProps {
-  banner: {
+  banners: {
     id: number;
     title: string;
     spanTxt: string;
-    description: string;
     btnTxt: string;
     image: string;
-  };
+    points?: string[];
+    href?: string;
+  }[];
   className?: string;
 }
 
-export default function HeroBannerCard({ banner, className }: BannerProps) {
+export default function PersonalizationForm({
+  banners,
+  className,
+}: BannerProps) {
   const [open, setOpen] = useState(false);
+
   return (
     <div
-      className={cn("w-full flex items-center justify-center", className)}
+      className={cn(
+        "w-full flex items-center justify-center overflow-hidden",
+        className
+      )}
       style={{
-        backgroundImage: `url(${banner.image})`,
+        backgroundImage: `url("assets/images/home-banner-3.webp")`,
         backgroundSize: "cover",
         backgroundPosition: "center",
       }}
     >
       <Container>
-        <div className="w-full text-center">
-          <h1 className="text-3xl lg:text-3xl xl:text-5xl mb-3 font-bold transition-all duration-1000 ease-in-out transform animate-slide-in text-websecondary">
-            {banner.title}
-          </h1>
-
-          <span className="text-sm sm:text-sm md:text-xl p-2 mb-4 rounded-full text-black">
-            {banner.spanTxt}
-          </span>
-          {/* <SearchInput /> */}
-
-          <div className="flex w-full md:w-[600px] items-center mt-5 justify-center">
+        <div className="w-full flex flex-col items-center justify-center text-center">
+          <div className="hidden  w-full my-3 justify-center">
             <Sheet open={open} onOpenChange={setOpen}>
-              <SheetTrigger className="flex w-full">
-                <div className="relative mt-3 w-full items-start justify-start">
+              <SheetTrigger>
+                <div className="relative mt-3 w-full">
                   <Search className="h-6 w-6 absolute top-3 left-3 text-slate-600" />
                   <Input
-                    className="w-full md:w-[600px] h-12 pl-16 rounded-full bg-white"
+                    className="w-full md:w-[600px] h-12 pl-16 rounded-full bg-white shadow-md"
                     placeholder="Search for recipes..."
                   />
                 </div>
@@ -65,6 +93,10 @@ export default function HeroBannerCard({ banner, className }: BannerProps) {
                 <SearchInput onClose={() => setOpen(false)} />
               </SheetContent>
             </Sheet>
+          </div>
+
+          <div className="w-full h-full flex items-center justify-center">
+            <DownloadOurApp banners={banners} />
           </div>
         </div>
       </Container>
