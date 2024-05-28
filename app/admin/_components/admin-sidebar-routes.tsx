@@ -1,6 +1,12 @@
 "use client";
 
-import { CookingPot, LayoutDashboard, Salad, Webhook } from "lucide-react";
+import {
+  CookingPot,
+  LayoutDashboard,
+  Salad,
+  Users,
+  Webhook,
+} from "lucide-react";
 import { AdminSidebarItem } from "./admin-sidebar-item";
 
 const routes = [
@@ -118,6 +124,12 @@ const routes = [
     icon: Webhook,
     label: "Manage Prakriti",
     href: "/admin/prakriti",
+  },
+  {
+    id: 5,
+    icon: Users,
+    label: "Manage Users",
+    href: "/admin/users",
   },
 ];
 export const AdminSidebarRoutes = () => {
