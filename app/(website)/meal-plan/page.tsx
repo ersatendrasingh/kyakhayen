@@ -1,42 +1,56 @@
-"use client";
-
-import { useState } from "react";
-import DailyView from "@/components/meal-plan/daily-view";
-
 import { PageHeader } from "@/components/page-header";
-import CalendarHeader from "@/components/calendar/calendar-header";
 
-import { addDays, subDays } from "date-fns";
+import { Metadata } from "next";
+import MealPlan from "@/components/meal-plan/meal-plan";
+const meta = {
+  title:
+    "Personalized Meal Plans - Kya Khayen? | Tailored Recipes for Every Taste",
+  description:
+    "Explore personalized meal plans with Kya Khayen?. Customize your meals based on your preferences, dietary restrictions, and health goals. Discover new recipes tailored just for you.",
+  image: `${process.env.NEXT_PUBLIC_APP_URL}/assets/images/home-banner-personalization.webp`,
+  keywords: [
+    "Kya Khayen?",
+    "personalized meal plans",
+    "custom meal plans",
+    "recipe customization",
+    "dietary restrictions",
+    "health goals",
+    "tailored recipes",
+    "meal planning",
+    "nutrition",
+  ],
+};
 
+export const metadata: Metadata = {
+  title: meta.title,
+  description: meta.description,
+  keywords: meta.keywords,
+  openGraph: {
+    title: meta.title,
+    description: meta.description,
+    url: `${process.env.NEXT_PUBLIC_APP_URL}/meal-plan`,
+    type: "website",
+    images: [
+      {
+        url: meta.image,
+      },
+    ],
+  },
+  twitter: {
+    title: meta.title,
+    description: meta.description,
+    images: [meta.image],
+    card: "summary_large_image",
+  },
+  alternates: {
+    canonical: `${process.env.NEXT_PUBLIC_APP_URL}/meal-plan`,
+  },
+};
 const MealPlanPage = () => {
-  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
-
-  const handleDayClick = (date: Date) => {
-    setSelectedDate(date);
-  };
-
-  const handlePrevDay = () => {
-    setSelectedDate((prevDate) => subDays(prevDate, 1));
-  };
-
-  const handleNextDay = () => {
-    setSelectedDate((prevDate) => addDays(prevDate, 1));
-  };
-
   return (
     <div>
       <PageHeader title="Meal Plan" className="py-6" />
-      <main>
-        <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-          <CalendarHeader
-            selectedDate={selectedDate}
-            onDayClick={handleDayClick}
-            onPrevDay={handlePrevDay}
-            onNextDay={handleNextDay}
-          />
-          {selectedDate && <DailyView date={selectedDate} />}
-        </div>
-      </main>
+      <MealPlan />
     </div>
   );
 };

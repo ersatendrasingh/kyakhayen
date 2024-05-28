@@ -6,6 +6,7 @@ import {
   FaTwitter,
   FaYoutube,
 } from "react-icons/fa";
+import { FaXTwitter } from "react-icons/fa6";
 
 import Container from "@/components/container";
 import Logo from "@/components/logo";
@@ -42,13 +43,13 @@ const Footer = async () => {
               <Link href="/recipes" className="block mb-2">
                 Recipes
               </Link>
-              <Link href="#" className="block mb-2">
+              <Link href="/about-us" className="block mb-2">
                 About
               </Link>
-              <Link href="#" className="block mb-2">
-                Contact
+              <Link href="/download-app" className="block mb-2">
+                Download App
               </Link>
-              <Link href="#" className="block mb-2">
+              <Link href="/privacy-policy" className="block mb-2">
                 Privacy Policy
               </Link>
             </nav>
@@ -82,13 +83,13 @@ const Footer = async () => {
               >
                 <FaFacebook className="w-6 h-6" />
               </a>
-              {/* <a
-                href="#"
+              <a
+                href="https://www.youtube.com/channel/UC-kmoWXdqoZaUDSpemR2hCw"
                 target="_blank"
                 className="text-red-500 hover:text-red-700"
               >
                 <FaYoutube className="w-6 h-6" />
-              </a> */}
+              </a>
               <a
                 href="https://www.instagram.com/kyakhayen/"
                 target="_blank"
@@ -99,9 +100,9 @@ const Footer = async () => {
               <a
                 href="https://twitter.com/kyakhayen"
                 target="_blank"
-                className="text-blue-400 hover:text-blue-600"
+                className="text-black hover:text-blue-500"
               >
-                <FaTwitter className="w-6 h-6" />
+                <FaXTwitter className="w-6 h-6" />
               </a>
               {/* <a
                 href="#"

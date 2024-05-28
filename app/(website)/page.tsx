@@ -27,7 +27,7 @@ const banners = [
     spanTxt: "Get the best features at your fingertips!",
     btnTxt: "Download Now",
     image: "/assets/images/home-banner-app-download.webp",
-    href: "/",
+    href: "/download-app",
     points: [
       "Personalized Meal Plans",
       "Exclusive Recipes",
