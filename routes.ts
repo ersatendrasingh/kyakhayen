@@ -10,6 +10,11 @@ export const publicRoutes = [
   "/checkout",
   "/recipes",
   "/search",
+  "/download-app",
+  "/about-us",
+  "/privacy-policy",
+  "/terms-and-conditions",
+  "/contact-us",
 ];
 
 /**

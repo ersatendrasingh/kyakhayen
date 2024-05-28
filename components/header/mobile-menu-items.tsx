@@ -15,7 +15,7 @@ const navbarItems = [
     hasChild: false,
   },
   {
-    label: "Meals",
+    label: "Healthy Recipes",
     href: "/recipes",
     hasChild: false,
   },

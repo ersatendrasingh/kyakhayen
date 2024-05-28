@@ -24,6 +24,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const routes = [
     "",
     "/recipes",
+    "/about-us",
+    "/download-app",
+    "/privacy-policy",
+    "/meal-plan",
     "/user/dashboard",
     "/user/profile",
     "/user/settings",
