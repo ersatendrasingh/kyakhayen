@@ -7,6 +7,11 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model app_recipes {
+  id   Int    @id @default(autoincrement())
+  name String
+}
+
 model Recipes {
   id                   String                 @id @default(uuid())
   title                String                 @db.Text

@@ -7,30 +7,30 @@ const fs = require("fs/promises");
 
 const database = new PrismaClient();
 
-const seed = async () => {
-  try {
-    await database.Gender.createMany({
-      // data: [
-      //   { title: "Fall" },
-      //   { title: "Winter" },
-      //   { title: "Summer" },
-      //   { title: "Spring" },
-      //   { title: "Suitable throughout the year" },
-      // ],
-      data: [
-        { title: "Male", position: 1 },
-        { title: "Female", position: 2 },
-      ],
-    });
-    console.log("successfully seeded recipe difficulties");
-  } catch (error) {
-    console.log("Error while seeding recipe difficulties: ", error);
-  } finally {
-    await database.$disconnect();
-  }
-};
+// const seed = async () => {
+//   try {
+//     await database.Gender.createMany({
+//       // data: [
+//       //   { title: "Fall" },
+//       //   { title: "Winter" },
+//       //   { title: "Summer" },
+//       //   { title: "Spring" },
+//       //   { title: "Suitable throughout the year" },
+//       // ],
+//       data: [
+//         { title: "Male", position: 1 },
+//         { title: "Female", position: 2 },
+//       ],
+//     });
+//     console.log("successfully seeded recipe difficulties");
+//   } catch (error) {
+//     console.log("Error while seeding recipe difficulties: ", error);
+//   } finally {
+//     await database.$disconnect();
+//   }
+// };
 
-seed();
+// seed();
 
 // async function generateCountrySeedData() {
 //   try {
@@ -117,3 +117,46 @@ seed();
 // }
 //seedDatabase();
 //main();
+function slugify(title) {
+  return title
+    .toLowerCase()
+    .replace(/[^\w\s-]/g, "")
+    .replace(/[\s]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+async function main() {
+  try {
+    // Fetch data from app_recipes
+    const appRecipes = await database.app_recipes.findMany();
+
+    // Set to track existing slugs
+    const existingSlugs = new Set(
+      (await database.Recipes.findMany()).map((recipe) => recipe.slug)
+    );
+
+    // Prepare data for insertion
+    const recipes = await Promise.all(
+      appRecipes.map(async (appRecipe) => {
+        const slug = await slugify(appRecipe.name);
+        return {
+          title: appRecipe.name,
+          slug,
+        };
+      })
+    );
+
+    // Insert data into recipes
+    await database.Recipes.createMany({
+      data: recipes,
+      skipDuplicates: true, // Skip duplicates if any
+    });
+
+    console.log("Seed completed successfully.");
+  } catch (error) {
+    console.error("Error seeding the database:", error);
+  } finally {
+    await database.$disconnect();
+  }
+}
+
+main();
