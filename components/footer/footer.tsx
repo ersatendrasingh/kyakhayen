@@ -84,6 +84,13 @@ const Footer = async () => {
                 <FaFacebook className="w-6 h-6" />
               </a>
               <a
+                href="https://twitter.com/kyakhayen"
+                target="_blank"
+                className="text-black hover:text-blue-500"
+              >
+                <FaXTwitter className="w-6 h-6" />
+              </a>
+              <a
                 href="https://www.youtube.com/channel/UC-kmoWXdqoZaUDSpemR2hCw"
                 target="_blank"
                 className="text-red-500 hover:text-red-700"
@@ -97,13 +104,7 @@ const Footer = async () => {
               >
                 <FaInstagram className="w-6 h-6" />
               </a>
-              <a
-                href="https://twitter.com/kyakhayen"
-                target="_blank"
-                className="text-black hover:text-blue-500"
-              >
-                <FaXTwitter className="w-6 h-6" />
-              </a>
+
               {/* <a
                 href="#"
                 target="_blank"
