@@ -56,7 +56,7 @@ const UserProfilePage = () => {
             label="Phone Number"
             value={user?.phoneNumber || "Phone Number not set yet"}
           />
-          {/* <ProfileItem
+          <ProfileItem
             label="Date of Birth"
             value={
               user && user.dob
@@ -95,7 +95,7 @@ const UserProfilePage = () => {
             label="Cooking Skill"
             value={`${user?.cookingSkill}` || "Cooking Skill not set yet"}
           />
-          <ProfileItems
+          {/* <ProfileItems
             label="Cuisines"
             cuisines={user?.cuisines || "Cooking Skill not set yet"}
           />
