@@ -18,6 +18,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import UploadProfilePic from "./upload-profile-pic";
 import { formatDate } from "@/lib/formatDate";
 import { useCurrentUser } from "@/hooks/use-current-user";
+import { capitalizeName } from "@/lib/formateName";
 
 interface BannerCardProps {
   className?: string;
@@ -98,8 +99,8 @@ const BannerCard = ({ className }: BannerCardProps) => {
             <div className="flex flex-col items-center lg:items-start">
               <div className="ml-0 lg:ml-4">
                 {user?.name ? (
-                  <h1 className="text-3xl font-bold text-sky-100 mb-2 inline-flex items-center">
-                    {user?.name}
+                  <h1 className="text-2xl font-bold text-sky-100 mb-2 inline-flex items-center">
+                    {capitalizeName(user?.name)}
                     {user?.isPersonalised ? (
                       <RiVerifiedBadgeFill className="w-5 h-5 ml-2 text-green-500" />
                     ) : (
