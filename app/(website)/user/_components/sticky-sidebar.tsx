@@ -15,6 +15,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { LogoutButton } from "@/components/auth/logout-button";
 import { usePathname } from "next/navigation";
 import { useCurrentUser } from "@/hooks/use-current-user";
+import { capitalizeName } from "@/lib/formateName";
 
 const userMenu = [
   {
@@ -49,7 +50,9 @@ const StickySidebar = () => {
         <div className="mb-4">
           <div className="mx-auto w-full flex border-b pb-3 pl-1">
             {user?.name ? (
-              <h1 className="text-2xl font-bold">Welcome, {user?.name}</h1>
+              <h1 className="text-2xl font-bold">
+                Welcome, {capitalizeName(user?.name)}
+              </h1>
             ) : (
               <Skeleton className="h-4 w-full rounded-xl" />
             )}
