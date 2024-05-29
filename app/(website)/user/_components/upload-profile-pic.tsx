@@ -126,7 +126,7 @@ const UploadProfilePic = ({
     }
   };
   return (
-    <div className="absolute bottom-1 right-4">
+    <div className="absolute bottom-4 right-4">
       <button className="flex items-center justify-center bg-gray-800 text-white p-2 rounded-full">
         <label htmlFor="image-upload" title="Upload Image">
           <input
@@ -135,7 +135,10 @@ const UploadProfilePic = ({
             className="hidden cursor-pointer"
             onChange={handleImageChange}
           />
-          <CameraIcon className="w-4 h-4 cursor-pointer" />
+          <CameraIcon
+            className="w-4 h-4 cursor-pointer"
+            style={{ transform: "translateY(-2px)" }}
+          />
         </label>
       </button>
     </div>

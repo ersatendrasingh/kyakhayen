@@ -17,7 +17,7 @@ const ProfileItem = ({ label, value }: ProfileItemProps) => {
 
   return (
     <div className="flex w-full items-center justify-between py-2">
-      <div className="w-1/3 font-bold">{label}</div>
+      <div className="w-1/3  font-semibold">{label}</div>
       <div className="w-2/3">{formattedValue}</div>
     </div>
   );

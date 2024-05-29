@@ -1,17 +1,31 @@
 import { Purchase, UserRole } from "@prisma/client";
 import NextAuth, { type DefaultSession } from "next-auth";
+import { AllergiesList, CuisinesList, HealthGoalList } from "./types/user-type";
 
 export type ExtendedUser = DefaultSession["user"] & {
   id: string;
   phoneNumber?: string;
-  registrationNumber?: string;
   qualification?: string;
   profession?: string;
   bio?: string;
+  age?: number;
+  gender?: string;
+  prakriti?: string;
+  dob?: Date;
+  heightFt?: number;
+  heightInch?: number;
+  heightCm?: number;
+  weightKg?: number;
+  weightLbs?: number;
+  bmi?: string;
+  foodPreference?: string;
+  cookingSkill?: string;
   createdAt?: Date;
   updateAt?: Date;
   role: UserRole;
-  purchases: Purchase[];
+  cuisines: CuisinesList[];
+  healthGoals: HealthGoalList[];
+  allergies: AllergiesList[];
   isTwoFactorEnabled: boolean;
   isPersonalised: boolean;
   isOAuth: boolean;

@@ -8,7 +8,7 @@ const UserLayout = ({ children }: { children: React.ReactNode }) => {
   return (
     <>
       <div className="relative h-full bg-slate-100">
-        <div className="absolute inset-0 w-full h-[300px] bg-gradient-to-b from-cyan-50 via-teal-300 to-sky-400" />
+        <div className="absolute inset-0 w-full h-[300px] bg-gradient-to-r from-red-500 to-orange-500" />
         <div className="z-10 relative flex justify-center items-center h-full">
           <BannerCard className="pt-10 lg:pt-12 mt-14" />
         </div>

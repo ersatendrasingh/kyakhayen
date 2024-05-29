@@ -4,6 +4,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 import ProfileItem from "../_components/profile-item";
 import { useCurrentUser } from "@/hooks/use-current-user";
+import ProfileItems from "../_components/profile-items";
 
 const UserProfilePage = () => {
   const user = useCurrentUser();
@@ -48,12 +49,6 @@ const UserProfilePage = () => {
         </div>
       ) : (
         <div className="flex flex-col justify-between w-full py-10">
-          <ProfileItem
-            label="Registration Number"
-            value={
-              user?.registrationNumber || "Registration Number not set yet"
-            }
-          />
           <ProfileItem label="First Name" value={firstName} />
           <ProfileItem label="Last Name" value={lastName} />
           <ProfileItem label="Email" value={user?.email || "No Email Found"} />
@@ -62,15 +57,56 @@ const UserProfilePage = () => {
             value={user?.phoneNumber || "Phone Number not set yet"}
           />
           <ProfileItem
-            label="Qualification"
-            value={user?.qualification || "Qualification not set yet"}
+            label="Date of Birth"
+            value={
+              user && user.dob
+                ? new Date(user.dob)
+                : undefined || "Date of Birth not set yet"
+            }
           />
           <ProfileItem
-            label="Profession"
-            value={user?.profession || "Profession not set yet"}
+            label="Prakriti (Body Type)"
+            value={user?.prakriti || "Prakriti not set yet"}
           />
-          <ProfileItem label="Bio" value={user?.bio || "Bio not set yet"} />
-
+          <ProfileItem
+            label="Height"
+            value={
+              `${user?.heightFt || 0} ft. ${user?.heightInch || 0} in. / ${
+                user?.heightCm
+              } cm ` || "Height not set yet"
+            }
+          />
+          <ProfileItem
+            label="Weight"
+            value={
+              `${user?.weightKg || 0} Kg / ${user?.weightLbs} Pounds ` ||
+              "Height not set yet"
+            }
+          />
+          <ProfileItem
+            label="BMI"
+            value={`${user?.bmi}` || "BMI not set yet"}
+          />
+          <ProfileItem
+            label="Food Preference"
+            value={`${user?.foodPreference}` || "Food Preference not set yet"}
+          />
+          <ProfileItem
+            label="Cooking Skill"
+            value={`${user?.cookingSkill}` || "Cooking Skill not set yet"}
+          />
+          <ProfileItems
+            label="Cuisines"
+            cuisines={user?.cuisines || "Cooking Skill not set yet"}
+          />
+          <ProfileItems
+            label="Allergies"
+            allergies={user?.allergies || "Cooking Skill not set yet"}
+          />
+          <ProfileItems
+            label="Health Goals"
+            healthGoals={user?.healthGoals || "Cooking Skill not set yet"}
+          />
           <ProfileItem
             label="Registration Date"
             value={
