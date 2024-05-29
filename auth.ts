@@ -88,9 +88,9 @@ export const {
         session.user.bmi = token.bmi as string;
         session.user.foodPreference = token.foodPreference as string;
         session.user.cookingSkill = token.cookingSkill as string;
-        session.user.cuisines = token.cuisines as CuisinesList[];
-        session.user.allergies = token.allergies as AllergiesList[];
-        session.user.healthGoals = token.healthGoals as HealthGoalList[];
+        // session.user.cuisines = token.cuisines as CuisinesList[];
+        // session.user.allergies = token.allergies as AllergiesList[];
+        // session.user.healthGoals = token.healthGoals as HealthGoalList[];
       }
 
       return session;
@@ -123,9 +123,9 @@ export const {
       token.bmi = existingUser.bmi;
       token.foodPreference = existingUser.foodPreference?.name;
       token.cookingSkill = existingUser.cookingSkill?.title;
-      token.cuisines = existingUser.userCuisines;
-      token.allergies = existingUser.UserAllrgies;
-      token.healthGoals = existingUser.UserHealthGoals;
+      // token.cuisines = existingUser.userCuisines;
+      // token.allergies = existingUser.UserAllrgies;
+      // token.healthGoals = existingUser.UserHealthGoals;
       token.createdAt = existingUser.createdAt;
       token.updateAt = existingUser.updateAt;
 
