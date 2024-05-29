@@ -56,7 +56,7 @@ const UserProfilePage = () => {
             label="Phone Number"
             value={user?.phoneNumber || "Phone Number not set yet"}
           />
-          <ProfileItem
+          {/* <ProfileItem
             label="Date of Birth"
             value={
               user && user.dob
@@ -106,7 +106,7 @@ const UserProfilePage = () => {
           <ProfileItems
             label="Health Goals"
             healthGoals={user?.healthGoals || "Cooking Skill not set yet"}
-          />
+          /> */}
           <ProfileItem
             label="Registration Date"
             value={
