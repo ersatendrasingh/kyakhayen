@@ -24,6 +24,21 @@ export const getUserById = async (id: string) => {
   try {
     const user = await db.user.findUnique({
       where: { id },
+      include: {
+        gender: true,
+        userPrakriti: true,
+        foodPreference: true,
+        cookingSkill: true,
+        userCuisines: {
+          include: { cuisine: true },
+        },
+        UserAllrgies: {
+          include: { allergy: true },
+        },
+        UserHealthGoals: {
+          include: { healthGoal: true },
+        },
+      },
     });
 
     return user;

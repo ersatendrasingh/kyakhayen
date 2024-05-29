@@ -117,46 +117,46 @@ const database = new PrismaClient();
 // }
 //seedDatabase();
 //main();
-function slugify(title) {
-  return title
-    .toLowerCase()
-    .replace(/[^\w\s-]/g, "")
-    .replace(/[\s]+/g, "-")
-    .replace(/^-+|-+$/g, "");
-}
-async function main() {
-  try {
-    // Fetch data from app_recipes
-    const appRecipes = await database.app_recipes.findMany();
+// function slugify(title) {
+//   return title
+//     .toLowerCase()
+//     .replace(/[^\w\s-]/g, "")
+//     .replace(/[\s]+/g, "-")
+//     .replace(/^-+|-+$/g, "");
+// }
+// async function main() {
+//   try {
+//     // Fetch data from app_recipes
+//     const appRecipes = await database.app_recipes.findMany();
 
-    // Set to track existing slugs
-    const existingSlugs = new Set(
-      (await database.Recipes.findMany()).map((recipe) => recipe.slug)
-    );
+//     // Set to track existing slugs
+//     const existingSlugs = new Set(
+//       (await database.Recipes.findMany()).map((recipe) => recipe.slug)
+//     );
 
-    // Prepare data for insertion
-    const recipes = await Promise.all(
-      appRecipes.map(async (appRecipe) => {
-        const slug = await slugify(appRecipe.name);
-        return {
-          title: appRecipe.name,
-          slug,
-        };
-      })
-    );
+//     // Prepare data for insertion
+//     const recipes = await Promise.all(
+//       appRecipes.map(async (appRecipe) => {
+//         const slug = await slugify(appRecipe.name);
+//         return {
+//           title: appRecipe.name,
+//           slug,
+//         };
+//       })
+//     );
 
-    // Insert data into recipes
-    await database.Recipes.createMany({
-      data: recipes,
-      skipDuplicates: true, // Skip duplicates if any
-    });
+//     // Insert data into recipes
+//     await database.Recipes.createMany({
+//       data: recipes,
+//       skipDuplicates: true, // Skip duplicates if any
+//     });
 
-    console.log("Seed completed successfully.");
-  } catch (error) {
-    console.error("Error seeding the database:", error);
-  } finally {
-    await database.$disconnect();
-  }
-}
+//     console.log("Seed completed successfully.");
+//   } catch (error) {
+//     console.error("Error seeding the database:", error);
+//   } finally {
+//     await database.$disconnect();
+//   }
+// }
 
-main();
+// main();
