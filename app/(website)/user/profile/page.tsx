@@ -4,7 +4,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 import ProfileItem from "../_components/profile-item";
 import { useCurrentUser } from "@/hooks/use-current-user";
-import ProfileItems from "../_components/profile-items";
 
 const UserProfilePage = () => {
   const user = useCurrentUser();
@@ -52,61 +51,59 @@ const UserProfilePage = () => {
           <ProfileItem label="First Name" value={firstName} />
           <ProfileItem label="Last Name" value={lastName} />
           <ProfileItem label="Email" value={user?.email || "No Email Found"} />
-          <ProfileItem
-            label="Phone Number"
-            value={user?.phoneNumber || "Phone Number not set yet"}
-          />
-          <ProfileItem
-            label="Date of Birth"
-            value={
-              user && user.dob
-                ? new Date(user.dob)
-                : undefined || "Date of Birth not set yet"
-            }
-          />
-          <ProfileItem
-            label="Prakriti (Body Type)"
-            value={user?.prakriti || "Prakriti not set yet"}
-          />
-          <ProfileItem
-            label="Height"
-            value={
-              `${user?.heightFt || 0} ft. ${user?.heightInch || 0} in. / ${
-                user?.heightCm
-              } cm ` || "Height not set yet"
-            }
-          />
-          <ProfileItem
-            label="Weight"
-            value={
-              `${user?.weightKg || 0} Kg / ${user?.weightLbs} Pounds ` ||
-              "Height not set yet"
-            }
-          />
-          <ProfileItem
-            label="BMI"
-            value={`${user?.bmi}` || "BMI not set yet"}
-          />
-          <ProfileItem
-            label="Food Preference"
-            value={`${user?.foodPreference}` || "Food Preference not set yet"}
-          />
-          <ProfileItem
-            label="Cooking Skill"
-            value={`${user?.cookingSkill}` || "Cooking Skill not set yet"}
-          />
-          {/* <ProfileItems
-            label="Cuisines"
-            cuisines={user?.cuisines || "Cooking Skill not set yet"}
-          />
-          <ProfileItems
-            label="Allergies"
-            allergies={user?.allergies || "Cooking Skill not set yet"}
-          />
-          <ProfileItems
-            label="Health Goals"
-            healthGoals={user?.healthGoals || "Cooking Skill not set yet"}
-          /> */}
+          {user.phoneNumber && (
+            <ProfileItem
+              label="Phone Number"
+              value={user?.phoneNumber || "Phone Number not set yet"}
+            />
+          )}
+
+          {user.dob && (
+            <ProfileItem
+              label="Date of Birth"
+              value={
+                user && user.dob
+                  ? new Date(user.dob)
+                  : undefined || "Date of Birth not set yet"
+              }
+            />
+          )}
+          {user.prakriti && (
+            <ProfileItem
+              label="Prakriti (Body Type)"
+              value={user?.prakriti || "Prakriti not set yet"}
+            />
+          )}
+          {user.heightFt && user.heightInch && user.heightCm && (
+            <ProfileItem
+              label="Height"
+              value={
+                `${user?.heightFt || 0} ft. ${user?.heightInch || 0} in. / ${
+                  user?.heightCm
+                } cm ` || "Height not set yet"
+              }
+            />
+          )}
+          {user.weightKg && user.weightLbs && (
+            <ProfileItem
+              label="Weight"
+              value={
+                `${user?.weightKg || 0} Kg / ${user?.weightLbs} Pounds ` ||
+                "Height not set yet"
+              }
+            />
+          )}
+          {user.heightFt &&
+            user.heightInch &&
+            user.heightCm &&
+            user.weightKg &&
+            user.weightLbs && (
+              <ProfileItem
+                label="BMI"
+                value={`${user?.bmi}` || "BMI not set yet"}
+              />
+            )}
+
           <ProfileItem
             label="Registration Date"
             value={

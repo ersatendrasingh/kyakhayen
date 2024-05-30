@@ -7,6 +7,10 @@ import UserAllergies from "./_components/user-allergies";
 import { getAllergies } from "@/actions/get-allergies";
 import UserHealthGoals from "./_components/user-health-goal";
 import { getHealthGoals } from "@/actions/get-health-goals";
+import { getFoodPreferences } from "@/actions/get-food-preferences";
+import UserFoodPreferences from "./_components/user-food-preference";
+import { getCookingSkills } from "@/actions/get-cooking-skills";
+import UserCookingSkills from "./_components/user-cooking-skill";
 
 const UserPreferencesPage = async () => {
   const user = await currentUser();
@@ -31,6 +35,8 @@ const UserPreferencesPage = async () => {
           healthGoal: true,
         },
       },
+      foodPreference: true,
+      cookingSkill: true,
     },
   });
 
@@ -43,6 +49,13 @@ const UserPreferencesPage = async () => {
   });
 
   const healthGoals = await getHealthGoals({
+    userId: user?.id,
+  });
+
+  const foodPreferences = await getFoodPreferences({
+    userId: user?.id,
+  });
+  const cookingSkills = await getCookingSkills({
     userId: user?.id,
   });
 
@@ -74,6 +87,14 @@ const UserPreferencesPage = async () => {
         </div>
       ) : (
         <div className="flex flex-col justify-between w-full py-10">
+          <UserFoodPreferences
+            userData={userDetails}
+            foodPreferences={foodPreferences}
+          />
+          <UserCookingSkills
+            userData={userDetails}
+            cookingSkills={cookingSkills}
+          />
           <UserCuisines userData={userDetails} cuisines={cuisines} />
           <UserAllergies userData={userDetails} allergies={allergies} />
           <UserHealthGoals userData={userDetails} healthGoals={healthGoals} />
