@@ -9,6 +9,7 @@ import {
   Settings,
   ShoppingBag,
   UserRound,
+  WheatOff,
 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -27,6 +28,11 @@ const userMenu = [
     name: "My Profile",
     href: "/user/profile",
     menuIcon: UserRound,
+  },
+  {
+    name: "My Preferences",
+    href: "/user/preferences",
+    menuIcon: WheatOff,
   },
 
   {

@@ -15,6 +15,27 @@ export async function GET(req: Request) {
       where: {
         email: userEmail!,
       },
+      include: {
+        gender: true,
+        foodPreference: true,
+        userCuisines: {
+          include: {
+            cuisine: true,
+          },
+        },
+        userPrakriti: true,
+        cookingSkill: true,
+        UserAllrgies: {
+          include: {
+            allergy: true,
+          },
+        },
+        UserHealthGoals: {
+          include: {
+            healthGoal: true,
+          },
+        },
+      },
     });
     return NextResponse.json(userDetails, { status: 200 });
   } catch (error) {

@@ -493,6 +493,7 @@ model UserCuisines {
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   cuisine   Cuisines @relation(fields: [cuisineId], references: [id], onDelete: Cascade)
 
+  @@unique([userId, cuisineId])
   @@index([cuisineId])
   @@index([userId])
 }
@@ -504,6 +505,7 @@ model UserAllrgies {
   user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   allergy   Allergies @relation(fields: [allergyId], references: [id], onDelete: Cascade)
 
+  @@unique([userId, allergyId])
   @@index([allergyId])
   @@index([userId])
 }
@@ -515,6 +517,7 @@ model UserHealthGoals {
   user         User        @relation(fields: [userId], references: [id], onDelete: Cascade)
   healthGoal   HealthGoals @relation(fields: [healthGoalId], references: [id], onDelete: Cascade)
 
+  @@unique([userId, healthGoalId])
   @@index([healthGoalId])
   @@index([userId])
 }
