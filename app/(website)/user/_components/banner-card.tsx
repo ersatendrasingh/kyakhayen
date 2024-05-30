@@ -108,7 +108,7 @@ const BannerCard = ({ className }: BannerCardProps) => {
                       />
                     ) : (
                       <GoUnverified
-                        className="w-5 h-5 ml-2 text-red-500"
+                        className="w-5 h-5 ml-2 text-white"
                         title="Not Personalised"
                       />
                     )}
@@ -121,15 +121,18 @@ const BannerCard = ({ className }: BannerCardProps) => {
                 ) : (
                   <Skeleton className="h-5 w-[280px] rounded-xl mb-2" />
                 )}
-
-                <p className="text-sky-100 mr-4 text-sm font-medium mt-2 lg:mt-0">
-                  <BsCalendar2DateFill className="inline w-4 h-4 mr-2" />
-                  {user?.age + " Years Old"}
-                </p>
-                <p className="text-sky-100 mr-4 text-sm font-medium mt-2 lg:mt-0">
-                  <FaTransgender className="inline w-4 h-4 mr-2" />
-                  {user?.gender}
-                </p>
+                {user?.age && (
+                  <p className="text-sky-100 mr-4 text-sm font-medium mt-2 lg:mt-0">
+                    <BsCalendar2DateFill className="inline w-4 h-4 mr-2" />
+                    {user?.age + " Years Old"}
+                  </p>
+                )}
+                {user?.gender && (
+                  <p className="text-sky-100 mr-4 text-sm font-medium mt-2 lg:mt-0">
+                    <FaTransgender className="inline w-4 h-4 mr-2" />
+                    {user?.gender}
+                  </p>
+                )}
 
                 {user?.createdAt ? (
                   <p className="text-sky-100 mt-2 lg:mt-0 text-muted-foreground">
