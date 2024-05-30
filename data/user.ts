@@ -29,15 +29,6 @@ export const getUserById = async (id: string) => {
         userPrakriti: true,
         foodPreference: true,
         cookingSkill: true,
-        userCuisines: {
-          include: { cuisine: true },
-        },
-        UserAllrgies: {
-          include: { allergy: true },
-        },
-        UserHealthGoals: {
-          include: { healthGoal: true },
-        },
       },
     });
 

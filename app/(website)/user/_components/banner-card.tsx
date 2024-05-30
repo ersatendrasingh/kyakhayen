@@ -102,9 +102,15 @@ const BannerCard = ({ className }: BannerCardProps) => {
                   <h1 className="text-2xl font-bold text-sky-100 mb-2 inline-flex items-center">
                     {capitalizeName(user?.name)}
                     {user?.isPersonalised ? (
-                      <RiVerifiedBadgeFill className="w-5 h-5 ml-2 text-green-500" />
+                      <RiVerifiedBadgeFill
+                        className="w-5 h-5 ml-2 text-green-500"
+                        title="Personalised"
+                      />
                     ) : (
-                      <GoUnverified className="w-5 h-5 ml-2 text-red-500" />
+                      <GoUnverified
+                        className="w-5 h-5 ml-2 text-red-500"
+                        title="Not Personalised"
+                      />
                     )}
                   </h1>
                 ) : (
