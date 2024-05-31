@@ -155,7 +155,7 @@ const UserHealthGoals = ({ userData, healthGoals }: UserHealthGoalsProps) => {
         >
           <div className="flex flex-col items-center justify-center w-full h-full bg-gray-200 rounded-full hover:bg-gray-300 transition-colors duration-300">
             <FaPlus className="text-gray-600 w-5 h-5 mb-1" />
-            <span className="text-gray-600">Add Health Goal</span>
+            <span className="text-gray-600">Add Goal</span>
           </div>
         </div>
       </div>

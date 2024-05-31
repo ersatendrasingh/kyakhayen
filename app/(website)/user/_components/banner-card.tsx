@@ -19,6 +19,7 @@ import UploadProfilePic from "./upload-profile-pic";
 import { formatDate } from "@/lib/formatDate";
 import { useCurrentUser } from "@/hooks/use-current-user";
 import { capitalizeName } from "@/lib/formateName";
+import { useSession } from "next-auth/react";
 
 interface BannerCardProps {
   className?: string;
@@ -26,20 +27,24 @@ interface BannerCardProps {
 
 const BannerCard = ({ className }: BannerCardProps) => {
   const user = useCurrentUser();
+  const { update } = useSession();
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [imageUrl, setImageUrl] = useState(
-    user?.gender === "Male"
+    user?.gender?.toLowerCase() === "male"
       ? "/assets/images/man-user-circle-icon.webp"
       : "/assets/images/woman-user-circle-icon.webp"
   );
   const [isUploading, setIsUploading] = useState(false);
+  useEffect(() => {
+    update();
+  }, [update]);
 
   useEffect(() => {
     if (user?.image) {
       const timestamp = new Date().getTime();
       const imageUrl = user?.image
         ? `${user.image}?t=${timestamp}`
-        : user.gender === "Male"
+        : user.gender?.toLocaleLowerCase() === "male"
         ? "/assets/images/man-user-circle-icon.webp"
         : "/assets/images/woman-user-circle-icon.webp";
       setImageUrl(imageUrl);

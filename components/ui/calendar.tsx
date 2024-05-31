@@ -13,14 +13,17 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-export type CalendarProps = React.ComponentProps<typeof DayPicker>;
+export type CalendarProps = React.ComponentProps<typeof DayPicker> & {
+  initialMonth?: Date;
+};
 
 function Calendar({
   className,
   classNames,
   showOutsideDays = true,
+  initialMonth, // Ensure initialMonth is accepted as a prop
   ...props
-}: CalendarProps & { onChange?: React.ChangeEventHandler<HTMLSelectElement> }) {
+}: CalendarProps) {
   const handleCalendarChange = (
     _value: string | number,
     _e: React.ChangeEventHandler<HTMLSelectElement>
@@ -36,6 +39,7 @@ function Calendar({
   return (
     <DayPicker
       showOutsideDays={showOutsideDays}
+      defaultMonth={initialMonth}
       className={cn("p-3 ", className)}
       classNames={{
         months: "flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0",

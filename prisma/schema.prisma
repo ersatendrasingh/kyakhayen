@@ -365,6 +365,7 @@ model User {
   emailVerified         DateTime?
   image                 String?
   password              String?
+  bio                   String?                @db.Text
   role                  UserRole               @default(USER)
   accounts              Account[]
   heightFt              Int?

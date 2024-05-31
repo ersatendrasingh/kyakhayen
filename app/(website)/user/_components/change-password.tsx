@@ -1,3 +1,5 @@
+"use client";
+
 import * as z from "zod";
 
 import {
@@ -119,7 +121,7 @@ const ChangePassword = () => {
               <Button
                 type="submit"
                 disabled={isSubmitting || !isValid}
-                className="pt-2 bg-gradient-to-r from-fuchsia-500 to-cyan-500 cursor-pointer"
+                className="pt-2 bg-gradient-to-r from-red-500 to-orange-500 cursor-pointer"
               >
                 Update Password
               </Button>

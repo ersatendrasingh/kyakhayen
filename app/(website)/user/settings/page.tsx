@@ -1,20 +1,38 @@
-"use client";
-
+import { currentUser } from "@/lib/auth";
 import ChangePassword from "../_components/change-password";
 import Tabs from "../_components/tabs";
 import UserProfile from "../_components/user-profile";
+import { getGender } from "@/actions/get-gender";
+import { db } from "@/lib/db";
 
-const SettingsPage = () => {
+const SettingsPage = async () => {
+  const user = await currentUser();
+  if (!user) return;
+  const userDetails = await db.user.findUnique({
+    where: {
+      id: user?.id,
+    },
+    include: {
+      gender: true,
+    },
+  });
+  const genders = await getGender({
+    userId: user?.id,
+  });
   const tabs = [
     {
       label: "User Profile",
-      content: <UserProfile />,
-    },
-    {
-      label: "Change Password",
-      content: <ChangePassword />,
+      content: <UserProfile userData={userDetails} genders={genders} />,
     },
   ];
+
+  // Conditionally add the "Change Password" tab
+  if (!user.isOAuth) {
+    tabs.push({
+      label: "Change Password",
+      content: <ChangePassword />,
+    });
+  }
   return (
     <div className="bg-white rounded-md shadow-sm transition p-4">
       <h1 className="text-3xl font-bold border-b-2 border-slate-200 pb-2 text-gray-700">

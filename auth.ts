@@ -9,7 +9,6 @@ import { getUserById } from "@/data/user";
 import { UserRole } from "@prisma/client";
 import { getTwoFactorConfirmationByUserId } from "@/data/two-factor-confirmation";
 import { getAccountByUserId } from "@/data/account";
-import { AllergiesList, CuisinesList, HealthGoalList } from "./types/user-type";
 
 export const {
   handlers: { GET, POST },
@@ -76,6 +75,7 @@ export const {
         session.user.updateAt = token.updateAt as Date;
         session.user.isOAuth = token.isOAuth as boolean;
         session.user.isPersonalised = token.isPersonalised as boolean;
+        session.user.bio = token.bio as string;
         session.user.age = token.age as number;
         session.user.gender = token.gender as string;
         session.user.prakriti = token.prakriti as string;
@@ -88,9 +88,6 @@ export const {
         session.user.bmi = token.bmi as string;
         session.user.foodPreference = token.foodPreference as string;
         session.user.cookingSkill = token.cookingSkill as string;
-        // session.user.cuisines = token.cuisines as CuisinesList[];
-        // session.user.allergies = token.allergies as AllergiesList[];
-        // session.user.healthGoals = token.healthGoals as HealthGoalList[];
       }
 
       return session;
@@ -111,6 +108,7 @@ export const {
       token.role = existingUser.role;
       token.phoneNumber = existingUser.phoneNumber;
       token.isPersonalised = existingUser.isPersonalised;
+      token.bio = existingUser.bio;
       token.age = existingUser.age;
       token.dob = existingUser.dob;
       token.gender = existingUser.gender?.title;
@@ -123,9 +121,6 @@ export const {
       token.bmi = existingUser.bmi;
       token.foodPreference = existingUser.foodPreference?.name;
       token.cookingSkill = existingUser.cookingSkill?.title;
-      // token.cuisines = existingUser.userCuisines;
-      // token.allergies = existingUser.UserAllrgies;
-      // token.healthGoals = existingUser.UserHealthGoals;
       token.createdAt = existingUser.createdAt;
       token.updateAt = existingUser.updateAt;
 
