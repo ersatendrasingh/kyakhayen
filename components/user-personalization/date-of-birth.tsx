@@ -111,6 +111,7 @@ const DateOfBirth = ({ title, setIsFormValid }: GenderProps) => {
                 fromYear={1970}
                 toYear={2020}
                 selected={date}
+                initialMonth={date || new Date()}
                 onSelect={(selectedDate) => {
                   setDate(selectedDate ?? undefined);
                   setPopoverOpen(false); // Close the Popover when a date is selected
