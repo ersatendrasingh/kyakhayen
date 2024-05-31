@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { CameraIcon, Loader2 } from "lucide-react";
 import { FaBookBookmark } from "react-icons/fa6";
@@ -28,6 +28,7 @@ interface BannerCardProps {
 const BannerCard = ({ className }: BannerCardProps) => {
   const user = useCurrentUser();
   const { update } = useSession();
+  const hasRunOnce = useRef(false);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [imageUrl, setImageUrl] = useState(
     user?.gender?.toLowerCase() === "male"
@@ -36,7 +37,10 @@ const BannerCard = ({ className }: BannerCardProps) => {
   );
   const [isUploading, setIsUploading] = useState(false);
   useEffect(() => {
-    update();
+    if (!hasRunOnce.current) {
+      update();
+      hasRunOnce.current = true;
+    }
   }, [update]);
 
   useEffect(() => {
