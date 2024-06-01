@@ -2,46 +2,12 @@ import { NextResponse } from "next/server";
 
 import { currentUser } from "@/lib/auth";
 import { db } from "@/lib/db";
+import { isPersonalizationComplete } from "@/lib/personalization";
 
 interface PrakritiSelection {
   prakritiId: string;
   questionId: string;
   optionId: string;
-}
-
-function isPersonalizationComplete(user: any): boolean {
-  const requiredFields = [
-    "dob",
-    "age",
-    "genderId",
-    "foodPreferenceId",
-    "cookingSkillId",
-    "heightFt",
-    "heightInch",
-    "heightCm",
-    "weightKg",
-    "weightLbs",
-  ];
-
-  for (const field of requiredFields) {
-    if (!user[field]) {
-      return false;
-    }
-  }
-
-  const requiredArrays = [
-    "userCuisines",
-    "UserHealthGoals",
-    "UserAllrgies",
-    "userPrakriti",
-  ];
-  for (const arrayField of requiredArrays) {
-    if (!user[arrayField] || user[arrayField].length === 0) {
-      return false;
-    }
-  }
-
-  return true;
 }
 
 export async function PATCH(req: Request) {

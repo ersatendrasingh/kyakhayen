@@ -5,12 +5,12 @@ import { ExitIcon } from "@radix-ui/react-icons";
 import { useEffect, useState } from "react";
 import { getSession } from "next-auth/react";
 import {
-  BookOpenText,
+  Boxes,
   CircleUserRound,
   Home,
   Settings,
-  ShoppingBag,
   UserRound,
+  WheatOff,
 } from "lucide-react";
 
 import {
@@ -77,6 +77,18 @@ export const UserButton = () => {
                 <DropdownMenuItem className="cursor-pointer">
                   <UserRound className="h-4 w-4 mr-2" />
                   My Profile
+                </DropdownMenuItem>
+              </Link>
+              <Link href="/user/wellness-summary">
+                <DropdownMenuItem className="cursor-pointer">
+                  <Boxes className="h-4 w-4 mr-2" />
+                  My Wellness Summary
+                </DropdownMenuItem>
+              </Link>
+              <Link href="/user/preferences">
+                <DropdownMenuItem className="cursor-pointer">
+                  <WheatOff className="h-4 w-4 mr-2" />
+                  My Preferences
                 </DropdownMenuItem>
               </Link>
 

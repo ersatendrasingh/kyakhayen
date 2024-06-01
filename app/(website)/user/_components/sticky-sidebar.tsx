@@ -1,20 +1,17 @@
 "use client";
 
-import { userType } from "@/types/user-type";
-import MenuItem from "./menu-item";
 import {
-  BookOpenText,
+  Boxes,
   Home,
   LogOut,
   Settings,
-  ShoppingBag,
   UserRound,
   WheatOff,
 } from "lucide-react";
-import { Skeleton } from "@/components/ui/skeleton";
-
-import { LogoutButton } from "@/components/auth/logout-button";
 import { usePathname } from "next/navigation";
+
+import MenuItem from "./menu-item";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useCurrentUser } from "@/hooks/use-current-user";
 import { capitalizeName } from "@/lib/formateName";
 
@@ -30,11 +27,15 @@ const userMenu = [
     menuIcon: UserRound,
   },
   {
+    name: "My Wellness Summary",
+    href: "/user/wellness-summary",
+    menuIcon: Boxes,
+  },
+  {
     name: "My Preferences",
     href: "/user/preferences",
     menuIcon: WheatOff,
   },
-
   {
     name: "Settings",
     href: "/user/settings",

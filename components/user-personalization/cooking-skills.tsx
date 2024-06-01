@@ -91,7 +91,7 @@ const CookingSkills = ({
       <div
         className={cn(
           "w-full  md:w-[538px] flex items-center justify-center mx-auto",
-          isMobile && "w-[320px]"
+          isMobile && "w-[280px]"
         )}
       >
         <Swiper

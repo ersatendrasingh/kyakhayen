@@ -86,9 +86,8 @@ const GenderInformation = ({ userData, genders }: GenderInformationProps) => {
             <Image
               src={userData.gender.imageUrl || ""}
               alt={userData.gender.title || "Gender Image"}
-              width={140}
-              height={140}
-              className="rounded-full"
+              width={130}
+              height={130}
             />
             <span className="absolute inset-0 bg-black opacity-40 rounded-full transition-opacity duration-300"></span>
             <span className="absolute inset-0 flex items-center justify-center text-white py-2 transition-transform duration-300 transform translate-y-0 group-hover:translate-y-1">
