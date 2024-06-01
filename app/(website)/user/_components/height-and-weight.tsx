@@ -48,8 +48,6 @@ const HeightAndWeight = () => {
   const [isValidWeight, setIsValidWeight] = useState(false);
 
   useEffect(() => {
-    const defaultValues = {};
-
     if (user) {
       if (user.heightCm) {
         const totalInches = user.heightCm / 2.54;
@@ -64,6 +62,9 @@ const HeightAndWeight = () => {
         setWeightLbs((user.weightKg * 2.20462).toFixed(0));
       }
     }
+  }, [user]);
+
+  useEffect(() => {
     const parsedHeightFt = parseInt(heightFt);
     const parsedHeightIn = parseInt(heightIn);
     const parsedHeightCm = parseInt(heightCm);
@@ -89,8 +90,7 @@ const HeightAndWeight = () => {
     const isFormValid = isValidHeightRange && isValidWeightRange;
 
     setIsFormValid(isFormValid);
-    form.reset(defaultValues);
-  }, [user, form, heightFt, heightIn, heightCm, weightKg, weightLbs]);
+  }, [heightFt, heightIn, heightCm, weightKg, weightLbs]);
 
   const onSubmit = async (values: z.infer<typeof userHeightWeight>) => {
     try {
