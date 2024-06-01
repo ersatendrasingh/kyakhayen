@@ -96,8 +96,8 @@ const PrakritiInformation: React.FC<PrakritiInformationProps> = ({
 
   return (
     <>
-      <div className="w-full flex flex-col items-center justify-center text-center relative">
-        <h2 className="text-xl font-bold border-b-2 border-slate-200 pb-2 text-gray-700">
+      <div className="w-full flex flex-col  relative">
+        <h2 className="text-xl text-start font-bold border-b-2 border-slate-200 pb-2 text-gray-700">
           Prakriti (Body type) Information
         </h2>
         <div className="w-full flex flex-col items-center justify-center relative h-[300px] md:h-[300px] overflow-hidden">
