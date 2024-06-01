@@ -108,7 +108,7 @@ const HeightAndWeight = () => {
       );
       if (response.status === 200) {
         update();
-        router.push(`/user/profile/`);
+        router.push(`/user/wellness-summary/`);
 
         toast.success("Profile updated successfully", {
           position: "top-center",

@@ -19,10 +19,27 @@ const SettingsPage = async () => {
   const genders = await getGender({
     userId: user?.id,
   });
+
+  const prakritiQuestions = await db.prakritiQuestion.findMany({
+    include: {
+      options: {
+        orderBy: {
+          position: "asc",
+        },
+      },
+    },
+  });
+
   const tabs = [
     {
       label: "User Profile",
-      content: <UserProfile userData={userDetails} genders={genders} />,
+      content: (
+        <UserProfile
+          userData={userDetails}
+          genders={genders}
+          prakritiQuestions={prakritiQuestions}
+        />
+      ),
     },
   ];
 

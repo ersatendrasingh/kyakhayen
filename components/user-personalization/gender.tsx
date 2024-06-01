@@ -89,8 +89,8 @@ const Gender = ({ genders, title, setIsFormValid }: GenderProps) => {
 
       <div
         className={cn(
-          "w-full md:w-[320px]  flex items-center justify-center",
-          isMobile && "max-w-[320px]"
+          "w-full md:w-[320px]  items-center justify-center",
+          isMobile && "w-[240px]"
         )}
       >
         <Swiper

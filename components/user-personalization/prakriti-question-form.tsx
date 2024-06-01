@@ -95,7 +95,7 @@ export const PrakritiQuestionForm = ({
   }
   return (
     <div>
-      <h1 className="text-2xl xl:text-3xl mb-3 font-semibold transition-all duration-1000 ease-in-out transform animate-slide-in text-websecondary">
+      <h1 className="text-2xl xl:text-3xl mb-3 text-center font-semibold transition-all duration-1000 ease-in-out transform animate-slide-in text-websecondary">
         {title}
       </h1>
       <div className="w-[320px] md:w-full  flex flex-col  space-y-2 mx-auto">

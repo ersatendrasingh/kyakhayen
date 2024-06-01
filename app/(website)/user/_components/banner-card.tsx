@@ -2,8 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
-import { CameraIcon, Loader2 } from "lucide-react";
-import { FaBookBookmark } from "react-icons/fa6";
+import { Loader2 } from "lucide-react";
 import { RiVerifiedBadgeFill } from "react-icons/ri";
 import { BsCalendar2DateFill } from "react-icons/bs";
 import { GoUnverified } from "react-icons/go";
@@ -58,7 +57,7 @@ const BannerCard = ({ className }: BannerCardProps) => {
   return (
     <div className={cn("w-full sticky top-[70px] z-10", className)}>
       <Container>
-        <div className="flex flex-col lg:flex-row justify-between rounded-md bg-gradient-to-r from-pink-500 to-rose-500">
+        <div className="flex flex-col lg:flex-row justify-between rounded-md bg-gradient-to-b from-rose-400 to-red-500">
           <div className="m-8 flex flex-col lg:flex-row items-center justify-start">
             <div className="mr-4 relative">
               <div className="mb-4 lg:mb-0 text-center lg:text-left ">

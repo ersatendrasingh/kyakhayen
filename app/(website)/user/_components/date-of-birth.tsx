@@ -1,36 +1,35 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import * as z from "zod";
-
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormMessage,
-} from "@/components/ui/form";
-import { cn } from "@/lib/utils";
-import { Calendar } from "@/components/ui/calendar";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
-import { calculateAge, parseDate } from "@/hooks/use-user-personalization";
-
 import { useForm } from "react-hook-form";
 import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import axios from "axios";
 import { toast } from "react-toastify";
-
+// import Select, { SingleValue, StylesConfig } from "react-select";
+import { Skeleton } from "@/components/ui/skeleton";
+import { calculateAge, parseDate } from "@/hooks/use-user-personalization";
 import { useCurrentUser } from "@/hooks/use-current-user";
 import { useSession } from "next-auth/react";
-import { useEffect, useState } from "react";
-import { CalendarIcon } from "lucide-react";
-import { format } from "date-fns";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
-const userDob = z.object({
+import { Form } from "@/components/ui/form";
+
+import { Button } from "@/components/ui/button";
+
+interface Option {
+  value: string;
+  label: string;
+}
+
+const userDobSchema = z.object({
   dob: z.string().optional(),
 });
 
@@ -38,12 +37,11 @@ const DateOfBirth = () => {
   const router = useRouter();
   const user = useCurrentUser();
   const { update } = useSession();
-  const form = useForm<z.infer<typeof userDob>>({
-    resolver: zodResolver(userDob),
+  const form = useForm<z.infer<typeof userDobSchema>>({
+    resolver: zodResolver(userDobSchema),
   });
   const [date, setDate] = useState<Date | undefined>(undefined);
   const [loading, setLoading] = useState(true);
-  const [popoverOpen, setPopoverOpen] = useState(false);
   const [isFormValid, setIsFormValid] = useState(false);
   const { isSubmitting } = form.formState;
 
@@ -60,7 +58,7 @@ const DateOfBirth = () => {
     setIsFormValid(!!date);
   }, [date]);
 
-  const onSubmit = async (values: z.infer<typeof userDob>) => {
+  const onSubmit = async (values: z.infer<typeof userDobSchema>) => {
     try {
       const age = calculateAge(date!.toString());
       const updatedValues = {
@@ -74,7 +72,6 @@ const DateOfBirth = () => {
       if (response.status === 200) {
         update();
         router.push(`/user/profile/`);
-
         toast.success("Profile updated successfully", {
           position: "top-center",
           autoClose: 5000,
@@ -87,6 +84,60 @@ const DateOfBirth = () => {
       });
     }
   };
+
+  const handleSelectDay = (selectedOption: string) => {
+    if (selectedOption) {
+      const selectedDate = new Date(date ?? new Date());
+      selectedDate.setDate(parseInt(selectedOption));
+      setDate(selectedDate);
+    }
+  };
+
+  const handleSelectMonth = (selectedOption: string) => {
+    if (selectedOption) {
+      const selectedDate = new Date(date ?? new Date());
+      selectedDate.setMonth(parseInt(selectedOption) - 1);
+      setDate(selectedDate);
+    }
+  };
+
+  const handleSelectYear = (selectedOption: string) => {
+    if (selectedOption) {
+      const selectedDate = new Date(date ?? new Date());
+      selectedDate.setFullYear(parseInt(selectedOption));
+      setDate(selectedDate);
+    }
+  };
+
+  const dayOptions: Option[] = Array.from({ length: 31 }, (_, i) => ({
+    value: (i + 1).toString(),
+    label: (i + 1).toString(),
+  }));
+
+  const monthNames = [
+    "Jan",
+    "Feb",
+    "Mar",
+    "Apr",
+    "May",
+    "Jun",
+    "Jul",
+    "Aug",
+    "Sep",
+    "Oct",
+    "Nov",
+    "Dec",
+  ];
+
+  const monthOptions: Option[] = monthNames.map((month, i) => ({
+    value: (i + 1).toString(),
+    label: month,
+  }));
+
+  const yearOptions: Option[] = Array.from({ length: 100 }, (_, i) => ({
+    value: (2023 - i).toString(),
+    label: (2023 - i).toString(),
+  }));
 
   if (!user) {
     return (
@@ -102,6 +153,7 @@ const DateOfBirth = () => {
       </div>
     );
   }
+
   return (
     <div>
       <h2 className="text-xl font-bold border-b-2 border-slate-200 pb-2 text-gray-700">
@@ -111,43 +163,64 @@ const DateOfBirth = () => {
         <form onSubmit={form.handleSubmit(onSubmit)}>
           <div className="space-y-8 mt-8 w-full">
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-              <Popover open={popoverOpen} onOpenChange={setPopoverOpen}>
-                <PopoverTrigger asChild>
-                  <Button
-                    onClick={() => setPopoverOpen(true)}
-                    variant={"outline"}
-                    className={cn(
-                      "w-full pl-3 text-left font-normal",
-                      !date && "text-muted-foreground"
-                    )}
-                  >
-                    {date ? format(date, "PPP") : <span>Pick a date</span>}
-                    <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-full p-0" align="start">
-                  <Calendar
-                    initialFocus
-                    mode="single"
-                    captionLayout="dropdown-buttons"
-                    fromYear={1970}
-                    toYear={2020}
-                    selected={date}
-                    initialMonth={date}
-                    onSelect={(selectedDate) => {
-                      setDate(selectedDate ?? undefined);
-                      setPopoverOpen(false);
-                    }}
-                    className="rounded-md border"
-                  />
-                </PopoverContent>
-              </Popover>
+              <div className="flex gap-4">
+                <Select
+                  onValueChange={(value) => handleSelectDay(value)}
+                  value={date ? date.getDate().toString() : ""}
+                >
+                  <SelectTrigger className="w-full h-12">
+                    <SelectValue placeholder="Select a day" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {dayOptions.map((option) => {
+                      return (
+                        <SelectItem key={option.label} value={option.value}>
+                          {option.label}
+                        </SelectItem>
+                      );
+                    })}
+                  </SelectContent>
+                </Select>
+                <Select
+                  onValueChange={(value) => handleSelectMonth(value)}
+                  value={date ? (date.getMonth() + 1).toString() : ""}
+                >
+                  <SelectTrigger className="w-full h-12">
+                    <SelectValue placeholder="Select a month" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {monthOptions.map((option) => {
+                      return (
+                        <SelectItem key={option.label} value={option.value}>
+                          {option.label}
+                        </SelectItem>
+                      );
+                    })}
+                  </SelectContent>
+                </Select>
+                <Select
+                  onValueChange={(value) => handleSelectYear(value)}
+                  value={date ? date.getFullYear().toString() : ""}
+                >
+                  <SelectTrigger className="w-full h-12">
+                    <SelectValue placeholder="Select a year" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {yearOptions.map((option) => {
+                      return (
+                        <SelectItem key={option.label} value={option.value}>
+                          {option.label}
+                        </SelectItem>
+                      );
+                    })}
+                  </SelectContent>
+                </Select>
+              </div>
               <p className="mt-2 text-sm text-gray-500">
                 Your date of birth is used to calculate your age.
               </p>
             </div>
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2"></div>
-
             <div className="flex items-center justify-end gap-x-2">
               <Button
                 type="submit"
