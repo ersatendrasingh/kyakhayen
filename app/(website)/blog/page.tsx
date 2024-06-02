@@ -59,7 +59,7 @@ const BlogPage = async ({
   });
   return (
     <div>
-      {/* <PageHeader title="Articles" className="py-6" /> */}
+      <PageHeader title="Articles" className="py-6" />
       <div className="py-12 bg-slate-100">
         <Container>
           {articles.length === 0 && (
