@@ -13,7 +13,9 @@ export async function POST(req: Request) {
     const formData = await req.formData();
     const previousImageUrl = formData.get("previousImageUrl") as string | null;
     const categoryId = formData.get("categoryId") as string | null;
+    const postCategoryId = formData.get("postCategoryId") as string | null;
     const recipeId = formData.get("recipeId") as string | null;
+    const postId = formData.get("postId") as string | null;
     const methodId = formData.get("methodId") as string | null;
     const cookingMethodId = formData.get("cookingMethodId") as string | null;
     const cuisineId = formData.get("cuisineId") as string | null;
@@ -176,6 +178,28 @@ export async function POST(req: Request) {
             }
           } else if (methodId) {
             const fileName = `recipes/${recipeId}/methods/${methodId}/${file.name}`;
+            const uploadedData = await uploadFileToS3(
+              fileContent as Buffer,
+              file.type,
+              fileName
+            );
+            if (uploadedData) {
+              const imageUrl = `https://${process.env.AWS_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${fileName}`;
+              uploadedImageUrls.push(imageUrl);
+            }
+          } else if (postId) {
+            const fileName = `articles/${postId}/${file.name}`;
+            const uploadedData = await uploadFileToS3(
+              fileContent as Buffer,
+              file.type,
+              fileName
+            );
+            if (uploadedData) {
+              const imageUrl = `https://${process.env.AWS_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${fileName}`;
+              uploadedImageUrls.push(imageUrl);
+            }
+          } else if (postCategoryId) {
+            const fileName = `articles/categories/${postCategoryId}/${file.name}`;
             const uploadedData = await uploadFileToS3(
               fileContent as Buffer,
               file.type,

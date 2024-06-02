@@ -1,0 +1,68 @@
+"use client";
+
+import Image from "next/image";
+import { useInView } from "react-intersection-observer";
+import Link from "next/link";
+import { useEffect, useState } from "react";
+
+import { PostWithCategory } from "@/types/article";
+
+interface ArticleCardProps {
+  article: PostWithCategory;
+}
+
+const ArticleCard = ({ article }: ArticleCardProps) => {
+  const [isInView, setIsInView] = useState(false);
+  const { ref, inView } = useInView({
+    triggerOnce: true,
+    threshold: 0.5,
+  });
+
+  useEffect(() => {
+    setIsInView(inView);
+  }, [inView]);
+
+  return (
+    <div
+      ref={ref}
+      className={`max-w-sm min-h-[348px] rounded-md overflow-hidden shadow-lg transform transition-transform hover:shadow-xl hover:-translate-y-1 ${
+        isInView ? "animate-slide-up" : ""
+      }`}
+    >
+      <Link href={`/blog/${article.slug}`}>
+        <div className="h-full flex flex-col">
+          <div className="relative">
+            <Image
+              className="w-full"
+              src={article.imageUrl || "https://via.placeholder.com/300x200"}
+              alt={article.title || "Recipe Image"}
+              width={300}
+              height={200}
+            />
+          </div>
+          <div className="px-3 py-4">
+            <div className="flex items-start mb-2"></div>
+            <div className="font-bold text-xl mb-2">{article.title}</div>
+            <p className="text-gray-700 text-base mb-2">
+              {article.PostCategory && article.PostCategory.length > 0 && (
+                <>
+                  {article.PostCategory.map((category, index) => (
+                    <span
+                      key={category.category.id}
+                      className="text-sm text-foreground"
+                    >
+                      {category.category.title}
+                      {index < article.PostCategory!.length - 1 && ", "}
+                    </span>
+                  ))}
+                </>
+              )}
+            </p>
+          </div>
+        </div>
+      </Link>
+    </div>
+  );
+};
+
+export default ArticleCard;

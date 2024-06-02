@@ -1,15 +1,14 @@
-import { GetRecipes } from "@/actions/get-recipes";
+import { getArticles } from "@/actions/get-articles";
+import ArticleCard from "@/components/blogs/article-card";
+import { NoArticleFound } from "@/components/blogs/no-article-found";
 import Container from "@/components/container";
 import { PageHeader } from "@/components/page-header";
-import { NoRecipesFound } from "@/components/recipes/no-recipe-found";
-import RecipeCard from "@/components/recipes/recipe-card";
-import { db } from "@/lib/db";
 import { Metadata } from "next";
 
 const meta = {
-  title: "Recipes - KyaKhayen: Explore 5 Billion+ Culinary Creations",
+  title: "Delicious Recipes and Cooking Tips | Kyakahyen Blog",
   description:
-    "Explore diverse recipes at Kya Khayen. Find nutrition-packed meals, diet plans, and healthy recipes for every taste bud.",
+    "Discover a wide variety of delicious recipes, cooking tips, and culinary inspiration on the Kyakahyen Blog. From quick and easy meals to gourmet dishes, find everything you need to elevate your home cooking experience.",
   image: `${process.env.NEXT_PUBLIC_APP_URL}/meta-images/recipe-page.jpg`,
   keywords: [
     "kya khayen healthy recipes",
@@ -28,7 +27,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: meta.title,
     description: meta.description,
-    url: `${process.env.NEXT_PUBLIC_APP_URL}/recipes`,
+    url: `${process.env.NEXT_PUBLIC_APP_URL}/blog`,
 
     type: "website",
     images: [
@@ -44,43 +43,43 @@ export const metadata: Metadata = {
     card: "summary_large_image",
   },
   alternates: {
-    canonical: `${process.env.NEXT_PUBLIC_APP_URL}/recipes`,
+    canonical: `${process.env.NEXT_PUBLIC_APP_URL}/blog`,
   },
 };
-
-const RecipePage = async ({
+const BlogPage = async ({
   params,
   searchParams,
 }: {
-  params: { recipeSlug: string };
+  params: { blogSlug: string };
   searchParams: { k?: string; type?: string };
 }) => {
-  const recipes = await GetRecipes({
+  const articles = await getArticles({
     searchSlug: searchParams.k || undefined,
     searchType: searchParams.type || undefined,
   });
-
   return (
     <div>
-      <PageHeader title="Recipes" className="py-6" />
+      {/* <PageHeader title="Articles" className="py-6" /> */}
       <div className="py-12 bg-slate-100">
         <Container>
-          {recipes.length === 0 && <NoRecipesFound key={searchParams.k!} />}
-          {searchParams && (
+          {articles.length === 0 && (
+            <NoArticleFound keyparam={searchParams.k} />
+          )}
+          {articles.length !== 0 && searchParams && (
             <div className="mb-4">
               <div className="flex items-center gap-x-2">
                 {searchParams.k && (
                   <h1 className="text-3xl font-bold">
-                    Recipes for {searchParams.k || ""}
+                    Articles for {searchParams.k || ""}
                   </h1>
                 )}
               </div>
             </div>
           )}
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
-            {recipes.map((recipe, index) => (
+            {articles.map((article, index) => (
               <div key={index} className="m-4">
-                <RecipeCard recipe={recipe} />
+                <ArticleCard article={article} />
               </div>
             ))}
           </div>
@@ -90,4 +89,4 @@ const RecipePage = async ({
   );
 };
 
-export default RecipePage;
+export default BlogPage;

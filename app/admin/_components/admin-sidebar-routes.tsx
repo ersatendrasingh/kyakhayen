@@ -3,6 +3,7 @@
 import {
   CookingPot,
   LayoutDashboard,
+  Newspaper,
   Salad,
   Users,
   Webhook,
@@ -130,6 +131,29 @@ const routes = [
     icon: Users,
     label: "Manage Users",
     href: "/admin/users",
+  },
+  {
+    id: 6,
+    icon: Newspaper,
+    label: "Articles",
+    href: "/admin/articles",
+    subMenuItems: [
+      {
+        id: 1,
+        label: "View All Articles",
+        href: "/admin/articles",
+      },
+      {
+        id: 2,
+        label: "Add New Article",
+        href: "/admin/articles/create",
+      },
+      {
+        id: 3,
+        label: "Manage Article Categories",
+        href: "/admin/articles/categories",
+      },
+    ],
   },
 ];
 export const AdminSidebarRoutes = () => {
