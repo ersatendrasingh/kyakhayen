@@ -17,8 +17,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { useCurrentUser } from "@/hooks/use-current-user";
 import { useSession } from "next-auth/react";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useDebounce } from "@/hooks/use-debounce";
+import { Loader2 } from "lucide-react";
 
 const GeneralInformation = () => {
   const router = useRouter();
@@ -51,6 +53,39 @@ const GeneralInformation = () => {
       form.reset(defaultValues);
     }
   }, [user, form]);
+
+  const [phoneNumber, setPhoneNumber] = useState("");
+  const debouncedPhoneNumber = useDebounce(phoneNumber, 500);
+  const [isChecking, setIsChecking] = useState(false);
+
+  useEffect(() => {
+    const checkPhoneNumber = async () => {
+      if (debouncedPhoneNumber) {
+        setIsChecking(true);
+        try {
+          await axios.post("/api/user/check-phone", {
+            phoneNumber: debouncedPhoneNumber,
+          });
+          form.clearErrors("phoneNumber");
+          setIsChecking(false);
+        } catch (error) {
+          form.setError("phoneNumber", {
+            type: "manual",
+            message: "Phone number already exists",
+          });
+          setIsChecking(false);
+        }
+      }
+    };
+
+    checkPhoneNumber();
+  }, [debouncedPhoneNumber, form]);
+
+  const handlePhoneNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { value } = e.target;
+    setPhoneNumber(value);
+    form.setValue("phoneNumber", value, { shouldValidate: true });
+  };
 
   const onSubmit = async (values: z.infer<typeof userProfileSchema>) => {
     try {
@@ -160,13 +195,18 @@ const GeneralInformation = () => {
                 name="phoneNumber"
                 render={({ field }) => (
                   <FormItem>
-                    <FormControl>
-                      <Input
-                        disabled={user?.isOAuth ? false : true}
-                        placeholder="Phone Number"
-                        {...field}
-                        className="w-full h-12 rounded-md"
-                      />
+                    <FormControl className="relative">
+                      <>
+                        <Input
+                          placeholder="Phone Number"
+                          {...field}
+                          className="w-full h-12 rounded-md pr-10"
+                          onChange={handlePhoneNumberChange}
+                        />
+                        {isChecking && (
+                          <Loader2 className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 animate-spin" />
+                        )}
+                      </>
                     </FormControl>
                     <FormMessage />
                   </FormItem>

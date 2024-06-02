@@ -388,6 +388,7 @@ model User {
   userCuisines          UserCuisines[]
   UserAllrgies          UserAllrgies[]
   UserHealthGoals       UserHealthGoals[]
+  Post                  Post[]
   isTwoFactorEnabled    Boolean                @default(false)
   isPersonalised        Boolean                @default(false)
   twoFactorConfirmation TwoFactorConfirmation?
@@ -521,4 +522,37 @@ model UserHealthGoals {
   @@unique([userId, healthGoalId])
   @@index([healthGoalId])
   @@index([userId])
+}
+
+model Post {
+  id          String  @id @default(uuid())
+  title       String
+  slug        String  @unique
+  content     String? @db.LongText
+  imageUrl    String?
+  isPublished Boolean @default(false)
+  authorId    String
+  author      User    @relation(fields: [authorId], references: [id])
+
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  PostCategory PostCategory[]
+}
+
+model Category {
+  id           String         @id @default(uuid())
+  title        String         @unique
+  slug         String         @unique
+  imageUrl     String?
+  PostCategory PostCategory[]
+}
+
+model PostCategory {
+  id         String   @id @default(uuid())
+  postId     String
+  categoryId String
+  post       Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@unique([postId, categoryId])
 }

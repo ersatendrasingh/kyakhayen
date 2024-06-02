@@ -11,7 +11,9 @@ import UploadButton from "@/components/upload/upload-button";
 interface FileUploadProps {
   previousImageUrl?: string | null;
   categoryId?: string | null;
+  postCategoryId?: string | null;
   recipeId?: string | null;
+  postId?: string | null;
   methodId?: string | null;
   cookingMethodId?: string | null;
   cuisineId?: string | null;
@@ -31,7 +33,9 @@ interface FileUploadProps {
 const FileUpload = ({
   previousImageUrl,
   categoryId,
+  postCategoryId,
   recipeId,
+  postId,
   methodId,
   cookingMethodId,
   cuisineId,
@@ -77,7 +81,9 @@ const FileUpload = ({
       }
       formData.append("previousImageUrl", previousImageUrl || "");
       formData.append("categoryId", categoryId || "");
+      formData.append("postCategoryId", postCategoryId || "");
       formData.append("recipeId", recipeId || "");
+      formData.append("postId", postId || "");
       formData.append("methodId", methodId || "");
       formData.append("cookingMethodId", cookingMethodId || "");
       formData.append("cuisineId", cuisineId || "");
