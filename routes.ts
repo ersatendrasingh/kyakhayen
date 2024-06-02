@@ -9,6 +9,7 @@ export const publicRoutes = [
   "/cart",
   "/checkout",
   "/recipes",
+  "/blog",
   "/search",
   "/download-app",
   "/about-us",
@@ -38,11 +39,18 @@ export const authRoutes = [
 export const apiAuthPrefix = "/api/";
 
 /**
- * The prefix for Course routes
- * Routes that start with this prefix are used for Course management purposes
+ * The prefix for Recipe routes
+ * Routes that start with this prefix are used for Recipe management purposes
  * @type {string}
  */
 export const recipePrefix = "/recipes/";
+
+/**
+ * The prefix for Article routes
+ * Routes that start with this prefix are used for Article management purposes
+ * @type {string}
+ */
+export const articlePrefix = "/blog/";
 
 /**
  * The prefix for Admin Dashboard routes

@@ -1,3 +1,4 @@
+import { getArticles } from "@/actions/get-articles";
 import { GetRecipes } from "@/actions/get-recipes";
 import { MetadataRoute } from "next";
 
@@ -14,10 +15,17 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const changeFrequency: changeFrequency = "daily";
 
   let recipes = await GetRecipes({});
+  let articles = await getArticles({});
 
   const recipesRoutes = recipes.map((recipe) => ({
     url: `${process.env.NEXT_PUBLIC_APP_URL}/recipes/${recipe.slug}`,
     lastModified: recipe.updatedAt,
+    changeFrequency: changeFrequency,
+  }));
+
+  const articlesRoutes = articles.map((article) => ({
+    url: `${process.env.NEXT_PUBLIC_APP_URL}/blog/${article.slug}`,
+    lastModified: article.updatedAt,
     changeFrequency: changeFrequency,
   }));
 
@@ -35,5 +43,5 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     changeFrequency: changeFrequency,
   }));
 
-  return [...routes, ...recipesRoutes];
+  return [...routes, ...recipesRoutes, ...articlesRoutes];
 }

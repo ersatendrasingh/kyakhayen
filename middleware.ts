@@ -7,6 +7,7 @@ import {
   authRoutes,
   publicRoutes,
   recipePrefix,
+  articlePrefix,
 } from "@/routes";
 
 const { auth } = NextAuth(authConfig);
@@ -17,11 +18,13 @@ export default auth((req): any => {
 
   const isApiAuthRoute = nextUrl.pathname.startsWith(apiAuthPrefix);
   const isRecipeRoute = nextUrl.pathname.startsWith(recipePrefix);
+  const isArticleRoute = nextUrl.pathname.startsWith(articlePrefix);
   const isPublicRoute = publicRoutes.includes(nextUrl.pathname);
   const isAuthRoute = authRoutes.includes(nextUrl.pathname);
 
   if (isApiAuthRoute) return null;
   if (isRecipeRoute) return null;
+  if (isArticleRoute) return null;
   if (isAuthRoute) {
     if (isLoggedIn) {
       return Response.redirect(new URL(DEFAULT_LOGIN_REDIRECT, nextUrl));
