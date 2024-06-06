@@ -24,8 +24,6 @@ import { LoginSchema } from "@/schemas";
 import { login } from "@/actions/login";
 import { SubmitButton } from "@/components/submit-button";
 import { DEFAULT_LOGIN_REDIRECT } from "@/routes";
-import { collectPersonalizationData } from "@/hooks/use-user-personalization";
-import axios from "axios";
 
 interface LoginFormProps {
   callBackUrl?: string;
@@ -72,29 +70,7 @@ export const LoginForm = ({ callBackUrl, mode }: LoginFormProps) => {
             form.reset();
             setSuccess(data.success);
             setIsLoading(false);
-            // const needsPersonalizationUpdate = localStorage.getItem(
-            //   "needsPersonalizationUpdate"
-            // );
-            // if (needsPersonalizationUpdate === "true") {
-            //   const personalizationData = collectPersonalizationData();
-            //   if (personalizationData) {
-            //     try {
-            //       console.log("personalizationData", personalizationData);
-            //       const response = await axios.patch(
-            //         "/api/user/personalization",
-            //         personalizationData
-            //       );
 
-            //       localStorage.setItem("personalization", "true");
-            //       localStorage.removeItem("userData");
-            //       localStorage.removeItem("currentStep");
-            //       localStorage.removeItem("needsPersonalizationUpdate");
-            //       router.push("/user/profile");
-            //     } catch (error) {
-            //       console.error("Failed to update personalization data", error);
-            //     }
-            //   }
-            // }
             localStorage.setItem("toastDisplayed", "false");
             router.push(callbackUrl || DEFAULT_LOGIN_REDIRECT);
           }
