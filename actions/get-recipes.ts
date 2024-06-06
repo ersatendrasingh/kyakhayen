@@ -89,7 +89,7 @@ export const GetRecipes = async ({
           recipeSeasons: true,
         },
         orderBy: {
-          createdAt: "desc",
+          updatedAt: "desc",
         },
       });
     } else if (searchType && searchType === "mealTime") {
