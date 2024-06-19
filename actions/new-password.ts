@@ -2,11 +2,14 @@
 
 import * as z from "zod";
 import bcrypt from "bcryptjs";
+import { render } from "@react-email/render";
 
 import { NewPasswordSchema } from "@/schemas";
 import { getPasswordResetTokenByToken } from "@/data/password-reset-token";
 import { getUserByEmail } from "@/data/user";
 import { db } from "@/lib/db";
+import { sendEmail } from "@/lib/mail";
+import PasswordResetConfirmationMail from "@/emails/password-reset-confirmation-mail";
 
 export const newPassword = async (
   values: z.infer<typeof NewPasswordSchema>,
@@ -52,6 +55,18 @@ export const newPassword = async (
   await db.passwordResetToken.delete({
     where: { id: existingToken.id },
   });
+  await sendEmail({
+    to: existingUser.email as string,
+    subject: "Password Reset Complete: Welcome Back!",
+    html: render(
+      PasswordResetConfirmationMail({
+        name: existingUser.name as string,
+      })
+    ),
+  });
 
-  return { success: "Password updated!" };
+  return {
+    success:
+      "Password updated! Check your email for confirmation. Go back to login page.",
+  };
 };

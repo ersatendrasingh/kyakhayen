@@ -1,6 +1,7 @@
 import NextAuth from "next-auth";
 
 import { PrismaAdapter } from "@auth/prisma-adapter";
+import { render } from "@react-email/render";
 
 import { db } from "@/lib/db";
 
@@ -9,6 +10,8 @@ import { getUserById } from "@/data/user";
 import { UserRole } from "@prisma/client";
 import { getTwoFactorConfirmationByUserId } from "@/data/two-factor-confirmation";
 import { getAccountByUserId } from "@/data/account";
+import WelcomeSocialLoginMail from "@/emails/welcome-social-login-mail";
+import { sendEmail } from "./lib/mail";
 
 export const {
   handlers: { GET, POST },
@@ -26,6 +29,21 @@ export const {
         where: { id: user.id },
         data: { emailVerified: new Date() },
       });
+    },
+    async signIn({ user, account, isNewUser }) {
+      // Check if it's a new user signing in with social login
+      if (isNewUser && account?.provider !== "credentials") {
+        // Send welcome email to the new user
+        await sendEmail({
+          to: user.email as string,
+          subject: "Welcome! Let's Get Started with Kya Khayen?",
+          html: render(
+            WelcomeSocialLoginMail({
+              name: user.name as string,
+            })
+          ),
+        });
+      }
     },
   },
   callbacks: {
@@ -92,7 +110,7 @@ export const {
 
       return session;
     },
-    async jwt({ token }) {
+    async jwt({ token, isNewUser }) {
       if (!token.sub) return token;
 
       const existingUser = await getUserById(token.sub);

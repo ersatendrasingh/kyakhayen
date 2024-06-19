@@ -2,6 +2,7 @@
 
 import * as z from "zod";
 import { AuthError } from "next-auth";
+import { render } from "@react-email/render";
 
 import { LoginSchema } from "@/schemas";
 import { signIn } from "@/auth";
@@ -11,10 +12,12 @@ import {
   generateTwoFactorToken,
 } from "@/lib/tokens";
 import { getUserByEmail } from "@/data/user";
-import { sendVerificationEmail, sendTwoFactorTokenEmail } from "@/lib/mail";
+import { sendEmail } from "@/lib/mail";
 import { db } from "@/lib/db";
 import { getTwoFactorTokenByEmail } from "@/data/two-factor-token";
 import { getTwoFactorConfirmationByUserId } from "@/data/two-factor-confirmation";
+import EmailVerificationMail from "@/emails/email-verification-mail";
+import TwoFAMail from "@/emails/two-fa-mail";
 
 export const login = async (
   values: z.infer<typeof LoginSchema>,
@@ -37,11 +40,18 @@ export const login = async (
     const verificationToken = await generateVerificationToken(
       existingUser.email
     );
-    await sendVerificationEmail(
-      verificationToken.email,
-      verificationToken.token
-    );
-    return { success: "Confirmation email sent!" };
+
+    await sendEmail({
+      to: verificationToken.email,
+      subject: "Verify Your Email to Activate Your Account",
+      html: render(
+        EmailVerificationMail({
+          name: existingUser.name as string,
+          token: verificationToken.token,
+        })
+      ),
+    });
+    return { success: "Confirmation email sent! Please check your email" };
   }
   if (existingUser.isTwoFactorEnabled && existingUser.email) {
     if (code) {
@@ -82,7 +92,16 @@ export const login = async (
       });
     } else {
       const twoFactorToken = await generateTwoFactorToken(existingUser.email);
-      await sendTwoFactorTokenEmail(twoFactorToken.email, twoFactorToken.token);
+      await sendEmail({
+        to: twoFactorToken.email,
+        subject: "Two-Factor Authentication: Confirm Your Code",
+        html: render(
+          TwoFAMail({
+            name: existingUser.name as string,
+            code: twoFactorToken.token,
+          })
+        ),
+      });
 
       return { twoFactor: true };
     }
