@@ -72,3 +72,19 @@ export const RegisterSchema = z.object({
     message: "Minimum 6 characters required",
   }),
 });
+
+export const contactFormSchema = z.object({
+  name: z.string().min(1, { message: "Name is required" }),
+  email: z.string().email({
+    message: "Billing Email is required",
+  }),
+  phoneNumber: z
+    .string()
+    .min(10, { message: "Phone number is required" })
+    .max(12, { message: "Phone number must be maximum 12 digits" })
+    .regex(/^\d{10,12}$/, { message: "Invalid phone number" }),
+  country: z.string().min(1),
+  city: z.string().min(1),
+  state: z.string().min(1),
+  query: z.string().min(1, { message: "Your bio is required" }),
+});
