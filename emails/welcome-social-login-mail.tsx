@@ -69,12 +69,12 @@ const WelcomeSocialLoginMail = ({ name }: WelcomeSocialLoginMailProps) => {
           exploring our delicious recipes, meal plans, and more!
         </p>
         <p style={{ fontSize: "16px", marginBottom: "10px", color: "#666" }}>
-          To get started, you can log in to your account and personalize your
-          profile to receive tailored recommendations and diet plans.
+          Explore personalized recipes, meal plans, and tips tailored to your
+          tastes and health goals. Enjoy your journey with Kya Khayen?!.
         </p>
         <div style={{ textAlign: "center", margin: "20px 0" }}>
           <a
-            href="https://www.kyakhayen.com/auth/login"
+            href="https://www.kyakhayen.com/meal-plan"
             style={{
               display: "inline-block",
               padding: "10px 20px",
@@ -86,7 +86,7 @@ const WelcomeSocialLoginMail = ({ name }: WelcomeSocialLoginMailProps) => {
               fontWeight: "bold",
             }}
           >
-            Login Now
+            Get Your Diet Plan
           </a>
         </div>
 
