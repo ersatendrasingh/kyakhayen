@@ -1,11 +1,5 @@
 import Link from "next/link";
-import {
-  FaFacebook,
-  FaInstagram,
-  FaLinkedin,
-  FaTwitter,
-  FaYoutube,
-} from "react-icons/fa";
+import { FaFacebook, FaInstagram, FaYoutube } from "react-icons/fa";
 import { FaXTwitter } from "react-icons/fa6";
 
 import Container from "@/components/container";
@@ -51,6 +45,9 @@ const Footer = async () => {
               </Link>
               <Link href="/privacy-policy" className="block mb-2">
                 Privacy Policy
+              </Link>
+              <Link href="/contact-us" className="block mb-2">
+                Contact
               </Link>
             </nav>
           </div>

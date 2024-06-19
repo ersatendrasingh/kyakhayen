@@ -1,9 +1,9 @@
 const { PrismaClient } = require("@prisma/client");
 const fs = require("fs/promises");
 
-// const countrySeedData = require("../seedData/countrySeedData.json");
-// const stateSeedData = require("../seedData/stateSeedData.json");
-// const citySeedData = require("../seedData/citySeedData.json");
+const countrySeedData = require("../seedData/countrySeedData.json");
+const stateSeedData = require("../seedData/stateSeedData.json");
+const citySeedData = require("../seedData/citySeedData.json");
 
 const database = new PrismaClient();
 
@@ -160,3 +160,27 @@ const database = new PrismaClient();
 // }
 
 // main();
+
+async function seedDatabase() {
+  try {
+    await database.Country.createMany({
+      data: countrySeedData,
+    });
+
+    await database.State.createMany({
+      data: stateSeedData,
+    });
+
+    await database.City.createMany({
+      data: citySeedData,
+    });
+
+    console.log("Seed data inserted successfully.");
+  } catch (error) {
+    console.error("Error seeding database:", error);
+  } finally {
+    await database.$disconnect();
+  }
+}
+
+seedDatabase();

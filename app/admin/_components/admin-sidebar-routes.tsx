@@ -5,6 +5,7 @@ import {
   LayoutDashboard,
   Newspaper,
   Salad,
+  SmartphoneNfc,
   Users,
   Webhook,
 } from "lucide-react";
@@ -126,14 +127,9 @@ const routes = [
     label: "Manage Prakriti",
     href: "/admin/prakriti",
   },
+
   {
     id: 5,
-    icon: Users,
-    label: "Manage Users",
-    href: "/admin/users",
-  },
-  {
-    id: 6,
     icon: Newspaper,
     label: "Articles",
     href: "/admin/articles",
@@ -154,6 +150,18 @@ const routes = [
         href: "/admin/articles/categories",
       },
     ],
+  },
+  {
+    id: 6,
+    icon: Users,
+    label: "Manage Users",
+    href: "/admin/users",
+  },
+  {
+    id: 7,
+    icon: SmartphoneNfc,
+    label: "Contact Queries",
+    href: "/admin/contact-queries",
   },
 ];
 export const AdminSidebarRoutes = () => {

@@ -1,0 +1,2252 @@
+[
+  {
+    "name": "Andorra",
+    "countryCode": "AD",
+    "capital": "Andorra la Vella",
+    "region": "Europe",
+    "flag": "https://flagcdn.com/ad.svg",
+    "currency": "EUR",
+    "phoneCode": "+376"
+  },
+  {
+    "name": "United Arab Emirates",
+    "countryCode": "AE",
+    "capital": "Abu Dhabi",
+    "region": "Asia",
+    "flag": "https://flagcdn.com/ae.svg",
+    "currency": "AED",
+    "phoneCode": "+971"
+  },
+  {
+    "name": "Afghanistan",
+    "countryCode": "AF",
+    "capital": "Kabul",
+    "region": "Asia",
+    "flag": "https://upload.wikimedia.org/wikipedia/commons/5/5c/Flag_of_the_Taliban.svg",
+    "currency": "AFN",
+    "phoneCode": "+93"
+  },
+  {
+    "name": "Antigua and Barbuda",
+    "countryCode": "AG",
+    "capital": "St John's",
+    "region": "North America",
+    "flag": "https://flagcdn.com/ag.svg",
+    "currency": "XCD",
+    "phoneCode": "+1268"
+  },
+  {
+    "name": "Anguilla",
+    "countryCode": "AI",
+    "capital": "The Valley",
+    "region": "North America",
+    "flag": "https://flagcdn.com/ai.svg",
+    "currency": "XCD",
+    "phoneCode": "+1264"
+  },
+  {
+    "name": "Albania",
+    "countryCode": "AL",
+    "capital": "Tirana",
+    "region": "Europe",
+    "flag": "https://flagcdn.com/al.svg",
+    "currency": "ALL",
+    "phoneCode": "+355"
+  },
+  {
+    "name": "Armenia",
+    "countryCode": "AM",
+    "capital": "Yerevan",
+    "region": "Asia",
+    "flag": "https://flagcdn.com/am.svg",
+    "currency": "AMD",
+    "phoneCode": "+374"
+  },
+  {
+    "name": "Angola",
+    "countryCode": "AO",
+    "capital": "Luanda",
+    "region": "Africa",
+    "flag": "https://flagcdn.com/ao.svg",
+    "currency": "AOA",
+    "phoneCode": "+244"
+  },
+  {
+    "name": "Antarctica",
+    "countryCode": "AQ",
+    "capital": null,
+    "region": "Antarctica",
+    "flag": "https://flagcdn.com/aq.svg",
+    "currency": null,
+    "phoneCode": null
+  },
+  {
+    "name": "Argentina",
+    "countryCode": "AR",
+    "capital": "Buenos Aires",
+    "region": "South America",
+    "flag": "https://flagcdn.com/ar.svg",
+    "currency": "ARS",
+    "phoneCode": "+54"
+  },
+  {
+    "name": "American Samoa",
+    "countryCode": "AS",
+    "capital": "Pago Pago",
+    "region": "Oceania",
+    "flag": "https://flagcdn.com/as.svg",
+    "currency": "USD",
+    "phoneCode": "+1684"
+  },
+  {
+    "name": "Austria",
+    "countryCode": "AT",
+    "capital": "Vienna",
+    "region": "Europe",
+    "flag": "https://flagcdn.com/at.svg",
+    "currency": "EUR",
+    "phoneCode": "+43"
+  },
+  {
+    "name": "Australia",
+    "countryCode": "AU",
+    "capital": "Canberra",
+    "region": "Oceania",
+    "flag": "https://flagcdn.com/au.svg",
+    "currency": "AUD",
+    "phoneCode": "+61"
+  },
+  {
+    "name": "Aruba",
+    "countryCode": "AW",
+    "capital": "Oranjestad",
+    "region": "North America",
+    "flag": "https://flagcdn.com/aw.svg",
+    "currency": "AWG",
+    "phoneCode": "+297"
+  },
+  {
+    "name": "Åland",
+    "countryCode": "AX",
+    "capital": "Mariehamn",
+    "region": "Europe",
+    "flag": "https://flagcdn.com/ax.svg",
+    "currency": "EUR",
+    "phoneCode": "+35818"
+  },
+  {
+    "name": "Azerbaijan",
+    "countryCode": "AZ",
+    "capital": "Baku",
+    "region": "Asia",
+    "flag": "https://flagcdn.com/az.svg",
+    "currency": "AZN",
+    "phoneCode": "+994"
+  },
+  {
+    "name": "Bosnia and Herzegovina",
+    "countryCode": "BA",
+    "capital": "Sarajevo",
+    "region": "Europe",
+    "flag": "https://flagcdn.com/ba.svg",
+    "currency": "BAM",
+    "phoneCode": "+387"
+  },
+  {
+    "name": "Barbados",
+    "countryCode": "BB",
+    "capital": "Bridgetown",
+    "region": "North America",
+    "flag": "https://flagcdn.com/bb.svg",
+    "currency": "BBD",
+    "phoneCode": "+1246"
+  },
+  {
+    "name": "Bangladesh",
+    "countryCode": "BD",
+    "capital": "Dhaka",
+    "region": "Asia",
+    "flag": "https://flagcdn.com/bd.svg",
+    "currency": "BDT",
+    "phoneCode": "+880"
+  },
+  {
+    "name": "Belgium",
+    "countryCode": "BE",
+    "capital": "Brussels",
+    "region": "Europe",
+    "flag": "https://flagcdn.com/be.svg",
+    "currency": "EUR",
+    "phoneCode": "+32"
+  },
+  {
+    "name": "Burkina Faso",
+    "countryCode": "BF",
+    "capital": "Ouagadougou",
+    "region": "Africa",
+    "flag": "https://flagcdn.com/bf.svg",
+    "currency": "XOF",
+    "phoneCode": "+226"
+  },
+  {
+    "name": "Bulgaria",
+    "countryCode": "BG",
+    "capital": "Sofia",
+    "region": "Europe",
+    "flag": "https://flagcdn.com/bg.svg",
+    "currency": "BGN",
+    "phoneCode": "+359"
+  },
+  {
+    "name": "Bahrain",
+    "countryCode": "BH",
+    "capital": "Manama",
+    "region": "Asia",
+    "flag": "https://flagcdn.com/bh.svg",
+    "currency": "BHD",
+    "phoneCode": "+973"
+  },
+  {
+    "name": "Burundi",
+    "countryCode": "BI",
+    "capital": "Gitega",
+    "region": "Africa",
+    "flag": "https://flagcdn.com/bi.svg",
+    "currency": "BIF",
+    "phoneCode": "+257"
+  },
+  {
+    "name": "Benin",
+    "countryCode": "BJ",
+    "capital": "Porto-Novo",
+    "region": "Africa",
+    "flag": "https://flagcdn.com/bj.svg",
+    "currency": "XOF",
+    "phoneCode": "+229"
+  },
+  {
+    "name": "Saint Barthélemy",
+    "countryCode": "BL",
+    "capital": "Gustavia",
+    "region": "North America",
+    "flag": "https://flagcdn.com/bl.svg",
+    "currency": "EUR",
+    "phoneCode": "+590"
+  },
+  {
+    "name": "Bermuda",
+    "countryCode": "BM",
+    "capital": "Hamilton",
+    "region": "North America",
+    "flag": "https://flagcdn.com/bm.svg",
+    "currency": "BMD",
+    "phoneCode": "+1441"
+  },
+  {
+    "name": "Brunei",
+    "countryCode": "BN",
+    "capital": "Bandar Seri Begawan",
+    "region": "Asia",
+    "flag": "https://flagcdn.com/bn.svg",
+    "currency": "BND",
+    "phoneCode": "+673"
+  },
+  {
+    "name": "Bolivia",
+    "countryCode": "BO",
+    "capital": "Sucre",
+    "region": "South America",
+    "flag": "https://flagcdn.com/bo.svg",
+    "currency": "BOB",
+    "phoneCode": "+591"
+  },
+  {
+    "name": "Bonaire, Sint Eustatius, and Saba",
+    "countryCode": "BQ",
+    "capital": "Kralendijk",
+    "region": "North America",
+    "flag": "https://flagcdn.com/bq.svg",
+    "currency": "USD",
+    "phoneCode": "+599"
+  },
+  {
+    "name": "Brazil",
+    "countryCode": "BR",
+    "capital": "Brasília",
+    "region": "South America",
+    "flag": "https://flagcdn.com/br.svg",
+    "currency": "BRL",
+    "phoneCode": "+55"
+  },
+  {
+    "name": "Bahamas",
+    "countryCode": "BS",
+    "capital": "Nassau",
+    "region": "North America",
+    "flag": "https://flagcdn.com/bs.svg",
+    "currency": "BSD",
+    "phoneCode": "+1242"
+  },
+  {
+    "name": "Bhutan",
+    "countryCode": "BT",
+    "capital": "Thimphu",
+    "region": "Asia",
+    "flag": "https://flagcdn.com/bt.svg",
+    "currency": "BTN",
+    "phoneCode": "+975"
+  },
+  {
+    "name": "Bouvet Island",
+    "countryCode": "BV",
+    "capital": null,
+    "region": "Antarctica",
+    "flag": "https://flagcdn.com/bv.svg",
+    "currency": "NOK",
+    "phoneCode": "+47"
+  },
+  {
+    "name": "Botswana",
+    "countryCode": "BW",
+    "capital": "Gaborone",
+    "region": "Africa",
+    "flag": "https://flagcdn.com/bw.svg",
+    "currency": "BWP",
+    "phoneCode": "+267"
+  },
+  {
+    "name": "Belarus",
+    "countryCode": "BY",
+    "capital": "Minsk",
+    "region": "Europe",
+    "flag": "https://flagcdn.com/by.svg",
+    "currency": "BYN",
+    "phoneCode": "+375"
+  },
+  {
+    "name": "Belize",
+    "countryCode": "BZ",
+    "capital": "Belmopan",
+    "region": "North America",
+    "flag": "https://flagcdn.com/bz.svg",
+    "currency": "BZD",
+    "phoneCode": "+501"
+  },
+  {
+    "name": "Canada",
+    "countryCode": "CA",
+    "capital": "Ottawa",
+    "region": "North America",
+    "flag": "https://flagcdn.com/ca.svg",
+    "currency": "CAD",
+    "phoneCode": "+1"
+  },
+  {
+    "name": "Cocos (Keeling) Islands",
+    "countryCode": "CC",
+    "capital": "West Island",
+    "region": "Asia",
+    "flag": "https://flagcdn.com/cc.svg",
+    "currency": "AUD",
+    "phoneCode": "+61"
+  },
+  {
+    "name": "DR Congo",
+    "countryCode": "CD",
+    "capital": "Kinshasa",
+    "region": "Africa",
+    "flag": "https://flagcdn.com/cd.svg",
+    "currency": "CDF",
+    "phoneCode": "+243"
+  },
+  {
+    "name": "Central African Republic",
+    "countryCode": "CF",
+    "capital": "Bangui",
+    "region": "Africa",
+    "flag": "https://flagcdn.com/cf.svg",
+    "currency": "XAF",
+    "phoneCode": "+236"
+  },
+  {
+    "name": "Congo Republic",
+    "countryCode": "CG",
+    "capital": "Brazzaville",
+    "region": "Africa",
+    "flag": "https://flagcdn.com/cg.svg",
+    "currency": "XAF",
+    "phoneCode": "+242"
+  },
+  {
+    "name": "Switzerland",
+    "countryCode": "CH",
+    "capital": "Bern",
+    "region": "Europe",
+    "flag": "https://flagcdn.com/ch.svg",
+    "currency": "CHF",
+    "phoneCode": "+41"
+  },
+  {
+    "name": "Ivory Coast",
+    "countryCode": "CI",
+    "capital": "Yamoussoukro",
+    "region": "Africa",
+    "flag": "https://flagcdn.com/ci.svg",
+    "currency": "XOF",
+    "phoneCode": "+225"
+  },
+  {
+    "name": "Cook Islands",
+    "countryCode": "CK",
+    "capital": "Avarua",
+    "region": "Oceania",
+    "flag": "https://flagcdn.com/ck.svg",
+    "currency": "NZD",
+    "phoneCode": "+682"
+  },
+  {
+    "name": "Chile",
+    "countryCode": "CL",
+    "capital": "Santiago",
+    "region": "South America",
+    "flag": "https://flagcdn.com/cl.svg",
+    "currency": "CLP",
+    "phoneCode": "+56"
+  },
+  {
+    "name": "Cameroon",
+    "countryCode": "CM",
+    "capital": "Yaoundé",
+    "region": "Africa",
+    "flag": "https://flagcdn.com/cm.svg",
+    "currency": "XAF",
+    "phoneCode": "+237"
+  },
+  {
+    "name": "China",
+    "countryCode": "CN",
+    "capital": "Beijing",
+    "region": "Asia",
+    "flag": "https://flagcdn.com/cn.svg",
+    "currency": "CNY",
+    "phoneCode": "+86"
+  },
+  {
+    "name": "Colombia",
+    "countryCode": "CO",
+    "capital": "Bogotá",
+    "region": "South America",
+    "flag": "https://flagcdn.com/co.svg",
+    "currency": "COP",
+    "phoneCode": "+57"
+  },
+  {
+    "name": "Costa Rica",
+    "countryCode": "CR",
+    "capital": "San José",
+    "region": "North America",
+    "flag": "https://flagcdn.com/cr.svg",
+    "currency": "CRC",
+    "phoneCode": "+506"
+  },
+  {
+    "name": "Cuba",
+    "countryCode": "CU",
+    "capital": "Havana",
+    "region": "North America",
+    "flag": "https://flagcdn.com/cu.svg",
+    "currency": "CUP",
+    "phoneCode": "+53"
+  },
+  {
+    "name": "Cabo Verde",
+    "countryCode": "CV",
+    "capital": "Praia",
+    "region": "Africa",
+    "flag": "https://flagcdn.com/cv.svg",
+    "currency": "CVE",
+    "phoneCode": "+238"
+  },
+  {
+    "name": "Curaçao",
+    "countryCode": "CW",
+    "capital": "Willemstad",
+    "region": "North America",
+    "flag": "https://flagcdn.com/cw.svg",
+    "currency": "ANG",
+    "phoneCode": "+599"
+  },
+  {
+    "name": "Christmas Island",
+    "countryCode": "CX",
+    "capital": "Flying Fish Cove",
+    "region": "Oceania",
+    "flag": "https://flagcdn.com/cx.svg",
+    "currency": "AUD",
+    "phoneCode": "+61"
+  },
+  {
+    "name": "Cyprus",
+    "countryCode": "CY",
+    "capital": "Nicosia",
+    "region": "Europe",
+    "flag": "https://flagcdn.com/cy.svg",
+    "currency": "EUR",
+    "phoneCode": "+357"
+  },
+  {
+    "name": "Czechia",
+    "countryCode": "CZ",
+    "capital": "Prague",
+    "region": "Europe",
+    "flag": "https://flagcdn.com/cz.svg",
+    "currency": "CZK",
+    "phoneCode": "+420"
+  },
+  {
+    "name": "Germany",
+    "countryCode": "DE",
+    "capital": "Berlin",
+    "region": "Europe",
+    "flag": "https://flagcdn.com/de.svg",
+    "currency": "EUR",
+    "phoneCode": "+49"
+  },
+  {
+    "name": "Djibouti",
+    "countryCode": "DJ",
+    "capital": "Djibouti",
+    "region": "Africa",
+    "flag": "https://flagcdn.com/dj.svg",
+    "currency": "DJF",
+    "phoneCode": "+253"
+  },
+  {
+    "name": "Denmark",
+    "countryCode": "DK",
+    "capital": "Copenhagen",
+    "region": "Europe",
+    "flag": "https://flagcdn.com/dk.svg",
+    "currency": "DKK",
+    "phoneCode": "+45"
+  },
+  {
+    "name": "Dominica",
+    "countryCode": "DM",
+    "capital": "Roseau",
+    "region": "North America",
+    "flag": "https://flagcdn.com/dm.svg",
+    "currency": "XCD",
+    "phoneCode": "+1767"
+  },
+  {
+    "name": "Dominican Republic",
+    "countryCode": "DO",
+    "capital": "Santo Domingo",
+    "region": "North America",
+    "flag": "https://flagcdn.com/do.svg",
+    "currency": "DOP",
+    "phoneCode": "+1809"
+  },
+  {
+    "name": "Algeria",
+    "countryCode": "DZ",
+    "capital": "Algiers",
+    "region": "Africa",
+    "flag": "https://flagcdn.com/dz.svg",
+    "currency": "DZD",
+    "phoneCode": "+213"
+  },
+  {
+    "name": "Ecuador",
+    "countryCode": "EC",
+    "capital": "Quito",
+    "region": "South America",
+    "flag": "https://flagcdn.com/ec.svg",
+    "currency": "USD",
+    "phoneCode": "+593"
+  },
+  {
+    "name": "Estonia",
+    "countryCode": "EE",
+    "capital": "Tallinn",
+    "region": "Europe",
+    "flag": "https://flagcdn.com/ee.svg",
+    "currency": "EUR",
+    "phoneCode": "+372"
+  },
+  {
+    "name": "Egypt",
+    "countryCode": "EG",
+    "capital": "Cairo",
+    "region": "Africa",
+    "flag": "https://flagcdn.com/eg.svg",
+    "currency": "EGP",
+    "phoneCode": "+20"
+  },
+  {
+    "name": "Western Sahara",
+    "countryCode": "EH",
+    "capital": null,
+    "region": "Africa",
+    "flag": "https://flagcdn.com/eh.svg",
+    "currency": "MAD",
+    "phoneCode": "+2125288"
+  },
+  {
+    "name": "Eritrea",
+    "countryCode": "ER",
+    "capital": "Asmara",
+    "region": "Africa",
+    "flag": "https://flagcdn.com/er.svg",
+    "currency": "ERN",
+    "phoneCode": "+291"
+  },
+  {
+    "name": "Spain",
+    "countryCode": "ES",
+    "capital": "Madrid",
+    "region": "Europe",
+    "flag": "https://flagcdn.com/es.svg",
+    "currency": "EUR",
+    "phoneCode": "+34"
+  },
+  {
+    "name": "Ethiopia",
+    "countryCode": "ET",
+    "capital": "Addis Ababa",
+    "region": "Africa",
+    "flag": "https://flagcdn.com/et.svg",
+    "currency": "ETB",
+    "phoneCode": "+251"
+  },
+  {
+    "name": "Finland",
+    "countryCode": "FI",
+    "capital": "Helsinki",
+    "region": "Europe",
+    "flag": "https://flagcdn.com/fi.svg",
+    "currency": "EUR",
+    "phoneCode": "+358"
+  },
+  {
+    "name": "Fiji",
+    "countryCode": "FJ",
+    "capital": "Suva",
+    "region": "Oceania",
+    "flag": "https://flagcdn.com/fj.svg",
+    "currency": "FJD",
+    "phoneCode": "+679"
+  },
+  {
+    "name": "Falkland Islands",
+    "countryCode": "FK",
+    "capital": "Stanley",
+    "region": "South America",
+    "flag": "https://flagcdn.com/fk.svg",
+    "currency": "FKP",
+    "phoneCode": "+500"
+  },
+  {
+    "name": "Micronesia",
+    "countryCode": "FM",
+    "capital": "Palikir",
+    "region": "Oceania",
+    "flag": "https://flagcdn.com/fm.svg",
+    "currency": "USD",
+    "phoneCode": "+691"
+  },
+  {
+    "name": "Faroe Islands",
+    "countryCode": "FO",
+    "capital": "Tórshavn",
+    "region": "Europe",
+    "flag": "https://flagcdn.com/fo.svg",
+    "currency": "DKK",
+    "phoneCode": "+298"
+  },
+  {
+    "name": "France",
+    "countryCode": "FR",
+    "capital": "Paris",
+    "region": "Europe",
+    "flag": "https://flagcdn.com/fr.svg",
+    "currency": "EUR",
+    "phoneCode": "+33"
+  },
+  {
+    "name": "Gabon",
+    "countryCode": "GA",
+    "capital": "Libreville",
+    "region": "Africa",
+    "flag": "https://flagcdn.com/ga.svg",
+    "currency": "XAF",
+    "phoneCode": "+241"
+  },
+  {
+    "name": "United Kingdom",
+    "countryCode": "GB",
+    "capital": "London",
+    "region": "Europe",
+    "flag": "https://flagcdn.com/gb.svg",
+    "currency": "GBP",
+    "phoneCode": "+44"
+  },
+  {
+    "name": "Grenada",
+    "countryCode": "GD",
+    "capital": "St. George's",
+    "region": "North America",
+    "flag": "https://flagcdn.com/gd.svg",
+    "currency": "XCD",
+    "phoneCode": "+1473"
+  },
+  {
+    "name": "Georgia",
+    "countryCode": "GE",
+    "capital": "Tbilisi",
+    "region": "Asia",
+    "flag": "https://flagcdn.com/ge.svg",
+    "currency": "GEL",
+    "phoneCode": "+995"
+  },
+  {
+    "name": "French Guiana",
+    "countryCode": "GF",
+    "capital": "Cayenne",
+    "region": "South America",
+    "flag": "https://flagcdn.com/gf.svg",
+    "currency": "EUR",
+    "phoneCode": "+594"
+  },
+  {
+    "name": "Guernsey",
+    "countryCode": "GG",
+    "capital": "St Peter Port",
+    "region": "Europe",
+    "flag": "https://flagcdn.com/gg.svg",
+    "currency": "GBP",
+    "phoneCode": "+44"
+  },
+  {
+    "name": "Ghana",
+    "countryCode": "GH",
+    "capital": "Accra",
+    "region": "Africa",
+    "flag": "https://flagcdn.com/gh.svg",
+    "currency": "GHS",
+    "phoneCode": "+233"
+  },
+  {
+    "name": "Gibraltar",
+    "countryCode": "GI",
+    "capital": "Gibraltar",
+    "region": "Europe",
+    "flag": "https://flagcdn.com/gi.svg",
+    "currency": "GIP",
+    "phoneCode": "+350"
+  },
+  {
+    "name": "Greenland",
+    "countryCode": "GL",
+    "capital": "Nuuk",
+    "region": "North America",
+    "flag": "https://flagcdn.com/gl.svg",
+    "currency": "DKK",
+    "phoneCode": "+299"
+  },
+  {
+    "name": "The Gambia",
+    "countryCode": "GM",
+    "capital": "Banjul",
+    "region": "Africa",
+    "flag": "https://flagcdn.com/gm.svg",
+    "currency": "GMD",
+    "phoneCode": "+220"
+  },
+  {
+    "name": "Guinea",
+    "countryCode": "GN",
+    "capital": "Conakry",
+    "region": "Africa",
+    "flag": "https://flagcdn.com/gn.svg",
+    "currency": "GNF",
+    "phoneCode": "+224"
+  },
+  {
+    "name": "Guadeloupe",
+    "countryCode": "GP",
+    "capital": "Basse-Terre",
+    "region": "North America",
+    "flag": "https://flagcdn.com/gp.svg",
+    "currency": "EUR",
+    "phoneCode": "+590"
+  },
+  {
+    "name": "Equatorial Guinea",
+    "countryCode": "GQ",
+    "capital": "Malabo",
+    "region": "Africa",
+    "flag": "https://flagcdn.com/gq.svg",
+    "currency": "XAF",
+    "phoneCode": "+240"
+  },
+  {
+    "name": "Greece",
+    "countryCode": "GR",
+    "capital": "Athens",
+    "region": "Europe",
+    "flag": "https://flagcdn.com/gr.svg",
+    "currency": "EUR",
+    "phoneCode": "+30"
+  },
+  {
+    "name": "South Georgia and South Sandwich Islands",
+    "countryCode": "GS",
+    "capital": "Grytviken",
+    "region": "Antarctica",
+    "flag": "https://flagcdn.com/gs.svg",
+    "currency": "GBP",
+    "phoneCode": "+500"
+  },
+  {
+    "name": "Guatemala",
+    "countryCode": "GT",
+    "capital": "Guatemala City",
+    "region": "North America",
+    "flag": "https://flagcdn.com/gt.svg",
+    "currency": "GTQ",
+    "phoneCode": "+502"
+  },
+  {
+    "name": "Guam",
+    "countryCode": "GU",
+    "capital": "Hagåtña",
+    "region": "Oceania",
+    "flag": "https://flagcdn.com/gu.svg",
+    "currency": "USD",
+    "phoneCode": "+1671"
+  },
+  {
+    "name": "Guinea-Bissau",
+    "countryCode": "GW",
+    "capital": "Bissau",
+    "region": "Africa",
+    "flag": "https://flagcdn.com/gw.svg",
+    "currency": "XOF",
+    "phoneCode": "+245"
+  },
+  {
+    "name": "Guyana",
+    "countryCode": "GY",
+    "capital": "Georgetown",
+    "region": "South America",
+    "flag": "https://flagcdn.com/gy.svg",
+    "currency": "GYD",
+    "phoneCode": "+592"
+  },
+  {
+    "name": "Hong Kong",
+    "countryCode": "HK",
+    "capital": "Hong Kong",
+    "region": "Asia",
+    "flag": "https://flagcdn.com/hk.svg",
+    "currency": "HKD",
+    "phoneCode": "+852"
+  },
+  {
+    "name": "Heard and McDonald Islands",
+    "countryCode": "HM",
+    "capital": null,
+    "region": "Antarctica",
+    "flag": "https://flagcdn.com/hm.svg",
+    "currency": "AUD",
+    "phoneCode": null
+  },
+  {
+    "name": "Honduras",
+    "countryCode": "HN",
+    "capital": "Tegucigalpa",
+    "region": "North America",
+    "flag": "https://flagcdn.com/hn.svg",
+    "currency": "HNL",
+    "phoneCode": "+504"
+  },
+  {
+    "name": "Croatia",
+    "countryCode": "HR",
+    "capital": "Zagreb",
+    "region": "Europe",
+    "flag": "https://flagcdn.com/hr.svg",
+    "currency": "EUR",
+    "phoneCode": "+385"
+  },
+  {
+    "name": "Haiti",
+    "countryCode": "HT",
+    "capital": "Port-au-Prince",
+    "region": "North America",
+    "flag": "https://flagcdn.com/ht.svg",
+    "currency": "HTG",
+    "phoneCode": "+509"
+  },
+  {
+    "name": "Hungary",
+    "countryCode": "HU",
+    "capital": "Budapest",
+    "region": "Europe",
+    "flag": "https://flagcdn.com/hu.svg",
+    "currency": "HUF",
+    "phoneCode": "+36"
+  },
+  {
+    "name": "Indonesia",
+    "countryCode": "ID",
+    "capital": "Jakarta",
+    "region": "Asia",
+    "flag": "https://flagcdn.com/id.svg",
+    "currency": "IDR",
+    "phoneCode": "+62"
+  },
+  {
+    "name": "Ireland",
+    "countryCode": "IE",
+    "capital": "Dublin",
+    "region": "Europe",
+    "flag": "https://flagcdn.com/ie.svg",
+    "currency": "EUR",
+    "phoneCode": "+353"
+  },
+  {
+    "name": "Israel",
+    "countryCode": "IL",
+    "capital": null,
+    "region": "Asia",
+    "flag": "https://flagcdn.com/il.svg",
+    "currency": "ILS",
+    "phoneCode": "+972"
+  },
+  {
+    "name": "Isle of Man",
+    "countryCode": "IM",
+    "capital": "Douglas",
+    "region": "Europe",
+    "flag": "https://flagcdn.com/im.svg",
+    "currency": "GBP",
+    "phoneCode": "+44"
+  },
+  {
+    "name": "India",
+    "countryCode": "IN",
+    "capital": "New Delhi",
+    "region": "Asia",
+    "flag": "https://flagcdn.com/in.svg",
+    "currency": "INR",
+    "phoneCode": "+91"
+  },
+  {
+    "name": "British Indian Ocean Territory",
+    "countryCode": "IO",
+    "capital": null,
+    "region": "Asia",
+    "flag": "https://flagcdn.com/io.svg",
+    "currency": "USD",
+    "phoneCode": "+246"
+  },
+  {
+    "name": "Iraq",
+    "countryCode": "IQ",
+    "capital": "Baghdad",
+    "region": "Asia",
+    "flag": "https://flagcdn.com/iq.svg",
+    "currency": "IQD",
+    "phoneCode": "+964"
+  },
+  {
+    "name": "Iran",
+    "countryCode": "IR",
+    "capital": "Tehran",
+    "region": "Asia",
+    "flag": "https://flagcdn.com/ir.svg",
+    "currency": "IRR",
+    "phoneCode": "+98"
+  },
+  {
+    "name": "Iceland",
+    "countryCode": "IS",
+    "capital": "Reykjavik",
+    "region": "Europe",
+    "flag": "https://flagcdn.com/is.svg",
+    "currency": "ISK",
+    "phoneCode": "+354"
+  },
+  {
+    "name": "Italy",
+    "countryCode": "IT",
+    "capital": "Rome",
+    "region": "Europe",
+    "flag": "https://flagcdn.com/it.svg",
+    "currency": "EUR",
+    "phoneCode": "+39"
+  },
+  {
+    "name": "Jersey",
+    "countryCode": "JE",
+    "capital": "Saint Helier",
+    "region": "Europe",
+    "flag": "https://flagcdn.com/je.svg",
+    "currency": "GBP",
+    "phoneCode": "+44"
+  },
+  {
+    "name": "Jamaica",
+    "countryCode": "JM",
+    "capital": "Kingston",
+    "region": "North America",
+    "flag": "https://flagcdn.com/jm.svg",
+    "currency": "JMD",
+    "phoneCode": "+1876"
+  },
+  {
+    "name": "Jordan",
+    "countryCode": "JO",
+    "capital": "Amman",
+    "region": "Asia",
+    "flag": "https://flagcdn.com/jo.svg",
+    "currency": "JOD",
+    "phoneCode": "+962"
+  },
+  {
+    "name": "Japan",
+    "countryCode": "JP",
+    "capital": "Tokyo",
+    "region": "Asia",
+    "flag": "https://flagcdn.com/jp.svg",
+    "currency": "JPY",
+    "phoneCode": "+81"
+  },
+  {
+    "name": "Kenya",
+    "countryCode": "KE",
+    "capital": "Nairobi",
+    "region": "Africa",
+    "flag": "https://flagcdn.com/ke.svg",
+    "currency": "KES",
+    "phoneCode": "+254"
+  },
+  {
+    "name": "Kyrgyzstan",
+    "countryCode": "KG",
+    "capital": "Bishkek",
+    "region": "Asia",
+    "flag": "https://flagcdn.com/kg.svg",
+    "currency": "KGS",
+    "phoneCode": "+996"
+  },
+  {
+    "name": "Cambodia",
+    "countryCode": "KH",
+    "capital": "Phnom Penh",
+    "region": "Asia",
+    "flag": "https://flagcdn.com/kh.svg",
+    "currency": "KHR",
+    "phoneCode": "+855"
+  },
+  {
+    "name": "Kiribati",
+    "countryCode": "KI",
+    "capital": "Tarawa",
+    "region": "Oceania",
+    "flag": "https://flagcdn.com/ki.svg",
+    "currency": "AUD",
+    "phoneCode": "+686"
+  },
+  {
+    "name": "Comoros",
+    "countryCode": "KM",
+    "capital": "Moroni",
+    "region": "Africa",
+    "flag": "https://flagcdn.com/km.svg",
+    "currency": "KMF",
+    "phoneCode": "+269"
+  },
+  {
+    "name": "St Kitts and Nevis",
+    "countryCode": "KN",
+    "capital": "Basseterre",
+    "region": "North America",
+    "flag": "https://flagcdn.com/kn.svg",
+    "currency": "XCD",
+    "phoneCode": "+1869"
+  },
+  {
+    "name": "North Korea",
+    "countryCode": "KP",
+    "capital": "Pyongyang",
+    "region": "Asia",
+    "flag": "https://flagcdn.com/kp.svg",
+    "currency": "KPW",
+    "phoneCode": "+850"
+  },
+  {
+    "name": "South Korea",
+    "countryCode": "KR",
+    "capital": "Seoul",
+    "region": "Asia",
+    "flag": "https://flagcdn.com/kr.svg",
+    "currency": "KRW",
+    "phoneCode": "+82"
+  },
+  {
+    "name": "Kuwait",
+    "countryCode": "KW",
+    "capital": "Kuwait City",
+    "region": "Asia",
+    "flag": "https://flagcdn.com/kw.svg",
+    "currency": "KWD",
+    "phoneCode": "+965"
+  },
+  {
+    "name": "Cayman Islands",
+    "countryCode": "KY",
+    "capital": "George Town",
+    "region": "North America",
+    "flag": "https://flagcdn.com/ky.svg",
+    "currency": "KYD",
+    "phoneCode": "+1345"
+  },
+  {
+    "name": "Kazakhstan",
+    "countryCode": "KZ",
+    "capital": "Nur-Sultan",
+    "region": "Asia",
+    "flag": "https://flagcdn.com/kz.svg",
+    "currency": "KZT",
+    "phoneCode": "+76"
+  },
+  {
+    "name": "Laos",
+    "countryCode": "LA",
+    "capital": "Vientiane",
+    "region": "Asia",
+    "flag": "https://flagcdn.com/la.svg",
+    "currency": "LAK",
+    "phoneCode": "+856"
+  },
+  {
+    "name": "Lebanon",
+    "countryCode": "LB",
+    "capital": "Beirut",
+    "region": "Asia",
+    "flag": "https://flagcdn.com/lb.svg",
+    "currency": "LBP",
+    "phoneCode": "+961"
+  },
+  {
+    "name": "Saint Lucia",
+    "countryCode": "LC",
+    "capital": "Castries",
+    "region": "North America",
+    "flag": "https://flagcdn.com/lc.svg",
+    "currency": "XCD",
+    "phoneCode": "+1758"
+  },
+  {
+    "name": "Liechtenstein",
+    "countryCode": "LI",
+    "capital": "Vaduz",
+    "region": "Europe",
+    "flag": "https://flagcdn.com/li.svg",
+    "currency": "CHF",
+    "phoneCode": "+423"
+  },
+  {
+    "name": "Sri Lanka",
+    "countryCode": "LK",
+    "capital": "Colombo",
+    "region": "Asia",
+    "flag": "https://flagcdn.com/lk.svg",
+    "currency": "LKR",
+    "phoneCode": "+94"
+  },
+  {
+    "name": "Liberia",
+    "countryCode": "LR",
+    "capital": "Monrovia",
+    "region": "Africa",
+    "flag": "https://flagcdn.com/lr.svg",
+    "currency": "LRD",
+    "phoneCode": "+231"
+  },
+  {
+    "name": "Lesotho",
+    "countryCode": "LS",
+    "capital": "Maseru",
+    "region": "Africa",
+    "flag": "https://flagcdn.com/ls.svg",
+    "currency": "LSL",
+    "phoneCode": "+266"
+  },
+  {
+    "name": "Lithuania",
+    "countryCode": "LT",
+    "capital": "Vilnius",
+    "region": "Europe",
+    "flag": "https://flagcdn.com/lt.svg",
+    "currency": "EUR",
+    "phoneCode": "+370"
+  },
+  {
+    "name": "Luxembourg",
+    "countryCode": "LU",
+    "capital": "Luxembourg",
+    "region": "Europe",
+    "flag": "https://flagcdn.com/lu.svg",
+    "currency": "EUR",
+    "phoneCode": "+352"
+  },
+  {
+    "name": "Latvia",
+    "countryCode": "LV",
+    "capital": "Riga",
+    "region": "Europe",
+    "flag": "https://flagcdn.com/lv.svg",
+    "currency": "EUR",
+    "phoneCode": "+371"
+  },
+  {
+    "name": "Libya",
+    "countryCode": "LY",
+    "capital": "Tripoli",
+    "region": "Africa",
+    "flag": "https://flagcdn.com/ly.svg",
+    "currency": "LYD",
+    "phoneCode": "+218"
+  },
+  {
+    "name": "Morocco",
+    "countryCode": "MA",
+    "capital": "Rabat",
+    "region": "Africa",
+    "flag": "https://flagcdn.com/ma.svg",
+    "currency": "MAD",
+    "phoneCode": "+212"
+  },
+  {
+    "name": "Monaco",
+    "countryCode": "MC",
+    "capital": "Monaco",
+    "region": "Europe",
+    "flag": "https://flagcdn.com/mc.svg",
+    "currency": "EUR",
+    "phoneCode": "+377"
+  },
+  {
+    "name": "Moldova",
+    "countryCode": "MD",
+    "capital": "Chișinău",
+    "region": "Europe",
+    "flag": "https://flagcdn.com/md.svg",
+    "currency": "MDL",
+    "phoneCode": "+373"
+  },
+  {
+    "name": "Montenegro",
+    "countryCode": "ME",
+    "capital": "Podgorica",
+    "region": "Europe",
+    "flag": "https://flagcdn.com/me.svg",
+    "currency": "EUR",
+    "phoneCode": "+382"
+  },
+  {
+    "name": "Saint Martin",
+    "countryCode": "MF",
+    "capital": "Marigot",
+    "region": "North America",
+    "flag": "https://flagcdn.com/mf.svg",
+    "currency": "EUR",
+    "phoneCode": "+590"
+  },
+  {
+    "name": "Madagascar",
+    "countryCode": "MG",
+    "capital": "Antananarivo",
+    "region": "Africa",
+    "flag": "https://flagcdn.com/mg.svg",
+    "currency": "MGA",
+    "phoneCode": "+261"
+  },
+  {
+    "name": "Marshall Islands",
+    "countryCode": "MH",
+    "capital": "Majuro",
+    "region": "Oceania",
+    "flag": "https://flagcdn.com/mh.svg",
+    "currency": "USD",
+    "phoneCode": "+692"
+  },
+  {
+    "name": "North Macedonia",
+    "countryCode": "MK",
+    "capital": "Skopje",
+    "region": "Europe",
+    "flag": "https://flagcdn.com/mk.svg",
+    "currency": "MKD",
+    "phoneCode": "+389"
+  },
+  {
+    "name": "Mali",
+    "countryCode": "ML",
+    "capital": "Bamako",
+    "region": "Africa",
+    "flag": "https://flagcdn.com/ml.svg",
+    "currency": "XOF",
+    "phoneCode": "+223"
+  },
+  {
+    "name": "Myanmar",
+    "countryCode": "MM",
+    "capital": "Nay Pyi Taw",
+    "region": "Asia",
+    "flag": "https://flagcdn.com/mm.svg",
+    "currency": "MMK",
+    "phoneCode": "+95"
+  },
+  {
+    "name": "Mongolia",
+    "countryCode": "MN",
+    "capital": "Ulaanbaatar",
+    "region": "Asia",
+    "flag": "https://flagcdn.com/mn.svg",
+    "currency": "MNT",
+    "phoneCode": "+976"
+  },
+  {
+    "name": "Macao",
+    "countryCode": "MO",
+    "capital": "Macao",
+    "region": "Asia",
+    "flag": "https://flagcdn.com/mo.svg",
+    "currency": "MOP",
+    "phoneCode": "+853"
+  },
+  {
+    "name": "Northern Mariana Islands",
+    "countryCode": "MP",
+    "capital": "Saipan",
+    "region": "Oceania",
+    "flag": "https://flagcdn.com/mp.svg",
+    "currency": "USD",
+    "phoneCode": "+1670"
+  },
+  {
+    "name": "Martinique",
+    "countryCode": "MQ",
+    "capital": "Fort-de-France",
+    "region": "North America",
+    "flag": "https://flagcdn.com/mq.svg",
+    "currency": "EUR",
+    "phoneCode": "+596"
+  },
+  {
+    "name": "Mauritania",
+    "countryCode": "MR",
+    "capital": "Nouakchott",
+    "region": "Africa",
+    "flag": "https://flagcdn.com/mr.svg",
+    "currency": "MRU",
+    "phoneCode": "+222"
+  },
+  {
+    "name": "Montserrat",
+    "countryCode": "MS",
+    "capital": "Plymouth",
+    "region": "North America",
+    "flag": "https://flagcdn.com/ms.svg",
+    "currency": "XCD",
+    "phoneCode": "+1664"
+  },
+  {
+    "name": "Malta",
+    "countryCode": "MT",
+    "capital": "Valletta",
+    "region": "Europe",
+    "flag": "https://flagcdn.com/mt.svg",
+    "currency": "EUR",
+    "phoneCode": "+356"
+  },
+  {
+    "name": "Mauritius",
+    "countryCode": "MU",
+    "capital": "Port Louis",
+    "region": "Africa",
+    "flag": "https://flagcdn.com/mu.svg",
+    "currency": "MUR",
+    "phoneCode": "+230"
+  },
+  {
+    "name": "Maldives",
+    "countryCode": "MV",
+    "capital": "Malé",
+    "region": "Asia",
+    "flag": "https://flagcdn.com/mv.svg",
+    "currency": "MVR",
+    "phoneCode": "+960"
+  },
+  {
+    "name": "Malawi",
+    "countryCode": "MW",
+    "capital": "Lilongwe",
+    "region": "Africa",
+    "flag": "https://flagcdn.com/mw.svg",
+    "currency": "MWK",
+    "phoneCode": "+265"
+  },
+  {
+    "name": "Mexico",
+    "countryCode": "MX",
+    "capital": "Mexico City",
+    "region": "North America",
+    "flag": "https://flagcdn.com/mx.svg",
+    "currency": "MXN",
+    "phoneCode": "+52"
+  },
+  {
+    "name": "Malaysia",
+    "countryCode": "MY",
+    "capital": "Kuala Lumpur",
+    "region": "Asia",
+    "flag": "https://flagcdn.com/my.svg",
+    "currency": "MYR",
+    "phoneCode": "+60"
+  },
+  {
+    "name": "Mozambique",
+    "countryCode": "MZ",
+    "capital": "Maputo",
+    "region": "Africa",
+    "flag": "https://flagcdn.com/mz.svg",
+    "currency": "MZN",
+    "phoneCode": "+258"
+  },
+  {
+    "name": "Namibia",
+    "countryCode": "NA",
+    "capital": "Windhoek",
+    "region": "Africa",
+    "flag": "https://flagcdn.com/na.svg",
+    "currency": "NAD",
+    "phoneCode": "+264"
+  },
+  {
+    "name": "New Caledonia",
+    "countryCode": "NC",
+    "capital": "Noumea",
+    "region": "Oceania",
+    "flag": "https://flagcdn.com/nc.svg",
+    "currency": "XPF",
+    "phoneCode": "+687"
+  },
+  {
+    "name": "Niger",
+    "countryCode": "NE",
+    "capital": "Niamey",
+    "region": "Africa",
+    "flag": "https://flagcdn.com/ne.svg",
+    "currency": "XOF",
+    "phoneCode": "+227"
+  },
+  {
+    "name": "Norfolk Island",
+    "countryCode": "NF",
+    "capital": "Kingston",
+    "region": "Oceania",
+    "flag": "https://flagcdn.com/nf.svg",
+    "currency": "AUD",
+    "phoneCode": "+672"
+  },
+  {
+    "name": "Nigeria",
+    "countryCode": "NG",
+    "capital": "Abuja",
+    "region": "Africa",
+    "flag": "https://flagcdn.com/ng.svg",
+    "currency": "NGN",
+    "phoneCode": "+234"
+  },
+  {
+    "name": "Nicaragua",
+    "countryCode": "NI",
+    "capital": "Managua",
+    "region": "North America",
+    "flag": "https://flagcdn.com/ni.svg",
+    "currency": "NIO",
+    "phoneCode": "+505"
+  },
+  {
+    "name": "The Netherlands",
+    "countryCode": "NL",
+    "capital": "Amsterdam",
+    "region": "Europe",
+    "flag": "https://flagcdn.com/nl.svg",
+    "currency": "EUR",
+    "phoneCode": "+31"
+  },
+  {
+    "name": "Norway",
+    "countryCode": "NO",
+    "capital": "Oslo",
+    "region": "Europe",
+    "flag": "https://flagcdn.com/no.svg",
+    "currency": "NOK",
+    "phoneCode": "+47"
+  },
+  {
+    "name": "Nepal",
+    "countryCode": "NP",
+    "capital": "Kathmandu",
+    "region": "Asia",
+    "flag": "https://flagcdn.com/np.svg",
+    "currency": "NPR",
+    "phoneCode": "+977"
+  },
+  {
+    "name": "Nauru",
+    "countryCode": "NR",
+    "capital": "Yaren District",
+    "region": "Oceania",
+    "flag": "https://flagcdn.com/nr.svg",
+    "currency": "AUD",
+    "phoneCode": "+674"
+  },
+  {
+    "name": "Niue",
+    "countryCode": "NU",
+    "capital": "Alofi",
+    "region": "Oceania",
+    "flag": "https://flagcdn.com/nu.svg",
+    "currency": "NZD",
+    "phoneCode": "+683"
+  },
+  {
+    "name": "New Zealand",
+    "countryCode": "NZ",
+    "capital": "Wellington",
+    "region": "Oceania",
+    "flag": "https://flagcdn.com/nz.svg",
+    "currency": "NZD",
+    "phoneCode": "+64"
+  },
+  {
+    "name": "Oman",
+    "countryCode": "OM",
+    "capital": "Muscat",
+    "region": "Asia",
+    "flag": "https://flagcdn.com/om.svg",
+    "currency": "OMR",
+    "phoneCode": "+968"
+  },
+  {
+    "name": "Panama",
+    "countryCode": "PA",
+    "capital": "Panama City",
+    "region": "North America",
+    "flag": "https://flagcdn.com/pa.svg",
+    "currency": "PAB",
+    "phoneCode": "+507"
+  },
+  {
+    "name": "Peru",
+    "countryCode": "PE",
+    "capital": "Lima",
+    "region": "South America",
+    "flag": "https://flagcdn.com/pe.svg",
+    "currency": "PEN",
+    "phoneCode": "+51"
+  },
+  {
+    "name": "French Polynesia",
+    "countryCode": "PF",
+    "capital": "Papeete",
+    "region": "Oceania",
+    "flag": "https://flagcdn.com/pf.svg",
+    "currency": "XPF",
+    "phoneCode": "+689"
+  },
+  {
+    "name": "Papua New Guinea",
+    "countryCode": "PG",
+    "capital": "Port Moresby",
+    "region": "Oceania",
+    "flag": "https://flagcdn.com/pg.svg",
+    "currency": "PGK",
+    "phoneCode": "+675"
+  },
+  {
+    "name": "Philippines",
+    "countryCode": "PH",
+    "capital": "Manila",
+    "region": "Asia",
+    "flag": "https://flagcdn.com/ph.svg",
+    "currency": "PHP",
+    "phoneCode": "+63"
+  },
+  {
+    "name": "Pakistan",
+    "countryCode": "PK",
+    "capital": "Islamabad",
+    "region": "Asia",
+    "flag": "https://flagcdn.com/pk.svg",
+    "currency": "PKR",
+    "phoneCode": "+92"
+  },
+  {
+    "name": "Poland",
+    "countryCode": "PL",
+    "capital": "Warsaw",
+    "region": "Europe",
+    "flag": "https://flagcdn.com/pl.svg",
+    "currency": "PLN",
+    "phoneCode": "+48"
+  },
+  {
+    "name": "Saint Pierre and Miquelon",
+    "countryCode": "PM",
+    "capital": "Saint-Pierre",
+    "region": "North America",
+    "flag": "https://flagcdn.com/pm.svg",
+    "currency": "EUR",
+    "phoneCode": "+508"
+  },
+  {
+    "name": "Pitcairn Islands",
+    "countryCode": "PN",
+    "capital": "Adamstown",
+    "region": "Oceania",
+    "flag": "https://flagcdn.com/pn.svg",
+    "currency": "NZD",
+    "phoneCode": "+64"
+  },
+  {
+    "name": "Puerto Rico",
+    "countryCode": "PR",
+    "capital": "San Juan",
+    "region": "North America",
+    "flag": "https://flagcdn.com/pr.svg",
+    "currency": "USD",
+    "phoneCode": "+1787"
+  },
+  {
+    "name": "Palestine",
+    "countryCode": "PS",
+    "capital": null,
+    "region": "Asia",
+    "flag": "https://flagcdn.com/ps.svg",
+    "currency": "ILS",
+    "phoneCode": "+970"
+  },
+  {
+    "name": "Portugal",
+    "countryCode": "PT",
+    "capital": "Lisbon",
+    "region": "Europe",
+    "flag": "https://flagcdn.com/pt.svg",
+    "currency": "EUR",
+    "phoneCode": "+351"
+  },
+  {
+    "name": "Palau",
+    "countryCode": "PW",
+    "capital": "Ngerulmud",
+    "region": "Oceania",
+    "flag": "https://flagcdn.com/pw.svg",
+    "currency": "USD",
+    "phoneCode": "+680"
+  },
+  {
+    "name": "Paraguay",
+    "countryCode": "PY",
+    "capital": "Asunción",
+    "region": "South America",
+    "flag": "https://flagcdn.com/py.svg",
+    "currency": "PYG",
+    "phoneCode": "+595"
+  },
+  {
+    "name": "Qatar",
+    "countryCode": "QA",
+    "capital": "Doha",
+    "region": "Asia",
+    "flag": "https://flagcdn.com/qa.svg",
+    "currency": "QAR",
+    "phoneCode": "+974"
+  },
+  {
+    "name": "Réunion",
+    "countryCode": "RE",
+    "capital": "Saint-Denis",
+    "region": "Africa",
+    "flag": "https://flagcdn.com/re.svg",
+    "currency": "EUR",
+    "phoneCode": "+262"
+  },
+  {
+    "name": "Romania",
+    "countryCode": "RO",
+    "capital": "Bucharest",
+    "region": "Europe",
+    "flag": "https://flagcdn.com/ro.svg",
+    "currency": "RON",
+    "phoneCode": "+40"
+  },
+  {
+    "name": "Serbia",
+    "countryCode": "RS",
+    "capital": "Belgrade",
+    "region": "Europe",
+    "flag": "https://flagcdn.com/rs.svg",
+    "currency": "RSD",
+    "phoneCode": "+381"
+  },
+  {
+    "name": "Russia",
+    "countryCode": "RU",
+    "capital": "Moscow",
+    "region": "Europe",
+    "flag": "https://flagcdn.com/ru.svg",
+    "currency": "RUB",
+    "phoneCode": "+73"
+  },
+  {
+    "name": "Rwanda",
+    "countryCode": "RW",
+    "capital": "Kigali",
+    "region": "Africa",
+    "flag": "https://flagcdn.com/rw.svg",
+    "currency": "RWF",
+    "phoneCode": "+250"
+  },
+  {
+    "name": "Saudi Arabia",
+    "countryCode": "SA",
+    "capital": "Riyadh",
+    "region": "Asia",
+    "flag": "https://flagcdn.com/sa.svg",
+    "currency": "SAR",
+    "phoneCode": "+966"
+  },
+  {
+    "name": "Solomon Islands",
+    "countryCode": "SB",
+    "capital": "Honiara",
+    "region": "Oceania",
+    "flag": "https://flagcdn.com/sb.svg",
+    "currency": "SBD",
+    "phoneCode": "+677"
+  },
+  {
+    "name": "Seychelles",
+    "countryCode": "SC",
+    "capital": "Victoria",
+    "region": "Africa",
+    "flag": "https://flagcdn.com/sc.svg",
+    "currency": "SCR",
+    "phoneCode": "+248"
+  },
+  {
+    "name": "Sudan",
+    "countryCode": "SD",
+    "capital": "Khartoum",
+    "region": "Africa",
+    "flag": "https://flagcdn.com/sd.svg",
+    "currency": "SDG",
+    "phoneCode": "+249"
+  },
+  {
+    "name": "Sweden",
+    "countryCode": "SE",
+    "capital": "Stockholm",
+    "region": "Europe",
+    "flag": "https://flagcdn.com/se.svg",
+    "currency": "SEK",
+    "phoneCode": "+46"
+  },
+  {
+    "name": "Singapore",
+    "countryCode": "SG",
+    "capital": "Singapore",
+    "region": "Asia",
+    "flag": "https://flagcdn.com/sg.svg",
+    "currency": "SGD",
+    "phoneCode": "+65"
+  },
+  {
+    "name": "Saint Helena",
+    "countryCode": "SH",
+    "capital": "Jamestown",
+    "region": "Africa",
+    "flag": "https://flagcdn.com/sh.svg",
+    "currency": "SHP",
+    "phoneCode": "+290"
+  },
+  {
+    "name": "Slovenia",
+    "countryCode": "SI",
+    "capital": "Ljubljana",
+    "region": "Europe",
+    "flag": "https://flagcdn.com/si.svg",
+    "currency": "EUR",
+    "phoneCode": "+386"
+  },
+  {
+    "name": "Svalbard and Jan Mayen",
+    "countryCode": "SJ",
+    "capital": "Longyearbyen",
+    "region": "Europe",
+    "flag": "https://flagcdn.com/sj.svg",
+    "currency": "NOK",
+    "phoneCode": "+4779"
+  },
+  {
+    "name": "Slovakia",
+    "countryCode": "SK",
+    "capital": "Bratislava",
+    "region": "Europe",
+    "flag": "https://flagcdn.com/sk.svg",
+    "currency": "EUR",
+    "phoneCode": "+421"
+  },
+  {
+    "name": "Sierra Leone",
+    "countryCode": "SL",
+    "capital": "Freetown",
+    "region": "Africa",
+    "flag": "https://flagcdn.com/sl.svg",
+    "currency": "SLL",
+    "phoneCode": "+232"
+  },
+  {
+    "name": "San Marino",
+    "countryCode": "SM",
+    "capital": "San Marino",
+    "region": "Europe",
+    "flag": "https://flagcdn.com/sm.svg",
+    "currency": "EUR",
+    "phoneCode": "+378"
+  },
+  {
+    "name": "Senegal",
+    "countryCode": "SN",
+    "capital": "Dakar",
+    "region": "Africa",
+    "flag": "https://flagcdn.com/sn.svg",
+    "currency": "XOF",
+    "phoneCode": "+221"
+  },
+  {
+    "name": "Somalia",
+    "countryCode": "SO",
+    "capital": "Mogadishu",
+    "region": "Africa",
+    "flag": "https://flagcdn.com/so.svg",
+    "currency": "SOS",
+    "phoneCode": "+252"
+  },
+  {
+    "name": "Suriname",
+    "countryCode": "SR",
+    "capital": "Paramaribo",
+    "region": "South America",
+    "flag": "https://flagcdn.com/sr.svg",
+    "currency": "SRD",
+    "phoneCode": "+597"
+  },
+  {
+    "name": "South Sudan",
+    "countryCode": "SS",
+    "capital": "Juba",
+    "region": "Africa",
+    "flag": "https://flagcdn.com/ss.svg",
+    "currency": "SSP",
+    "phoneCode": "+211"
+  },
+  {
+    "name": "São Tomé and Príncipe",
+    "countryCode": "ST",
+    "capital": "São Tomé",
+    "region": "Africa",
+    "flag": "https://flagcdn.com/st.svg",
+    "currency": "STN",
+    "phoneCode": "+239"
+  },
+  {
+    "name": "El Salvador",
+    "countryCode": "SV",
+    "capital": "San Salvador",
+    "region": "North America",
+    "flag": "https://flagcdn.com/sv.svg",
+    "currency": "USD",
+    "phoneCode": "+503"
+  },
+  {
+    "name": "Sint Maarten",
+    "countryCode": "SX",
+    "capital": "Philipsburg",
+    "region": "North America",
+    "flag": "https://flagcdn.com/sx.svg",
+    "currency": "ANG",
+    "phoneCode": "+1721"
+  },
+  {
+    "name": "Syria",
+    "countryCode": "SY",
+    "capital": "Damascus",
+    "region": "Asia",
+    "flag": "https://flagcdn.com/sy.svg",
+    "currency": "SYP",
+    "phoneCode": "+963"
+  },
+  {
+    "name": "Eswatini",
+    "countryCode": "SZ",
+    "capital": "Mbabane",
+    "region": "Africa",
+    "flag": "https://flagcdn.com/sz.svg",
+    "currency": "SZL",
+    "phoneCode": "+268"
+  },
+  {
+    "name": "Turks and Caicos Islands",
+    "countryCode": "TC",
+    "capital": "Cockburn Town",
+    "region": "North America",
+    "flag": "https://flagcdn.com/tc.svg",
+    "currency": "USD",
+    "phoneCode": "+1649"
+  },
+  {
+    "name": "Chad",
+    "countryCode": "TD",
+    "capital": "N'Djamena",
+    "region": "Africa",
+    "flag": "https://flagcdn.com/td.svg",
+    "currency": "XAF",
+    "phoneCode": "+235"
+  },
+  {
+    "name": "French Southern Territories",
+    "countryCode": "TF",
+    "capital": "Port-aux-Français",
+    "region": "Antarctica",
+    "flag": "https://flagcdn.com/tf.svg",
+    "currency": "EUR",
+    "phoneCode": "+262"
+  },
+  {
+    "name": "Togo",
+    "countryCode": "TG",
+    "capital": "Lomé",
+    "region": "Africa",
+    "flag": "https://flagcdn.com/tg.svg",
+    "currency": "XOF",
+    "phoneCode": "+228"
+  },
+  {
+    "name": "Thailand",
+    "countryCode": "TH",
+    "capital": "Bangkok",
+    "region": "Asia",
+    "flag": "https://flagcdn.com/th.svg",
+    "currency": "THB",
+    "phoneCode": "+66"
+  },
+  {
+    "name": "Tajikistan",
+    "countryCode": "TJ",
+    "capital": "Dushanbe",
+    "region": "Asia",
+    "flag": "https://flagcdn.com/tj.svg",
+    "currency": "TJS",
+    "phoneCode": "+992"
+  },
+  {
+    "name": "Tokelau",
+    "countryCode": "TK",
+    "capital": null,
+    "region": "Oceania",
+    "flag": "https://flagcdn.com/tk.svg",
+    "currency": "NZD",
+    "phoneCode": "+690"
+  },
+  {
+    "name": "Timor-Leste",
+    "countryCode": "TL",
+    "capital": "Dili",
+    "region": "Oceania",
+    "flag": "https://flagcdn.com/tl.svg",
+    "currency": "USD",
+    "phoneCode": "+670"
+  },
+  {
+    "name": "Turkmenistan",
+    "countryCode": "TM",
+    "capital": "Ashgabat",
+    "region": "Asia",
+    "flag": "https://flagcdn.com/tm.svg",
+    "currency": "TMT",
+    "phoneCode": "+993"
+  },
+  {
+    "name": "Tunisia",
+    "countryCode": "TN",
+    "capital": "Tunis",
+    "region": "Africa",
+    "flag": "https://flagcdn.com/tn.svg",
+    "currency": "TND",
+    "phoneCode": "+216"
+  },
+  {
+    "name": "Tonga",
+    "countryCode": "TO",
+    "capital": "Nuku'alofa",
+    "region": "Oceania",
+    "flag": "https://flagcdn.com/to.svg",
+    "currency": "TOP",
+    "phoneCode": "+676"
+  },
+  {
+    "name": "Türkiye",
+    "countryCode": "TR",
+    "capital": "Ankara",
+    "region": "Asia",
+    "flag": "https://flagcdn.com/tr.svg",
+    "currency": "TRY",
+    "phoneCode": "+90"
+  },
+  {
+    "name": "Trinidad and Tobago",
+    "countryCode": "TT",
+    "capital": "Port of Spain",
+    "region": "North America",
+    "flag": "https://flagcdn.com/tt.svg",
+    "currency": "TTD",
+    "phoneCode": "+1868"
+  },
+  {
+    "name": "Tuvalu",
+    "countryCode": "TV",
+    "capital": "Funafuti",
+    "region": "Oceania",
+    "flag": "https://flagcdn.com/tv.svg",
+    "currency": "AUD",
+    "phoneCode": "+688"
+  },
+  {
+    "name": "Taiwan",
+    "countryCode": "TW",
+    "capital": "Taipei",
+    "region": "Asia",
+    "flag": "https://flagcdn.com/tw.svg",
+    "currency": "TWD",
+    "phoneCode": "+886"
+  },
+  {
+    "name": "Tanzania",
+    "countryCode": "TZ",
+    "capital": "Dodoma",
+    "region": "Africa",
+    "flag": "https://flagcdn.com/tz.svg",
+    "currency": "TZS",
+    "phoneCode": "+255"
+  },
+  {
+    "name": "Ukraine",
+    "countryCode": "UA",
+    "capital": "Kyiv",
+    "region": "Europe",
+    "flag": "https://flagcdn.com/ua.svg",
+    "currency": "UAH",
+    "phoneCode": "+380"
+  },
+  {
+    "name": "Uganda",
+    "countryCode": "UG",
+    "capital": "Kampala",
+    "region": "Africa",
+    "flag": "https://flagcdn.com/ug.svg",
+    "currency": "UGX",
+    "phoneCode": "+256"
+  },
+  {
+    "name": "U.S. Outlying Islands",
+    "countryCode": "UM",
+    "capital": null,
+    "region": "Oceania",
+    "flag": "https://flagcdn.com/um.svg",
+    "currency": "USD",
+    "phoneCode": "+268"
+  },
+  {
+    "name": "United States",
+    "countryCode": "US",
+    "capital": "Washington",
+    "region": "North America",
+    "flag": "https://flagcdn.com/us.svg",
+    "currency": "USD",
+    "phoneCode": "+1201"
+  },
+  {
+    "name": "Uruguay",
+    "countryCode": "UY",
+    "capital": "Montevideo",
+    "region": "South America",
+    "flag": "https://flagcdn.com/uy.svg",
+    "currency": "UYU",
+    "phoneCode": "+598"
+  },
+  {
+    "name": "Uzbekistan",
+    "countryCode": "UZ",
+    "capital": "Tashkent",
+    "region": "Asia",
+    "flag": "https://flagcdn.com/uz.svg",
+    "currency": "UZS",
+    "phoneCode": "+998"
+  },
+  {
+    "name": "Vatican City",
+    "countryCode": "VA",
+    "capital": "Vatican City",
+    "region": "Europe",
+    "flag": "https://flagcdn.com/va.svg",
+    "currency": "EUR",
+    "phoneCode": "+3906698"
+  },
+  {
+    "name": "St Vincent and Grenadines",
+    "countryCode": "VC",
+    "capital": "Kingstown",
+    "region": "North America",
+    "flag": "https://flagcdn.com/vc.svg",
+    "currency": "XCD",
+    "phoneCode": "+1784"
+  },
+  {
+    "name": "Venezuela",
+    "countryCode": "VE",
+    "capital": "Caracas",
+    "region": "South America",
+    "flag": "https://flagcdn.com/ve.svg",
+    "currency": "VES",
+    "phoneCode": "+58"
+  },
+  {
+    "name": "British Virgin Islands",
+    "countryCode": "VG",
+    "capital": "Road Town",
+    "region": "North America",
+    "flag": "https://flagcdn.com/vg.svg",
+    "currency": "USD",
+    "phoneCode": "+1284"
+  },
+  {
+    "name": "U.S. Virgin Islands",
+    "countryCode": "VI",
+    "capital": "Charlotte Amalie",
+    "region": "North America",
+    "flag": "https://flagcdn.com/vi.svg",
+    "currency": "USD",
+    "phoneCode": "+1340"
+  },
+  {
+    "name": "Vietnam",
+    "countryCode": "VN",
+    "capital": "Hanoi",
+    "region": "Asia",
+    "flag": "https://flagcdn.com/vn.svg",
+    "currency": "VND",
+    "phoneCode": "+84"
+  },
+  {
+    "name": "Vanuatu",
+    "countryCode": "VU",
+    "capital": "Port Vila",
+    "region": "Oceania",
+    "flag": "https://flagcdn.com/vu.svg",
+    "currency": "VUV",
+    "phoneCode": "+678"
+  },
+  {
+    "name": "Wallis and Futuna",
+    "countryCode": "WF",
+    "capital": "Mata-Utu",
+    "region": "Oceania",
+    "flag": "https://flagcdn.com/wf.svg",
+    "currency": "XPF",
+    "phoneCode": "+681"
+  },
+  {
+    "name": "Samoa",
+    "countryCode": "WS",
+    "capital": "Apia",
+    "region": "Oceania",
+    "flag": "https://flagcdn.com/ws.svg",
+    "currency": "WST",
+    "phoneCode": "+685"
+  },
+  {
+    "name": "Kosovo",
+    "countryCode": "XK",
+    "capital": "Pristina",
+    "region": "Europe",
+    "flag": "https://flagcdn.com/xk.svg",
+    "currency": "EUR",
+    "phoneCode": "+383"
+  },
+  {
+    "name": "Yemen",
+    "countryCode": "YE",
+    "capital": "Sanaa",
+    "region": "Asia",
+    "flag": "https://flagcdn.com/ye.svg",
+    "currency": "YER",
+    "phoneCode": "+967"
+  },
+  {
+    "name": "Mayotte",
+    "countryCode": "YT",
+    "capital": "Mamoudzou",
+    "region": "Africa",
+    "flag": "https://flagcdn.com/yt.svg",
+    "currency": "EUR",
+    "phoneCode": "+262"
+  },
+  {
+    "name": "South Africa",
+    "countryCode": "ZA",
+    "capital": "Pretoria",
+    "region": "Africa",
+    "flag": "https://flagcdn.com/za.svg",
+    "currency": "ZAR",
+    "phoneCode": "+27"
+  },
+  {
+    "name": "Zambia",
+    "countryCode": "ZM",
+    "capital": "Lusaka",
+    "region": "Africa",
+    "flag": "https://flagcdn.com/zm.svg",
+    "currency": "ZMW",
+    "phoneCode": "+260"
+  },
+  {
+    "name": "Zimbabwe",
+    "countryCode": "ZW",
+    "capital": "Harare",
+    "region": "Africa",
+    "flag": "https://flagcdn.com/zw.svg",
+    "currency": "ZWL",
+    "phoneCode": "+263"
+  }
+]
