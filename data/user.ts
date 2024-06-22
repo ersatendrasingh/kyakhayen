@@ -29,6 +29,11 @@ export const getUserById = async (id: string) => {
         userPrakriti: true,
         foodPreference: true,
         cookingSkill: true,
+        UserPlan: {
+          include: {
+            plan: true,
+          },
+        },
       },
     });
 

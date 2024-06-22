@@ -7,11 +7,6 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model app_recipes {
-  id   Int    @id @default(autoincrement())
-  name String
-}
-
 model Recipes {
   id                   String                 @id @default(uuid())
   title                String                 @db.Text
@@ -352,6 +347,26 @@ model IngredientsForm {
   RecipeIngredients RecipeIngredients[]
 }
 
+model Plan {
+  id             String    @id @default(uuid())
+  name           String
+  durationMonths Int?
+  priceInr       Float?
+  priceUsd       Float?
+  features       Feature[]
+
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  UserPlan  UserPlan[]
+}
+
+model Feature {
+  id     String @id @default(uuid())
+  name   String
+  planId String
+  plans  Plan   @relation(fields: [planId], references: [id], onDelete: Cascade)
+}
+
 enum UserRole {
   ADMIN
   USER
@@ -389,12 +404,30 @@ model User {
   UserAllrgies          UserAllrgies[]
   UserHealthGoals       UserHealthGoals[]
   Post                  Post[]
+  UserPlan              UserPlan[]
+  UserMealPlan          UserMealPlan[]
   isTwoFactorEnabled    Boolean                @default(false)
   isPersonalised        Boolean                @default(false)
   twoFactorConfirmation TwoFactorConfirmation?
 
   createdAt DateTime @default(now())
   updateAt  DateTime @updatedAt
+}
+
+model UserPlan {
+  id        String    @id @default(uuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id])
+  planId    String
+  plan      Plan      @relation(fields: [planId], references: [id])
+  startDate DateTime
+  endDate   DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@unique([userId, planId])
+  @@index([userId])
+  @@index([planId])
 }
 
 model Account {
@@ -522,6 +555,26 @@ model UserHealthGoals {
   @@unique([userId, healthGoalId])
   @@index([healthGoalId])
   @@index([userId])
+}
+
+model UserMealPlan {
+  id              String     @id @default(uuid())
+  userId          String
+  user            User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  planStartDate   DateTime
+  planEndDate     DateTime
+  isPlanGenerated Boolean    @default(false)
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+  MealPlan        MealPlan[]
+}
+
+model MealPlan {
+  id             String       @id @default(uuid())
+  userMealPlanId String
+  usermealPlan   UserMealPlan @relation(fields: [userMealPlanId], references: [id])
+  date           DateTime
+  s3url          String
 }
 
 model Post {

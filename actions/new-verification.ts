@@ -7,6 +7,7 @@ import { getUserByEmail } from "@/data/user";
 import { getVerificationTokenByToken } from "@/data/verificiation-token";
 import { sendEmail } from "@/lib/mail";
 import EmailVerifiedMail from "@/emails/email-verified-mail";
+import { assignFreePlanToUser } from "@/lib/assignFreePlan";
 
 export const newVerification = async (token: string) => {
   const existingToken = await getVerificationTokenByToken(token);
@@ -38,6 +39,14 @@ export const newVerification = async (token: string) => {
   await db.verificationToken.delete({
     where: { id: existingToken.id },
   });
+
+  // Assign free plan to user
+  try {
+    await assignFreePlanToUser(existingUser.id);
+  } catch (error) {
+    return { error: "Failed to assign free plan" };
+  }
+
   await sendEmail({
     to: existingUser.email as string,
     subject:
