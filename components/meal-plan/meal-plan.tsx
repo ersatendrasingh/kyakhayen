@@ -4,8 +4,13 @@ import { useState } from "react";
 import { addDays, subDays } from "date-fns";
 import CalendarHeader from "../calendar/calendar-header";
 import DailyView from "./daily-view";
+import { useCurrentUser } from "@/hooks/use-current-user";
+
+import PublicView from "@/components/meal-plan/public-view";
+import PersonalizationPrompt from "@/components/meal-plan/personalization-prompt";
 
 const MealPlan = () => {
+  const user = useCurrentUser();
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
 
   const handleDayClick = (date: Date) => {
@@ -19,6 +24,10 @@ const MealPlan = () => {
   const handleNextDay = () => {
     setSelectedDate((prevDate) => addDays(prevDate, 1));
   };
+
+  if (user && !user.isPersonalised) {
+    return <PersonalizationPrompt />;
+  }
   return (
     <main>
       <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">

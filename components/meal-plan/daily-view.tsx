@@ -2,9 +2,15 @@ import { RecipeWithCategory } from "@/types/recipe";
 import MealPlanCard from "@/components/meal-plan/meal-plan-card"; // Adjust the import path as necessary
 import { MealTimes } from "@prisma/client";
 import { useEffect, useState } from "react";
-import { getMealPlan } from "@/actions/get-meal-plan";
 import { FaPlus, FaMinus } from "react-icons/fa";
 import Image from "next/image";
+import { generateMealPlan } from "@/actions/generate-meal-plan";
+
+import { getMealPlanFromS3 } from "@/actions/get-meal-plan-from-s3";
+import { formatDate } from "@/lib/formatDate";
+import { formatISO } from "date-fns";
+import { toast } from "react-toastify";
+import { getUserLatestPlanDates } from "@/actions/get-user-meal-plan-dates";
 
 interface DailyViewProps {
   date: Date;
@@ -16,36 +22,95 @@ const DailyView = ({ date }: DailyViewProps) => {
   }>({});
   const [mealTimes, setMealTimes] = useState<MealTimes[]>([]);
   const [expandedMealTime, setExpandedMealTime] = useState<string | null>(null);
-  const [loading, setLoading] = useState<boolean>(true); // Add loading state
-
+  const [loading, setLoading] = useState<boolean>(true);
+  const [planStartWarning, setPlanStartWarning] = useState<boolean>(false);
+  const [planEndWarning, setPlanEndWarning] = useState<boolean>(false);
+  const [mealPlanStartDate, setMealPlanStartDate] = useState<Date>(new Date());
+  const [mealPlanEndDate, setMealPlanEndDate] = useState<Date>(new Date());
+  // Function to normalize date (set time to midnight)
+  const normalizeDate = (date: Date): Date => {
+    const normalizedDate = new Date(date);
+    normalizedDate.setHours(0, 0, 0, 0);
+    return normalizedDate;
+  };
   useEffect(() => {
-    if (date) {
-      fetchMealPlan(date);
-    }
+    setPlanStartWarning(false);
+    setPlanEndWarning(false);
+
+    const fetchUserPlanDates = async () => {
+      try {
+        const { startDate, endDate } = await getUserLatestPlanDates();
+
+        const userPlanStartDate = normalizeDate(new Date(startDate));
+        const userPlanEndDate = normalizeDate(new Date(endDate));
+
+        const selectedDate = normalizeDate(new Date(date));
+        setMealPlanStartDate(userPlanStartDate);
+        setMealPlanEndDate(userPlanEndDate);
+
+        if (selectedDate < userPlanStartDate) {
+          setPlanStartWarning(true);
+        }
+
+        if (selectedDate > userPlanEndDate) {
+          setPlanEndWarning(true);
+        }
+      } catch (error) {
+        console.error("Error fetching user's meal plan dates:", error);
+      }
+    };
+
+    fetchUserPlanDates();
   }, [date]);
 
-  const fetchMealPlan = async (date: Date) => {
-    setLoading(true);
-    const mealPlanResult = await getMealPlan({ date });
-    if (mealPlanResult) {
-      const { mealTimes, mealsByTime } = mealPlanResult;
-      setMealsByTime(mealsByTime);
-      setMealTimes(mealTimes);
-      // By default, expand the first meal time
-      if (mealTimes.length > 0) {
-        setExpandedMealTime(mealTimes[0].slug);
+  useEffect(() => {
+    const fetchMealPlan = async () => {
+      setLoading(true);
+
+      try {
+        // Generate meal plan if not already generated
+        await generateMealPlan();
+
+        // Fetch meal plan for the specified date
+        const formattedDate = formatISO(date, { representation: "date" });
+
+        const mealPlanResult = await getMealPlanFromS3({ date: formattedDate });
+
+        if (mealPlanResult) {
+          const { mealTimes, mealsByTime } = mealPlanResult;
+          setMealsByTime(mealsByTime);
+          setMealTimes(mealTimes);
+
+          // Expand the first meal time by default
+          if (mealTimes.length > 0) {
+            setExpandedMealTime(mealTimes[0].slug);
+          }
+        } else {
+          toast.error("Meal plan not available for the selected date.", {
+            position: "top-center",
+            autoClose: 5000,
+          });
+
+          console.log("Meal plan not available for the selected date.");
+        }
+      } catch (error) {
+        console.error("Error fetching or generating meal plan:", error);
       }
-    } else {
-      console.error("Meal plan not available for the selected date.");
+
+      setLoading(false);
+    };
+
+    if (date) {
+      fetchMealPlan();
     }
-    setLoading(false);
-  };
+  }, [date]);
 
   const handleMealTimeClick = (mealTimeSlug: string) => {
     setExpandedMealTime((prevMealTime) =>
       prevMealTime === mealTimeSlug ? null : mealTimeSlug
     );
   };
+
   if (loading) {
     return (
       <div className="bg-white p-4 rounded-lg shadow-md flex flex-col items-center justify-center h-64">
@@ -56,6 +121,43 @@ const DailyView = ({ date }: DailyViewProps) => {
       </div>
     );
   }
+
+  if (planStartWarning) {
+    return (
+      <div className="bg-white p-4 rounded-lg shadow-md flex flex-col items-center justify-center">
+        <Image
+          src="/assets/images/no.png"
+          alt="Loading"
+          width={200}
+          height={200}
+          className="my-5"
+        />
+        <h2 className="text-lg font-semibold mb-10 text-center">
+          Your meal plan starts from {formatDate(mealPlanStartDate)}. Please
+          select a date on or after this date.
+        </h2>
+      </div>
+    );
+  }
+
+  if (planEndWarning) {
+    return (
+      <div className="bg-white p-4 rounded-lg shadow-md flex flex-col items-center justify-center">
+        <Image
+          src="/assets/images/no.png"
+          alt="Loading"
+          width={200}
+          height={200}
+          className="my-5"
+        />
+        <h2 className="text-lg font-semibold mb-10 text-center">
+          Your meal plan is ended on {formatDate(mealPlanEndDate)}. Please
+          select a date on or before this date.
+        </h2>
+      </div>
+    );
+  }
+
   return (
     <div className="bg-white p-4 rounded-lg">
       <h2 className="text-md font-semibold text-center mb-4">

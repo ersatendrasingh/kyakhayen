@@ -2,6 +2,8 @@ import { PageHeader } from "@/components/page-header";
 
 import { Metadata } from "next";
 import MealPlan from "@/components/meal-plan/meal-plan";
+import { currentUser } from "@/lib/auth";
+import PublicView from "@/components/meal-plan/public-view";
 const meta = {
   title:
     "Personalized Meal Plans - Kya Khayen? | Tailored Recipes for Every Taste",
@@ -46,7 +48,13 @@ export const metadata: Metadata = {
     canonical: `${process.env.NEXT_PUBLIC_APP_URL}/meal-plan`,
   },
 };
-const MealPlanPage = () => {
+const MealPlanPage = async () => {
+  const user = await currentUser();
+
+  if (!user) {
+    return <PublicView />;
+  }
+
   return (
     <div>
       <PageHeader title="Meal Plan" className="py-6" />

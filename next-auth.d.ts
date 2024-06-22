@@ -18,6 +18,9 @@ export type ExtendedUser = DefaultSession["user"] & {
   weightKg?: number;
   weightLbs?: number;
   bmi?: string;
+  userPlan?: string[];
+  userPlanStartDate: Date[];
+  userPlanEndDate: Date[];
   foodPreference?: string;
   cookingSkill?: string;
   createdAt?: Date;

@@ -14,6 +14,7 @@ import {
   RecipeSeasons,
   Recipes,
   Units,
+  recipeMealTime,
 } from "@prisma/client";
 
 export type RecipeCookingMethod = {
@@ -82,4 +83,5 @@ export type RecipeWithCategory = Recipes & {
   recipeCookingMethods: RecipeCookingMethod[] | null;
   recipeCuisine: RecipeCuisines[] | null;
   recipeNutrient: RecipeNutrient[] | null;
+  recipeMealTime: recipeMealTime[] | null;
 };

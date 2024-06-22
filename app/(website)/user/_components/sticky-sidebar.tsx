@@ -2,6 +2,7 @@
 
 import {
   Boxes,
+  CircleDollarSign,
   Home,
   LogOut,
   Settings,
@@ -25,6 +26,11 @@ const userMenu = [
     name: "My Profile",
     href: "/user/profile",
     menuIcon: UserRound,
+  },
+  {
+    name: "My Subscriptions",
+    href: "/user/subscriptions",
+    menuIcon: CircleDollarSign,
   },
   {
     name: "My Wellness Summary",

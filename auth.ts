@@ -12,6 +12,7 @@ import { getTwoFactorConfirmationByUserId } from "@/data/two-factor-confirmation
 import { getAccountByUserId } from "@/data/account";
 import WelcomeSocialLoginMail from "@/emails/welcome-social-login-mail";
 import { sendEmail } from "./lib/mail";
+import { assignFreePlanToUser } from "./lib/assignFreePlan";
 
 export const {
   handlers: { GET, POST },
@@ -25,10 +26,24 @@ export const {
   },
   events: {
     async linkAccount({ user }) {
-      await db.user.update({
-        where: { id: user.id },
-        data: { emailVerified: new Date() },
-      });
+      if (!user.id) {
+        console.error("User ID is undefined in linkAccount event");
+        throw new Error("User ID is required to assign a free plan");
+      }
+      try {
+        // Update email verification status
+        await db.user.update({
+          where: { id: user.id },
+          data: { emailVerified: new Date() },
+        });
+
+        // Assign free plan to user
+        await assignFreePlanToUser(user.id);
+        console.log(`Assigned free plan to user ${user.id} after account link`);
+      } catch (error) {
+        console.error("Error in linkAccount event:", error);
+        throw new Error("Failed to assign free plan during account link");
+      }
     },
     async signIn({ user, account, isNewUser }) {
       // Check if it's a new user signing in with social login
@@ -104,13 +119,16 @@ export const {
         session.user.weightKg = token.weightKg as number;
         session.user.weightLbs = token.weightLbs as number;
         session.user.bmi = token.bmi as string;
+        session.user.userPlan = token.userPlan as string[];
+        session.user.userPlanStartDate = token.userPlanStartDate as Date[];
+        session.user.userPlanEndDate = token.userPlanEndDate as Date[];
         session.user.foodPreference = token.foodPreference as string;
         session.user.cookingSkill = token.cookingSkill as string;
       }
 
       return session;
     },
-    async jwt({ token, isNewUser }) {
+    async jwt({ token }) {
       if (!token.sub) return token;
 
       const existingUser = await getUserById(token.sub);
@@ -137,6 +155,11 @@ export const {
       token.weightKg = existingUser.weightKg;
       token.weightLbs = existingUser.weightLbs;
       token.bmi = existingUser.bmi;
+      token.userPlan = existingUser.UserPlan.map((plan) => plan.plan.name);
+      token.userPlanStartDate = existingUser.UserPlan.map(
+        (plan) => plan.startDate
+      );
+      token.userPlanEndDate = existingUser.UserPlan.map((plan) => plan.endDate);
       token.foodPreference = existingUser.foodPreference?.name;
       token.cookingSkill = existingUser.cookingSkill?.title;
       token.createdAt = existingUser.createdAt;

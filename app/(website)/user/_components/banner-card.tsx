@@ -19,6 +19,7 @@ import { formatDate } from "@/lib/formatDate";
 import { useCurrentUser } from "@/hooks/use-current-user";
 import { capitalizeName } from "@/lib/formateName";
 import { useSession } from "next-auth/react";
+import { Badge } from "@/components/ui/badge";
 
 interface BannerCardProps {
   className?: string;
@@ -53,7 +54,6 @@ const BannerCard = ({ className }: BannerCardProps) => {
       setImageUrl(imageUrl);
     }
   }, [user?.image, user?.gender]);
-
   return (
     <div className={cn("w-full sticky top-[70px] z-10", className)}>
       <Container>
@@ -124,11 +124,19 @@ const BannerCard = ({ className }: BannerCardProps) => {
                 ) : (
                   <Skeleton className="h-8 w-[300px] rounded-xl mb-2" />
                 )}
-                {user?.email ? (
-                  <p className="text-sky-100 mb-2">{user?.email}</p>
+
+                {user?.userPlan && user.userPlan.length > 0 ? (
+                  <div className="flex">
+                    {user.userPlan.map((userPlan) => (
+                      <Badge key={userPlan} className={cn("bg-green-500 mb-1")}>
+                        {userPlan}
+                      </Badge>
+                    ))}
+                  </div>
                 ) : (
                   <Skeleton className="h-5 w-[280px] rounded-xl mb-2" />
                 )}
+
                 {user?.age && (
                   <p className="text-sky-100 mr-4 text-sm font-medium mt-2 lg:mt-0">
                     <BsCalendar2DateFill className="inline w-4 h-4 mr-2" />

@@ -35,6 +35,11 @@ export async function GET(req: Request) {
             healthGoal: true,
           },
         },
+        UserPlan: {
+          include: {
+            plan: true,
+          },
+        },
       },
     });
     return NextResponse.json(userDetails, { status: 200 });

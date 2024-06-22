@@ -57,14 +57,6 @@ const banners = [
       "Flexible and easy to modify",
     ],
   },
-  // {
-  //   id: 3,
-  //   title: "Personalize Yourself",
-  //   spanTxt: "Get your meal plan free",
-  //   description: "Some description about personalization",
-  //   btnTxt: "Get Started",
-  //   image: "/assets/images/home-banner-personalization.webp", // replace with your image path
-  // },
 ];
 
 const homeBanner: Banner = {
