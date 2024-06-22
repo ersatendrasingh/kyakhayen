@@ -185,108 +185,108 @@ const database = new PrismaClient();
 
 //seedDatabase();
 
-async function insertSampleData() {
-  try {
-    // Inserting plans with associated features
-    const plansWithFeatures = await database.$transaction([
-      // Insert Freemium Plan
-      database.plan.create({
-        data: {
-          name: "Freemium",
-          durationMonths: 0, // Indicating it's a free plan
-          priceInr: 0,
-          priceUsd: 0,
-          features: {
-            create: [
-              { name: "Limited recipes access" },
-              { name: "Basic meal planning" },
-            ],
-          },
-        },
-      }),
+// async function insertSampleData() {
+//   try {
+//     // Inserting plans with associated features
+//     const plansWithFeatures = await database.$transaction([
+//       // Insert Freemium Plan
+//       database.plan.create({
+//         data: {
+//           name: "Freemium",
+//           durationMonths: 0, // Indicating it's a free plan
+//           priceInr: 0,
+//           priceUsd: 0,
+//           features: {
+//             create: [
+//               { name: "Limited recipes access" },
+//               { name: "Basic meal planning" },
+//             ],
+//           },
+//         },
+//       }),
 
-      // Insert Bronze Plan
-      database.plan.create({
-        data: {
-          name: "Bronze",
-          durationMonths: 1,
-          priceInr: 99,
-          priceUsd: 1.99,
-          features: {
-            create: [
-              { name: "Full recipes access" },
-              { name: "Standard meal planning" },
-              { name: "Email support" },
-            ],
-          },
-        },
-      }),
+//       // Insert Bronze Plan
+//       database.plan.create({
+//         data: {
+//           name: "Bronze",
+//           durationMonths: 1,
+//           priceInr: 99,
+//           priceUsd: 1.99,
+//           features: {
+//             create: [
+//               { name: "Full recipes access" },
+//               { name: "Standard meal planning" },
+//               { name: "Email support" },
+//             ],
+//           },
+//         },
+//       }),
 
-      // Insert Silver Plan
-      database.plan.create({
-        data: {
-          name: "Silver",
-          durationMonths: 3,
-          priceInr: 249,
-          priceUsd: 4.99,
-          features: {
-            create: [
-              { name: "Premium recipes access" },
-              { name: "Advanced meal planning" },
-              { name: "Priority email support" },
-              { name: "Weekly nutrition tips" },
-            ],
-          },
-        },
-      }),
+//       // Insert Silver Plan
+//       database.plan.create({
+//         data: {
+//           name: "Silver",
+//           durationMonths: 3,
+//           priceInr: 249,
+//           priceUsd: 4.99,
+//           features: {
+//             create: [
+//               { name: "Premium recipes access" },
+//               { name: "Advanced meal planning" },
+//               { name: "Priority email support" },
+//               { name: "Weekly nutrition tips" },
+//             ],
+//           },
+//         },
+//       }),
 
-      // Insert Gold Plan
-      database.plan.create({
-        data: {
-          name: "Gold",
-          durationMonths: 6,
-          priceInr: 499,
-          priceUsd: 7.99,
-          features: {
-            create: [
-              { name: "VIP recipes access" },
-              { name: "Customized meal planning" },
-              { name: "24/7 VIP support" },
-              { name: "Personalized nutrition consultation" },
-              { name: "Exclusive cooking classes" },
-            ],
-          },
-        },
-      }),
-      // Insert Platinum Plan
-      database.plan.create({
-        data: {
-          name: "Platinum",
-          durationMonths: 12,
-          priceInr: 999,
-          priceUsd: 14.99,
-          features: {
-            create: [
-              { name: "VIP recipes access" },
-              { name: "Customized meal planning" },
-              { name: "24/7 VIP support" },
-              { name: "Personalized nutrition consultation" },
-              { name: "Exclusive cooking classes" },
-            ],
-          },
-        },
-      }),
-    ]);
+//       // Insert Gold Plan
+//       database.plan.create({
+//         data: {
+//           name: "Gold",
+//           durationMonths: 6,
+//           priceInr: 499,
+//           priceUsd: 7.99,
+//           features: {
+//             create: [
+//               { name: "VIP recipes access" },
+//               { name: "Customized meal planning" },
+//               { name: "24/7 VIP support" },
+//               { name: "Personalized nutrition consultation" },
+//               { name: "Exclusive cooking classes" },
+//             ],
+//           },
+//         },
+//       }),
+//       // Insert Platinum Plan
+//       database.plan.create({
+//         data: {
+//           name: "Platinum",
+//           durationMonths: 12,
+//           priceInr: 999,
+//           priceUsd: 14.99,
+//           features: {
+//             create: [
+//               { name: "VIP recipes access" },
+//               { name: "Customized meal planning" },
+//               { name: "24/7 VIP support" },
+//               { name: "Personalized nutrition consultation" },
+//               { name: "Exclusive cooking classes" },
+//             ],
+//           },
+//         },
+//       }),
+//     ]);
 
-    console.log("Inserted plans with features:", plansWithFeatures);
-  } catch (error) {
-    console.error("Error inserting data:", error);
-  } finally {
-    await database.$disconnect();
-  }
-}
+//     console.log("Inserted plans with features:", plansWithFeatures);
+//   } catch (error) {
+//     console.error("Error inserting data:", error);
+//   } finally {
+//     await database.$disconnect();
+//   }
+// }
 
-insertSampleData();
+//insertSampleData();
 
 async function assignPlanToUser(userId, planId, startDate, endDate) {
   try {
