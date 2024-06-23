@@ -84,6 +84,7 @@ export const GetRecipes = async ({
             },
           },
           recipeCookingTime: true,
+          recipeMealTime: true,
 
           recipeDifficulty: true,
           recipeSeasons: true,
@@ -161,6 +162,7 @@ export const GetRecipes = async ({
             },
           },
           recipeCookingTime: true,
+          recipeMealTime: true,
 
           recipeDifficulty: true,
           recipeSeasons: true,
@@ -199,6 +201,7 @@ export const GetRecipes = async ({
               position: "asc",
             },
           },
+          recipeMealTime: true,
           recipeHealthBenefits: {
             orderBy: {
               position: "asc",
