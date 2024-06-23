@@ -40,7 +40,7 @@ export const getMealPlanFromS3 = async ({
 
     const formattedDate = dateFromClient.toISOString().split("T")[0];
     const s3Key = `usersMealPlans/${user?.id}/${formattedDate}/diet.json`;
-    console.log("S3 Key", s3Key);
+
     // Retrieve meal plan from S3
     const params = {
       Bucket: process.env.AWS_BUCKET_NAME as string,

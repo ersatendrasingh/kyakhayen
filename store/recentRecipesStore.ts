@@ -1,4 +1,3 @@
-// recentRecipesStore.ts
 type RecipeUsage = {
   userId: string;
   date: Date;

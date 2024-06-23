@@ -1,34 +1,44 @@
 // recipeHelpers.ts
+
 import { MealTimes } from "@prisma/client";
 import { RecipeWithCategory } from "@/types/recipe";
 
-export const assignRecipesByType = (
+// Function to assign a unique recipe of a specific type to a meal time
+const assignUniqueRecipeByType = (
   type: string,
   mealTime: MealTimes,
   categorizedRecipes: { [key: string]: RecipeWithCategory[] },
   mealsByTime: { [key: string]: RecipeWithCategory[] },
   recentRecipeIds: Set<string>,
-  fallback: boolean = false
+  fallback: boolean = false,
+  excludeRecipeIds: string[] = []
 ) => {
   if (categorizedRecipes[type]?.length > 0) {
     const recipesOfType = categorizedRecipes[type];
 
-    // Find the first recipe that hasn't been used yet and is appropriate for the meal time
-    const availableRecipe = recipesOfType.find(
+    // Filter recipes that haven't been recently used and aren't excluded
+    const availableRecipes = recipesOfType.filter(
       (recipe) =>
         (!fallback || !recentRecipeIds.has(recipe.id)) &&
+        !excludeRecipeIds.includes(recipe.id) &&
         recipe.recipeMealTime?.some((mt) => mt.mealTimeId === mealTime.id)
     );
 
-    if (availableRecipe) {
-      mealsByTime[mealTime.slug].push(availableRecipe);
-    } else if (fallback) {
-      // If fallback is true, use any recipe available
-      mealsByTime[mealTime.slug].push(recipesOfType[0]);
+    if (availableRecipes.length > 0) {
+      // Choose a random recipe from available ones
+      const randomIndex = Math.floor(Math.random() * availableRecipes.length);
+      const selectedRecipe = availableRecipes[randomIndex];
+
+      mealsByTime[mealTime.slug].push(selectedRecipe);
+      recentRecipeIds.add(selectedRecipe.id); // Track recently used recipe
+
+      // If this assignment is for dinner, add this recipe to exclude list for dinner
+      if (mealTime.title === "Dinner") {
+        excludeRecipeIds.push(selectedRecipe.id);
+      }
     }
   }
 };
-
 export const assignRecipesToMealTimes = (
   mealTimes: MealTimes[],
   categorizedRecipes: { [key: string]: RecipeWithCategory[] },
@@ -36,254 +46,176 @@ export const assignRecipesToMealTimes = (
 ): { [key: string]: RecipeWithCategory[] } => {
   const mealsByTime: { [key: string]: RecipeWithCategory[] } = {};
 
-  mealTimes.forEach((time) => {
-    mealsByTime[time.slug] = [];
+  try {
+    mealTimes.forEach((time) => {
+      mealsByTime[time.slug] = [];
 
-    switch (time.title) {
-      case "Breakfast":
-        assignRecipesByType(
-          "Main Dish",
-          time,
-          categorizedRecipes,
-          mealsByTime,
-          recentRecipeIds
-        );
-        assignRecipesByType(
-          "Side Dish",
-          time,
-          categorizedRecipes,
-          mealsByTime,
-          recentRecipeIds
-        );
-        break;
-      case "Mid Morning":
-        assignRecipesByType(
-          "Fruit Salad",
-          time,
-          categorizedRecipes,
-          mealsByTime,
-          recentRecipeIds
-        );
-        assignRecipesByType(
-          "Snacks",
-          time,
-          categorizedRecipes,
-          mealsByTime,
-          recentRecipeIds
-        );
-        assignRecipesByType(
-          "Beverage/Smoothie",
-          time,
-          categorizedRecipes,
-          mealsByTime,
-          recentRecipeIds
-        );
-        break;
-      case "Lunch":
-        assignRecipesByType(
-          "Meal",
-          time,
-          categorizedRecipes,
-          mealsByTime,
-          recentRecipeIds
-        );
-        assignRecipesByType(
-          "Grains",
-          time,
-          categorizedRecipes,
-          mealsByTime,
-          recentRecipeIds
-        );
-        assignRecipesByType(
-          "Dessert",
-          time,
-          categorizedRecipes,
-          mealsByTime,
-          recentRecipeIds
-        );
-        break;
-      case "Evening":
-        assignRecipesByType(
-          "Snacks",
-          time,
-          categorizedRecipes,
-          mealsByTime,
-          recentRecipeIds
-        );
-        assignRecipesByType(
-          "Fruit Salad",
-          time,
-          categorizedRecipes,
-          mealsByTime,
-          recentRecipeIds
-        );
-        assignRecipesByType(
-          "Fruit",
-          time,
-          categorizedRecipes,
-          mealsByTime,
-          recentRecipeIds
-        );
-        break;
-      case "Dinner":
-        assignRecipesByType(
-          "Meal",
-          time,
-          categorizedRecipes,
-          mealsByTime,
-          recentRecipeIds
-        );
-        assignRecipesByType(
-          "Grains",
-          time,
-          categorizedRecipes,
-          mealsByTime,
-          recentRecipeIds
-        );
-        assignRecipesByType(
-          "Dessert",
-          time,
-          categorizedRecipes,
-          mealsByTime,
-          recentRecipeIds
-        );
-        break;
-      default:
-        console.log(`No specific logic for ${time.title}`);
-        break;
-    }
-
-    // Fallback to recently used recipes if no recipes were assigned
-    if (mealsByTime[time.slug].length === 0) {
       switch (time.title) {
         case "Breakfast":
-          assignRecipesByType(
+          assignUniqueRecipeByType(
             "Main Dish",
             time,
             categorizedRecipes,
             mealsByTime,
-            recentRecipeIds,
-            true
+            recentRecipeIds
           );
-          assignRecipesByType(
+          assignUniqueRecipeByType(
             "Side Dish",
             time,
             categorizedRecipes,
             mealsByTime,
-            recentRecipeIds,
-            true
+            recentRecipeIds
           );
           break;
+
         case "Mid Morning":
-          assignRecipesByType(
+          assignUniqueRecipeByType(
             "Fruit Salad",
             time,
             categorizedRecipes,
             mealsByTime,
-            recentRecipeIds,
-            true
+            recentRecipeIds
           );
-          assignRecipesByType(
+          assignUniqueRecipeByType(
             "Snacks",
             time,
             categorizedRecipes,
             mealsByTime,
-            recentRecipeIds,
-            true
+            recentRecipeIds
           );
-          assignRecipesByType(
+          assignUniqueRecipeByType(
             "Beverage/Smoothie",
             time,
             categorizedRecipes,
             mealsByTime,
-            recentRecipeIds,
-            true
+            recentRecipeIds
           );
           break;
+
         case "Lunch":
-          assignRecipesByType(
-            "Meal",
+          assignUniqueRecipeByType(
+            "Vegetable Dish",
+            time,
+            categorizedRecipes,
+            mealsByTime,
+            recentRecipeIds
+          );
+          assignUniqueRecipeByType(
+            "Bread/Roti",
+            time,
+            categorizedRecipes,
+            mealsByTime,
+            recentRecipeIds
+          );
+          assignUniqueRecipeByType(
+            "Vegetable Salad",
+            time,
+            categorizedRecipes,
+            mealsByTime,
+            recentRecipeIds
+          );
+          assignUniqueRecipeByType(
+            "Rice",
             time,
             categorizedRecipes,
             mealsByTime,
             recentRecipeIds,
             true
-          );
-          assignRecipesByType(
-            "Grains",
-            time,
-            categorizedRecipes,
-            mealsByTime,
-            recentRecipeIds,
-            true
-          );
-          assignRecipesByType(
+          ); // Rice is optional
+          assignUniqueRecipeByType(
             "Dessert",
             time,
             categorizedRecipes,
             mealsByTime,
             recentRecipeIds,
             true
-          );
+          ); // Dessert is optional
           break;
+
         case "Evening":
-          assignRecipesByType(
+          assignUniqueRecipeByType(
             "Snacks",
             time,
             categorizedRecipes,
             mealsByTime,
-            recentRecipeIds,
-            true
+            recentRecipeIds
           );
-          assignRecipesByType(
+          assignUniqueRecipeByType(
             "Fruit Salad",
             time,
             categorizedRecipes,
             mealsByTime,
-            recentRecipeIds,
-            true
+            recentRecipeIds
           );
-          assignRecipesByType(
+          assignUniqueRecipeByType(
             "Fruit",
             time,
             categorizedRecipes,
             mealsByTime,
-            recentRecipeIds,
-            true
+            recentRecipeIds
           );
           break;
+
         case "Dinner":
-          assignRecipesByType(
-            "Meal",
+          // For dinner, pass lunch recipes as usedRecipeIds to exclude them
+          const lunchRecipes = mealsByTime["lunch"] || [];
+          const usedRecipeIds = lunchRecipes.map((recipe) => recipe.id);
+
+          assignUniqueRecipeByType(
+            "Vegetable Dish",
             time,
             categorizedRecipes,
             mealsByTime,
             recentRecipeIds,
-            true
+            false,
+            usedRecipeIds
           );
-          assignRecipesByType(
-            "Grains",
+          assignUniqueRecipeByType(
+            "Bread/Roti",
             time,
             categorizedRecipes,
             mealsByTime,
             recentRecipeIds,
-            true
+            false,
+            usedRecipeIds
           );
-          assignRecipesByType(
+          assignUniqueRecipeByType(
+            "Vegetable Salad",
+            time,
+            categorizedRecipes,
+            mealsByTime,
+            recentRecipeIds,
+            false,
+            usedRecipeIds
+          );
+          assignUniqueRecipeByType(
+            "Rice",
+            time,
+            categorizedRecipes,
+            mealsByTime,
+            recentRecipeIds,
+            true,
+            usedRecipeIds
+          ); // Rice is optional
+          assignUniqueRecipeByType(
             "Dessert",
             time,
             categorizedRecipes,
             mealsByTime,
             recentRecipeIds,
-            true
-          );
+            true,
+            usedRecipeIds
+          ); // Dessert is optional
           break;
+
         default:
           console.log(`No specific logic for ${time.title}`);
           break;
       }
-    }
-  });
+    });
+  } catch (error) {
+    console.error("Error assigning recipes to meal times:", error);
+  }
 
   return mealsByTime;
 };
