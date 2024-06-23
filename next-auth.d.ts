@@ -23,6 +23,7 @@ export type ExtendedUser = DefaultSession["user"] & {
   userPlanEndDate: Date[];
   foodPreference?: string;
   cookingSkill?: string;
+  firebaseToken?: string;
   createdAt?: Date;
   updateAt?: Date;
   role: UserRole;

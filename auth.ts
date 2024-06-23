@@ -124,6 +124,7 @@ export const {
         session.user.userPlanEndDate = token.userPlanEndDate as Date[];
         session.user.foodPreference = token.foodPreference as string;
         session.user.cookingSkill = token.cookingSkill as string;
+        session.user.firebaseToken = token.firebaseToken as string;
       }
 
       return session;
@@ -164,6 +165,7 @@ export const {
       token.cookingSkill = existingUser.cookingSkill?.title;
       token.createdAt = existingUser.createdAt;
       token.updateAt = existingUser.updateAt;
+      token.firebaseToken = existingUser.firebaseToken;
 
       token.isTwoFactorEnabled = existingUser.isTwoFactorEnabled;
 

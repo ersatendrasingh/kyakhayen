@@ -409,6 +409,7 @@ model User {
   isTwoFactorEnabled    Boolean                @default(false)
   isPersonalised        Boolean                @default(false)
   twoFactorConfirmation TwoFactorConfirmation?
+  firebaseToken         String?
 
   createdAt DateTime @default(now())
   updateAt  DateTime @updatedAt

@@ -56,7 +56,7 @@ export async function PATCH(req: Request) {
       return NextResponse.json("Unauthorized", { status: 401 });
     }
     const userEmail = session?.user.email;
-    const { firstName, lastName, ...values } = await req.json();
+    const { firstName, lastName, firebaseToken, ...values } = await req.json();
 
     const name = `${firstName} ${lastName}`;
     const updatedUser = await db.user.update({
@@ -65,6 +65,7 @@ export async function PATCH(req: Request) {
       },
       data: {
         name: name,
+        firebaseToken: firebaseToken,
         ...values,
       },
     });
