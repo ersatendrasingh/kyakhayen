@@ -9,6 +9,7 @@ import NextTopLoader from "nextjs-toploader";
 import "./globals.css";
 import { auth } from "@/auth";
 import { ConfettiProvider } from "@/components/providers/confetti-provider";
+import FirebaseMessagingComponent from "@/components/firebase-messaging";
 
 const poppins = Poppins({
   subsets: ["latin"],
@@ -69,6 +70,7 @@ export default async function RootLayout({
   const session = await auth();
   return (
     <SessionProvider session={session}>
+      <FirebaseMessagingComponent />
       <html lang="en">
         <GoogleAnalytics gaId={process.env.GOOGLE_ANALYTICS_ID as string} />
         <GoogleTagManager gtmId={process.env.GOOGLE_TAG_MANAGER_ID as string} />
