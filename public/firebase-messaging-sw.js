@@ -22,7 +22,7 @@ messaging.onBackgroundMessage(function (payload) {
   const notificationTitle = payload.notification.title;
   const notificationOptions = {
     body: payload.notification.body,
-    icon: "/icons-192.png",
+    icon: payload.notification.icon || "/icons-192.png",
     image: payload.notification.image,
     data: {
       url: payload.data.url, // Assuming click_action contains the URL
@@ -47,7 +47,7 @@ self.addEventListener("push", function (event) {
     const notificationTitle = payload.notification.title;
     const notificationOptions = {
       body: payload.notification.body,
-      icon: "/icons-192.png",
+      icon: payload.notification.icon || "/icons-192.png",
       image: payload.notification.image,
       data: {
         url: payload.data.url, // Assuming click_action contains the URL
@@ -72,7 +72,6 @@ self.addEventListener("push", function (event) {
 // Optional: Handle notification click event
 self.addEventListener("notificationclick", function (event) {
   event.notification.close();
-
   const urlToOpen = event.notification.data.url;
 
   event.waitUntil(clients.openWindow(urlToOpen));

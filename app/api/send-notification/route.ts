@@ -23,6 +23,12 @@ export async function POST(req: NextRequest) {
           body: notification.body,
           image: notification.image,
         },
+        android: {
+          notification: {
+            icon: "https://kyakhayen-prod.s3.ap-south-1.amazonaws.com/others/kya-khayen-favicon.png",
+            color: "#f45342",
+          },
+        },
         data: {
           url: notification.url,
         },
