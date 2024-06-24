@@ -63,14 +63,11 @@ const HomeBanner = ({
 
   const [userSession, setUserSession] = useState<Session | null>(null);
   useEffect(() => {
-    //setIsLoading(true);
     const getSessionData = async () => {
       const session = await getSession();
       if (session) {
         setUserSession(session);
       }
-      // Set loading state false regardless of whether session is available or not
-      //setIsLoading(false);
     };
 
     getSessionData();

@@ -22,10 +22,12 @@ interface CuisinesProps {
 }
 const getSavedCuisines = (): string[] => {
   try {
-    const userData = localStorage.getItem("userData");
-    if (userData) {
-      const parsedUserData = JSON.parse(userData);
-      return parsedUserData.cuisines || [];
+    if (typeof window !== "undefined") {
+      const userData = localStorage.getItem("userData");
+      if (userData) {
+        const parsedUserData = JSON.parse(userData);
+        return parsedUserData.cuisines || [];
+      }
     }
     return [];
   } catch (error) {

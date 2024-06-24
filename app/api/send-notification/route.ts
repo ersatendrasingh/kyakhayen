@@ -4,31 +4,49 @@ import { db } from "@/lib/db"; // Your database setup
 
 export async function POST(req: NextRequest) {
   try {
-    const { email, notification } = await req.json();
+    const { notification } = await req.json();
 
-    const user = await db.user.findUnique({
-      where: { email },
+    // Fetch all users from the database
+    const allUsers = await db.user.findMany();
+
+    // Array to store promises of notifications
+    const notificationPromises = allUsers.map(async (user) => {
+      if (!user.firebaseToken) {
+        console.log(`User ${user.email} has no Firebase token. Skipping.`);
+        return { status: "User has no Firebase token. Skipping." };
+      }
+
+      // Construct the message payload for Firebase Cloud Messaging
+      const message = {
+        notification: {
+          title: notification.title,
+          body: notification.body,
+          image: notification.image,
+        },
+        data: {
+          url: notification.url,
+        },
+        token: user.firebaseToken,
+      };
+
+      try {
+        // Send the notification using Firebase Admin SDK
+        const response = await admin.messaging().send(message);
+        console.log(`Notification sent successfully to ${user.email}`);
+        return { success: true, response };
+      } catch (error: any) {
+        console.error(`Error sending notification to ${user.email}`, error);
+        return { success: false, error: error.message };
+      }
     });
 
-    if (!user || !user.firebaseToken) {
-      return NextResponse.json("User not found or missing token", {
-        status: 404,
-      });
-    }
+    // Wait for all notifications to be sent
+    const results = await Promise.all(notificationPromises);
 
-    const message = {
-      notification: {
-        title: notification.title,
-        body: notification.body,
-      },
-      token: user.firebaseToken,
-    };
-
-    const response = await admin.messaging().send(message);
-
-    return NextResponse.json({ success: true, response }, { status: 200 });
+    // Respond with the results of the notifications
+    return NextResponse.json(results, { status: 200 });
   } catch (error) {
-    console.log("[NOTIFICATION_SEND]", error);
+    console.error("[SEND_NOTIFICATIONS]", error);
     return NextResponse.json("Internal Server Error", { status: 500 });
   }
 }
