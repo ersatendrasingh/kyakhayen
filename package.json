@@ -38,7 +38,7 @@
     "@react-email/components": "0.0.19",
     "@react-email/render": "^0.0.15",
     "@tanstack/react-table": "^8.16.0",
-    "@tensorflow/tfjs": "^4.20.0",
+    "@types/natural": "^5.1.5",
     "axios": "^1.6.8",
     "bcryptjs": "^2.4.3",
     "class-variance-authority": "^0.7.0",
