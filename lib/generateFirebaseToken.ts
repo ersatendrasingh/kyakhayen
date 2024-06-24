@@ -20,7 +20,6 @@ export const getFirebaseToken = async () => {
   try {
     const hasFirebaseMessagingSupport = await isSupported();
     if (!hasFirebaseMessagingSupport) {
-      console.log("Firebase messaging is not supported in this browser.");
       return;
     }
 
@@ -30,13 +29,9 @@ export const getFirebaseToken = async () => {
     });
 
     if (!currentToken) {
-      console.log(
-        "No registration token available. Request permission to generate one."
-      );
       return;
     }
 
-    console.log("Current token for client: ", currentToken);
     await sendTokenToServer(currentToken);
   } catch (error) {
     console.log("Problem generating Firebase token:", error);
@@ -45,15 +40,13 @@ export const getFirebaseToken = async () => {
 
 const sendTokenToServer = async (token: string) => {
   try {
-    const response = await axios.patch("/api/user", {
+    const response = await axios.patch("/api/user/save-firebase-token", {
       firebaseToken: token,
     });
 
     if (response.status !== 200) {
       throw new Error("Failed to send token to server");
     }
-
-    console.log("Token successfully sent to server");
   } catch (error) {
     console.log("Error sending token to server:", error);
   }

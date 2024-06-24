@@ -62,11 +62,14 @@ interface BannerProps {
 
 const getSavedStep = (): number => {
   try {
-    const savedStep = localStorage.getItem("currentStep");
-    return savedStep ? JSON.parse(savedStep) : 1;
+    if (typeof window !== "undefined") {
+      const savedStep = localStorage.getItem("currentStep");
+      return savedStep ? JSON.parse(savedStep) : 1;
+    }
+    return 1; // Fallback if localStorage is not available
   } catch (error) {
     console.error("Error parsing saved step:", error);
-    return 1;
+    return 1; // Handle any errors gracefully
   }
 };
 
