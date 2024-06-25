@@ -1,5 +1,3 @@
-// Assuming GetRecipes function expects page as a number parameter
-
 "use client";
 
 import { useState, useEffect } from "react";
@@ -11,28 +9,31 @@ import { Button } from "@/components/ui/button";
 import Container from "@/components/container";
 import RecipeCard from "@/components/recipes/recipe-card";
 import { RecipeWithCategory } from "@/types/recipe";
-import { GetRecipes } from "@/actions/get-recipes";
-import { getPopularRecipes } from "@/actions/get-popular-recipes";
+import { getRecommendedRecipes } from "@/actions/get-recommended-recipes";
 
-const PopularRecipes = () => {
+const RecommendedRecipes = () => {
   const [recipes, setRecipes] = useState<RecipeWithCategory[]>([]);
-  const [currentPage, setCurrentPage] = useState<number>(1); // Explicitly define currentPage as number
-  const [loading, setLoading] = useState<boolean>(false); // Explicitly define loading state
-  const [allLoaded, setAllLoaded] = useState<boolean>(false); // Explicitly define allLoaded state
-  const [initialLoading, setInitialLoading] = useState<boolean>(true); // Explicitly define initialLoading state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [loading, setLoading] = useState(false);
+  const [allLoaded, setAllLoaded] = useState(false);
+  const [initialLoading, setInitialLoading] = useState(true);
 
   const fetchMoreRecipes = async () => {
     try {
       setLoading(true);
-      const response = await getPopularRecipes({ page: currentPage + 1 }); // Pass an object with page as a number
+      const response = await getRecommendedRecipes(currentPage + 1);
       const newRecipes = response.recipes;
 
       if (!response.hasMore) {
         setAllLoaded(true);
       }
 
-      setRecipes((prevRecipes) => [...prevRecipes, ...newRecipes]);
-      setCurrentPage((prevPage) => prevPage + 1);
+      if (newRecipes.length === 0) {
+        setAllLoaded(true);
+      } else {
+        setRecipes((prevRecipes) => [...prevRecipes, ...newRecipes]);
+        setCurrentPage((prevPage) => prevPage + 1);
+      }
     } catch (error) {
       console.error("Error fetching more recipes:", error);
     } finally {
@@ -43,7 +44,7 @@ const PopularRecipes = () => {
   useEffect(() => {
     const fetchRecipes = async () => {
       try {
-        const response = await getPopularRecipes({ page: 1 }); // Pass an object with page as a number
+        const response = await getRecommendedRecipes(1);
         const initialRecipes = response.recipes;
 
         setRecipes(initialRecipes);
@@ -71,7 +72,7 @@ const PopularRecipes = () => {
     <div className="w-full flex flex-col items-center justify-center pt-12 pb-10 mt-10 mb-10 bg-[#f9f9ff]">
       <Container>
         <h3 className="text-3xl font-bold text-center text-websecondary mb-10">
-          Popular Recipes For You
+          Recommended Recipes For You
         </h3>
         {initialLoading ? (
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
@@ -123,4 +124,4 @@ const PopularRecipes = () => {
   );
 };
 
-export default PopularRecipes;
+export default RecommendedRecipes;

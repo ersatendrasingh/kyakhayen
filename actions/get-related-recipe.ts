@@ -1,98 +1,26 @@
-import { db } from "@/lib/db";
-
 import { RecipeWithCategory } from "@/types/recipe";
+import { getRelatedRecommendations } from "@/lib/get-related-recipes";
+import { filterRecipesByUserPreferences } from "@/lib/filterRecipes";
 
-type GetRecipes = {
-  title?: string;
-  searchSlug?: string;
-  categoryId?: string;
+type GetRecipesParams = {
+  recipeId: string;
 };
 
-export const GetRelatedRecipes = async ({
-  title,
-  searchSlug,
-  categoryId,
-}: GetRecipes): Promise<RecipeWithCategory[]> => {
+export const getRelatedRecipes = async ({
+  recipeId,
+}: GetRecipesParams): Promise<RecipeWithCategory[]> => {
   try {
-    let recipes;
+    // Logic to fetch related recipes based on recipeId
+    const allRecipes = await filterRecipesByUserPreferences();
 
-    recipes = await db.recipes.findMany({
-      where: {
-        isPublished: true,
-        title: {
-          contains: title,
-        },
-        NOT: {
-          slug: searchSlug,
-        },
-        recipeCategoriesId: {
-          contains: categoryId,
-        },
-      },
-      include: {
-        RecipeCategories: true,
-        recipeIngredients: {
-          include: {
-            unit: true,
-            ingredientForm: true,
-            ingredient: {
-              include: {
-                IngredientUnitMeasurements: true,
-              },
-            },
-          },
-          orderBy: {
-            position: "asc",
-          },
-        },
-        recipeMethods: {
-          orderBy: {
-            position: "asc",
-          },
-        },
-        recipeHealthBenefits: {
-          orderBy: {
-            position: "asc",
-          },
-        },
-        recipeCookingMethods: {
-          include: {
-            cookingMethod: true,
-          },
-        },
-        recipeCuisine: {
-          include: {
-            cuisine: true,
-          },
-        },
-        recipeDietType: {
-          include: {
-            dietType: true,
-          },
-        },
-        recipeRecipeType: {
-          include: {
-            recipeType: true,
-          },
-        },
-        recipeNutrient: {
-          include: {
-            nutrient: true,
-          },
-        },
-        recipeCookingTime: true,
+    const relatedRecommendations = getRelatedRecommendations(
+      allRecipes,
+      recipeId
+    );
 
-        recipeDifficulty: true,
-        recipeSeasons: true,
-      },
-      orderBy: {
-        createdAt: "desc",
-      },
-    });
-
-    return recipes;
+    return relatedRecommendations;
   } catch (error) {
-    console.error("[GET_RECIPES]", error);
+    console.error("[GET_RELATED_RECIPES]", error);
     return [];
   }
 };
