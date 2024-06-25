@@ -1,9 +1,10 @@
 import { db } from "@/lib/db";
 import { NextResponse } from "next/server";
 
-export async function GET(req: any) {
+export async function POST(req: Request) {
   try {
-    const stateId = req.nextUrl.searchParams.get("stateId");
+    const body = await req.json();
+    const stateId = body.stateId;
     const cities = await db.city.findMany({
       orderBy: {
         name: "asc",

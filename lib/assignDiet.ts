@@ -1,17 +1,16 @@
 "use server";
+
 import { db } from "@/lib/db";
 import { RecipeWithCategory } from "@/types/recipe";
-
 import { assignRecipesToMealTimes } from "@/helpers/recipeHelpers";
-import { GetRecipes } from "@/actions/get-recipes";
 import { addRecentRecipe, getRecentRecipes } from "@/store/recentRecipesStore";
+import { filterRecipesByUserPreferences } from "@/lib/filterRecipes";
 
 export const generateRecipesForDate = async (
   userId: string,
   date: Date
 ): Promise<{ [key: string]: RecipeWithCategory[] } | null> => {
   try {
-    // Fetch user details including preferences
     const user = await db.user.findUnique({
       where: { id: userId },
       include: {
@@ -28,48 +27,11 @@ export const generateRecipesForDate = async (
     // Fetch meal times (assuming predefined meal times in the database)
     const mealTimes = await db.mealTimes.findMany();
 
-    // Fetch all published recipes with their details
-    const allRecipes = await GetRecipes({});
-
-    // Fetch recipe categories
-    const recipeCategories = await db.recipeCategories.findMany();
-
-    // Create a mapping from category names to their IDs
-    const categoryMap = recipeCategories.reduce((map, category) => {
-      map[category.name.toLowerCase()] = category.id;
-      return map;
-    }, {} as { [key: string]: string });
-
     // Fetch recently used recipes
     const recentRecipeIds = new Set<string>(getRecentRecipes(userId, 6)); // Fetch recipes used in the last 6 days
 
     // Filter recipes based on user preferences
-    const filteredRecipes = allRecipes.filter((recipe) => {
-      const matchesFoodPreference = (() => {
-        switch (user.foodPreferenceId) {
-          case categoryMap["non veg"]:
-            return true; // Non-veg users can eat all types of food
-          case categoryMap["veg"]:
-            return recipe.recipeCategoriesId === categoryMap["veg"];
-          case categoryMap["egg"]:
-            return (
-              recipe.recipeCategoriesId === categoryMap["veg"] ||
-              recipe.recipeCategoriesId === categoryMap["egg"]
-            );
-          case categoryMap["pescetarian"]:
-            return (
-              recipe.recipeCategoriesId === categoryMap["veg"] ||
-              recipe.recipeCategoriesId === categoryMap["pescetarian"]
-            );
-          case categoryMap["vegan"]:
-            return recipe.recipeCategoriesId === categoryMap["vegan"];
-          default:
-            return false;
-        }
-      })();
-
-      return matchesFoodPreference;
-    });
+    const filteredRecipes = await filterRecipesByUserPreferences();
 
     // Categorize recipes based on their types dynamically
     const categorizedRecipes: { [key: string]: RecipeWithCategory[] } = {};

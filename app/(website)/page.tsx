@@ -9,6 +9,7 @@ import { getPrakritiQuestions } from "@/actions/get-prakriti-questions";
 import { currentUser } from "@/lib/auth";
 import { useCurrentUser } from "@/hooks/use-current-user";
 import HomeBanner from "@/components/sections/home-banner";
+import RecommendedRecipes from "@/components/sections/recommended-recipes";
 
 type Banner = {
   id: number;
@@ -159,7 +160,7 @@ export default async function Home() {
         prakritiQuestions={prakritiQuestions}
         genders={genders}
       />
-      {/* <RecommendedRecipes /> */}
+      <RecommendedRecipes />
       <HomeCategory title="Recipe Categories" widgetItems={recipeCategories} />
       <PopularRecipes />
     </div>

@@ -114,7 +114,7 @@ const ContactForm = () => {
 
   const fetchStates = async (countryId: number) => {
     try {
-      const response = await axios.get(`/api/states?countryId=${countryId}`);
+      const response = await axios.post("/api/states", { countryId });
       const statesData = response.data;
       setStates(statesData);
       setSelectedState(null);
@@ -124,7 +124,7 @@ const ContactForm = () => {
   };
   const fetchCities = async (stateId: number) => {
     try {
-      const response = await axios.get(`/api/cities?stateId=${stateId}`);
+      const response = await axios.post("/api/cities", { stateId });
       const citiesData = response.data;
       setCities(citiesData);
     } catch (error: any) {

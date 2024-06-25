@@ -4,21 +4,6 @@ import { useState, useEffect, useRef } from "react";
 
 import MenuItem from "@/components/recipes/menu-item";
 
-import {
-  CookingMethods,
-  Cuisines,
-  RecipeCategories,
-  RecipeCookingTime,
-  RecipeDifficulty,
-  RecipeMethods as RecipeMethodType,
-  RecipeSeasons,
-  Recipes,
-  RecipeIngredients as RecipeIngredientsType,
-  IngredientsForm as IngredientsFormType,
-  Ingredients,
-  Units,
-  IngredientUnitMeasurements,
-} from "@prisma/client";
 import RecipeOverview from "@/components/recipes/recipe-overview";
 import RecipeIngredients from "@/components/recipes/recipe-ingredients";
 import RecipeMethods from "./recipe-methods";
