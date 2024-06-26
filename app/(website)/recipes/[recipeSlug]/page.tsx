@@ -12,6 +12,7 @@ import { db } from "@/lib/db";
 
 import Container from "@/components/container";
 import { getRelatedRecipes } from "@/actions/get-related-recipe";
+import RecipeCommentSection from "@/components/recipes/recipe-comments-section";
 
 type Props = {
   params: { recipeSlug: string };
@@ -75,13 +76,6 @@ const SingleRecipePage = async ({
 }) => {
   const slug = params.recipeSlug;
 
-  const user = await currentUser();
-  if (!user) {
-    const userId = undefined;
-  }
-
-  const userId = user?.id;
-
   const recipe = await getRecipeBySlug({ recipeSlug: slug as string });
 
   if (!recipe) {
@@ -110,6 +104,7 @@ const SingleRecipePage = async ({
               className="py-10 lg:py-8 mb-7 md:mb-2 xl:mb-2"
             />
             <RecipeDetails recipe={recipe} />
+            <RecipeCommentSection recipeId={recipe.id} />
           </div>
           <div className="w-full lg:w-2/6">
             <RecipeSidebar

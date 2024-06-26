@@ -33,6 +33,7 @@ model Recipes {
   recipeNutrient       recipeNutrient[]
   recipeDietType       recipeDietType[]
   recipeRecipeType     recipeRecipeType[]
+  Comment              Comment[]
 
   isPublished Boolean @default(false)
 
@@ -404,6 +405,7 @@ model User {
   UserAllrgies          UserAllrgies[]
   UserHealthGoals       UserHealthGoals[]
   Post                  Post[]
+  Comment               Comment[]
   UserPlan              UserPlan[]
   UserMealPlan          UserMealPlan[]
   isTwoFactorEnabled    Boolean                @default(false)
@@ -593,6 +595,7 @@ model Post {
   createdAt    DateTime       @default(now())
   updatedAt    DateTime       @updatedAt
   PostCategory PostCategory[]
+  Comment      Comment[]
 }
 
 model Category {
@@ -651,4 +654,26 @@ model ContactUsQueries {
   city        String?
   query       String?  @db.Text
   createdAt   DateTime @default(now())
+}
+
+model Comment {
+  id              String    @id @default(uuid())
+  userId          String?
+  user            User?     @relation(fields: [userId], references: [id])
+  name            String?
+  email           String?
+  phoneNumber     String?
+  content         String    @db.Text
+  recipe          Recipes?  @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+  recipeId        String?
+  Post            Post?     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  postId          String?
+  parentComment   Comment?  @relation("Replies", fields: [parentCommentId], references: [id], onDelete: Cascade)
+  parentCommentId String?
+  replies         Comment[] @relation("Replies")
+  isPrimary       Boolean   @default(true)
+  isPublished     Boolean   @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }

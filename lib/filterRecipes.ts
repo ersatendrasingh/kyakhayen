@@ -19,7 +19,7 @@ export const filterRecipesByUserPreferences = async (): Promise<
         where: { id: userId },
         include: {
           userCuisines: true,
-          UserAllrgies: true, // Corrected typo here
+          UserAllrgies: true, // Ensure this is spelled correctly according to your schema
           UserHealthGoals: true,
           // Add more includes as needed
         },
@@ -42,7 +42,23 @@ export const filterRecipesByUserPreferences = async (): Promise<
       return map;
     }, {} as { [key: string]: string });
 
-    // Filter recipes based on user preferences
+    // Extract user allergy IDs
+    const userAllergyIds =
+      userData?.UserAllrgies.map(
+        (allergy: { allergyId: string }) => allergy.allergyId
+      ) || [];
+
+    // Fetch recipe allergies
+    const recipeAllergies = await db.recipeAllergies.findMany();
+    const recipeAllergyMap = recipeAllergies.reduce((map, allergy) => {
+      if (!map[allergy.recipeId]) {
+        map[allergy.recipeId] = [];
+      }
+      map[allergy.recipeId].push(allergy.allergyId);
+      return map;
+    }, {} as { [key: string]: string[] });
+
+    // Filter recipes based on user preferences and allergies
     const filteredRecipes = allRecipes.filter((recipe) => {
       // Check if recipe matches user's food preferences
       const matchesFoodPreference = (() => {
@@ -72,10 +88,15 @@ export const filterRecipesByUserPreferences = async (): Promise<
         }
       })();
 
-      return matchesFoodPreference;
+      // Check if recipe contains any allergens
+      const containsAllergens = recipeAllergyMap[recipe.id]?.some((allergyId) =>
+        userAllergyIds.includes(allergyId)
+      );
+
+      return matchesFoodPreference && !containsAllergens;
     });
 
-    // Log and return filtered recipes
+    // Filter recipes by season
     const filteredRecipesBySeason = await filterRecipesBySeason(
       filteredRecipes,
       currentMonth

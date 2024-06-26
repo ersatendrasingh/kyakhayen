@@ -88,3 +88,10 @@ export const contactFormSchema = z.object({
   state: z.string().min(1),
   query: z.string().min(1, { message: "Your bio is required" }),
 });
+
+export const commentFormSchema = z.object({
+  name: z.string().min(2).max(50).optional(),
+  email: z.string().email().optional(),
+  phoneNumber: z.string().min(7).max(15).optional(),
+  comment: z.string().min(10).max(500),
+});
