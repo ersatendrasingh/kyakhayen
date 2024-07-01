@@ -29,5 +29,15 @@ const NextConfig = {
       "lh3.googleusercontent.com",
     ],
   },
+  webpack: (config, { isServer }) => {
+    if (!isServer) {
+      config.resolve.fallback = {
+        fs: false,
+        net: false,
+        tls: false,
+      };
+    }
+    return config;
+  },
 };
 module.exports = withPWA(NextConfig);

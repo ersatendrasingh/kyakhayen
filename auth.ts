@@ -104,6 +104,7 @@ export const {
         session.user.email = token.email as string;
         session.user.image = token.image as string;
         session.user.phoneNumber = token.phoneNumber as string;
+        session.user.role = token.role as UserRole;
         session.user.createdAt = token.createdAt as Date;
         session.user.updateAt = token.updateAt as Date;
         session.user.isOAuth = token.isOAuth as boolean;
