@@ -3,6 +3,7 @@
 import {
   CookingPot,
   LayoutDashboard,
+  MessageSquareCode,
   Newspaper,
   Salad,
   SmartphoneNfc,
@@ -153,12 +154,18 @@ const routes = [
   },
   {
     id: 6,
+    icon: MessageSquareCode,
+    label: "Manage Comments",
+    href: "/admin/comments",
+  },
+  {
+    id: 7,
     icon: Users,
     label: "Manage Users",
     href: "/admin/users",
   },
   {
-    id: 7,
+    id: 8,
     icon: SmartphoneNfc,
     label: "Contact Queries",
     href: "/admin/contact-queries",

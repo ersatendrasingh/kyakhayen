@@ -412,6 +412,7 @@ model User {
   isPersonalised        Boolean                @default(false)
   twoFactorConfirmation TwoFactorConfirmation?
   firebaseToken         String?
+  CommentLikes          CommentLikes[]
 
   createdAt DateTime @default(now())
   updateAt  DateTime @updatedAt
@@ -657,23 +658,38 @@ model ContactUsQueries {
 }
 
 model Comment {
-  id              String    @id @default(uuid())
+  id              String         @id @default(uuid())
   userId          String?
-  user            User?     @relation(fields: [userId], references: [id])
+  user            User?          @relation(fields: [userId], references: [id])
   name            String?
   email           String?
   phoneNumber     String?
-  content         String    @db.Text
-  recipe          Recipes?  @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+  content         String         @db.Text
+  token           String
+  likes           Int?           @default(0)
+  recipe          Recipes?       @relation(fields: [recipeId], references: [id], onDelete: Cascade)
   recipeId        String?
-  Post            Post?     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  Post            Post?          @relation(fields: [postId], references: [id], onDelete: Cascade)
   postId          String?
-  parentComment   Comment?  @relation("Replies", fields: [parentCommentId], references: [id], onDelete: Cascade)
+  parentComment   Comment?       @relation("Replies", fields: [parentCommentId], references: [id], onDelete: Cascade)
   parentCommentId String?
-  replies         Comment[] @relation("Replies")
-  isPrimary       Boolean   @default(true)
-  isPublished     Boolean   @default(false)
+  replies         Comment[]      @relation("Replies")
+  isPrimary       Boolean        @default(true)
+  isPublished     Boolean        @default(false)
+  CommentLikes    CommentLikes[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model CommentLikes {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  comment   Comment  @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  commentId String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, commentId])
 }

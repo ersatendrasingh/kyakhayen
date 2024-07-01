@@ -1,4 +1,5 @@
 "use client";
+import { v4 as uuidv4 } from "uuid";
 import * as z from "zod";
 import {
   Form,
@@ -60,12 +61,15 @@ export const CommentsForm = ({
     formData: z.infer<ReturnType<typeof commentFormSchema>>
   ) => {
     try {
+      const token = uuidv4();
       localStorage.setItem("userEmail", formData.email || "");
       localStorage.setItem("userPhoneNumber", formData.phoneNumber || "");
+      localStorage.setItem("commentToken", token);
       const data = {
         ...formData,
         recipeId,
         parentCommentId: parentId || null,
+        token,
       };
 
       const response = await axios.post("/api/comments", data);

@@ -11,6 +11,7 @@ interface CommentData {
   recipeId?: string;
   postId?: string;
   userId?: string;
+  token: string;
 }
 
 export async function POST(req: Request) {
@@ -32,6 +33,7 @@ export async function POST(req: Request) {
         parentCommentId: body.parentCommentId,
         recipeId: body.recipeId,
         postId: body.postId,
+        token: body.token,
         userId: user?.id,
         isPrimary: isPrimary,
       },

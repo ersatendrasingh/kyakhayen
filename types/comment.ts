@@ -4,6 +4,8 @@ export type Comment = {
   postId?: string | null;
   parentCommentId?: string | null;
   isPrimary: boolean;
+  token: string | null;
+  likes?: number | null;
   userId?: string | null;
   name: string | null;
   email: string | null;
