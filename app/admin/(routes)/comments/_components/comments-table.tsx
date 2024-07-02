@@ -8,7 +8,6 @@ import {
   MoreHorizontal,
   Trash,
 } from "lucide-react";
-import { Comment } from "@prisma/client";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -25,9 +24,10 @@ import { useRouter } from "next/navigation";
 import { ConfirmModal } from "@/components/modals/confirm-modal";
 import { useState } from "react";
 import { CommentDeleteConfirmModal } from "@/components/modals/comment-delete-confirm-modal";
+import { CommentWithRelations } from "@/types/comment";
 
 interface CommentsTableProps {
-  comments: Comment[];
+  comments: CommentWithRelations[];
 }
 
 const CommentsTable = ({ comments }: CommentsTableProps) => {
@@ -35,6 +35,7 @@ const CommentsTable = ({ comments }: CommentsTableProps) => {
   const [postId, setPostId] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const router = useRouter();
+
   const handleApprove = async (postId: string, id: string) => {
     try {
       const response = await axios.post(
@@ -124,34 +125,44 @@ const CommentsTable = ({ comments }: CommentsTableProps) => {
     }
   };
 
-  const columns: ColumnDef<Comment>[] = [
+  const columns: ColumnDef<CommentWithRelations>[] = [
     {
       accessorKey: "serialNumber",
       header: "Sl. No.",
-      cell: ({ row }) => <div>{row.index + 1}</div>,
+      cell: ({ row }) => <div className="text-center">{row.index + 1}</div>,
     },
     {
-      accessorKey: "name",
+      accessorKey: "user.name",
       header: ({ column }) => (
         <Button
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          className="text-center"
         >
-          Name
+          User Name
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
       ),
+      cell: ({ row }) => {
+        const user = row.original.user;
+        return <div className="text-center">{user?.name}</div>;
+      },
     },
+
     {
       accessorKey: "content",
       header: ({ column }) => (
         <Button
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          className="text-center items-center justify-center"
         >
           Comment
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
+      ),
+      cell: ({ row }) => (
+        <div className="text-center">{row.getValue("content")}</div>
       ),
     },
     {
@@ -160,11 +171,41 @@ const CommentsTable = ({ comments }: CommentsTableProps) => {
         <Button
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          className="text-center"
         >
           Total Likes
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
       ),
+      cell: ({ row }) => (
+        <div className="text-center">{row.getValue("likes")}</div>
+      ),
+    },
+    {
+      accessorKey: "isPrimary",
+      header: ({ column }) => (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          Primary
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      ),
+      cell: ({ row }) => {
+        const isPrimary = row.getValue("isPrimary") || false;
+
+        return (
+          <Badge
+            className={cn(
+              "bg-slate-500 text-center items-center justify-center",
+              isPrimary && "bg-emerald-700"
+            )}
+          >
+            {isPrimary ? "Yes" : "No"}
+          </Badge>
+        );
+      },
     },
     {
       accessorKey: "isPublished",
@@ -182,11 +223,31 @@ const CommentsTable = ({ comments }: CommentsTableProps) => {
 
         return (
           <Badge
-            className={cn("bg-slate-500", isPublished && "bg-emerald-700")}
+            className={cn(
+              "bg-slate-500 text-center items-center",
+              isPublished && "bg-emerald-700"
+            )}
           >
             {isPublished ? "Approved" : "Not Approved"}
           </Badge>
         );
+      },
+    },
+    {
+      accessorKey: "recipe.title",
+      header: ({ column }) => (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          className="text-center"
+        >
+          Recipe Name
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      ),
+      cell: ({ row }) => {
+        const recipe = row.original.recipe;
+        return <div className="text-center">{recipe?.title}</div>;
       },
     },
     {

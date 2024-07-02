@@ -75,17 +75,18 @@ const RecommendedRecipes = () => {
           Recommended Recipes For You
         </h3>
         {initialLoading ? (
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             {Array.from({ length: 4 }).map((_, index) => (
-              <div key={index} className="m-4">
-                <div className="flex flex-col space-y-3">
-                  <Skeleton className="h-[125px] w-[250px] rounded-xl bg-gray-200" />
-                  <div className="space-y-2">
-                    <Skeleton className="h-4 w-[250px] bg-gray-200" />
-                    <Skeleton className="h-4 w-[250px] bg-gray-200" />
-                    <Skeleton className="h-4 w-[250px] bg-gray-200" />
-                    <Skeleton className="h-4 w-[200px] bg-gray-200" />
-                  </div>
+              <div
+                key={index}
+                className="flex flex-col space-y-3 p-4 border rounded-lg min-w-[300px]"
+              >
+                <Skeleton className="h-32 w-full rounded-xl bg-gray-200" />
+                <div className="space-y-2">
+                  <Skeleton className="h-4 w-full bg-gray-200" />
+                  <Skeleton className="h-4 w-full bg-gray-200" />
+                  <Skeleton className="h-4 w-full bg-gray-200" />
+                  <Skeleton className="h-4 w-full bg-gray-200" />
                 </div>
               </div>
             ))}

@@ -1,3 +1,4 @@
+"use server";
 import { db } from "@/lib/db";
 import { currentUser } from "@/lib/auth";
 import { RecipeWithCategory } from "@/types/recipe";
@@ -75,9 +76,21 @@ export const getRecipeBySlug = async ({
           },
         },
         recipeCookingTime: true,
-
+        recipeMealTime: true,
         recipeDifficulty: true,
         recipeSeasons: true,
+        recipeComments: {
+          where: {
+            OR: [{ isPublished: true }, { userId }],
+          },
+          include: {
+            user: true,
+            recipe: true,
+          },
+          orderBy: {
+            createdAt: "desc",
+          },
+        },
       },
     });
 
