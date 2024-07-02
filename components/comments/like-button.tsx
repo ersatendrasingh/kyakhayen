@@ -9,7 +9,7 @@ import LoginPopup from "@/components/modals/login-popup";
 
 interface LikeButtonProps {
   commentId: string;
-  postId: string;
+  postId?: string;
   initialLikes?: number | null;
 }
 

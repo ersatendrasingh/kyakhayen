@@ -16,7 +16,7 @@ export async function POST(
     const existingComment = await db.comment.findUnique({
       where: {
         id: commentId,
-        recipeId: postId,
+        OR: [{ recipeId: postId as string }, { postId: postId as string }],
       },
     });
     if (!existingComment) {
@@ -28,7 +28,7 @@ export async function POST(
     const approvedComment = await db.comment.update({
       where: {
         id: commentId,
-        recipeId: postId,
+        OR: [{ recipeId: postId as string }, { postId: postId as string }],
       },
       data: {
         isPublished: true,

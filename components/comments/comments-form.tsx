@@ -22,13 +22,15 @@ import { cn } from "@/lib/utils";
 import { commentFormSchema } from "@/schemas";
 
 interface CommentFormProps {
-  recipeId: string;
+  postId?: string;
+  recipeId?: string;
   parentId?: string;
   title?: string;
   onCommentAdded: () => void;
 }
 
 export const CommentsForm = ({
+  postId,
   recipeId,
   parentId,
   title,
@@ -54,7 +56,8 @@ export const CommentsForm = ({
       }
       const data = {
         ...values,
-        recipeId,
+        recipeId: recipeId || null,
+        postId: postId || null,
         parentCommentId: parentId || null,
       };
 

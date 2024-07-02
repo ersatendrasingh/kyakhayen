@@ -1,4 +1,3 @@
-// CommentsPage.tsx
 import { db } from "@/lib/db";
 import CommentsTable from "./_components/comments-table";
 import { CommentWithRelations } from "@/types/comment";
@@ -8,6 +7,7 @@ const CommentsPage = async () => {
     include: {
       user: true,
       recipe: true,
+      Post: true,
     },
     orderBy: {
       createdAt: "desc",

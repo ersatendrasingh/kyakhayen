@@ -7,12 +7,13 @@ import RecipeSidebar from "@/components/recipes/recipe-sidebar";
 import { db } from "@/lib/db";
 
 import Container from "@/components/container";
-import { GetRelatedRecipes } from "@/actions/get-related-recipe";
+
 import { PageHeader } from "@/components/page-header";
 import { getArticleBySlug } from "@/actions/get-article";
 import ArticleBannerCard from "@/components/blogs/article-banner-card";
 import ArticleDetails from "@/components/blogs/article-details";
 import ArticleSidebar from "@/components/blogs/article-sidebar";
+import ArticleComments from "@/components/blogs/article-comments";
 
 type Props = {
   params: { blogSlug: string };
@@ -88,10 +89,7 @@ const SingleArticlePage = async ({
   if (!article) {
     throw new Error("Article not found");
   }
-  //   const relatedArticles = await GetRelatedRecipes({
-  //     searchSlug: slug as string,
-  //     categoryId: recipe?.recipeCategoriesId as string,
-  //   });
+
   const categories = await db.category.findMany({
     orderBy: {
       title: "asc",
@@ -109,6 +107,10 @@ const SingleArticlePage = async ({
               className="py-10 lg:py-8 mb-7 md:mb-2 xl:mb-2"
             />
             <ArticleDetails article={article} />
+            <ArticleComments
+              comments={article?.articleComments}
+              articleId={article.id}
+            />
           </div>
           <div className="w-full lg:w-2/6">
             <ArticleSidebar categories={categories} />

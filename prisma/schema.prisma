@@ -584,19 +584,18 @@ model MealPlan {
 }
 
 model Post {
-  id          String  @id @default(uuid())
-  title       String
-  slug        String  @unique
-  content     String? @db.LongText
-  imageUrl    String?
-  isPublished Boolean @default(false)
-  authorId    String
-  author      User    @relation(fields: [authorId], references: [id])
-
-  createdAt    DateTime       @default(now())
-  updatedAt    DateTime       @updatedAt
-  PostCategory PostCategory[]
-  Comment      Comment[]
+  id              String         @id @default(uuid())
+  title           String
+  slug            String         @unique
+  content         String?        @db.LongText
+  imageUrl        String?
+  isPublished     Boolean        @default(false)
+  authorId        String
+  author          User           @relation(fields: [authorId], references: [id])
+  PostCategory    PostCategory[]
+  articleComments Comment[]
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
 }
 
 model Category {

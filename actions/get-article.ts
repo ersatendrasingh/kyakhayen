@@ -26,6 +26,18 @@ export const getArticleBySlug = async ({
             category: true,
           },
         },
+        articleComments: {
+          where: {
+            OR: [{ isPublished: true }, { userId }],
+          },
+          include: {
+            user: true,
+            Post: true,
+          },
+          orderBy: {
+            createdAt: "desc",
+          },
+        },
       },
     });
 

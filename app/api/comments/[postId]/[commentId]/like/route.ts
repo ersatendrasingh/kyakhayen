@@ -38,7 +38,6 @@ export async function POST(
     const updatedComment = await db.comment.update({
       where: {
         id: commentId,
-        recipeId: postId,
       },
       data: {
         likes: {

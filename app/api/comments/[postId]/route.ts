@@ -11,7 +11,7 @@ export async function GET(
 
     const user = await currentUser();
     if (!postId) {
-      return NextResponse.json("Recipe ID is required", { status: 400 });
+      return NextResponse.json(`Post ID is required`, { status: 400 });
     }
 
     if (!user) {
@@ -20,8 +20,12 @@ export async function GET(
 
     const comments = await db.comment.findMany({
       where: {
-        recipeId: postId as string,
-        OR: [{ isPublished: true }, { userId: user.id }],
+        OR: [{ recipeId: postId as string }, { postId: postId as string }],
+        AND: [
+          {
+            OR: [{ isPublished: true }, { userId: user.id }],
+          },
+        ],
       },
       include: {
         user: true,
