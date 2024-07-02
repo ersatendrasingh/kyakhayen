@@ -23,6 +23,10 @@ export async function GET(
         recipeId: postId as string,
         OR: [{ isPublished: true }, { userId: user.id }],
       },
+      include: {
+        user: true,
+        recipe: true,
+      },
       orderBy: {
         createdAt: "desc",
       },
