@@ -16,7 +16,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { EllipsisVertical, SquarePen, Trash } from "lucide-react";
+import { AlarmClock, EllipsisVertical, SquarePen, Trash } from "lucide-react";
 import { toast } from "react-toastify";
 
 import { Loader2 } from "lucide-react"; // Assuming Loader2 is from lucide-react
@@ -188,12 +188,16 @@ const CommentsList = ({
             />
             <div className="flex flex-col w-full">
               <div className="flex items-center mb-1 justify-between">
-                <div className="flex flex-col md:flex-row items-center md:items-start">
+                <div className="flex flex-col md:flex-row items-start">
                   <span className="font-bold">{comment.user?.name}</span>
-                  <span className="text-gray-500 text-md ml-2">
-                    {timeAgo(comment.createdAt)}
-                  </span>
+                  <div className="flex items-center mt-1 md:mt-0 md:ml-2">
+                    <AlarmClock className="w-6 h-6 pr-2" />
+                    <span className="text-gray-500 text-sm">
+                      {timeAgo(comment.createdAt)}
+                    </span>
+                  </div>
                 </div>
+
                 <div className="flex items-center">
                   {deletingId !== comment.id && (
                     <DropdownMenu>
