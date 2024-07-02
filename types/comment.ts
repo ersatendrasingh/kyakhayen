@@ -21,4 +21,10 @@ export interface CommentWithRelations extends Comment {
     createdAt: Date;
     updatedAt: Date;
   } | null;
+  Post?: {
+    id: string;
+    title: string;
+    createdAt: Date;
+    updatedAt: Date;
+  } | null;
 }

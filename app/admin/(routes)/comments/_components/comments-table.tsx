@@ -234,6 +234,24 @@ const CommentsTable = ({ comments }: CommentsTableProps) => {
       },
     },
     {
+      accessorKey: "type",
+      header: ({ column }) => (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          className="text-center"
+        >
+          Type
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      ),
+      cell: ({ row }) => {
+        const { recipeId } = row.original;
+        const type = recipeId ? "Recipe" : "Article";
+        return <div className="text-center">{type}</div>;
+      },
+    },
+    {
       accessorKey: "recipe.title",
       header: ({ column }) => (
         <Button
@@ -241,13 +259,14 @@ const CommentsTable = ({ comments }: CommentsTableProps) => {
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
           className="text-center"
         >
-          Recipe Name
+          Post
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
       ),
       cell: ({ row }) => {
-        const recipe = row.original.recipe;
-        return <div className="text-center">{recipe?.title}</div>;
+        const { recipe, Post } = row.original;
+        const title = recipe?.title || Post?.title;
+        return <div className="text-center">{title}</div>;
       },
     },
     {
@@ -281,7 +300,7 @@ const CommentsTable = ({ comments }: CommentsTableProps) => {
       id: "actions",
       header: "Actions",
       cell: ({ row }) => {
-        const { id, recipeId, isPublished } = row.original;
+        const { id, recipeId, postId, isPublished } = row.original;
 
         return (
           <DropdownMenu>
@@ -296,7 +315,7 @@ const CommentsTable = ({ comments }: CommentsTableProps) => {
                 <DropdownMenuItem className="cursor-pointer">
                   <Button
                     variant="ghost"
-                    onClick={() => handleUnapprove(recipeId!, id)}
+                    onClick={() => handleUnapprove(recipeId! || postId!, id)}
                   >
                     <CircleX className="h-3 w-3 mr-2 cursor-pointer" />
                     Unapprove
@@ -306,7 +325,7 @@ const CommentsTable = ({ comments }: CommentsTableProps) => {
                 <DropdownMenuItem className="cursor-pointer">
                   <Button
                     variant="ghost"
-                    onClick={() => handleApprove(recipeId!, id)}
+                    onClick={() => handleApprove(recipeId! || postId!, id)}
                   >
                     <CircleCheck className="h-3 w-3 mr-2 cursor-pointer" />
                     Approve
@@ -318,7 +337,7 @@ const CommentsTable = ({ comments }: CommentsTableProps) => {
                   variant="ghost"
                   onClick={() => {
                     setCommentToDelete(id);
-                    setPostId(recipeId!);
+                    setPostId(recipeId! || postId!);
                     setIsModalOpen(true);
                   }}
                 >

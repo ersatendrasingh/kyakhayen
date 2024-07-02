@@ -40,7 +40,6 @@ export async function DELETE(
     const updatedComment = await db.comment.update({
       where: {
         id: commentId,
-        recipeId: postId,
       },
       data: {
         likes: {

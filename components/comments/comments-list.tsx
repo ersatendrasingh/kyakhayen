@@ -24,12 +24,14 @@ import { CommentDeleteConfirmModal } from "../modals/comment-delete-confirm-moda
 import LikeButton from "./like-button";
 
 interface CommentsListProps {
-  recipeId: string;
+  postId?: string;
+  recipeId?: string;
   comments: CommentWithRelations[];
   onCommentAdded: () => void;
 }
 
 const CommentsList = ({
+  postId,
   recipeId,
   comments,
   onCommentAdded,
@@ -92,8 +94,10 @@ const CommentsList = ({
 
   const handleSaveEdit = async (commentId: string, newContent: string) => {
     try {
+      const postCommentid = recipeId ? recipeId : postId;
+
       const response = await axios.put(
-        `/api/comments/${recipeId}/${commentId}`,
+        `/api/comments/${postCommentid}/${commentId}`,
         {
           content: newContent,
         }
@@ -122,8 +126,9 @@ const CommentsList = ({
   const handleDelete = async (commentId: string) => {
     try {
       setDeletingId(commentId);
+      const postCommentid = recipeId ? recipeId : postId;
       const response = await axios.delete(
-        `/api/comments/${recipeId}/${commentId}`
+        `/api/comments/${postCommentid}/${commentId}`
       );
       if (response.status === 200) {
         toast.success("Comment deleted successfully!", {
@@ -271,7 +276,7 @@ const CommentsList = ({
                 </button> */}
                 <LikeButton
                   commentId={comment.id}
-                  postId={recipeId}
+                  postId={recipeId || postId}
                   initialLikes={comment.likes}
                 />
                 <Button
@@ -287,6 +292,7 @@ const CommentsList = ({
           {replyingTo === comment.id && (
             <div className="flex flex-col w-full mt-4">
               <CommentsForm
+                postId={postId}
                 recipeId={recipeId}
                 parentId={comment.id}
                 title="Leave a reply"

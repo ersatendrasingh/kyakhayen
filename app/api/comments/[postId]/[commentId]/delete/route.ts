@@ -16,7 +16,7 @@ export async function DELETE(
     const comment = await db.comment.findUnique({
       where: {
         id: commentId,
-        recipeId: postId, // Ensure the comment belongs to the correct recipe
+        OR: [{ recipeId: postId as string }, { postId: postId as string }],
       },
     });
 
