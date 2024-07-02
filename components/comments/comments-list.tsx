@@ -1,12 +1,22 @@
 "use client";
 
 import { useState, useEffect } from "react";
-
-import { FaReply, FaSave, FaTimes } from "react-icons/fa"; // Import save and cancel icons
-import { Button } from "@/components/ui/button";
-import { CommentsForm } from "@/components/comments/comments-form";
+import { toast } from "react-toastify";
+import { FaReply, FaSave, FaTimes } from "react-icons/fa";
+import {
+  AlarmClock,
+  EllipsisVertical,
+  SquarePen,
+  Trash,
+  Loader2,
+} from "lucide-react";
+import Linkify from "react-linkify";
+import linkify from "linkify-it";
 import axios from "axios";
 import Image from "next/image";
+
+import { Button } from "@/components/ui/button";
+import { CommentsForm } from "@/components/comments/comments-form";
 import { cn } from "@/lib/utils";
 import { timeAgo } from "@/lib/comment-time";
 import { CommentWithRelations } from "@/types/comment";
@@ -16,12 +26,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { AlarmClock, EllipsisVertical, SquarePen, Trash } from "lucide-react";
-import { toast } from "react-toastify";
-
-import { Loader2 } from "lucide-react"; // Assuming Loader2 is from lucide-react
-import { CommentDeleteConfirmModal } from "../modals/comment-delete-confirm-modal";
-import LikeButton from "./like-button";
+import { CommentDeleteConfirmModal } from "@/components/modals/comment-delete-confirm-modal";
+import LikeButton from "@/components/comments/like-button";
 import { useCurrentUser } from "@/hooks/use-current-user";
 
 interface CommentsListProps {
@@ -266,7 +272,19 @@ const CommentsList = ({
                   </div>
                 </div>
               ) : (
-                <div>{comment.content}</div>
+                <Linkify
+                  componentDecorator={(decoratedHref, decoratedText, key) => (
+                    <a
+                      href={decoratedHref}
+                      key={key}
+                      className="text-red-600 hover:text-webprimary underline"
+                    >
+                      {decoratedText}
+                    </a>
+                  )}
+                >
+                  <div>{comment.content}</div>
+                </Linkify>
               )}
 
               {comment.isPublished ? null : (
