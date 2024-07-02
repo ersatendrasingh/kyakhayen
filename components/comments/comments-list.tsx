@@ -188,9 +188,9 @@ const CommentsList = ({
             />
             <div className="flex flex-col w-full">
               <div className="flex items-center mb-1 justify-between">
-                <div>
+                <div className="flex flex-col md:flex-row items-center md:items-start">
                   <span className="font-bold">{comment.user?.name}</span>
-                  <span className="text-gray-500 text-sm ml-2">
+                  <span className="text-gray-500 text-md ml-2">
                     {timeAgo(comment.createdAt)}
                   </span>
                 </div>
