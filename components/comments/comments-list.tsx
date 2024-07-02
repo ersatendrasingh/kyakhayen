@@ -9,7 +9,7 @@ import axios from "axios";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
 import { timeAgo } from "@/lib/comment-time";
-import { Comment } from "@/types/comment";
+import { CommentWithRelations } from "@/types/comment";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -25,7 +25,7 @@ import LikeButton from "./like-button";
 
 interface CommentsListProps {
   recipeId: string;
-  comments: Comment[];
+  comments: CommentWithRelations[];
   onCommentAdded: () => void;
 }
 
@@ -48,7 +48,7 @@ const CommentsList = ({
     fetchUserAvatars(comments);
   }, [comments]);
 
-  const fetchUserAvatars = async (comments: Comment[]) => {
+  const fetchUserAvatars = async (comments: CommentWithRelations[]) => {
     const userIds: string[] = comments
       .filter((comment) => comment.userId)
       .map((comment) => comment.userId!);
@@ -90,11 +90,7 @@ const CommentsList = ({
     setEditContent("");
   };
 
-  const handleSaveEdit = async (
-    commentId: string,
-    newContent: string,
-    token: string
-  ) => {
+  const handleSaveEdit = async (commentId: string, newContent: string) => {
     try {
       const response = await axios.put(
         `/api/comments/${recipeId}/${commentId}`,
@@ -123,7 +119,7 @@ const CommentsList = ({
     }
   };
 
-  const handleDelete = async (commentId: string, token: string) => {
+  const handleDelete = async (commentId: string) => {
     try {
       setDeletingId(commentId);
       const response = await axios.delete(
@@ -152,7 +148,7 @@ const CommentsList = ({
   };
 
   const renderComments = (
-    comments: Comment[],
+    comments: CommentWithRelations[],
     parentCommentId?: string | null
   ) => {
     const defaultUserImageUrl = "/assets/images/guest-user.webp";
@@ -193,7 +189,7 @@ const CommentsList = ({
             <div className="flex flex-col w-full">
               <div className="flex items-center mb-1 justify-between">
                 <div>
-                  <span className="font-bold">{comment.name}</span>
+                  <span className="font-bold">{comment.user?.name}</span>
                   <span className="text-gray-500 text-sm ml-2">
                     {timeAgo(comment.createdAt)}
                   </span>
@@ -241,9 +237,7 @@ const CommentsList = ({
                   />
                   <div className="flex items-center mt-2 ">
                     <button
-                      onClick={() =>
-                        handleSaveEdit(comment.id, editContent, comment.token!)
-                      }
+                      onClick={() => handleSaveEdit(comment.id, editContent)}
                       className="text-green-500 hover:text-green-700 focus:outline-none ml-2"
                       title="Save"
                     >
@@ -326,7 +320,7 @@ const CommentsList = ({
         onConfirm={() => {
           const comment = comments.find((c) => c.id === commentToDelete);
           if (comment) {
-            handleDelete(commentToDelete!, comment.token!);
+            handleDelete(commentToDelete!);
           }
         }}
       />
