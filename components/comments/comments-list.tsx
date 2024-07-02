@@ -22,6 +22,7 @@ import { toast } from "react-toastify";
 import { Loader2 } from "lucide-react"; // Assuming Loader2 is from lucide-react
 import { CommentDeleteConfirmModal } from "../modals/comment-delete-confirm-modal";
 import LikeButton from "./like-button";
+import { useCurrentUser } from "@/hooks/use-current-user";
 
 interface CommentsListProps {
   postId?: string;
@@ -45,6 +46,8 @@ const CommentsList = ({
   // State for edit functionality
   const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
   const [editContent, setEditContent] = useState<string>("");
+
+  const user = useCurrentUser();
 
   useEffect(() => {
     fetchUserAvatars(comments);
@@ -204,32 +207,33 @@ const CommentsList = ({
                 </div>
 
                 <div className="flex items-center">
-                  {deletingId !== comment.id && (
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <button className="text-gray-500 hover:text-gray-700 focus:outline-none">
-                          <EllipsisVertical className="w-5 h-5" />
-                        </button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent>
-                        <DropdownMenuItem
-                          onClick={() => handleEdit(comment.id)}
-                          className="cursor-pointer text-xs font-medium text-gray-700"
-                        >
-                          <SquarePen className="w-3 h-3 mr-2" /> Edit
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          onClick={() => {
-                            setCommentToDelete(comment.id);
-                            setIsModalOpen(true);
-                          }}
-                          className="cursor-pointer text-xs font-medium text-gray-700"
-                        >
-                          <Trash className="w-3 h-3 mr-2" /> Delete
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  )}
+                  {(comment.userId === user?.id || user?.role === "ADMIN") &&
+                    deletingId !== comment.id && (
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <button className="text-gray-500 hover:text-gray-700 focus:outline-none">
+                            <EllipsisVertical className="w-5 h-5" />
+                          </button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent>
+                          <DropdownMenuItem
+                            onClick={() => handleEdit(comment.id)}
+                            className="cursor-pointer text-xs font-medium text-gray-700"
+                          >
+                            <SquarePen className="w-3 h-3 mr-2" /> Edit
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            onClick={() => {
+                              setCommentToDelete(comment.id);
+                              setIsModalOpen(true);
+                            }}
+                            className="cursor-pointer text-xs font-medium text-gray-700"
+                          >
+                            <Trash className="w-3 h-3 mr-2" /> Delete
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    )}
                   {deletingId === comment.id && (
                     <div className="ml-2">
                       <Loader2 className="w-4 h-4 animate-spin" />
@@ -271,9 +275,6 @@ const CommentsList = ({
                 </p>
               )}
               <div className="flex items-center mt-2">
-                {/* <button className="mr-2 p-0">
-                  <BiLike className="w-5 h-5 " />
-                </button> */}
                 <LikeButton
                   commentId={comment.id}
                   postId={recipeId || postId}
