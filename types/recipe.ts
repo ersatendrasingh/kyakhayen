@@ -1,4 +1,5 @@
 import {
+  Comment,
   CookingMethods,
   Cuisines,
   IngredientUnitMeasurements,
@@ -84,4 +85,5 @@ export type RecipeWithCategory = Recipes & {
   recipeCuisine: RecipeCuisines[] | null;
   recipeNutrient: RecipeNutrient[] | null;
   recipeMealTime: recipeMealTime[] | null;
+  recipeComments: Comment[] | null;
 };

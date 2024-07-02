@@ -1,8 +1,14 @@
+// CommentsPage.tsx
 import { db } from "@/lib/db";
-
 import CommentsTable from "./_components/comments-table";
+import { CommentWithRelations } from "@/types/comment";
+
 const CommentsPage = async () => {
-  const comments = await db.comment.findMany({
+  const comments: CommentWithRelations[] = await db.comment.findMany({
+    include: {
+      user: true,
+      recipe: true,
+    },
     orderBy: {
       createdAt: "desc",
     },

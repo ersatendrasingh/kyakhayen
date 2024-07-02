@@ -1,3 +1,4 @@
+import { currentUser } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { NextResponse } from "next/server";
 
@@ -8,17 +9,19 @@ export async function DELETE(
   try {
     const { postId, commentId } = params;
 
-    const url = new URL(req.url);
-    const token = url.searchParams.get("token");
+    const user = await currentUser();
 
-    if (!token) {
-      return NextResponse.json({ error: "Token is required" }, { status: 400 });
+    if (!user) {
+      return NextResponse.json(
+        { error: "User not authenticated" },
+        { status: 401 }
+      );
     }
 
     const comment = await db.comment.findUnique({
       where: {
         id: commentId,
-        recipeId: postId, // Ensure the comment belongs to the correct recipe
+        recipeId: postId,
       },
     });
 
@@ -26,10 +29,9 @@ export async function DELETE(
       return NextResponse.json({ error: "Comment not found" }, { status: 404 });
     }
 
-    if (comment.token !== token) {
+    if (comment.userId !== user.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
-
     const deletedComment = await db.comment.delete({
       where: {
         id: commentId,
@@ -58,11 +60,13 @@ export async function PUT(
     const { postId, commentId } = params;
     const { content } = await req.json();
 
-    const url = new URL(req.url);
-    const token = url.searchParams.get("token");
+    const user = await currentUser();
 
-    if (!token) {
-      return NextResponse.json({ error: "Token is required" }, { status: 400 });
+    if (!user) {
+      return NextResponse.json(
+        { error: "User not authenticated" },
+        { status: 401 }
+      );
     }
 
     if (!content) {
@@ -83,7 +87,7 @@ export async function PUT(
       return NextResponse.json({ error: "Comment not found" }, { status: 404 });
     }
 
-    if (comment.token !== token) {
+    if (comment.userId !== user.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 

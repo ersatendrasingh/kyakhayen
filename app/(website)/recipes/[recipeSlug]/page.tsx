@@ -4,8 +4,6 @@ import { getRecipeBySlug } from "@/actions/get-recipe";
 import BannerCard from "@/components/recipes/banner-card";
 import RecipeDetails from "@/components/recipes/recipe-details";
 
-import { currentUser } from "@/lib/auth";
-
 import RelatedRecipeSlider from "@/components/recipes/related-recipe-slider";
 import RecipeSidebar from "@/components/recipes/recipe-sidebar";
 import { db } from "@/lib/db";
@@ -104,7 +102,10 @@ const SingleRecipePage = async ({
               className="py-10 lg:py-8 mb-7 md:mb-2 xl:mb-2"
             />
             <RecipeDetails recipe={recipe} />
-            <RecipeCommentSection recipeId={recipe.id} />
+            <RecipeCommentSection
+              recipeId={recipe.id}
+              comments={recipe.recipeComments || []}
+            />
           </div>
           <div className="w-full lg:w-2/6">
             <RecipeSidebar

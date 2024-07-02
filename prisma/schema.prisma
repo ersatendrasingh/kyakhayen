@@ -33,7 +33,7 @@ model Recipes {
   recipeNutrient       recipeNutrient[]
   recipeDietType       recipeDietType[]
   recipeRecipeType     recipeRecipeType[]
-  Comment              Comment[]
+  recipeComments       Comment[]
 
   isPublished Boolean @default(false)
 
@@ -661,11 +661,7 @@ model Comment {
   id              String         @id @default(uuid())
   userId          String?
   user            User?          @relation(fields: [userId], references: [id])
-  name            String?
-  email           String?
-  phoneNumber     String?
   content         String         @db.Text
-  token           String
   likes           Int?           @default(0)
   recipe          Recipes?       @relation(fields: [recipeId], references: [id], onDelete: Cascade)
   recipeId        String?

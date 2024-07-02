@@ -1,5 +1,7 @@
+"use client";
+
 import { useState, useEffect } from "react";
-import { BiLike } from "react-icons/bi";
+
 import { FaReply, FaSave, FaTimes } from "react-icons/fa"; // Import save and cancel icons
 import { Button } from "@/components/ui/button";
 import { CommentsForm } from "@/components/comments/comments-form";
@@ -95,7 +97,7 @@ const CommentsList = ({
   ) => {
     try {
       const response = await axios.put(
-        `/api/comments/${recipeId}/${commentId}?token=${token}`,
+        `/api/comments/${recipeId}/${commentId}`,
         {
           content: newContent,
         }
@@ -125,7 +127,7 @@ const CommentsList = ({
     try {
       setDeletingId(commentId);
       const response = await axios.delete(
-        `/api/comments/${recipeId}/${commentId}?token=${token}`
+        `/api/comments/${recipeId}/${commentId}`
       );
       if (response.status === 200) {
         toast.success("Comment deleted successfully!", {
