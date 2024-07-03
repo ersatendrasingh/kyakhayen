@@ -34,15 +34,20 @@ const RecipeRatingDetails = ({
   return (
     <div className="flex flex-col md:flex-row items-center md:my-2">
       <div className="text-sm text-gray-700 flex items-center">
-        <p className="mr-1 text-md font-bold">{rating}</p>
-        <RatingStars rating={rating} />
+        {rating > 0 && (
+          <>
+            <p className="mr-1 text-md font-bold">{rating}</p>
+            <RatingStars rating={rating} />
+          </>
+        )}
       </div>
       <div className="text-sm text-gray-700 flex items-center md:flex-grow">
         <p className="ml-2 md:text-md bg-gray-200/20 hover:bg-gray-200/60 transition duration-300 cursor-pointer p-2 rounded-md md:ml-4">
-          {reviews.toLocaleString()} ratings
+          {reviews > 0 && `${reviews.toLocaleString()} ratings`}
         </p>
         <p className="ml-2 text-sm text-black md:ml-4">
-          {totalViewsCount.toLocaleString()} Unique Views
+          {totalViewsCount > 0 &&
+            `${totalViewsCount.toLocaleString()} Unique Views`}
         </p>
       </div>
     </div>
