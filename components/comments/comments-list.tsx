@@ -185,7 +185,7 @@ const CommentsList = ({
             comment.isPrimary ? "border-2 border-red-200" : "ml-4"
           } relative`}
         >
-          <div className={cn("flex flex-row items-start justify-start w-full")}>
+          <div className="flex flex-row items-start justify-start w-full">
             <Image
               src={
                 comment.userId
@@ -195,10 +195,7 @@ const CommentsList = ({
               alt="User Profile"
               width={40}
               height={40}
-              className={cn(
-                "w-10 h-10 rounded-full border-2 mr-2",
-                comment.userId && "border-websecondary"
-              )}
+              className="w-10 h-10 rounded-full border-2 mr-2"
             />
             <div className="flex flex-col w-full">
               <div className="flex items-center mb-1 justify-between">
@@ -277,13 +274,16 @@ const CommentsList = ({
                     <a
                       href={decoratedHref}
                       key={key}
-                      className="text-red-600 hover:text-webprimary underline"
+                      className="text-red-600 hover:text-webprimary underline break-words"
+                      style={{ wordBreak: "break-word" }}
                     >
                       {decoratedText}
                     </a>
                   )}
                 >
-                  <div>{comment.content}</div>
+                  <div className="w-full break-words whitespace-normal">
+                    {comment.content}
+                  </div>
                 </Linkify>
               )}
 

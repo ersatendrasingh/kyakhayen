@@ -34,7 +34,7 @@ const RecipeRatingDetails = ({
   return (
     <div className="flex flex-col md:flex-row items-center md:my-2">
       <div className="text-sm text-gray-700 flex items-center">
-        <p className="mr-1 text-lg">{rating}</p>
+        <p className="mr-1 text-md font-bold">{rating}</p>
         <RatingStars rating={rating} />
       </div>
       <div className="text-sm text-gray-700 flex items-center md:flex-grow">

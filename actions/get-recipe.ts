@@ -91,6 +91,18 @@ export const getRecipeBySlug = async ({
             createdAt: "desc",
           },
         },
+        Review: {
+          where: {
+            OR: [{ isPublished: true }, { userId }],
+          },
+          include: {
+            user: true,
+            recipe: true,
+          },
+          orderBy: {
+            createdAt: "desc",
+          },
+        },
       },
     });
 

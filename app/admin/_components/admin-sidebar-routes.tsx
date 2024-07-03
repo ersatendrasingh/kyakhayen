@@ -7,6 +7,7 @@ import {
   Newspaper,
   Salad,
   SmartphoneNfc,
+  Stars,
   Users,
   Webhook,
 } from "lucide-react";
@@ -160,12 +161,18 @@ const routes = [
   },
   {
     id: 7,
+    icon: Stars,
+    label: "Manage Reviews",
+    href: "/admin/reviews",
+  },
+  {
+    id: 8,
     icon: Users,
     label: "Manage Users",
     href: "/admin/users",
   },
   {
-    id: 8,
+    id: 9,
     icon: SmartphoneNfc,
     label: "Contact Queries",
     href: "/admin/contact-queries",

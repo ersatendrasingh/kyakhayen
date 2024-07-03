@@ -17,6 +17,7 @@ model Recipes {
   recipeCategoriesId   String?
   recipeDifficultyId   String?
   recipeSeasonsId      String?
+  views                Int                    @default(0)
   recipeDifficulty     RecipeDifficulty?      @relation(fields: [recipeDifficultyId], references: [id])
   recipeIngredients    RecipeIngredients[]
   recipeMethods        RecipeMethods[]
@@ -34,11 +35,22 @@ model Recipes {
   recipeDietType       recipeDietType[]
   recipeRecipeType     recipeRecipeType[]
   recipeComments       Comment[]
+  Review               Review[]
+  RecipeViews          RecipeViews[]
 
   isPublished Boolean @default(false)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model RecipeViews {
+  id        String  @id @default(uuid())
+  ipAddress String
+  recipeId  String
+  recipe    Recipes @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+
+  @@unique([recipeId, ipAddress])
 }
 
 model RecipeCategories {
@@ -413,6 +425,7 @@ model User {
   twoFactorConfirmation TwoFactorConfirmation?
   firebaseToken         String?
   CommentLikes          CommentLikes[]
+  Review                Review[]
 
   createdAt DateTime @default(now())
   updateAt  DateTime @updatedAt
@@ -687,4 +700,18 @@ model CommentLikes {
   updatedAt DateTime @updatedAt
 
   @@unique([userId, commentId])
+}
+
+model Review {
+  id          String  @id @default(uuid())
+  rating      Int     @default(1)
+  comment     String
+  user        User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId      String
+  recipe      Recipes @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+  recipeId    String
+  isPublished Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
