@@ -21,7 +21,7 @@ export const ConfirmModal = ({ children, onConfirm }: ConfirmModalProps) => {
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>{children}</AlertDialogTrigger>
-      <AlertDialogContent>
+      <AlertDialogContent className="mx-auto p-4 md:p-6 max-w-md md:max-w-lg">
         <AlertDialogHeader>
           <AlertDialogTitle>Are you sure?</AlertDialogTitle>
           <AlertDialogDescription>

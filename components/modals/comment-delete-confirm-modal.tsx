@@ -27,7 +27,7 @@ export const CommentDeleteConfirmModal = ({
 
   return (
     <AlertDialog open={isOpen} onOpenChange={onClose}>
-      <AlertDialogContent>
+      <AlertDialogContent className="mx-auto p-4 md:p-6 max-w-md md:max-w-lg">
         <AlertDialogHeader>
           <AlertDialogTitle>Are you sure?</AlertDialogTitle>
           <AlertDialogDescription>

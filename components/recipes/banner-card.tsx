@@ -9,17 +9,43 @@ import RecipeAuthor from "@/components/recipes/recipe-author";
 import RecipeUpdateDetails from "@/components/recipes/recipe-update-details";
 import RecipeBreadcum from "@/components/recipes/recipe-breadcum";
 import Image from "next/image";
-import { RecipeCategories, Recipes } from "@prisma/client";
+import { RecipeCategories, Recipes, Review } from "@prisma/client";
 import { Preview } from "../preview";
+import { useEffect, useState } from "react";
+import axios from "axios";
 
 type RecipeWithCategory = Recipes & {
   RecipeCategories: RecipeCategories | null;
+  Review: Review[] | null;
 };
 interface BannerCardProps {
   recipe: RecipeWithCategory;
   className?: string;
 }
 const BannerCard = ({ recipe, className }: BannerCardProps) => {
+  const [averageRating, setAverageRating] = useState<number>(0);
+  const [reviewsCount, setReviewsCount] = useState<number>(0);
+
+  useEffect(() => {
+    if (recipe.Review && recipe.Review.length > 0) {
+      const totalRating = recipe.Review.reduce(
+        (acc, review) => acc + review.rating,
+        0
+      );
+      setAverageRating(totalRating / recipe.Review.length);
+      setReviewsCount(recipe.Review.length);
+    }
+
+    const trackView = async () => {
+      try {
+        await axios.post("/api/track-view", { recipeId: recipe.id });
+      } catch (error) {
+        console.error("Error tracking view:", error);
+      }
+    };
+
+    trackView();
+  }, [recipe.Review, recipe.id]);
   return (
     <div className={cn("w-full flex items-center", className)}>
       <div className="flex justify-between items-start flex-col lg:flex-row rounded-md">
@@ -47,14 +73,13 @@ const BannerCard = ({ recipe, className }: BannerCardProps) => {
             {recipe.RecipeCategories && (
               <span
                 className={cn(
-                  "text-white rounded-full p-2 font-normal text-sm",
-                  recipe.RecipeCategories.name === "Dinner" && "bg-red-500",
-                  recipe.RecipeCategories.name === "Lunch" && "bg-green-500",
-                  recipe.RecipeCategories.name === "Breakfast" && "bg-blue-500",
-                  recipe.RecipeCategories.name === "Appetizer" &&
-                    "bg-yellow-500",
-                  recipe.RecipeCategories.name === "Desert" && "bg-pink-500",
-                  recipe.RecipeCategories.name === "Beverage" && "bg-purple-500"
+                  "text-white rounded-full p-1 px-2 font-normal text-sm",
+                  recipe.RecipeCategories.name === "Non Veg" && "bg-red-500",
+                  recipe.RecipeCategories.name === "Veg" && "bg-green-500",
+                  recipe.RecipeCategories.name === "Egg" && "bg-yellow-500",
+                  recipe.RecipeCategories.name === "Vegan" && "bg-pink-500",
+                  recipe.RecipeCategories.name === "Pescetarian" &&
+                    "bg-purple-500"
                 )}
               >
                 {recipe.RecipeCategories?.name}
@@ -62,9 +87,9 @@ const BannerCard = ({ recipe, className }: BannerCardProps) => {
             )}
           </div>
           <RecipeRatingDetails
-            rating={4.8}
-            reviews={1560}
-            totalViewsCount={2365}
+            rating={averageRating}
+            reviews={reviewsCount}
+            totalViewsCount={recipe.views}
           />
         </div>
       </div>

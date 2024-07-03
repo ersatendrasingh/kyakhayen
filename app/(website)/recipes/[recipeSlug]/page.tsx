@@ -11,6 +11,7 @@ import { db } from "@/lib/db";
 import Container from "@/components/container";
 import { getRelatedRecipes } from "@/actions/get-related-recipe";
 import RecipeCommentSection from "@/components/recipes/recipe-comments-section";
+import RecipeReviewsSection from "@/components/recipes/recipe-reviews-section";
 
 type Props = {
   params: { recipeSlug: string };
@@ -102,6 +103,10 @@ const SingleRecipePage = async ({
               className="py-10 lg:py-8 mb-7 md:mb-2 xl:mb-2"
             />
             <RecipeDetails recipe={recipe} />
+            <RecipeReviewsSection
+              recipeId={recipe.id}
+              reviews={recipe?.Review || []}
+            />
             <RecipeCommentSection
               recipeId={recipe.id}
               comments={recipe.recipeComments || []}
