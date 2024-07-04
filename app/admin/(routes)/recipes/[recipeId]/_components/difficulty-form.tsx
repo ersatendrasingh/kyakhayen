@@ -119,7 +119,7 @@ export const DifficultyForm = ({
                   <FormControl>
                     <Select onValueChange={field.onChange}>
                       <SelectTrigger className="w-full h-12">
-                        <SelectValue placeholder="Select a difficulty lavel" />
+                        <SelectValue placeholder="Select a difficulty level" />
                       </SelectTrigger>
                       <SelectContent>
                         {options.map((option) => {
