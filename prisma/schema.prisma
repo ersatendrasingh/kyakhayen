@@ -37,6 +37,7 @@ model Recipes {
   recipeComments       Comment[]
   Review               Review[]
   RecipeViews          RecipeViews[]
+  UserRecipeViews      UserRecipeViews[]
   Favorite             Favorite[]
 
   isPublished Boolean @default(false)
@@ -52,6 +53,18 @@ model RecipeViews {
   recipe    Recipes @relation(fields: [recipeId], references: [id], onDelete: Cascade)
 
   @@unique([recipeId, ipAddress])
+}
+
+model UserRecipeViews {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  recipeId  String
+  recipe    Recipes  @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, recipeId])
 }
 
 model RecipeCategories {
@@ -428,6 +441,7 @@ model User {
   CommentLikes          CommentLikes[]
   Review                Review[]
   Favorite              Favorite[]
+  UserRecipeViews       UserRecipeViews[]
 
   createdAt DateTime @default(now())
   updateAt  DateTime @updatedAt
