@@ -11,6 +11,7 @@ import SocialShare from "@/components/social-share";
 
 import { cn } from "@/lib/utils";
 import { RecipeCategories, Recipes, Review } from "@prisma/client";
+import FavoriteButton from "../favorite-button";
 
 type RecipeWithCategory = Recipes & {
   RecipeCategories: RecipeCategories | null;
@@ -23,6 +24,10 @@ interface BannerCardProps {
 const BannerCard = ({ recipe, className }: BannerCardProps) => {
   const [averageRating, setAverageRating] = useState<number>(0);
   const [reviewsCount, setReviewsCount] = useState<number>(0);
+  const [userFavoriteRecipeIds, setUserFavoriteRecipeIds] = useState<string[]>(
+    []
+  );
+  const [isFavorited, setIsFavorited] = useState<boolean>(false);
 
   useEffect(() => {
     if (recipe.Review && recipe.Review.length > 0) {
@@ -44,6 +49,24 @@ const BannerCard = ({ recipe, className }: BannerCardProps) => {
 
     trackView();
   }, [recipe.Review, recipe.id]);
+  useEffect(() => {
+    const fetchUserFavoriteRecipeIds = async () => {
+      try {
+        const response = await axios.get("/api/user/favorites");
+
+        const favoriteRecipeIds = response.data.map(
+          (favorite: any) => favorite.recipe.id
+        );
+        setUserFavoriteRecipeIds(favoriteRecipeIds);
+        setIsFavorited(favoriteRecipeIds.includes(recipe.id));
+      } catch (error) {
+        console.error("Error fetching user favorites:", error);
+      }
+    };
+    fetchUserFavoriteRecipeIds();
+  }, [recipe.id]); // Only re-run the effect if recipe.id changes
+
+  // Assuming setUserFavoriteRecipeIds and setIsFavorited are set up with useState elsewhere
 
   const recipeUrl = `${process.env.NEXT_PUBLIC_APP_URL}/recipes/${recipe.slug}`;
 
@@ -59,7 +82,13 @@ const BannerCard = ({ recipe, className }: BannerCardProps) => {
               height={600}
               className="rounded-md"
             />
+            <FavoriteButton
+              recipeId={recipe.id}
+              classNames="absolute top-4 right-0 z-10"
+              initialIsFavorited={isFavorited}
+            />
           </div>
+
           <RecipeBreadcum currentRecipe={recipe.title} />
           <h1 className="text-2xl lg:text-4xl font-bold mb-4 text-center lg:text-left">
             {recipe.title}
