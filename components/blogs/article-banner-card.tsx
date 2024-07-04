@@ -1,26 +1,23 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import Container from "@/components/container";
 
 import guestAuthor from "@/public/assets/images/guest-user.webp";
 import RecipeRatingDetails from "@/components/recipes/recipe-rating-details";
 
-import RecipeUpdateDetails from "@/components/recipes/recipe-update-details";
-
 import Image from "next/image";
-import { RecipeCategories, Recipes } from "@prisma/client";
 
 import ArticleBreadcum from "@/components/blogs/article-breadcum";
 import ArticleAuthor from "@/components/blogs/article-author";
 import { PostWithCategory } from "@/types/article";
-import { Preview } from "../preview";
+import SocialShare from "../social-share";
 
 interface ArticleBannerCardProps {
   article: PostWithCategory;
   className?: string;
 }
 const ArticleBannerCard = ({ article, className }: ArticleBannerCardProps) => {
+  const articleUrl = `${process.env.NEXT_PUBLIC_APP_URL}/blog/${article.slug}`;
   return (
     <div className={cn("w-full flex items-center", className)}>
       <div className="flex justify-between items-start flex-col lg:flex-row rounded-md">
@@ -44,11 +41,20 @@ const ArticleBannerCard = ({ article, className }: ArticleBannerCardProps) => {
             lastUpdateDate={article.updatedAt}
           />
 
-          <RecipeRatingDetails
+          {/* <RecipeRatingDetails
             rating={4.8}
             reviews={1560}
             totalViewsCount={2365}
-          />
+          /> */}
+          <div className="mt-4 flex flex-col items-center lg:items-start">
+            <h3 className="text-xl font-bold">Share this article</h3>
+            <SocialShare
+              url={articleUrl}
+              title={article.title}
+              description={article.content!}
+              imageUrl={article.imageUrl!}
+            />
+          </div>
         </div>
       </div>
     </div>

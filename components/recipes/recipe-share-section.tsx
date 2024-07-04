@@ -1,13 +1,7 @@
 "use client";
 
-import axios from "axios";
-import { useState } from "react";
-
-import { CommentsForm } from "@/components/comments/comments-form";
-import CommentsList from "@/components/comments/comments-list";
-import { CommentWithRelations } from "@/types/comment";
 import { RecipeWithCategory } from "@/types/recipe";
-import SocialShare from "../social-share";
+import SocialShare from "@/components/social-share";
 
 interface RecipeShareSectionProps {
   recipe: RecipeWithCategory;

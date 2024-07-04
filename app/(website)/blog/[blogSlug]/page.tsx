@@ -14,6 +14,7 @@ import ArticleBannerCard from "@/components/blogs/article-banner-card";
 import ArticleDetails from "@/components/blogs/article-details";
 import ArticleSidebar from "@/components/blogs/article-sidebar";
 import ArticleComments from "@/components/blogs/article-comments";
+import ArticleShareSection from "@/components/blogs/article-share-section";
 
 type Props = {
   params: { blogSlug: string };
@@ -107,6 +108,7 @@ const SingleArticlePage = async ({
               className="py-10 lg:py-8 mb-7 md:mb-2 xl:mb-2"
             />
             <ArticleDetails article={article} />
+            <ArticleShareSection article={article} />
             <ArticleComments
               comments={article?.articleComments}
               articleId={article.id}
