@@ -47,7 +47,16 @@ const BannerCard = ({ recipe, className }: BannerCardProps) => {
       }
     };
 
+    const userView = async () => {
+      try {
+        await axios.post("/api/add-view", { recipeId: recipe.id });
+      } catch (error) {
+        console.error("Error tracking view:", error);
+      }
+    };
+
     trackView();
+    userView();
   }, [recipe.Review, recipe.id]);
   useEffect(() => {
     const fetchUserFavoriteRecipeIds = async () => {
