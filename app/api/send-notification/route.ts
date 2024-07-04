@@ -39,7 +39,7 @@ export async function POST(req: NextRequest) {
         // Send the notification using Firebase Admin SDK
         const response = await admin.messaging().send(message);
         console.log(`Notification sent successfully to ${user.email}`);
-        return { success: true, response };
+        return { success: true, email: user.email, response };
       } catch (error: any) {
         console.error(`Error sending notification to ${user.email}`, error);
         return { success: false, error: error.message };

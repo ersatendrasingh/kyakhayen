@@ -19,9 +19,31 @@ const navbarItems = [
     hasChild: false,
   },
   {
-    label: "Ingredients",
+    label: "Meals",
     href: "/recipes",
-    hasChild: false,
+    hasChild: true,
+    children: [
+      {
+        label: "Breakfast",
+        href: "/recipes?k=breakfast&type=mealTime",
+      },
+      {
+        label: "Mid Morning",
+        href: "/recipes?k=mid-morning&type=mealTime",
+      },
+      {
+        label: "Lunch",
+        href: "/recipes?k=lunch&type=mealTime",
+      },
+      {
+        label: "Evening",
+        href: "/recipes?k=evening&type=mealTime",
+      },
+      {
+        label: "Dinner",
+        href: "/recipes?k=dinner&type=mealTime",
+      },
+    ],
   },
   {
     label: "Cuisines",
