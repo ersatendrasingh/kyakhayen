@@ -23,7 +23,7 @@ const MenuItem = ({ label, href, menuIcon: Icon }: MenuItemProps) => {
           <Link
             href={href}
             className={cn(
-              "flex items-center gap-x-2 text-sm  pl-1 transition-all text-slate-700 hover:bg-sky-500/10 hover:text-sky-700 font-bold",
+              "flex items-center gap-x-2 text-sm  pl-1 transition-all text-slate-700 hover:bg-red-500/10 hover:text-red-700 font-bold",
               isActive && " text-rose-500  hover:text-slate-700"
             )}
           >
@@ -41,7 +41,7 @@ const MenuItem = ({ label, href, menuIcon: Icon }: MenuItemProps) => {
         </>
       ) : (
         <>
-          <div className="flex items-center gap-x-2 text-sm  pl-1 transition-all text-slate-700 hover:bg-sky-500/10 hover:text-sky-700 font-bold py-4">
+          <div className="flex items-center gap-x-2 text-sm  pl-1 transition-all text-slate-700 hover:bg-red-500/10 hover:text-red-700 font-bold py-4">
             {Icon && (
               <Icon
                 size={18}
