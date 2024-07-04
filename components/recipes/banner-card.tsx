@@ -1,18 +1,16 @@
 "use client";
-
-import { cn } from "@/lib/utils";
-import Container from "@/components/container";
+import { useEffect, useState } from "react";
+import axios from "axios";
+import Image from "next/image";
 
 import guestAuthor from "@/public/assets/images/guest-user.webp";
 import RecipeRatingDetails from "@/components/recipes/recipe-rating-details";
 import RecipeAuthor from "@/components/recipes/recipe-author";
-import RecipeUpdateDetails from "@/components/recipes/recipe-update-details";
 import RecipeBreadcum from "@/components/recipes/recipe-breadcum";
-import Image from "next/image";
+import SocialShare from "@/components/social-share";
+
+import { cn } from "@/lib/utils";
 import { RecipeCategories, Recipes, Review } from "@prisma/client";
-import { Preview } from "../preview";
-import { useEffect, useState } from "react";
-import axios from "axios";
 
 type RecipeWithCategory = Recipes & {
   RecipeCategories: RecipeCategories | null;
@@ -46,6 +44,9 @@ const BannerCard = ({ recipe, className }: BannerCardProps) => {
 
     trackView();
   }, [recipe.Review, recipe.id]);
+
+  const recipeUrl = `${process.env.NEXT_PUBLIC_APP_URL}/recipes/${recipe.slug}`;
+
   return (
     <div className={cn("w-full flex items-center", className)}>
       <div className="flex justify-between items-start flex-col lg:flex-row rounded-md">
@@ -91,6 +92,15 @@ const BannerCard = ({ recipe, className }: BannerCardProps) => {
             reviews={reviewsCount}
             totalViewsCount={recipe.views}
           />
+          <div className="mt-4 flex flex-col items-center lg:items-start">
+            <h3 className="text-xl font-bold">Share this recipe</h3>
+            <SocialShare
+              url={recipeUrl}
+              title={recipe.title}
+              description={recipe.description!}
+              imageUrl={recipe.imageUrl!}
+            />
+          </div>
         </div>
       </div>
     </div>

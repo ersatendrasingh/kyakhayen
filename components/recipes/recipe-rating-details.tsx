@@ -2,8 +2,10 @@
 
 import Image from "next/image";
 import { useState, useEffect } from "react";
-import badgeIcon from "@/public/assets/images/badge-icon.webp";
+import { FaEye } from "react-icons/fa";
 import RatingStars from "@/components/recipes/rating-star";
+import { cn } from "@/lib/utils";
+import { Badge } from "../ui/badge";
 
 interface RecipeRatingDetailsProps {
   rating: number;
@@ -33,22 +35,33 @@ const RecipeRatingDetails = ({
 
   return (
     <div className="flex flex-col md:flex-row items-center md:my-2">
-      <div className="text-sm text-gray-700 flex items-center">
-        {rating > 0 && (
-          <>
-            <p className="mr-1 text-md font-bold">{rating}</p>
-            <RatingStars rating={rating} />
-          </>
-        )}
-      </div>
+      {rating > 0 && (
+        <div className="text-sm text-gray-700 flex items-center">
+          <Badge className="bg-websecondary mr-2">{rating.toFixed(1)}</Badge>
+
+          <RatingStars rating={rating} />
+        </div>
+      )}
       <div className="text-sm text-gray-700 flex items-center md:flex-grow">
-        <p className="ml-2 md:text-md bg-gray-200/20 hover:bg-gray-200/60 transition duration-300 cursor-pointer p-2 rounded-md md:ml-4">
-          {reviews > 0 && `${reviews.toLocaleString()} ratings`}
-        </p>
-        <p className="ml-2 text-sm text-black md:ml-4">
-          {totalViewsCount > 0 &&
-            `${totalViewsCount.toLocaleString()} Unique Views`}
-        </p>
+        {reviews > 0 && (
+          <p
+            className={cn(
+              "md:text-md bg-gray-200/20 hover:bg-gray-200/60 transition duration-300 cursor-pointer p-2 rounded-md md:ml-4",
+              rating > 0 && "ml-2"
+            )}
+          >
+            {`${reviews.toLocaleString()} Ratings`}
+          </p>
+        )}
+
+        {totalViewsCount > 0 && (
+          <p
+            className={cn("text-sm text-black ", reviews > 0 && "ml-2 md:ml-4")}
+          >
+            <FaEye className="inline-flex mr-2 w-5 h-5" />
+            {`${totalViewsCount.toLocaleString()} Unique Views`}
+          </p>
+        )}
       </div>
     </div>
   );

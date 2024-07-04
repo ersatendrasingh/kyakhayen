@@ -12,6 +12,7 @@ import Container from "@/components/container";
 import { getRelatedRecipes } from "@/actions/get-related-recipe";
 import RecipeCommentSection from "@/components/recipes/recipe-comments-section";
 import RecipeReviewsSection from "@/components/recipes/recipe-reviews-section";
+import RecipeShareSection from "@/components/recipes/recipe-share-section";
 
 type Props = {
   params: { recipeSlug: string };
@@ -103,6 +104,7 @@ const SingleRecipePage = async ({
               className="py-10 lg:py-8 mb-7 md:mb-2 xl:mb-2"
             />
             <RecipeDetails recipe={recipe} />
+            <RecipeShareSection recipe={recipe} />
             <RecipeReviewsSection
               recipeId={recipe.id}
               reviews={recipe?.Review || []}
