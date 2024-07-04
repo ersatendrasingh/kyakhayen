@@ -242,6 +242,7 @@ model MealTimes {
   title          String
   slug           String           @unique
   imageUrl       String?
+  position       Int?
   recipeMealTime recipeMealTime[]
 }
 

@@ -41,7 +41,7 @@ const NavbarItem = ({ item }: NavbarItemProps) => {
               <Link
                 href={item.href}
                 className={cn(
-                  "flex items-center gap-x-2 text-sm font-bold pl-6 transition-all  ",
+                  "flex items-center gap-x-2 text-sm font-bold pl-6 transition-all",
                   isActive &&
                     "text-webprimary font-bold hover:text-websecondary"
                 )}
@@ -52,7 +52,7 @@ const NavbarItem = ({ item }: NavbarItemProps) => {
             {item.hasChild && (
               <NavigationMenuContent>
                 <NavigationMenuLink>
-                  <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px] ">
+                  <ul className="grid w-[200px]  ">
                     {item.children &&
                       item?.children.map((subitem) => (
                         <ListItem
@@ -71,7 +71,7 @@ const NavbarItem = ({ item }: NavbarItemProps) => {
             <Link
               href={item.href}
               className={cn(
-                "flex items-center gap-x-2 text-sm font-bold pl-6 transition-all ",
+                "flex items-center gap-x-2 text-sm font-bold pl-6 transition-all",
                 isActive && "text-webprimary font-bold hover:text-websecondary"
               )}
             >
@@ -88,11 +88,11 @@ export default NavbarItem;
 
 const ListItem = ({ label, href }: { label: string; href: string }) => {
   return (
-    <li>
+    <li className=" border-b-2 border-gray-200 hover:bg-red-100">
       <NavigationMenuLink asChild>
         <Link
           href={href}
-          className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition"
+          className="block select-none  p-3 leading-none no-underline outline-none transition"
         >
           <div className="text-sm font-bold leading-none">{label}</div>
         </Link>

@@ -10,6 +10,7 @@ import { currentUser } from "@/lib/auth";
 import { useCurrentUser } from "@/hooks/use-current-user";
 import HomeBanner from "@/components/sections/home-banner";
 import RecommendedRecipes from "@/components/sections/recommended-recipes";
+import RecipeByMealTime from "@/components/sections/recipe-by-mealtime";
 
 type Banner = {
   id: number;
@@ -111,6 +112,12 @@ export const metadata: Metadata = {
 };
 
 export default async function Home() {
+  const melaTimes = await db.mealTimes.findMany({
+    orderBy: {
+      position: "asc",
+    },
+  });
+
   const recipeCategories = await db.recipeCategories.findMany({
     orderBy: {
       position: "asc",
@@ -160,6 +167,7 @@ export default async function Home() {
         prakritiQuestions={prakritiQuestions}
         genders={genders}
       />
+      <RecipeByMealTime title="Recipe By Meal Time" widgetItems={melaTimes} />
       <RecommendedRecipes />
       <HomeCategory title="Recipe Categories" widgetItems={recipeCategories} />
       <PopularRecipes />
