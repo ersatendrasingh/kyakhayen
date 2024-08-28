@@ -376,24 +376,28 @@ model IngredientsForm {
 }
 
 model Plan {
-  id             String     @id @default(uuid())
+  id             String         @id @default(uuid())
   name           String
+  slug           String         @unique
   durationMonths Int?
   priceInr       Float?
   priceUsd       Float?
   features       Feature[]
   UserPlan       UserPlan[]
   Item           Item[]
+  PlanOnCoupon   PlanOnCoupon[]
+  isPublished    Boolean        @default(false)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
 model Feature {
-  id     String @id @default(uuid())
-  name   String
-  planId String
-  plans  Plan   @relation(fields: [planId], references: [id], onDelete: Cascade)
+  id       String @id @default(uuid())
+  name     String
+  planId   String
+  position Int
+  plans    Plan   @relation(fields: [planId], references: [id], onDelete: Cascade)
 }
 
 enum UserRole {
@@ -446,6 +450,7 @@ model User {
   UserRecipeViews       UserRecipeViews[]
   UserAddress           UserAddress[]
   Order                 Order[]
+  UserCoupon            UserCoupon[]
 
   createdAt DateTime @default(now())
   updateAt  DateTime @updatedAt
@@ -800,4 +805,46 @@ model Item {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+enum DiscountType {
+  FIXED_PRODUCT
+  CART_PERCENTAGE
+}
+
+model Coupon {
+  id            String       @id @default(uuid())
+  code          String       @unique
+  description   String?
+  discountType  DiscountType @default(CART_PERCENTAGE)
+  discountValue Float?
+  expiryDate    DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  isActive  Boolean  @default(false)
+
+  PlanOnCoupon PlanOnCoupon[]
+  UserCoupon   UserCoupon[]
+
+  @@index([code])
+}
+
+model PlanOnCoupon {
+  id       String @id @default(uuid())
+  couponId String
+  planId   String
+  coupon   Coupon @relation(fields: [couponId], references: [id], onDelete: Cascade)
+  plan     Plan   @relation(fields: [planId], references: [id])
+
+  @@unique([couponId, planId])
+}
+
+model UserCoupon {
+  id        String   @id @default(uuid())
+  userId    String
+  couponId  String
+  user      User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  coupon    Coupon   @relation(fields: [couponId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
 }

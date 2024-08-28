@@ -24,6 +24,8 @@ export async function POST(req: Request) {
       process.env.RAZORPAY_WEBHOOK_SECRET as string
     );
 
+    console.log("isValidSignature", isValidSignature);
+
     if (!isValidSignature) {
       return NextResponse.json("Invalid webhook signature", { status: 400 });
     }
@@ -271,7 +273,7 @@ async function handlePaymentFailed(payload: any): Promise<void> {
       ),
     });
 
-    console.log("Payment captured successfully");
+    console.log("Payment failed...");
   } catch (error) {
     console.error("Error handling captured payment:", error);
   }

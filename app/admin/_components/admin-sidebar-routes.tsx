@@ -1,6 +1,8 @@
 "use client";
 
 import {
+  BadgeCent,
+  BadgeDollarSign,
   CookingPot,
   LayoutDashboard,
   MessageSquareCode,
@@ -155,24 +157,36 @@ const routes = [
   },
   {
     id: 6,
+    icon: BadgeCent,
+    label: "Manage Coupons",
+    href: "/admin/coupons",
+  },
+  {
+    id: 7,
+    icon: BadgeDollarSign,
+    label: "Manage Subscription Plans",
+    href: "/admin/subscription-plans",
+  },
+  {
+    id: 8,
     icon: MessageSquareCode,
     label: "Manage Comments",
     href: "/admin/comments",
   },
   {
-    id: 7,
+    id: 9,
     icon: Stars,
     label: "Manage Reviews",
     href: "/admin/reviews",
   },
   {
-    id: 8,
+    id: 10,
     icon: Users,
     label: "Manage Users",
     href: "/admin/users",
   },
   {
-    id: 9,
+    id: 11,
     icon: SmartphoneNfc,
     label: "Contact Queries",
     href: "/admin/contact-queries",
