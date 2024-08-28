@@ -92,3 +92,25 @@ export const contactFormSchema = z.object({
 export const commentFormSchema = z.object({
   comment: z.string().min(10).max(500),
 });
+
+export const checkoutSchema = z.object({
+  firstName: z.string().min(1, { message: "First Name is required" }),
+  lastName: z.string().min(1, { message: "Last Name is required" }),
+  email: z.string().email({
+    message: "Billing Email is required",
+  }),
+  phoneNumber: z
+    .string()
+    .min(10, { message: "Phone number is required" })
+    .max(12, { message: "Phone number must be maximum 12 digits" })
+    .regex(/^\d{10,12}$/, { message: "Invalid phone number" }),
+  address: z.string().min(1, { message: "Address is required" }),
+  country: z.string().min(1),
+  city: z.string().min(1),
+  state: z.string().min(1),
+  zip: z.string().min(1, { message: "Zip Code is required" }),
+});
+
+export const couponSchema = z.object({
+  code: z.string().min(1, { message: "Coupon code is required" }),
+});

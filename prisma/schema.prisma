@@ -376,16 +376,17 @@ model IngredientsForm {
 }
 
 model Plan {
-  id             String    @id @default(uuid())
+  id             String     @id @default(uuid())
   name           String
   durationMonths Int?
   priceInr       Float?
   priceUsd       Float?
   features       Feature[]
+  UserPlan       UserPlan[]
+  Item           Item[]
 
-  createdAt DateTime   @default(now())
-  updatedAt DateTime   @updatedAt
-  UserPlan  UserPlan[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Feature {
@@ -443,9 +444,22 @@ model User {
   Review                Review[]
   Favorite              Favorite[]
   UserRecipeViews       UserRecipeViews[]
+  UserAddress           UserAddress[]
+  Order                 Order[]
 
   createdAt DateTime @default(now())
   updateAt  DateTime @updatedAt
+}
+
+model UserAddress {
+  id      String @id @default(cuid())
+  userId  String
+  user    User   @relation(fields: [userId], references: [id])
+  country String
+  state   String
+  city    String
+  address String @db.Text
+  zip     String
 }
 
 model UserPlan {
@@ -744,4 +758,46 @@ model Favorite {
   updatedAt DateTime @updatedAt
 
   @@unique([userId, recipeId])
+}
+
+enum PaymentStatus {
+  Processing
+  Paid
+  Failed
+  Success
+  Cancelled
+}
+
+model Order {
+  id            String        @id @default(cuid())
+  orderId       String?       @unique
+  subTotal      Float?
+  taxTotal      Float?
+  coupon        String?
+  discount      Float?
+  totalAmount   Float?
+  currency      String?
+  user          User          @relation(fields: [userId], references: [id])
+  userId        String
+  paymentMethod String?
+  paymentStatus PaymentStatus @default(Processing)
+  items         Item[]
+
+  createdAt DateTime @default(now())
+  updateAt  DateTime @updatedAt
+}
+
+model Item {
+  id       String  @id @default(cuid())
+  orderId  String?
+  order    Order?  @relation(fields: [orderId], references: [id])
+  itemName String
+  quantity Int     @default(1)
+  priceInr Float?
+  priceUsd Float?
+  planId   String?
+  plan     Plan?   @relation(fields: [planId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
