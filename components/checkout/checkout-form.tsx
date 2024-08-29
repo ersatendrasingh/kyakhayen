@@ -19,6 +19,9 @@ import { useUserCountry } from "@/context/user-country-context";
 import { useEffect, useMemo, useState } from "react";
 import { exchangePrice } from "@/lib/exchangePrice";
 import { CartItem } from "@/types/cart-item";
+import { AnimatePresence, motion } from "framer-motion";
+import CouponCodeForm from "./coupon-code-form";
+import AppliedCoupon from "./applied-coupon";
 
 type AppliedCoupon = {
   code: string;
@@ -27,7 +30,7 @@ type AppliedCoupon = {
   discountType: "FIXED_PRODUCT" | "CART_PERCENTAGE";
   applicableProducts?: {
     id: string;
-    title: string;
+    name: string;
     priceInr: number;
     priceUsd: number;
   }[];
@@ -36,6 +39,8 @@ const CheckoutForm = () => {
   const [appliedCoupon, setAppliedCoupon] = useState<AppliedCoupon | null>(
     null
   );
+  const [couponDiscount, setCouponDiscount] = useState<number>(0);
+  const [showCoupon, setShowCoupon] = useState(false);
   const user = useCurrentUser();
 
   const router = useRouter();
@@ -54,7 +59,12 @@ const CheckoutForm = () => {
         );
 
   const [totalPrice, setTotalPrice] = useState(totalAmount);
-
+  useEffect(() => {
+    const appliedCoupon = localStorage.getItem("appliedCoupon");
+    if (appliedCoupon) {
+      setAppliedCoupon(JSON.parse(appliedCoupon));
+    }
+  }, []);
   useEffect(() => {
     const handlePriceExchange = async (price: number, userCurrency: string) => {
       try {
@@ -80,6 +90,21 @@ const CheckoutForm = () => {
         }, 0)
       : 0;
   }, [cartItems, userCountry]);
+
+  const calculateTotalAmount = () => {
+    return cartItems?.length
+      ? userCountry !== "IN"
+        ? cartItems.reduce(
+            (total, item) => total + item.priceUsd! * item.quantity,
+            0
+          )
+        : cartItems.reduce(
+            (total, item) => total + item.priceInr! * item.quantity,
+            0
+          )
+      : 0;
+  };
+
   const subTotal =
     userCountry !== "IN" ? totalPrice : totalPrice - totalPrice * 0.18;
 
@@ -318,8 +343,77 @@ const CheckoutForm = () => {
       document.body.appendChild(script);
     });
   };
+  const handleApplyCoupon = (
+    code: string,
+    calculatedDiscount: number,
+    discountValue: number,
+    discountType: "FIXED_PRODUCT" | "CART_PERCENTAGE",
+    applicableProducts?: {
+      id: string;
+      name: string;
+      priceInr: number;
+      priceUsd: number;
+    }[]
+  ) => {
+    const appliedCoupon: AppliedCoupon = {
+      code,
+      calculatedDiscount,
+      discountValue,
+      discountType,
+      applicableProducts,
+    };
+    localStorage.setItem("appliedCoupon", JSON.stringify(appliedCoupon));
+    setAppliedCoupon(appliedCoupon);
+
+    setCouponDiscount(calculatedDiscount);
+
+    setTotalPrice(calculateTotalAmount() - couponDiscount);
+  };
+
+  const handleRemoveCoupon = () => {
+    setAppliedCoupon(null);
+    setCouponDiscount(0);
+    localStorage.removeItem("appliedCoupon");
+    setTotalPrice(calculateTotalAmount);
+  };
+  const toggleShowCoupon = () => {
+    setShowCoupon((prev) => !prev);
+  };
+
   return (
     <div className="w-full pt-12 flex flex-col">
+      <div className="w-full flex flex-col md:flex-row mt-8 mb-4 p-4 rounded-md shadow-sm transition bg-white">
+        <span className="text-2xl font-bold">Have a coupon?</span>
+        <Button
+          onClick={toggleShowCoupon}
+          variant="link"
+          className="md:ml-2 px-0 md:px-2 md:mt-1 text-emerald-500 text-lg font-semibold inline-flex items-start justify-start"
+          size="sm"
+        >
+          Click here to enter coupon
+        </Button>
+      </div>
+      <AnimatePresence>
+        {!appliedCoupon && showCoupon && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.3 }}
+            className="bg-white rounded-md p-4 shadow-sm transition mb-4 mt-4"
+          >
+            <CouponCodeForm
+              onApplyCoupon={handleApplyCoupon}
+              cartItems={cartItems}
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
+      {appliedCoupon && (
+        <div className="bg-white rounded-md p-4 mt-4 shadow-sm transition mb-4">
+          <AppliedCoupon code={appliedCoupon.code} />
+        </div>
+      )}
       <FormProvider {...checkoutForm}>
         <Form {...checkoutForm}>
           <form onSubmit={checkoutForm.handleSubmit(handlePaymentSubmit)}>
@@ -337,6 +431,8 @@ const CheckoutForm = () => {
                     subTotal={subTotal}
                     grandTotal={totalPrice}
                     taxAmount={taxAmount}
+                    appliedCoupon={appliedCoupon}
+                    onRemoveCoupon={handleRemoveCoupon}
                   />
                 </div>
 

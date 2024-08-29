@@ -20,13 +20,13 @@ const IntroSection = () => {
             to get started and take the first step towards a healthier
             lifestyle!
           </p>
-          <Link href="/auth/register">
+          <Link href="#pricing">
             <Button
               variant="secondary"
               size="lg"
               className="bg-[#1e1a16] hover:bg-websecondary text-white rounded-full"
             >
-              Sign Up Now It&apos;s Free
+              Join Now Today
             </Button>
           </Link>
           <Image
@@ -130,13 +130,13 @@ const IntroSection = () => {
               </div>
             </div>
             <div className="flex justify-center">
-              <Link href="/auth/register">
+              <Link href="#pricing">
                 <Button
                   variant="secondary"
                   size="lg"
                   className="bg-[#1e1a16] hover:bg-websecondary text-white rounded-full"
                 >
-                  Sign Up Now It&apos;s Free
+                  Join Now Today
                 </Button>
               </Link>
             </div>

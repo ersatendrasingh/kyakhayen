@@ -10,6 +10,7 @@ interface CartSummaryItemProps {
   titleClassName?: string;
   valueClassName?: string;
   isRemoveButtonVisible?: boolean;
+  isDiscount?: boolean;
   onRemove?: () => void;
 }
 
@@ -19,12 +20,17 @@ const CartSummaryItem = ({
   titleClassName,
   valueClassName,
   isRemoveButtonVisible,
+  isDiscount,
   onRemove,
 }: CartSummaryItemProps) => {
   const { userCurrency } = useUserCountry();
 
   const displayValue =
-    typeof value === "number" ? formatCurrency(value, userCurrency) : value;
+    typeof value === "number"
+      ? isDiscount
+        ? `- ${formatCurrency(value, userCurrency)}`
+        : formatCurrency(value, userCurrency)
+      : value;
 
   const handleCouponRemove = () => {
     if (onRemove) {

@@ -8,12 +8,15 @@ type SubscriptionPlan = Plan & {
 export const getSubscriptionPlans = async (): Promise<SubscriptionPlan[]> => {
   try {
     const allSubscriptionPlans = await db.plan.findMany({
+      where: {
+        isPublished: true,
+      },
       include: {
         features: true,
       },
     });
 
-    const order = ["Freemium", "Bronze", "Silver", "Gold", "Platinum"];
+    const order = ["Bronze", "Silver", "Gold", "Platinum"];
 
     // Sort the plans based on the desired order
     allSubscriptionPlans.sort((a, b) => {

@@ -13,7 +13,7 @@ export async function POST(req: Request) {
     const { code, cartItems } = await req.json();
     const coupon = await db.coupon.findUnique({
       where: { code },
-      include: { ProductOnCoupon: true },
+      include: { PlanOnCoupon: true },
     });
 
     if (!coupon) {
@@ -31,14 +31,12 @@ export async function POST(req: Request) {
     // Check if the coupon is applicable to the cart items
     let isApplicable = false;
     let discount = 0;
-    if (coupon.ProductOnCoupon.length === 0) {
+    if (coupon.PlanOnCoupon.length === 0) {
       // If no products are associated with the coupon, it is applicable to all products
       isApplicable = true;
     } else {
       // If there are associated products, check if any of the cart items match
-      const applicableProductIds = coupon.ProductOnCoupon.map(
-        (poc) => poc.productId
-      );
+      const applicableProductIds = coupon.PlanOnCoupon.map((poc) => poc.planId);
       const cartProductIds = cartItems.map((item: CartItem) => item.id);
 
       isApplicable = cartProductIds.some((id: string) =>
@@ -53,28 +51,12 @@ export async function POST(req: Request) {
     }
 
     // Calculate discount based on coupon type
-    if (coupon.discountType === "PERCENTAGE") {
+    if (coupon.discountType === "FIXED_PRODUCT") {
       const applicableItems = cartItems.filter((item: CartItem) =>
-        coupon.ProductOnCoupon.some((poc) => poc.productId === item.id)
-      );
-      const total =
-        coupon.ProductOnCoupon.length === 0
-          ? cartItems.reduce(
-              (sum: number, item: CartItem) => sum + item.price * item.quantity,
-              0
-            )
-          : applicableItems.reduce(
-              (sum: number, item: CartItem) => sum + item.price * item.quantity,
-              0
-            );
-
-      discount = (total * coupon.discountValue!) / 100;
-    } else if (coupon.discountType === "FIXED_PRODUCT") {
-      const applicableItems = cartItems.filter((item: CartItem) =>
-        coupon.ProductOnCoupon.some((poc) => poc.productId === item.id)
+        coupon.PlanOnCoupon.some((poc) => poc.planId === item.id)
       );
       discount =
-        coupon.ProductOnCoupon.length === 0
+        coupon.PlanOnCoupon.length === 0
           ? cartItems.reduce(
               (sum: number, item: CartItem) =>
                 sum + coupon.discountValue! / cartItems.length,
@@ -87,16 +69,18 @@ export async function POST(req: Request) {
             );
     } else if (coupon.discountType === "CART_PERCENTAGE") {
       const applicableItems = cartItems.filter((item: CartItem) =>
-        coupon.ProductOnCoupon.some((poc) => poc.productId === item.id)
+        coupon.PlanOnCoupon.some((poc) => poc.planId === item.id)
       );
       const total =
-        coupon.ProductOnCoupon.length === 0
+        coupon.PlanOnCoupon.length === 0
           ? cartItems.reduce(
-              (sum: number, item: CartItem) => sum + item.price * item.quantity,
+              (sum: number, item: CartItem) =>
+                sum + item.priceInr! * item.quantity,
               0
             )
           : applicableItems.reduce(
-              (sum: number, item: CartItem) => sum + item.price * item.quantity,
+              (sum: number, item: CartItem) =>
+                sum + item.priceInr! * item.quantity,
               0
             );
       discount = (total * coupon.discountValue!) / 100;
@@ -116,10 +100,10 @@ export async function POST(req: Request) {
         discountValue: coupon.discountValue,
         discountType: coupon.discountType,
         applicableProducts:
-          coupon.ProductOnCoupon.length === 0
+          coupon.PlanOnCoupon.length === 0
             ? cartItems
             : cartItems.filter((item: CartItem) =>
-                coupon.ProductOnCoupon.some((poc) => poc.productId === item.id)
+                coupon.PlanOnCoupon.some((poc) => poc.planId === item.id)
               ),
       },
       { status: 200 }

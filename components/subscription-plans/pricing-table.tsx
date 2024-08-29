@@ -1,10 +1,12 @@
 "use client";
 
 import { useCart } from "@/context/cart-context";
+import { useUserCountry } from "@/context/user-country-context";
+import { useCurrentUser } from "@/hooks/use-current-user";
 import { Feature, Plan } from "@prisma/client";
 import { motion } from "framer-motion";
 import { Loader2 } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
 import { IoIosArrowDroprightCircle } from "react-icons/io";
 import { toast } from "react-toastify";
@@ -14,11 +16,20 @@ interface PricingTableProps {
 }
 
 const PricingTable = ({ subscriptionPlans }: PricingTableProps) => {
+  const { userCurrency, userCountry } = useUserCountry();
+  const user = useCurrentUser();
+
   const { addToCart } = useCart(); // Access the addToCart function from the CartContext
   const router = useRouter(); // Initialize the router
+  const pathname = usePathname();
   const [loading, setLoading] = useState(false);
 
   const handleAddToCartAndCheckout = (plan: Plan & { features: Feature[] }) => {
+    if (!user) {
+      const encodedCallback = encodeURIComponent(pathname + "#pricing" || "");
+      const encodedCallbackUrl = "/auth/login?callbackUrl=" + encodedCallback;
+      return router.push(encodedCallbackUrl);
+    }
     setLoading(true);
     const cartItem = {
       id: plan.id,
@@ -28,22 +39,22 @@ const PricingTable = ({ subscriptionPlans }: PricingTableProps) => {
       priceUsd: plan.priceUsd,
     };
     addToCart(cartItem);
-    toast.success("Item added to cart", {
-      position: "top-center",
-      autoClose: 5000,
-    });
+
     setLoading(false);
     router.push("/checkout"); // Redirect to the checkout page
   };
 
   return (
-    <div className="bg-gradient-to-r from-red-500 to-orange-500 text-white py-12 min-h-screen">
+    <div
+      className="bg-gradient-to-r from-red-500 to-orange-500 text-white py-12 min-h-screen"
+      id="pricing"
+    >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center">
           <h2 className="text-6xl font-bold mb-4">Subscription Plans</h2>
           <p className="mt-4 text-lg">Choose a plan that fits your needs.</p>
         </div>
-        <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-5">
+        <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
           {subscriptionPlans.map((plan, index) => (
             <motion.div
               key={index}
@@ -71,9 +82,19 @@ const PricingTable = ({ subscriptionPlans }: PricingTableProps) => {
                 <h3 className="text-4xl font-bold text-gray-800">
                   {plan.name}
                 </h3>
-                <p className="mt-4 text-3xl font-bold text-gray-900">
-                  {plan.priceInr === 0 ? "Free" : `INR ${plan.priceInr}`}
-                </p>
+                <div className="mt-4">
+                  <p className="text-2xl text-gray-500 line-through">
+                    {userCountry !== "IN"
+                      ? `${userCurrency} ${plan.regularPriceUsd}`
+                      : `${userCurrency} ${plan.regularPriceInr}`}
+                  </p>
+                  <p className="text-3xl font-bold text-gray-900">
+                    {userCountry !== "IN"
+                      ? `${userCurrency} ${plan.priceUsd}`
+                      : `${userCurrency} ${plan.priceInr}`}
+                  </p>
+                </div>
+
                 <ul className="mt-6 space-y-3 flex-grow">
                   {plan.features.map((feature, idx) => (
                     <li key={idx} className="text-black font-medium text-sm">

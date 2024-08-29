@@ -376,17 +376,19 @@ model IngredientsForm {
 }
 
 model Plan {
-  id             String         @id @default(uuid())
-  name           String
-  slug           String         @unique
-  durationMonths Int?
-  priceInr       Float?
-  priceUsd       Float?
-  features       Feature[]
-  UserPlan       UserPlan[]
-  Item           Item[]
-  PlanOnCoupon   PlanOnCoupon[]
-  isPublished    Boolean        @default(false)
+  id              String         @id @default(uuid())
+  name            String
+  slug            String         @unique
+  durationMonths  Int?
+  regularPriceInr Float?
+  regularPriceUsd Float?
+  priceInr        Float?
+  priceUsd        Float?
+  features        Feature[]
+  UserPlan        UserPlan[]
+  Item            Item[]
+  PlanOnCoupon    PlanOnCoupon[]
+  isPublished     Boolean        @default(false)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

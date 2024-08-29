@@ -21,7 +21,6 @@ interface CartSummaryProps {
       name: string;
       priceInr: number;
       priceUsd: number;
-      taxRate: number;
     }[];
   } | null;
   onRemoveCoupon?: () => void;
@@ -41,6 +40,7 @@ const CheckoutSummary = ({
       onRemoveCoupon(); // Call the parent callback to remove the coupon
     }
   };
+
   return (
     <div className="w-full flex flex-col items-start justify-start">
       <h1 className="text-2xl font-bold mb-4">Cart Summary</h1>
@@ -70,7 +70,8 @@ const CheckoutSummary = ({
             />
             <CartSummaryItem
               title="Discount"
-              value={`- ${appliedCoupon.calculatedDiscount}` || 0}
+              value={appliedCoupon.calculatedDiscount || 0}
+              isDiscount
               titleClassName="font-bold text-emerald-500"
               valueClassName="text-emerald-500 font-bold"
             />

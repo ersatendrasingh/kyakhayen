@@ -11,6 +11,7 @@ import { PlanActions } from "./_components/plan-actions";
 import { PriceForm } from "./_components/price-form";
 import { DurationForm } from "./_components/duration-form";
 import { FeaturesForm } from "./_components/features-form";
+import { RegularPriceForm } from "./_components/regular-price-form";
 
 const SubscriptionPlanIdPage = async ({
   params,
@@ -76,6 +77,8 @@ const SubscriptionPlanIdPage = async ({
               <h2 className="text-xl">Customize Plan</h2>
             </div>
             <TitleForm initialData={plan} planId={plan.id} />
+
+            <RegularPriceForm initialData={plan} planId={plan.id} />
 
             <PriceForm initialData={plan} planId={plan.id} />
 
