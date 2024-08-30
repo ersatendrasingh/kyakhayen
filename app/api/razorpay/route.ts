@@ -39,6 +39,7 @@ export async function POST(req: Request) {
       state,
       country,
       pincode,
+      planId,
     } = body;
 
     const options = {
@@ -55,6 +56,7 @@ export async function POST(req: Request) {
         state,
         country,
         pincode,
+        planId,
       },
     };
 

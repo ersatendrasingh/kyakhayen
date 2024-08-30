@@ -15,7 +15,7 @@ const CheckoutPage = () => {
   const { cartItems } = useCart();
   if (cartItems?.length === 0) {
     useEffect(() => {
-      router.push("/subscription-plans");
+      //router.push("/subscription-plans");
     }, [router, cartItems?.length]);
 
     return <EmptyCart />;

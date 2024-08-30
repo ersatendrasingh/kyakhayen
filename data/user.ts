@@ -30,6 +30,11 @@ export const getUserById = async (id: string) => {
         foodPreference: true,
         cookingSkill: true,
         UserPlan: {
+          where: {
+            endDate: {
+              gte: new Date(), // Only include plans where the end date is greater than or equal to the current date
+            },
+          },
           include: {
             plan: true,
           },

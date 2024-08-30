@@ -225,6 +225,7 @@ const CheckoutForm = () => {
           state: values.state,
           country: values.country,
           pincode: values.zip,
+          planId: cartItems[0].id,
         };
 
         const response = await axios.post("/api/razorpay", razorpayData);
@@ -249,6 +250,7 @@ const CheckoutForm = () => {
               state: values.state,
               country: values.country,
               pincode: values.zip,
+              planId: cartItems[0].id,
             },
           ],
           handler: function (response: any) {

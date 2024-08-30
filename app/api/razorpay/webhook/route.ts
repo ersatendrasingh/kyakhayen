@@ -7,6 +7,8 @@ import OrderConfirmationMail from "@/emails/customer-order-confirmation";
 import CustomerOrderAdminMail from "@/emails/customer-order-admin-mail";
 import { formatDate } from "@/lib/formatDate";
 
+import { Queue } from "bullmq";
+
 export async function POST(req: Request) {
   try {
     const body = await req.json();
@@ -50,7 +52,12 @@ export async function POST(req: Request) {
 
 async function handlePaymentCaptured(payload: any): Promise<void> {
   try {
+    const mealPlanQueue = new Queue("mealPlan");
     const paymentEntity = payload.payment.entity;
+
+    console.log("Payment entity captured:", paymentEntity);
+
+    const planId = paymentEntity.notes.planId;
 
     const orderId = paymentEntity.order_id;
 
@@ -62,6 +69,7 @@ async function handlePaymentCaptured(payload: any): Promise<void> {
         user: {
           include: {
             UserAddress: true,
+            UserPlan: true,
           },
         },
         items: {
@@ -72,9 +80,60 @@ async function handlePaymentCaptured(payload: any): Promise<void> {
       },
     });
 
-    if (!order) {
+    if (!order || order.paymentStatus === "Paid") {
       console.log("Order not found");
       return;
+    }
+
+    const plan = await db.plan.findUnique({
+      where: {
+        id: planId,
+      },
+    });
+
+    if (!plan) {
+      console.log("Plan not found");
+      return;
+    }
+
+    // Find if the user has an active plan
+    const activeUserPlan = order.user.UserPlan.find((userPlan: any) => {
+      const endDate = userPlan.endDate ? new Date(userPlan.endDate) : null;
+      return endDate && endDate > new Date();
+    });
+
+    if (activeUserPlan) {
+      // Update the existing plan with the new plan details and extend the end date
+      const newEndDate = activeUserPlan.endDate
+        ? new Date(
+            new Date(activeUserPlan.endDate).setMonth(
+              new Date(activeUserPlan.endDate).getMonth() +
+                (plan.durationMonths || 0)
+            )
+          )
+        : new Date(); // Fallback to current date if `endDate` is null
+
+      await db.userPlan.update({
+        where: { id: activeUserPlan.id },
+        data: {
+          planId: plan.id,
+          endDate: newEndDate,
+        },
+      });
+    } else {
+      // Create a new plan assignment if no active plan exists
+      await db.userPlan.create({
+        data: {
+          userId: order.user.id,
+          planId: plan.id,
+          startDate: new Date(),
+          endDate: new Date(
+            new Date().setMonth(
+              new Date().getMonth() + (plan.durationMonths || 0)
+            )
+          ),
+        },
+      });
     }
 
     await db.order.update({
@@ -85,6 +144,8 @@ async function handlePaymentCaptured(payload: any): Promise<void> {
         paymentStatus: "Paid",
       },
     });
+
+    await mealPlanQueue.add("generateMealPlan", { userId: order.user.id });
 
     const customerEmail = order.user.email;
     const customerName = order.user.name;

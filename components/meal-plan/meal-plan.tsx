@@ -2,12 +2,11 @@
 
 import { useState } from "react";
 import { addDays, subDays } from "date-fns";
-import CalendarHeader from "../calendar/calendar-header";
-import DailyView from "./daily-view";
+import CalendarHeader from "@/components/calendar/calendar-header";
+import DailyView from "@/components/meal-plan/daily-view";
 import { useCurrentUser } from "@/hooks/use-current-user";
-
-import PublicView from "@/components/meal-plan/public-view";
 import PersonalizationPrompt from "@/components/meal-plan/personalization-prompt";
+import SubscriptionPlanPrompt from "@/components/meal-plan/subscription-plan-prompt";
 
 const MealPlan = () => {
   const user = useCurrentUser();
@@ -27,6 +26,9 @@ const MealPlan = () => {
 
   if (user && !user.isPersonalised) {
     return <PersonalizationPrompt />;
+  }
+  if (user && user.userPlan?.length === 0) {
+    return <SubscriptionPlanPrompt />;
   }
   return (
     <main>

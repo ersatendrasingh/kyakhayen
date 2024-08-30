@@ -125,16 +125,24 @@ const BannerCard = ({ className }: BannerCardProps) => {
                   <Skeleton className="h-8 w-[300px] rounded-xl mb-2" />
                 )}
 
-                {user?.userPlan && user.userPlan.length > 0 ? (
+                {user?.userPlan && user.userPlan.length > 0 && (
                   <div className="flex">
                     {user.userPlan.map((userPlan) => (
-                      <Badge key={userPlan} className={cn("bg-green-500 mb-1")}>
+                      <Badge
+                        key={userPlan}
+                        className={cn(
+                          "mb-1 mr-2",
+                          userPlan === "Freemium" && "bg-slate-500",
+                          userPlan === "Bronze" && "bg-sky-500",
+                          userPlan === "Silver" && "bg-amber-500",
+                          userPlan === "Gold" && "bg-yellow-500",
+                          userPlan === "Platinum" && "bg-green-700"
+                        )}
+                      >
                         {userPlan}
                       </Badge>
                     ))}
                   </div>
-                ) : (
-                  <Skeleton className="h-5 w-[280px] rounded-xl mb-2" />
                 )}
 
                 {user?.age && (
