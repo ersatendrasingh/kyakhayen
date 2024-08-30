@@ -51,7 +51,9 @@ const PricingTable = ({ subscriptionPlans }: PricingTableProps) => {
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center">
-          <h2 className="text-6xl font-bold mb-4">Subscription Plans</h2>
+          <h2 className="text-5xl md:text-6xl font-bold mb-4">
+            Subscription Plans
+          </h2>
           <p className="mt-4 text-lg">Choose a plan that fits your needs.</p>
         </div>
         <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">

@@ -2,8 +2,8 @@
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 import { db } from "@/lib/db";
 import { generateRecipesForDate } from "@/lib/assignDiet";
-import { currentUser } from "@/lib/auth";
-import { formatISO, isAfter } from "date-fns";
+
+import { formatISO } from "date-fns";
 
 const s3 = new S3Client({
   region: process.env.AWS_REGION as string,
@@ -41,12 +41,6 @@ export const generateMealPlan = async (
   userId: string
 ): Promise<MealPlanResult[]> => {
   try {
-    // const user = await currentUser();
-    // if (!user) {
-    //   throw new Error("User not found.");
-    // }
-
-    // const userId = user.id;
     const now = new Date();
 
     // Fetch user's current active plan

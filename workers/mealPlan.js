@@ -21,12 +21,36 @@ const worker = new Worker(
         `Starting job ${job.id}: Generating meal plan for user ${job.data.userId}`
       );
 
+      // Update progress to 10%
+      await job.updateProgress(10);
+      console.log(`Job ${job.id}: Progress 10% - Meal plan generation started`);
+
+      // Simulate some intermediate steps
+      // For example, preparing data before sending the request
+      await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulated delay
+      await job.updateProgress(30);
+      console.log(`Job ${job.id}: Progress 30% - Data preparation done`);
+
       const response = await axios.post(`${APP_URL}/api/generate-meal-plan`, {
         userId: job.data.userId,
       });
 
-      console.log(`Generated meal plan: ${response.data.mealPlan}`);
-      return response.data.mealPlan;
+      // Update progress to 70% after receiving the response
+      await job.updateProgress(70);
+      console.log(`Job ${job.id}: Progress 70% - Meal plan received from API`);
+
+      // Simulate further processing if needed
+      await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulated delay
+      await job.updateProgress(90);
+      console.log(`Job ${job.id}: Progress 90% - Finalizing meal plan`);
+
+      // Final progress update before completion
+      await job.updateProgress(100);
+      console.log(
+        `Job ${job.id}: Progress 100% - Meal plan generation complete`
+      );
+
+      return response.data;
     } catch (err) {
       console.error(`Job ${job.id} failed during processing: ${err.message}`);
       throw err; // Re-throw the error to mark the job as failed
