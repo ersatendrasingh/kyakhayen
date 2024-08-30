@@ -378,7 +378,7 @@ model IngredientsForm {
 model Plan {
   id              String         @id @default(uuid())
   name            String
-  slug            String         @default("slug")
+  slug            String         @unique
   durationMonths  Int?
   regularPriceInr Float?
   regularPriceUsd Float?
@@ -398,7 +398,7 @@ model Feature {
   id       String @id @default(uuid())
   name     String
   planId   String
-  position Int    @default(0)
+  position Int
   plans    Plan   @relation(fields: [planId], references: [id], onDelete: Cascade)
 }
 
@@ -613,25 +613,13 @@ model UserHealthGoals {
 }
 
 model UserMealPlan {
-  id              String     @id @default(uuid())
-  userId          String
-  user            User       @relation(fields: [userId], references: [id], onDelete: Cascade)
-  planStartDate   DateTime
-  planEndDate     DateTime
-  isPlanGenerated Boolean    @default(false)
-  createdAt       DateTime   @default(now())
-  updatedAt       DateTime   @updatedAt
-  MealPlan        MealPlan[]
-}
-
-model MealPlan {
-  id             String       @id @default(uuid())
-  userMealPlanId String
-  usermealPlan   UserMealPlan @relation(fields: [userMealPlanId], references: [id])
-  date           DateTime
-  s3url          String
-  createdAt      DateTime     @default(now())
-  updatedAt      DateTime     @updatedAt
+  id            String   @id @default(uuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  planStartDate DateTime
+  planEndDate   DateTime
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 }
 
 model Post {
