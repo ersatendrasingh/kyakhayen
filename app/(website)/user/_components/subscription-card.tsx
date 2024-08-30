@@ -5,42 +5,35 @@ import { differenceInDays, isBefore, addDays } from "date-fns";
 import Link from "next/link";
 import { formatDateTime } from "@/lib/formateDateTime";
 
-type SubscriptionPlan = {
-  id: string;
-  startDate: Date;
-  endDate: Date | null;
-  plan: {
-    id: string;
-    name: string;
-  };
-};
-
 interface SubscriptionCardProps {
-  subscription: SubscriptionPlan | null;
+  subscription: string;
+  planStartDate: Date;
+  planEndDate: Date;
 }
 
-const SubscriptionCard: React.FC<SubscriptionCardProps> = ({
+const SubscriptionCard = ({
   subscription,
-}) => {
+  planStartDate,
+  planEndDate,
+}: SubscriptionCardProps) => {
   const [formattedStartDate, setFormattedStartDate] = useState<string>("");
   const [formattedEndDate, setFormattedEndDate] = useState<string>("");
   const [remainingDays, setRemainingDays] = useState<string>("");
+  const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
     if (subscription) {
       const userLocale = navigator.language; // Get user's locale
       setFormattedStartDate(
-        formatDateTime(new Date(subscription.startDate), userLocale)
+        formatDateTime(new Date(planStartDate), userLocale)
       );
       setFormattedEndDate(
-        subscription.endDate
-          ? formatDateTime(new Date(subscription.endDate), userLocale)
-          : "N/A"
+        planEndDate ? formatDateTime(new Date(planEndDate), userLocale) : "N/A"
       );
     }
 
-    if (subscription && subscription.endDate) {
-      const endDate = new Date(subscription.endDate);
+    if (subscription && planEndDate) {
+      const endDate = new Date(planEndDate);
       const now = new Date();
       const days = differenceInDays(endDate, now);
 
@@ -56,6 +49,8 @@ const SubscriptionCard: React.FC<SubscriptionCardProps> = ({
     } else {
       setRemainingDays("N/A");
     }
+
+    setLoading(false); // Set loading to false once the data is loaded
   }, [subscription]);
 
   if (!subscription) {
@@ -77,16 +72,23 @@ const SubscriptionCard: React.FC<SubscriptionCardProps> = ({
     );
   }
 
-  const { plan, endDate } = subscription;
-
   const status =
-    endDate && new Date(endDate) > new Date() ? "Active" : "Expired";
+    planEndDate && new Date(planEndDate) > new Date() ? "Active" : "Expired";
 
   return (
-    <div className="rounded-lg border border-gray-200 shadow-lg bg-amber-50 p-4 sm:p-6 mb-6">
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between border-b pb-4">
+    <div className="relative rounded-lg border border-gray-200 shadow-lg bg-amber-50 p-4 sm:p-6 mb-6">
+      {loading && (
+        <div className="absolute inset-0 bg-white bg-opacity-75 flex items-center justify-center z-10">
+          <div className="loader animate-spin border-t-4 border-webprimary rounded-full w-12 h-12"></div>
+        </div>
+      )}
+      <div
+        className={`flex flex-col sm:flex-row items-start sm:items-center justify-between border-b pb-4 ${
+          loading ? "opacity-0" : "opacity-100"
+        }`}
+      >
         <h2 className="text-lg font-bold text-gray-800">
-          {plan.name} Subscription
+          {subscription} Subscription
         </h2>
         <p className="text-gray-600 mt-2 sm:mt-0">
           Status:{" "}
@@ -104,7 +106,7 @@ const SubscriptionCard: React.FC<SubscriptionCardProps> = ({
         </p>
       </div>
 
-      <div className="mt-4">
+      <div className={`mt-4 ${loading ? "opacity-0" : "opacity-100"}`}>
         <p className="text-gray-700 text-sm">
           <strong>Start Date:</strong> {formattedStartDate}
         </p>
@@ -116,8 +118,12 @@ const SubscriptionCard: React.FC<SubscriptionCardProps> = ({
         </p>
       </div>
 
-      {plan.name !== "Platinum" && status === "Active" && (
-        <div className="flex justify-center md:justify-end mt-4">
+      {subscription !== "Platinum" && status === "Active" && (
+        <div
+          className={`flex justify-center md:justify-end mt-4 ${
+            loading ? "opacity-0" : "opacity-100"
+          }`}
+        >
           <Link href="/subscription-plans#pricing">
             <button className="bg-webprimary hover:bg-websecondary text-white py-2 px-4 rounded">
               Upgrade Your Plan

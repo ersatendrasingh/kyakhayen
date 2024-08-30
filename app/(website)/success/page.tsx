@@ -161,13 +161,13 @@ const SuccessPage = () => {
               )}
             </div>
             <div className="flex items-center justify-center mt-4">
-              <Link href="/user/orders">
+              <Link href="/meal-plan">
                 <Button
                   size="lg"
                   variant="default"
                   className="w-full bg-websecondary"
                 >
-                  Go to My Purchases
+                  Go to Meal Plan
                 </Button>
               </Link>
             </div>

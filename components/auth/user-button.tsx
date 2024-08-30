@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { getSession } from "next-auth/react";
 import {
   Boxes,
+  CircleDollarSign,
   CircleUserRound,
   Home,
   Settings,
@@ -85,6 +86,12 @@ export const UserButton = () => {
           <DropdownMenuItem className="cursor-pointer">
             <UserRound className="h-4 w-4 mr-2" />
             My Profile
+          </DropdownMenuItem>
+        </Link>
+        <Link href="/user/subscriptions">
+          <DropdownMenuItem className="cursor-pointer">
+            <CircleDollarSign className="h-4 w-4 mr-2" />
+            My Subscriptions
           </DropdownMenuItem>
         </Link>
         <Link href="/user/wellness-summary">
