@@ -14,7 +14,7 @@ export default function PageTitle({ title, className }: PageTitleProps) {
   return (
     <div
       className={cn(
-        "w-full flex items-center bg-gradient-to-br from-cyan-200 via-sky-300 to-cyan-400/65 bg-opacity-25",
+        "w-full flex items-center bg-gradient-to-r from-red-500 to-orange-500 text-white bg-opacity-25 mt-2",
         className
       )}
     >

@@ -31,6 +31,7 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({
   children,
 }) => {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
+
   useEffect(() => {
     const localStorageCartItems = localStorage.getItem("cartItems");
     if (localStorageCartItems) {
@@ -39,23 +40,14 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({
   }, [setCartItems]);
 
   const addToCart = (item: CartItem) => {
-    const existingCartItemsJSON = localStorage.getItem("cartItems");
-    const existingCartItems: CartItem[] = existingCartItemsJSON
-      ? JSON.parse(existingCartItemsJSON)
-      : [];
+    // Replace the entire cart with the new item
+    const newCartItems = [item];
 
-    const existingItemIndex = existingCartItems.findIndex(
-      (cartItem) => cartItem.id === item.id
-    );
-
-    if (existingItemIndex !== -1) {
-      existingCartItems[existingItemIndex].quantity += item.quantity;
-    } else {
-      existingCartItems.push(item);
-    }
-    localStorage.setItem("cartItems", JSON.stringify(existingCartItems));
-    setCartItems(existingCartItems);
+    // Update the state and localStorage
+    setCartItems(newCartItems);
+    localStorage.setItem("cartItems", JSON.stringify(newCartItems));
   };
+
   const updateQuantityInCart = (id: string, newQuantity: number) => {
     const existingCartItemsJSON = localStorage.getItem("cartItems");
     const existingCartItems: CartItem[] = existingCartItemsJSON

@@ -11,8 +11,8 @@ import { UserRole } from "@prisma/client";
 import { getTwoFactorConfirmationByUserId } from "@/data/two-factor-confirmation";
 import { getAccountByUserId } from "@/data/account";
 import WelcomeSocialLoginMail from "@/emails/welcome-social-login-mail";
-import { sendEmail } from "./lib/mail";
-import { assignFreePlanToUser } from "./lib/assignFreePlan";
+import { sendEmail } from "@/lib/mail";
+import { assignFreePlanToUser } from "@/lib/assignFreePlan";
 
 export const {
   handlers: { GET, POST },

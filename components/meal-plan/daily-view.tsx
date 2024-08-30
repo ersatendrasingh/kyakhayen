@@ -69,7 +69,7 @@ const DailyView = ({ date }: DailyViewProps) => {
 
       try {
         // Generate meal plan if not already generated
-        await generateMealPlan();
+        //await generateMealPlan();
 
         // Fetch meal plan for the specified date
         const formattedDate = formatISO(date, { representation: "date" });

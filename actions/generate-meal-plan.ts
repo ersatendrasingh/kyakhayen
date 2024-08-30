@@ -3,7 +3,7 @@ import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 import { db } from "@/lib/db";
 import { generateRecipesForDate } from "@/lib/assignDiet";
 import { currentUser } from "@/lib/auth";
-import { formatISO } from "date-fns";
+import { formatISO, isAfter } from "date-fns";
 
 const s3 = new S3Client({
   region: process.env.AWS_REGION as string,
@@ -37,19 +37,25 @@ const uploadToS3 = async (fileName: string, fileContent: string) => {
   }
 };
 
-export const generateMealPlan = async (): Promise<MealPlanResult[]> => {
+export const generateMealPlan = async (
+  userId: string
+): Promise<MealPlanResult[]> => {
   try {
-    const user = await currentUser();
-    if (!user) {
-      throw new Error("User not found.");
-    }
+    // const user = await currentUser();
+    // if (!user) {
+    //   throw new Error("User not found.");
+    // }
 
-    const userId = user?.id;
+    // const userId = user.id;
+    const now = new Date();
 
-    // Fetch user's meal plan to get start date and determine end date
+    // Fetch user's current active plan
     const userPlan = await db.userPlan.findFirst({
       where: {
         userId,
+        endDate: {
+          gte: now, // Plan must still be active
+        },
       },
     });
 
@@ -57,54 +63,41 @@ export const generateMealPlan = async (): Promise<MealPlanResult[]> => {
       throw new Error(`Meal plan not found for user with ID ${userId}.`);
     }
 
-    let startDate: Date;
-    let endDate: Date;
-
-    // Check if this is the first time plan is being generated
-    const existingUserMealPlan = await db.userMealPlan.findFirst({
+    // Fetch the existing meal plan entry
+    let userMealPlan = await db.userMealPlan.findFirst({
       where: {
         userId,
-      },
-    });
-
-    if (existingUserMealPlan) {
-      // If user already has a meal plan, use its start date
-      startDate = existingUserMealPlan.planStartDate;
-    } else {
-      // Otherwise, use user's plan start date
-      startDate = userPlan.startDate;
-    }
-
-    // Calculate end date as 30 days from start date
-    endDate = new Date(startDate);
-    endDate.setDate(endDate.getDate() + 29);
-
-    // Check if meal plan is already generated for this user and date range
-    const isPlanAlreadyGenerated = await db.userMealPlan.findFirst({
-      where: {
-        userId,
-        planStartDate: startDate,
         planEndDate: {
-          gte: new Date(), // gte = Greater Than or Equal
+          gte: now, // Plan end date should be in the future
         },
       },
     });
 
-    if (isPlanAlreadyGenerated) {
-      console.log(`Meal plan already generated for user ${userId}.`);
-      return [];
-    }
+    let startDate: Date;
+    let endDate: Date = userPlan.endDate!;
 
-    // Create the user meal plan if not already created
-    const createdUserMealPlan = isPlanAlreadyGenerated
-      ? isPlanAlreadyGenerated
-      : await db.userMealPlan.create({
-          data: {
-            userId,
-            planStartDate: startDate,
-            planEndDate: endDate,
-          },
-        });
+    if (userMealPlan) {
+      // If an active meal plan exists, start from today to regenerate
+      startDate = now;
+
+      // Update the meal plan's end date to match the current user plan's end date
+      await db.userMealPlan.update({
+        where: { id: userMealPlan.id },
+        data: {
+          planEndDate: endDate,
+        },
+      });
+    } else {
+      // If no active meal plan, create a new entry with the original start date
+      startDate = userPlan.startDate;
+      userMealPlan = await db.userMealPlan.create({
+        data: {
+          userId,
+          planStartDate: startDate,
+          planEndDate: endDate,
+        },
+      });
+    }
 
     // Generate meal plans for each date between start and end date
     const dates = getDatesBetween(startDate, endDate);
@@ -118,22 +111,7 @@ export const generateMealPlan = async (): Promise<MealPlanResult[]> => {
       const s3Key = `usersMealPlans/${userId}/${formattedDate}/diet.json`;
 
       // Upload meal plan JSON to S3
-      const s3Response = await uploadToS3(s3Key, mealPlanJson);
-
-      // Store the generated meal plan in the database
-      const createdMealPlan = await db.mealPlan.create({
-        data: {
-          userMealPlanId: createdUserMealPlan.id,
-          date,
-          s3url: `https://${process.env.AWS_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${s3Key}`,
-        },
-      });
-
-      // Update user meal plan to mark as generated
-      await db.userMealPlan.update({
-        where: { id: createdUserMealPlan.id },
-        data: { isPlanGenerated: true },
-      });
+      await uploadToS3(s3Key, mealPlanJson);
 
       mealPlanResults.push({ date, s3Url: s3Key });
     }

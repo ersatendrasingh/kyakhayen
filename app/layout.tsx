@@ -9,6 +9,8 @@ import NextTopLoader from "nextjs-toploader";
 import "./globals.css";
 import { auth } from "@/auth";
 import { ConfettiProvider } from "@/components/providers/confetti-provider";
+import { CartProvider } from "@/context/cart-context";
+import { UserCountryProvider } from "@/context/user-country-context";
 
 const poppins = Poppins({
   subsets: ["latin"],
@@ -86,7 +88,9 @@ export default async function RootLayout({
             speed={200}
             shadow="0 0 10px #ff3c28,0 0 5px #ff3c28"
           />
-          {children}
+          <UserCountryProvider>
+            <CartProvider>{children}</CartProvider>
+          </UserCountryProvider>
         </body>
       </html>
     </SessionProvider>

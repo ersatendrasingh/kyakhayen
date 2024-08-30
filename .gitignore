@@ -5,6 +5,7 @@
 /.pnp
 .pnp.js
 .yarn/install-state.gz
+/config
 
 # testing
 /coverage
@@ -12,6 +13,9 @@
 # next.js
 /.next/
 /out/
+
+#VSCODE
+/.vscode/
 
 # production
 /build

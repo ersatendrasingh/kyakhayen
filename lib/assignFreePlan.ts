@@ -13,7 +13,7 @@ export async function assignFreePlanToUser(userId: string) {
 
     const startDate = new Date();
     const endDate = new Date();
-    endDate.setMonth(endDate.getMonth() + 1); // Assuming the free plan lasts 1 month
+    endDate.setDate(endDate.getDate() + 7); // Assuming the free plan lasts 7 days
 
     const userPlan = await assignPlanToUser(
       userId,

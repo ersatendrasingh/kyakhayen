@@ -232,7 +232,7 @@ const EmailVerifiedMail = ({ name }: EmailVerifiedMailProps) => {
           color: "white",
         }}
       >
-        <p>&copy; 2024 Kya Khayen?. All rights reserved.</p>
+        <p>&copy; {new Date().getFullYear()} Kyakhayen. All rights reserved.</p>
         <h2
           style={{
             fontSize: "20px",
