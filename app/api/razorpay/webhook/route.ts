@@ -26,36 +26,34 @@ export async function POST(req: Request) {
       process.env.RAZORPAY_WEBHOOK_SECRET as string
     );
 
-    console.log("isValidSignature", isValidSignature);
-
     if (!isValidSignature) {
       return NextResponse.json("Invalid webhook signature", { status: 400 });
     }
 
+    let response;
+
     switch (event) {
       case "payment.captured":
-        await handlePaymentCaptured(payload);
+        response = await handlePaymentCaptured(payload);
         break;
       case "payment.failed":
-        await handlePaymentFailed(payload);
+        response = await handlePaymentFailed(payload);
         break;
       default:
         console.log("Unknown event type:", event);
+        return NextResponse.json("Unknown event type", { status: 400 });
     }
 
-    return NextResponse.json("Webhook processed successfully", { status: 200 });
+    return response;
   } catch (error) {
     console.error("[RAZORPAY_WEBHOOK]", error);
     return NextResponse.json("Internal Server Error", { status: 500 });
   }
 }
 
-async function handlePaymentCaptured(payload: any): Promise<void> {
+const handlePaymentCaptured = async (payload: any) => {
   try {
-    const mealPlanQueue = new Queue("mealPlan");
     const paymentEntity = payload.payment.entity;
-
-    console.log("Payment entity captured:", paymentEntity);
 
     const planId = paymentEntity.notes.planId;
 
@@ -144,8 +142,10 @@ async function handlePaymentCaptured(payload: any): Promise<void> {
         paymentStatus: "Paid",
       },
     });
-
+    const mealPlanQueue = new Queue("generateMealPlan");
     await mealPlanQueue.add("generateMealPlan", { userId: order.user.id });
+
+    console.log(`Meal Plan generation queue added for user ${order.user.id}`);
 
     const customerEmail = order.user.email;
     const customerName = order.user.name;
@@ -218,13 +218,16 @@ async function handlePaymentCaptured(payload: any): Promise<void> {
       ),
     });
 
-    console.log("Payment captured successfully");
+    return NextResponse.json({ success: true }, { status: 200 });
   } catch (error) {
     console.error("Error handling captured payment:", error);
+    return NextResponse.json("Error handling captured payment", {
+      status: 500,
+    });
   }
-}
+};
 
-async function handlePaymentFailed(payload: any): Promise<void> {
+const handlePaymentFailed = async (payload: any) => {
   try {
     const paymentEntity = payload.payment.entity;
 
@@ -334,8 +337,11 @@ async function handlePaymentFailed(payload: any): Promise<void> {
       ),
     });
 
-    console.log("Payment failed...");
+    return NextResponse.json({ success: true }, { status: 200 });
   } catch (error) {
     console.error("Error handling captured payment:", error);
+    return NextResponse.json("Error handling captured payment", {
+      status: 500,
+    });
   }
-}
+};
