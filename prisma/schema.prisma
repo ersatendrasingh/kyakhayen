@@ -378,7 +378,7 @@ model IngredientsForm {
 model Plan {
   id              String         @id @default(uuid())
   name            String
-  slug            String         @unique
+  slug            String         @default("slug")
   durationMonths  Int?
   regularPriceInr Float?
   regularPriceUsd Float?
@@ -398,7 +398,7 @@ model Feature {
   id       String @id @default(uuid())
   name     String
   planId   String
-  position Int
+  position Int    @default(0)
   plans    Plan   @relation(fields: [planId], references: [id], onDelete: Cascade)
 }
 
