@@ -13,6 +13,7 @@ import { getRelatedRecipes } from "@/actions/get-related-recipe";
 import RecipeCommentSection from "@/components/recipes/recipe-comments-section";
 import RecipeReviewsSection from "@/components/recipes/recipe-reviews-section";
 import RecipeShareSection from "@/components/recipes/recipe-share-section";
+import { currentUser } from "@/lib/auth";
 
 type Props = {
   params: { recipeSlug: string };

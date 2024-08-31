@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import axios from "axios";
 import { toast } from "react-toastify";
 import Image from "next/image";
-import { Loader2 } from "lucide-react";
+import { Heart, HeartOff, Loader2 } from "lucide-react";
 
 interface FavoriteButtonProps {
   recipeId: string;
@@ -99,48 +99,33 @@ const FavoriteButton = ({
 
   return (
     <div className={classNames}>
-      <button onClick={isFavorited ? handleUnfavorite : handleFavorite}>
+      <button
+        onClick={isFavorited ? handleUnfavorite : handleFavorite}
+        title={isFavorited ? "Remove from favorites" : "Add to favorites"}
+      >
         {isFavorited === undefined ? (
-          <div className="flex items-center bg-gray-500 rounded-l-3xl px-3 py-1">
-            <span className="text-white font-semibold ml-1">Loading...</span>
+          <div className="flex items-center bg-white rounded-b-3xl py-1 px-1">
+            <Loader2 className="animate-spin w-4 h-4" stroke="green" />
           </div>
         ) : isFavorited ? (
-          <div className="flex items-center rounded-l-3xl bg-red-500 px-3 py-1">
-            <Image
-              src="/assets/images/unfavorite.png"
-              alt="unfavorite"
-              width={20}
-              height={20}
-            />
-            <span className="text-white text-xs ml-1">
-              {isLoading ? (
-                <div className="flex items-center">
-                  <Loader2 className="animate-spin w-3 h-3 mr-1" />
-                  <span className="text-white">Removing...</span>
-                </div>
-              ) : (
-                "Remove from favorites"
-              )}
-            </span>
+          <div className="flex items-center bg-white rounded-b-3xl py-1 px-1">
+            {isLoading ? (
+              <div className="flex items-center">
+                <Loader2 className="animate-spin w-4 h-4" stroke="green" />
+              </div>
+            ) : (
+              <Heart fill="red" stroke="red" size={20} />
+            )}
           </div>
         ) : (
-          <div className="flex items-center bg-green-500 rounded-l-3xl px-3 py-1">
-            <Image
-              src="/assets/images/favorite.png"
-              alt="favorite"
-              width={20}
-              height={20}
-            />
-            <span className="text-white text-xs ml-1">
-              {isLoading ? (
-                <div className="flex items-center">
-                  <Loader2 className="animate-spin w-3 h-3 mr-1" />
-                  <span className="text-white">Adding...</span>
-                </div>
-              ) : (
-                "Add to favorites"
-              )}
-            </span>
+          <div className="flex items-center bg-white rounded-b-3xl py-1 px-1">
+            {isLoading ? (
+              <div className="flex items-center">
+                <Loader2 className="animate-spin w-4 h-4" stroke="red" />
+              </div>
+            ) : (
+              <Heart fill="green" stroke="green" size={20} />
+            )}
           </div>
         )}
       </button>

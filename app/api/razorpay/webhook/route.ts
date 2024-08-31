@@ -145,8 +145,6 @@ const handlePaymentCaptured = async (payload: any) => {
     const mealPlanQueue = new Queue("generateMealPlan");
     await mealPlanQueue.add("generateMealPlan", { userId: order.user.id });
 
-    console.log(`Meal Plan generation queue added for user ${order.user.id}`);
-
     const customerEmail = order.user.email;
     const customerName = order.user.name;
     const customerPhoneNumber = order.user.phoneNumber;
