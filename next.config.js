@@ -31,6 +31,12 @@ const NextConfig = {
   },
   webpack: (config, { isServer }) => {
     if (!isServer) {
+      // Avoid memory issues by splitting large chunks
+      config.optimization.splitChunks = {
+        chunks: "all",
+        maxSize: 250000, // Adjust this size based on your app's needs
+      };
+
       config.resolve.fallback = {
         fs: false,
         net: false,
@@ -40,4 +46,5 @@ const NextConfig = {
     return config;
   },
 };
+
 module.exports = withPWA(NextConfig);
