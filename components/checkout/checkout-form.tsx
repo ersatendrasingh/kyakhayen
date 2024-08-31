@@ -1,5 +1,5 @@
 "use client";
-import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js";
+
 import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import BillingForm from "@/components/checkout/billing-form";
