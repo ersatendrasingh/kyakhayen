@@ -79,7 +79,7 @@ const SubscriptionPlansTable = ({
       ),
     },
     {
-      accessorKey: "durationMonths",
+      accessorKey: "durationDays",
       header: ({ column }) => (
         <Button
           variant="ghost"
@@ -91,12 +91,10 @@ const SubscriptionPlansTable = ({
         </Button>
       ),
       cell: ({ row }) => {
-        const { durationMonths } = row.original;
+        const { durationDays } = row.original;
         return (
           <div className="text-center">
-            {durationMonths! > 1
-              ? `${durationMonths} Months`
-              : `${durationMonths} Month`}
+            {durationDays! > 1 ? `${durationDays} Days` : `${durationDays} Day`}
           </div>
         );
       },

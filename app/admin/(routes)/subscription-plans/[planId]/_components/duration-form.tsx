@@ -28,7 +28,7 @@ interface DurationFormProps {
 }
 
 const formSchema = z.object({
-  durationMonths: z.coerce.number().optional(),
+  durationDays: z.coerce.number().optional(),
 });
 
 export const DurationForm = ({ initialData, planId }: DurationFormProps) => {
@@ -41,7 +41,7 @@ export const DurationForm = ({ initialData, planId }: DurationFormProps) => {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      durationMonths: initialData.durationMonths || undefined,
+      durationDays: initialData.durationDays || undefined,
     },
   });
 
@@ -72,7 +72,7 @@ export const DurationForm = ({ initialData, planId }: DurationFormProps) => {
             <>Cancel</>
           ) : (
             <>
-              {initialData.durationMonths ? (
+              {initialData.durationDays ? (
                 <>
                   <Pencil className="w-6 h-6 pr-2" /> Edit duration
                 </>
@@ -91,14 +91,14 @@ export const DurationForm = ({ initialData, planId }: DurationFormProps) => {
           <p
             className={cn(
               "text-sm mt-2",
-              !initialData.durationMonths && "italic text-slate-500"
+              !initialData.durationDays && "italic text-slate-500"
             )}
           >
-            <span className="font-bold mr-2">Duration in months : </span>
-            {initialData.durationMonths
-              ? initialData.durationMonths > 1
-                ? initialData.durationMonths + " Months"
-                : initialData.durationMonths + " Month"
+            <span className="font-bold mr-2">Duration in days : </span>
+            {initialData.durationDays
+              ? initialData.durationDays > 1
+                ? initialData.durationDays + " Days"
+                : initialData.durationDays + " Day"
               : "No duration set yet"}
           </p>
         </>
@@ -111,7 +111,7 @@ export const DurationForm = ({ initialData, planId }: DurationFormProps) => {
           >
             <FormField
               control={form.control}
-              name="durationMonths"
+              name="durationDays"
               render={({ field }) => (
                 <FormItem>
                   <FormControl>
@@ -122,7 +122,7 @@ export const DurationForm = ({ initialData, planId }: DurationFormProps) => {
                         step={0.01}
                         disabled={isSubmitting}
                         {...field}
-                        placeholder="Set your plan duration in months"
+                        placeholder="Set your plan duration in days"
                       />
                     </>
                   </FormControl>

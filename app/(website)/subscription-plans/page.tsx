@@ -1,9 +1,8 @@
 import { Metadata } from "next";
 
-import { PageHeader } from "@/components/page-header";
 import PricingTable from "@/components/subscription-plans/pricing-table";
 import IntroSection from "@/components/subscription-plans/intro-section";
-import PublicView from "@/components/meal-plan/public-view";
+
 import { getSubscriptionPlans } from "@/actions/get-subscription-plans";
 
 const meta = {
