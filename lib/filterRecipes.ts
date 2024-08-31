@@ -1,33 +1,24 @@
 import { RecipeWithCategory } from "@/types/recipe";
-import { currentUser } from "@/lib/auth";
 import { GetRecipes } from "@/actions/get-recipes";
 import { db } from "@/lib/db";
 import { filterRecipesBySeason } from "./filterBySeason";
 
-export const filterRecipesByUserPreferences = async (): Promise<
-  RecipeWithCategory[]
-> => {
+export const filterRecipesByUserPreferences = async (
+  userId: string
+): Promise<RecipeWithCategory[]> => {
   try {
-    // Get current user
-    const user = await currentUser();
-    const userId = user?.id;
+    // Fetch user data with necessary relations
+    const userData = await db.user.findUnique({
+      where: { id: userId },
+      include: {
+        userCuisines: true,
+        UserAllrgies: true,
+        UserHealthGoals: true,
+      },
+    });
 
-    // Fetch user data if user is logged in
-    let userData: any = null;
-    if (userId) {
-      userData = await db.user.findUnique({
-        where: { id: userId },
-        include: {
-          userCuisines: true,
-          UserAllrgies: true, // Ensure this is spelled correctly according to your schema
-          UserHealthGoals: true,
-          // Add more includes as needed
-        },
-      });
-
-      if (!userData) {
-        throw new Error(`User with ID ${userId} not found.`);
-      }
+    if (!userData) {
+      throw new Error(`User with ID ${userId} not found.`);
     }
 
     const currentMonth = new Date().getMonth() + 1;
@@ -42,14 +33,24 @@ export const filterRecipesByUserPreferences = async (): Promise<
       return map;
     }, {} as { [key: string]: string });
 
-    // Extract user allergy IDs
-    const userAllergyIds =
-      userData?.UserAllrgies.map(
-        (allergy: { allergyId: string }) => allergy.allergyId
-      ) || [];
+    // Extract user preference IDs from related tables
+    const userAllergyIds = userData.UserAllrgies.map(
+      (allergy) => allergy.allergyId
+    );
+    const userCuisineIds = userData.userCuisines.map(
+      (cuisine) => cuisine.cuisineId
+    );
+    const userHealthGoalIds = userData.UserHealthGoals.map(
+      (goal) => goal.healthGoalId
+    );
 
-    // Fetch recipe allergies
+    // Fetch recipe-related data
     const recipeAllergies = await db.recipeAllergies.findMany();
+    const recipeCuisines = await db.recipeCuisines.findMany();
+    const recipeHealthGoals = await db.recipeHealthGoals.findMany();
+    const recipePrakritis = await db.recipePrakriti.findMany();
+
+    // Create maps for filtering
     const recipeAllergyMap = recipeAllergies.reduce((map, allergy) => {
       if (!map[allergy.recipeId]) {
         map[allergy.recipeId] = [];
@@ -58,33 +59,53 @@ export const filterRecipesByUserPreferences = async (): Promise<
       return map;
     }, {} as { [key: string]: string[] });
 
-    // Filter recipes based on user preferences and allergies
+    const recipeCuisineMap = recipeCuisines.reduce((map, cuisine) => {
+      if (!map[cuisine.recipeId]) {
+        map[cuisine.recipeId] = [];
+      }
+      map[cuisine.recipeId].push(cuisine.cuisineId);
+      return map;
+    }, {} as { [key: string]: string[] });
+
+    const recipeHealthGoalMap = recipeHealthGoals.reduce((map, goal) => {
+      if (!map[goal.recipeId]) {
+        map[goal.recipeId] = [];
+      }
+      map[goal.recipeId].push(goal.healthGoalId);
+      return map;
+    }, {} as { [key: string]: string[] });
+
+    const recipePrakritiMap = recipePrakritis.reduce((map, prakriti) => {
+      if (!map[prakriti.recipeId]) {
+        map[prakriti.recipeId] = [];
+      }
+      map[prakriti.recipeId].push(prakriti.prakritiId);
+      return map;
+    }, {} as { [key: string]: string[] });
+
+    // Filter recipes based on user preferences
     const filteredRecipes = allRecipes.filter((recipe) => {
       // Check if recipe matches user's food preferences
       const matchesFoodPreference = (() => {
-        if (userData) {
-          switch (userData.foodPreferenceId) {
-            case categoryMap["non veg"]:
-              return true; // Non-veg users can eat all types of food
-            case categoryMap["veg"]:
-              return recipe.recipeCategoriesId === categoryMap["veg"];
-            case categoryMap["egg"]:
-              return (
-                recipe.recipeCategoriesId === categoryMap["veg"] ||
-                recipe.recipeCategoriesId === categoryMap["egg"]
-              );
-            case categoryMap["pescetarian"]:
-              return (
-                recipe.recipeCategoriesId === categoryMap["veg"] ||
-                recipe.recipeCategoriesId === categoryMap["pescetarian"]
-              );
-            case categoryMap["vegan"]:
-              return recipe.recipeCategoriesId === categoryMap["vegan"];
-            default:
-              return false;
-          }
-        } else {
-          return true; // No user logged in, return all recipes
+        switch (userData.foodPreferenceId) {
+          case categoryMap["non veg"]:
+            return true; // Non-veg users can eat all types of food
+          case categoryMap["veg"]:
+            return recipe.recipeCategoriesId === categoryMap["veg"];
+          case categoryMap["egg"]:
+            return (
+              recipe.recipeCategoriesId === categoryMap["veg"] ||
+              recipe.recipeCategoriesId === categoryMap["egg"]
+            );
+          case categoryMap["pescetarian"]:
+            return (
+              recipe.recipeCategoriesId === categoryMap["veg"] ||
+              recipe.recipeCategoriesId === categoryMap["pescetarian"]
+            );
+          case categoryMap["vegan"]:
+            return recipe.recipeCategoriesId === categoryMap["vegan"];
+          default:
+            return false;
         }
       })();
 
@@ -93,7 +114,34 @@ export const filterRecipesByUserPreferences = async (): Promise<
         userAllergyIds.includes(allergyId)
       );
 
-      return matchesFoodPreference && !containsAllergens;
+      // Check if recipe matches user's preferred cuisines
+      const matchesCuisinePreference = recipeCuisineMap[recipe.id]?.some(
+        (cuisineId) => userCuisineIds.includes(cuisineId)
+      );
+
+      // Check if recipe matches user's health goals
+      const matchesHealthGoals = recipeHealthGoalMap[recipe.id]?.some(
+        (goalId) => userHealthGoalIds.includes(goalId)
+      );
+
+      // Check if recipe matches user's prakriti
+      const matchesPrakriti = recipePrakritiMap[recipe.id]?.some(
+        (prakritiId) => prakritiId === userData.prakritiId
+      );
+
+      // Check if recipe matches user's cooking skill level   - This will be removed in the future
+      // const matchesCookingSkill =
+      //   !userData.cookingSkillId ||
+      //   recipe.recipeDifficultyId! <= userData.cookingSkillId;
+
+      return (
+        matchesFoodPreference &&
+        !containsAllergens &&
+        matchesCuisinePreference &&
+        matchesHealthGoals &&
+        matchesPrakriti //&&
+        //matchesCookingSkill
+      );
     });
 
     // Filter recipes by season

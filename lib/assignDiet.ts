@@ -31,7 +31,7 @@ export const generateRecipesForDate = async (
     const recentRecipeIds = new Set<string>(getRecentRecipes(userId, 6)); // Fetch recipes used in the last 6 days
 
     // Filter recipes based on user preferences
-    const filteredRecipes = await filterRecipesByUserPreferences();
+    const filteredRecipes = await filterRecipesByUserPreferences(userId);
 
     // Categorize recipes based on their types dynamically
     const categorizedRecipes: { [key: string]: RecipeWithCategory[] } = {};

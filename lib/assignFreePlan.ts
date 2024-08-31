@@ -1,5 +1,6 @@
 import { db } from "@/lib/db";
 import { assignPlanToUser } from "@/lib/assignPlanToUser";
+import { Queue } from "bullmq";
 
 export async function assignFreePlanToUser(userId: string) {
   try {
@@ -13,7 +14,7 @@ export async function assignFreePlanToUser(userId: string) {
 
     const startDate = new Date();
     const endDate = new Date();
-    endDate.setDate(endDate.getDate() + 7); // Assuming the free plan lasts 7 days
+    endDate.setDate(endDate.getDate() + 6); // Assuming the free plan lasts 7 days
 
     const userPlan = await assignPlanToUser(
       userId,
@@ -21,7 +22,7 @@ export async function assignFreePlanToUser(userId: string) {
       startDate,
       endDate
     );
-    console.log(`Assigned free plan to user ${userId}`);
+
     return userPlan;
   } catch (error) {
     console.error("Error assigning free plan to user:", error);

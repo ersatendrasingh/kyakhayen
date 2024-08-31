@@ -8,6 +8,7 @@ import { User } from "@prisma/client";
 import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
+import PreferenceConfirmationModal from "@/components/modals/preference-confirmation-modal";
 
 interface HealthGoal {
   id: string;
@@ -32,6 +33,7 @@ const UserHealthGoals = ({ userData, healthGoals }: UserHealthGoalsProps) => {
   const [deletingHealthGoalId, setDeletingHealthGoalId] = useState<
     string | null
   >(null);
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const router = useRouter();
   const handleAddHealthGoalClick = () => {
     setIsExpanded(!isExpanded);
@@ -71,6 +73,7 @@ const UserHealthGoals = ({ userData, healthGoals }: UserHealthGoalsProps) => {
           });
           router.refresh();
           setIsExpanded(false);
+          setIsModalOpen(true);
         } else {
           console.error("Failed to update user's preferences:", response.data);
         }
@@ -108,7 +111,15 @@ const UserHealthGoals = ({ userData, healthGoals }: UserHealthGoalsProps) => {
       setDeletingHealthGoalId(null);
     }
   };
+  const handleModalClose = () => {
+    setIsModalOpen(false);
+  };
 
+  const handleModalConfirm = () => {
+    setIsModalOpen(false);
+    // Navigate to meal plan page or perform other actions
+    router.push("/meal-plan");
+  };
   return (
     <div className="py-6">
       <h2 className="text-2xl font-bold mb-4">Health Goals</h2>
@@ -204,6 +215,13 @@ const UserHealthGoals = ({ userData, healthGoals }: UserHealthGoalsProps) => {
           ))}
         </div>
       </div>
+      <PreferenceConfirmationModal
+        title="Health Goals Updated"
+        description="Your health goals have been successfully updated. Your meal plan has been tailored to help you achieve these goals. Click the button below to review your updated meal plan."
+        isOpen={isModalOpen}
+        onClose={handleModalClose}
+        onConfirm={handleModalConfirm}
+      />
     </div>
   );
 };

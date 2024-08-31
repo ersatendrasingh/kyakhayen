@@ -104,9 +104,10 @@ const handlePaymentCaptured = async (payload: any) => {
       // Update the existing plan with the new plan details and extend the end date
       const newEndDate = activeUserPlan.endDate
         ? new Date(
-            new Date(activeUserPlan.endDate).setMonth(
-              new Date(activeUserPlan.endDate).getMonth() +
-                (plan.durationMonths || 0)
+            new Date(activeUserPlan.endDate).setDate(
+              new Date(activeUserPlan.endDate).getDate() +
+                (plan.durationDays || 0) -
+                1 // Subtract 1 day
             )
           )
         : new Date(); // Fallback to current date if `endDate` is null
@@ -126,8 +127,8 @@ const handlePaymentCaptured = async (payload: any) => {
           planId: plan.id,
           startDate: new Date(),
           endDate: new Date(
-            new Date().setMonth(
-              new Date().getMonth() + (plan.durationMonths || 0)
+            new Date().setDate(
+              new Date().getDate() + (plan.durationDays || 0) - 1 // Subtract 1 day
             )
           ),
         },
@@ -142,6 +143,7 @@ const handlePaymentCaptured = async (payload: any) => {
         paymentStatus: "Paid",
       },
     });
+    //Call the generate meal plan queue
     const mealPlanQueue = new Queue("generateMealPlan");
     await mealPlanQueue.add("generateMealPlan", { userId: order.user.id });
 

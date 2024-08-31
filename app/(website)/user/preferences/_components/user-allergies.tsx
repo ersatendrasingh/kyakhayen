@@ -8,6 +8,7 @@ import { User } from "@prisma/client";
 import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
+import PreferenceConfirmationModal from "@/components/modals/preference-confirmation-modal";
 
 interface Allergy {
   id: string;
@@ -32,6 +33,7 @@ const UserAllergies = ({ userData, allergies }: UserAllergiesProps) => {
   const [deletingAllergyId, setDeletingAllergyId] = useState<string | null>(
     null
   );
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const router = useRouter();
   const handleAddAllergyClick = () => {
     setIsExpanded(!isExpanded);
@@ -89,6 +91,7 @@ const UserAllergies = ({ userData, allergies }: UserAllergiesProps) => {
           );
           router.refresh();
           setIsExpanded(false);
+          setIsModalOpen(true);
         } else {
           console.error("Failed to update user's preferences:", response.data);
         }
@@ -126,7 +129,15 @@ const UserAllergies = ({ userData, allergies }: UserAllergiesProps) => {
       setDeletingAllergyId(null);
     }
   };
+  const handleModalClose = () => {
+    setIsModalOpen(false);
+  };
 
+  const handleModalConfirm = () => {
+    setIsModalOpen(false);
+    // Navigate to meal plan page or perform other actions
+    router.push("/meal-plan");
+  };
   return (
     <div className="py-6">
       <h2 className="text-2xl font-bold mb-4">Allergies</h2>
@@ -220,6 +231,13 @@ const UserAllergies = ({ userData, allergies }: UserAllergiesProps) => {
           ))}
         </div>
       </div>
+      <PreferenceConfirmationModal
+        title="Allergy Information Updated"
+        description="Your allergy information has been successfully updated. We've adjusted your meal plan to ensure it aligns with your health and safety needs. Click the button below to review your updated meal plan."
+        isOpen={isModalOpen}
+        onClose={handleModalClose}
+        onConfirm={handleModalConfirm}
+      />
     </div>
   );
 };

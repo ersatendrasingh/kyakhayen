@@ -4,6 +4,9 @@ import { db } from "@/lib/db";
 import { generateRecipesForDate } from "@/lib/assignDiet";
 
 import { formatISO } from "date-fns";
+import { sendEmail } from "@/lib/mail";
+import { render } from "@react-email/render";
+import CustomerMealPlanMail from "@/emails/customer-meal-plan-mail";
 
 const s3 = new S3Client({
   region: process.env.AWS_REGION as string,
@@ -42,6 +45,11 @@ export const generateMealPlan = async (
 ): Promise<MealPlanResult[]> => {
   try {
     const now = new Date();
+
+    // Fetch user's details
+    const user = await db.user.findUnique({
+      where: { id: userId },
+    });
 
     // Fetch user's current active plan
     const userPlan = await db.userPlan.findFirst({
@@ -109,6 +117,19 @@ export const generateMealPlan = async (
 
       mealPlanResults.push({ date, s3Url: s3Key });
     }
+
+    // Send notification to user
+
+    await sendEmail({
+      to: user?.email as string,
+      subject: "Your Customized Meal Plan is Ready For You!",
+      html: render(
+        CustomerMealPlanMail({
+          subjectLine: "Exciting News! Your Personalized Meal Plan Awaits.",
+          name: user?.name as string,
+        })
+      ),
+    });
 
     return mealPlanResults;
   } catch (error) {

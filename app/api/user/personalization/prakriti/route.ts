@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { currentUser } from "@/lib/auth";
 import { isPersonalizationComplete } from "@/lib/personalization";
+import { Queue } from "bullmq";
 interface PrakritiSelection {
   prakritiId: string;
   questionId: string;
@@ -66,15 +67,21 @@ export async function PATCH(req: Request) {
 
     // Check if personalization is complete
     const isPersonalised = isPersonalizationComplete(updatedUser);
-    console.log("isPersonalised", isPersonalised);
-    await db.user.update({
-      where: {
-        id: user.id,
-      },
-      data: {
-        isPersonalised,
-      },
-    });
+
+    if (isPersonalised) {
+      await db.user.update({
+        where: {
+          id: user.id,
+        },
+        data: {
+          isPersonalised,
+        },
+      });
+
+      //Call the generate meal plan queue
+      const mealPlanQueue = new Queue("generateMealPlan");
+      await mealPlanQueue.add("generateMealPlan", { userId: user.id });
+    }
     return NextResponse.json(updatedUser, {
       status: 200,
     });

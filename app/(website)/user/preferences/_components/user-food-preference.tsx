@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { FaPlus, FaTrashAlt } from "react-icons/fa";
+import { FaPlus } from "react-icons/fa";
 import { GrUpdate } from "react-icons/gr";
 import Image from "next/image";
 import axios from "axios";
@@ -9,6 +9,7 @@ import { User } from "@prisma/client";
 import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
+import PreferenceConfirmationModal from "@/components/modals/preference-confirmation-modal";
 
 interface FoodPreference {
   id: string;
@@ -34,6 +35,7 @@ const UserFoodPreferences = ({
     string | null
   >(userData.foodPreferenceId || null);
   const [loading, setLoading] = useState<boolean>(false);
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const router = useRouter();
 
   const handleAddPreferenceClick = () => {
@@ -66,6 +68,7 @@ const UserFoodPreferences = ({
           });
           router.refresh();
           setIsExpanded(false);
+          setIsModalOpen(true);
         } else {
           console.error("Failed to update user's preference:", response.data);
         }
@@ -78,7 +81,15 @@ const UserFoodPreferences = ({
       console.error("Selected preference not found");
     }
   };
+  const handleModalClose = () => {
+    setIsModalOpen(false);
+  };
 
+  const handleModalConfirm = () => {
+    setIsModalOpen(false);
+    // Navigate to meal plan page or perform other actions
+    router.push("/meal-plan");
+  };
   return (
     <div className="py-6">
       <h2 className="text-2xl font-bold mb-4">Food Preferences</h2>
@@ -161,6 +172,14 @@ const UserFoodPreferences = ({
           ))}
         </div>
       </div>
+
+      <PreferenceConfirmationModal
+        title="Food Preference Updated"
+        description="Your food preference has been successfully updated. Your meal plan has also been adjusted accordingly. Click the button below to check your updated meal plan."
+        isOpen={isModalOpen}
+        onClose={handleModalClose}
+        onConfirm={handleModalConfirm}
+      />
     </div>
   );
 };
