@@ -12,6 +12,7 @@ import SocialShare from "@/components/social-share";
 import { cn } from "@/lib/utils";
 import { RecipeCategories, Recipes, Review } from "@prisma/client";
 import FavoriteButton from "../favorite-button";
+import { useCurrentUser } from "@/hooks/use-current-user";
 //import { Queue } from "bullmq";
 
 type RecipeWithCategory = Recipes & {
@@ -23,6 +24,7 @@ interface BannerCardProps {
   className?: string;
 }
 const BannerCard = ({ recipe, className }: BannerCardProps) => {
+  const user = useCurrentUser();
   const [averageRating, setAverageRating] = useState<number>(0);
   const [reviewsCount, setReviewsCount] = useState<number>(0);
   const [isFavorited, setIsFavorited] = useState<boolean>(false);
@@ -48,7 +50,7 @@ const BannerCard = ({ recipe, className }: BannerCardProps) => {
   useEffect(() => {
     const fetchUserFavoriteRecipeIds = async () => {
       try {
-        const response = await axios.get(`/api/user/favorites`);
+        const response = await axios.get(`/api/user/${user?.id}/favorites`);
 
         const favoriteRecipeIds = response.data.map(
           (favorite: any) => favorite.recipe.id
@@ -58,7 +60,7 @@ const BannerCard = ({ recipe, className }: BannerCardProps) => {
         console.error("Error fetching user favorites:", error);
       }
     };
-    fetchUserFavoriteRecipeIds();
+    if (user) fetchUserFavoriteRecipeIds();
   }, [recipe.id]); // Only re-run the effect if recipe.id changes
 
   // Assuming setUserFavoriteRecipeIds and setIsFavorited are set up with useState elsewhere
