@@ -12,6 +12,7 @@ import SocialShare from "@/components/social-share";
 import { cn } from "@/lib/utils";
 import { RecipeCategories, Recipes, Review } from "@prisma/client";
 import FavoriteButton from "../favorite-button";
+//import { Queue } from "bullmq";
 
 type RecipeWithCategory = Recipes & {
   RecipeCategories: RecipeCategories | null;
@@ -24,9 +25,6 @@ interface BannerCardProps {
 const BannerCard = ({ recipe, className }: BannerCardProps) => {
   const [averageRating, setAverageRating] = useState<number>(0);
   const [reviewsCount, setReviewsCount] = useState<number>(0);
-  const [userFavoriteRecipeIds, setUserFavoriteRecipeIds] = useState<string[]>(
-    []
-  );
   const [isFavorited, setIsFavorited] = useState<boolean>(false);
 
   useEffect(() => {
@@ -38,15 +36,6 @@ const BannerCard = ({ recipe, className }: BannerCardProps) => {
       setAverageRating(totalRating / recipe.Review.length);
       setReviewsCount(recipe.Review.length);
     }
-
-    const trackView = async () => {
-      try {
-        await axios.post("/api/track-view", { recipeId: recipe.id });
-      } catch (error) {
-        console.error("Error tracking view:", error);
-      }
-    };
-
     const userView = async () => {
       try {
         await axios.post("/api/add-view", { recipeId: recipe.id });
@@ -54,19 +43,16 @@ const BannerCard = ({ recipe, className }: BannerCardProps) => {
         console.error("Error tracking view:", error);
       }
     };
-
-    trackView();
     userView();
   }, [recipe.Review, recipe.id]);
   useEffect(() => {
     const fetchUserFavoriteRecipeIds = async () => {
       try {
-        const response = await axios.get("/api/user/favorites");
+        const response = await axios.get(`/api/user/favorites`);
 
         const favoriteRecipeIds = response.data.map(
           (favorite: any) => favorite.recipe.id
         );
-        setUserFavoriteRecipeIds(favoriteRecipeIds);
         setIsFavorited(favoriteRecipeIds.includes(recipe.id));
       } catch (error) {
         console.error("Error fetching user favorites:", error);
@@ -93,7 +79,7 @@ const BannerCard = ({ recipe, className }: BannerCardProps) => {
             />
             <FavoriteButton
               recipeId={recipe.id}
-              classNames="absolute top-4 right-0 z-10"
+              classNames="absolute top-0 right-4 z-10"
               initialIsFavorited={isFavorited}
             />
           </div>

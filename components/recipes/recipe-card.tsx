@@ -11,16 +11,17 @@ import FavoriteButton from "@/components/favorite-button";
 import { cn } from "@/lib/utils";
 import { formatTime } from "@/lib/formatTime";
 import { RecipeWithCategory } from "@/types/recipe";
+import { useCurrentUser } from "@/hooks/use-current-user";
 
 interface RecipeCardProps {
   recipe: RecipeWithCategory;
 }
 
 const RecipeCard = ({ recipe }: RecipeCardProps) => {
+  const user = useCurrentUser();
+
   const [isInView, setIsInView] = useState(false);
-  const [userFavoriteRecipeIds, setUserFavoriteRecipeIds] = useState<string[]>(
-    []
-  );
+
   const [isFavorited, setIsFavorited] = useState<boolean>(false);
   const { ref, inView } = useInView({
     triggerOnce: true,
@@ -29,19 +30,19 @@ const RecipeCard = ({ recipe }: RecipeCardProps) => {
   useEffect(() => {
     const fetchUserFavoriteRecipeIds = async () => {
       try {
-        const response = await axios.get("/api/user/favorites");
+        const response = await axios.get(`/api/user/${user?.id}/favorites`);
 
         const favoriteRecipeIds = response.data.map(
           (favorite: any) => favorite.recipe.id
         );
-        setUserFavoriteRecipeIds(favoriteRecipeIds);
         setIsFavorited(favoriteRecipeIds.includes(recipe.id));
       } catch (error) {
         console.error("Error fetching user favorites:", error);
       }
     };
-    fetchUserFavoriteRecipeIds();
+    if (user) fetchUserFavoriteRecipeIds();
   }, [recipe.id]);
+
   useEffect(() => {
     setIsInView(inView);
   }, [inView]);
@@ -55,7 +56,7 @@ const RecipeCard = ({ recipe }: RecipeCardProps) => {
     >
       <div className="h-full flex flex-col relative">
         {/* FavoriteButton component */}
-        <div className="absolute top-2 right-0 z-10">
+        <div className="absolute top-0 right-3 z-10">
           <FavoriteButton
             recipeId={recipe.id}
             initialIsFavorited={isFavorited}
