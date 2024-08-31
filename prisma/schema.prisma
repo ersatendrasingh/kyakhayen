@@ -379,7 +379,7 @@ model Plan {
   id              String         @id @default(uuid())
   name            String
   slug            String         @unique
-  durationMonths  Int?
+  durationDays    Int?
   regularPriceInr Float?
   regularPriceUsd Float?
   priceInr        Float?

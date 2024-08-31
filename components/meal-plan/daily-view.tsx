@@ -4,7 +4,6 @@ import { MealTimes } from "@prisma/client";
 import { useEffect, useState } from "react";
 import { FaPlus, FaMinus } from "react-icons/fa";
 import Image from "next/image";
-import { generateMealPlan } from "@/actions/generate-meal-plan";
 
 import { getMealPlanFromS3 } from "@/actions/get-meal-plan-from-s3";
 import { formatDate } from "@/lib/formatDate";
@@ -68,9 +67,6 @@ const DailyView = ({ date }: DailyViewProps) => {
       setLoading(true);
 
       try {
-        // Generate meal plan if not already generated
-        //await generateMealPlan();
-
         // Fetch meal plan for the specified date
         const formattedDate = formatISO(date, { representation: "date" });
 

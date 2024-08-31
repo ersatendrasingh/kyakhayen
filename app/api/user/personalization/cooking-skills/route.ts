@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
-
 import { db } from "@/lib/db";
 import { currentUser } from "@/lib/auth";
+import { isPersonalizationComplete } from "@/lib/personalization";
+import { Queue } from "bullmq";
 
 export async function PUT(req: Request) {
   try {
@@ -9,6 +10,7 @@ export async function PUT(req: Request) {
     if (!user) {
       return NextResponse.json("Unauthorized", { status: 401 });
     }
+
     const { userId, newCookingSkill } = await req.json();
 
     const userRecord = await db.user.findUnique({
@@ -20,19 +22,38 @@ export async function PUT(req: Request) {
       return NextResponse.json("User not found", { status: 404 });
     }
 
-    if (
-      userRecord.cookingSkill &&
-      userRecord.cookingSkill.id !== newCookingSkill.id
-    ) {
-      await db.user.update({
+    // Check if the cooking skill needs to be updated
+    const shouldUpdateCookingSkill =
+      !userRecord.cookingSkill ||
+      userRecord.cookingSkill.id !== newCookingSkill.id;
+
+    if (shouldUpdateCookingSkill) {
+      const updatedUser = await db.user.update({
         where: { id: userId },
         data: { cookingSkillId: newCookingSkill.id },
+        include: {
+          userCuisines: true,
+          UserHealthGoals: true,
+          UserAllrgies: true,
+          userPrakriti: true,
+        },
       });
-    } else if (!userRecord.cookingSkill) {
-      await db.user.update({
-        where: { id: userId },
-        data: { cookingSkillId: newCookingSkill.id },
-      });
+      const isPersonalised = isPersonalizationComplete(updatedUser);
+
+      if (isPersonalised) {
+        await db.user.update({
+          where: {
+            id: user.id,
+          },
+          data: {
+            isPersonalised,
+          },
+        });
+
+        //Call the generate meal plan queue
+        const mealPlanQueue = new Queue("generateMealPlan");
+        await mealPlanQueue.add("generateMealPlan", { userId: user.id });
+      }
     }
 
     return NextResponse.json(userRecord, { status: 200 });

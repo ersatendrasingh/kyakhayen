@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { currentUser } from "@/lib/auth";
-import { updateMealPlan } from "@/actions/update-meal-plan"; // Assuming this is where your meal plan generation function resides
+import { isPersonalizationComplete } from "@/lib/personalization";
+import { Queue } from "bullmq";
 
 export async function PUT(req: Request) {
   try {
@@ -21,26 +22,38 @@ export async function PUT(req: Request) {
       return NextResponse.json("User not found", { status: 404 });
     }
 
-    // Check if the food preference needs to be updated
-    if (
-      userRecord.foodPreference &&
-      userRecord.foodPreference.id !== newPreference.id
-    ) {
-      await db.user.update({
+    // Update the food preference if it's different or if the user has no current preference
+    const shouldUpdatePreference =
+      !userRecord.foodPreference ||
+      userRecord.foodPreference.id !== newPreference.id;
+
+    if (shouldUpdatePreference) {
+      const updatedUser = await db.user.update({
         where: { id: userId },
         data: { foodPreferenceId: newPreference.id },
+        include: {
+          userCuisines: true,
+          UserHealthGoals: true,
+          UserAllrgies: true,
+          userPrakriti: true,
+        },
       });
+      const isPersonalised = isPersonalizationComplete(updatedUser);
 
-      // Generate or regenerate meal plan after updating food preference
-      await updateMealPlan(); // Call generateMealPlan function here
-    } else if (!userRecord.foodPreference) {
-      await db.user.update({
-        where: { id: userId },
-        data: { foodPreferenceId: newPreference.id },
-      });
+      if (isPersonalised) {
+        await db.user.update({
+          where: {
+            id: user.id,
+          },
+          data: {
+            isPersonalised,
+          },
+        });
 
-      // Generate or regenerate meal plan after setting initial food preference
-      await updateMealPlan(); // Call generateMealPlan function here
+        //Call the generate meal plan queue
+        const mealPlanQueue = new Queue("generateMealPlan");
+        await mealPlanQueue.add("generateMealPlan", { userId: user.id });
+      }
     }
 
     return NextResponse.json(userRecord, { status: 200 });

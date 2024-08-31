@@ -6,18 +6,15 @@ export async function GET(
   { params }: { params: { userId: string } }
 ) {
   try {
-    const favorites = await db.favorite.findMany({
+    const prakritis = await db.userPrakriti.findMany({
       where: {
         userId: params.userId,
       },
-      include: {
-        recipe: true,
-      },
     });
 
-    return NextResponse.json(favorites, { status: 200 });
+    return NextResponse.json(prakritis, { status: 200 });
   } catch (error) {
-    console.log("[USER_FAVORITE_RECIPE]", error);
+    console.log("[USER_PRAKRITI]", error);
     return NextResponse.json("Internal Server Error", { status: 500 });
   }
 }

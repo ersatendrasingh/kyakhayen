@@ -10,6 +10,7 @@ import { usePathname, useRouter } from "next/navigation";
 import axios from "axios";
 import { useSession } from "next-auth/react";
 import { Loader2 } from "lucide-react";
+import PreferenceConfirmationModal from "@/components/modals/preference-confirmation-modal";
 
 interface PrakritiQuestionType extends PrakritiQuestion {
   options: PrakritiQuestionOption[];
@@ -36,6 +37,7 @@ const PrakritiInformation: React.FC<PrakritiInformationProps> = ({
   const [direction, setDirection] = useState<"next" | "prev">("next");
   const [isFormValid, setIsFormValid] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const dynamicRefs = useRef<Array<RefObject<HTMLDivElement | null>>>(
     prakritiQuestions.map(() => createRef())
   );
@@ -87,13 +89,22 @@ const PrakritiInformation: React.FC<PrakritiInformationProps> = ({
         update();
         localStorage.removeItem("userData");
         localStorage.removeItem("currentStep");
-        router.push("/user/wellness-summary");
+        setIsModalOpen(true);
+        //router.push("/user/wellness-summary");
       }
     } catch (error) {
       console.error("Error:", error);
     }
   };
+  const handleModalClose = () => {
+    setIsModalOpen(false);
+  };
 
+  const handleModalConfirm = () => {
+    setIsModalOpen(false);
+    // Navigate to meal plan page or perform other actions
+    router.push("/meal-plan");
+  };
   return (
     <>
       <div className="w-full flex flex-col  relative">
@@ -125,6 +136,7 @@ const PrakritiInformation: React.FC<PrakritiInformationProps> = ({
                     >
                       <PrakritiQuestionForm
                         title={question.question}
+                        userId={user?.id}
                         options={question.options}
                         questionId={question.id}
                         setIsFormValid={setIsFormValid}
@@ -169,6 +181,13 @@ const PrakritiInformation: React.FC<PrakritiInformationProps> = ({
             )}
           </>
         )}
+        <PreferenceConfirmationModal
+          title="Prakriti Updated"
+          description="Your Prakriti (Ayurvedic body type) has been successfully updated. Your meal plan has been customized to balance your doshas. Click the button below to explore your updated meal plan."
+          isOpen={isModalOpen}
+          onClose={handleModalClose}
+          onConfirm={handleModalConfirm}
+        />
       </div>
     </>
   );

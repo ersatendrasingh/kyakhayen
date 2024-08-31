@@ -39,7 +39,6 @@ export const {
 
         // Assign free plan to user
         await assignFreePlanToUser(user.id);
-        console.log(`Assigned free plan to user ${user.id} after account link`);
       } catch (error) {
         console.error("Error in linkAccount event:", error);
         throw new Error("Failed to assign free plan during account link");

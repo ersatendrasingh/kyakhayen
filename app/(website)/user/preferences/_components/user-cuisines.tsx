@@ -8,6 +8,7 @@ import { User } from "@prisma/client";
 import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
+import PreferenceConfirmationModal from "@/components/modals/preference-confirmation-modal";
 
 interface Cuisine {
   id: string;
@@ -32,6 +33,7 @@ const UserCuisines = ({ userData, cuisines }: UserCuisinesProps) => {
   const [deletingCuisineId, setDeletingCuisineId] = useState<string | null>(
     null
   );
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const router = useRouter();
   const handleAddCuisineClick = () => {
     setIsExpanded(!isExpanded);
@@ -70,6 +72,7 @@ const UserCuisines = ({ userData, cuisines }: UserCuisinesProps) => {
           });
           router.refresh();
           setIsExpanded(false);
+          setIsModalOpen(true);
         } else {
           console.error("Failed to update user's preferences:", response.data);
         }
@@ -107,7 +110,15 @@ const UserCuisines = ({ userData, cuisines }: UserCuisinesProps) => {
       setDeletingCuisineId(null);
     }
   };
+  const handleModalClose = () => {
+    setIsModalOpen(false);
+  };
 
+  const handleModalConfirm = () => {
+    setIsModalOpen(false);
+    // Navigate to meal plan page or perform other actions
+    router.push("/meal-plan");
+  };
   return (
     <div className="py-6">
       <h2 className="text-2xl font-bold mb-4">Favourite Cuisines</h2>
@@ -201,6 +212,13 @@ const UserCuisines = ({ userData, cuisines }: UserCuisinesProps) => {
           ))}
         </div>
       </div>
+      <PreferenceConfirmationModal
+        title="Cuisine Preferences Updated"
+        description="Your preferred cuisines have been successfully updated. We've tailored your meal plan to include dishes that match your taste. Click the button below to explore your updated meal plan."
+        isOpen={isModalOpen}
+        onClose={handleModalClose}
+        onConfirm={handleModalConfirm}
+      />
     </div>
   );
 };

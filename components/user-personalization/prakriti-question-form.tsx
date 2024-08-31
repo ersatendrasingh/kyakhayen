@@ -7,9 +7,12 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 
 import { PrakritiQuestionOption } from "@prisma/client";
+import { db } from "@/lib/db";
+import axios from "axios";
 
 interface PrakritiQuestionFormProps {
   title: string;
+  userId?: string;
   options: PrakritiQuestionOption[];
   questionId: string;
   setIsFormValid: (isValid: boolean) => void;
@@ -25,6 +28,16 @@ const getUserData = () => {
   }
 };
 
+const fetchUserDataFromDB = async (userId: string) => {
+  try {
+    const response = await axios.get(`/api/user/${userId}/user-prakriti`);
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching user data from DB:", error);
+    return null;
+  }
+};
+
 const saveUserData = (data: any) => {
   try {
     localStorage.setItem("userData", JSON.stringify(data));
@@ -35,6 +48,7 @@ const saveUserData = (data: any) => {
 
 export const PrakritiQuestionForm = ({
   title,
+  userId,
   options,
   questionId,
   setIsFormValid,
@@ -45,19 +59,39 @@ export const PrakritiQuestionForm = ({
   useEffect(() => {
     setIsFormValid(selectedOption !== null);
   }, [selectedOption, setIsFormValid]);
+
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      const userData = getUserData();
-      const parsedSelections = userData.prakritiSelections || [];
-      const existingSelection = parsedSelections.find(
-        (selection: { questionId: string }) =>
-          selection.questionId === questionId
-      );
-      if (existingSelection) {
-        setSelectedOption(existingSelection.optionId);
+    const fetchUserData = async (userId: string) => {
+      let userData = getUserData();
+
+      if (!userData.prakritiSelections || Object.keys(userData).length === 0) {
+        const dbUserData = await fetchUserDataFromDB(userId);
+
+        if (dbUserData) {
+          userData.prakritiSelections = dbUserData.map((selection: any) => ({
+            questionId: selection.questionId,
+            prakritiId: selection.prakritiId,
+            optionId: selection.optionId,
+          }));
+          saveUserData(userData); // Save fetched data to localStorage
+        }
       }
+
+      if (userData) {
+        const parsedSelections = userData.prakritiSelections || [];
+        const existingSelection = parsedSelections.find(
+          (selection: { questionId: string }) =>
+            selection.questionId === questionId
+        );
+        if (existingSelection) {
+          setSelectedOption(existingSelection.optionId);
+        }
+      }
+
       setLoading(false);
-    }
+    };
+
+    fetchUserData(userId || "");
   }, [questionId]);
 
   const handleOptionClick = (
