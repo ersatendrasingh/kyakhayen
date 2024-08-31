@@ -40,7 +40,7 @@ const OrderConfirmationMail = ({
   },
 }: OrderConfirmationMailProps) => {
   const domain = process.env.NEXT_PUBLIC_APP_URL;
-  const orderLink = `${domain}/user/orders`;
+  const mealPlanLink = `${domain}/meal-plan`;
   const getStatusColor = (status: string) => {
     switch (status) {
       case "Paid":
@@ -396,7 +396,7 @@ const OrderConfirmationMail = ({
 
         <div style={{ textAlign: "center", margin: "20px 0" }}>
           <a
-            href={orderLink}
+            href={mealPlanLink}
             style={{
               display: "inline-block",
               padding: "10px 20px",
@@ -408,7 +408,7 @@ const OrderConfirmationMail = ({
               fontWeight: "bold",
             }}
           >
-            View Order Details
+            View Your Meal Plan
           </a>
         </div>
 
