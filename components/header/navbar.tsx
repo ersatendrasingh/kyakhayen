@@ -46,8 +46,8 @@ const navbarItems = [
     ],
   },
   {
-    label: "Cuisines",
-    href: "/recipes",
+    label: "Pricing",
+    href: "/subscription-plans",
     hasChild: false,
   },
   {

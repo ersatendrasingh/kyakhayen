@@ -1,5 +1,3 @@
-// Assuming GetRecipes function expects page as a number parameter
-
 "use client";
 
 import { useState, useEffect } from "react";
@@ -11,9 +9,8 @@ import { Button } from "@/components/ui/button";
 import Container from "@/components/container";
 import RecipeCard from "@/components/recipes/recipe-card";
 import { RecipeWithCategory } from "@/types/recipe";
-import { GetRecipes } from "@/actions/get-recipes";
+
 import { getPopularRecipes } from "@/actions/get-popular-recipes";
-import { handleRecipeClick } from "@/lib/handle-recipe-click";
 
 const PopularRecipes = () => {
   const [recipes, setRecipes] = useState<RecipeWithCategory[]>([]);
@@ -101,9 +98,6 @@ const PopularRecipes = () => {
                   exit={{ opacity: 0, y: -20 }}
                   transition={{ duration: 0.3 }}
                   className="m-4"
-                  onClick={() =>
-                    handleRecipeClick(recipe.id, recipe.RecipeCategories!.id)
-                  }
                 >
                   <RecipeCard recipe={recipe} />
                 </motion.div>

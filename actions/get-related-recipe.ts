@@ -19,23 +19,37 @@ export const getRelatedRecipes = async ({
 }: GetRecipesParams): Promise<RecipeWithCategory[]> => {
   try {
     let relatedRecommendedRecipes: RecipeWithCategory[] = [];
+
+    // Case 1: User is logged in but has no behavior data or category data
     if (
       userId &&
-      (Object.keys(behaviorData).length > 0 ||
-        Object.keys(categoryData).length > 0)
+      Object.keys(behaviorData).length === 0 &&
+      Object.keys(categoryData).length === 0
     ) {
-      // Filter all recipes based on user preferences
       const filteredRecipes = await filterRecipesByUserPreferences(userId);
+      relatedRecommendedRecipes =
+        filteredRecipes.length > 0 ? filteredRecipes : await GetRecipes({});
+    }
 
-      // Apply behavior and category-based filtering
+    // Case 2: User is logged in and has both behavior data and category data
+    else if (
+      userId &&
+      Object.keys(behaviorData).length > 0 &&
+      Object.keys(categoryData).length > 0
+    ) {
+      const filteredRecipes = await filterRecipesByUserPreferences(userId);
       relatedRecommendedRecipes = getRecommendationsBasedOnBehavior(
         filteredRecipes,
         behaviorData,
         categoryData
       );
-    } else if (
-      (!userId && Object.keys(behaviorData).length > 0) ||
-      Object.keys(categoryData).length > 0
+    }
+
+    // Case 3: Visitor with behavior data
+    else if (
+      !userId &&
+      (Object.keys(behaviorData).length > 0 ||
+        Object.keys(categoryData).length > 0)
     ) {
       const allRecipes = await GetRecipes({});
       relatedRecommendedRecipes = getRecommendationsBasedOnBehavior(
@@ -43,8 +57,10 @@ export const getRelatedRecipes = async ({
         behaviorData,
         categoryData
       );
-    } else {
-      // Fallback: Fetch popular recipes if no behavior data exists or user is not logged in
+    }
+
+    // Case 4: Visitor without any data
+    else {
       relatedRecommendedRecipes = await GetRecipes({});
     }
 

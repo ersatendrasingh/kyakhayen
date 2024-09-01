@@ -1,10 +1,9 @@
+import { Metadata } from "next";
 import { GetRecipes } from "@/actions/get-recipes";
 import Container from "@/components/container";
 import { PageHeader } from "@/components/page-header";
 import { NoRecipesFound } from "@/components/recipes/no-recipe-found";
 import RecipeCard from "@/components/recipes/recipe-card";
-import { db } from "@/lib/db";
-import { Metadata } from "next";
 
 const meta = {
   title: "Recipes - KyaKhayen: Explore 5 Billion+ Culinary Creations",

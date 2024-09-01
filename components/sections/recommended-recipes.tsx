@@ -10,7 +10,6 @@ import Container from "@/components/container";
 import RecipeCard from "@/components/recipes/recipe-card";
 import { RecipeWithCategory } from "@/types/recipe";
 import { getRecommendedRecipes } from "@/actions/get-recommended-recipes";
-import { handleRecipeClick } from "@/lib/handle-recipe-click";
 
 interface RecommendedRecipesProps {
   userId?: string;
@@ -134,9 +133,6 @@ const RecommendedRecipes = ({ userId }: RecommendedRecipesProps) => {
                   exit={{ opacity: 0, y: -20 }}
                   transition={{ duration: 0.3 }}
                   className="m-4"
-                  onClick={() =>
-                    handleRecipeClick(recipe.id, recipe.RecipeCategories!.id)
-                  }
                 >
                   <RecipeCard recipe={recipe} />
                 </motion.div>
