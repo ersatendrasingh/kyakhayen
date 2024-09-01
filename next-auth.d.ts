@@ -5,8 +5,6 @@ import { AllergiesList, CuisinesList, HealthGoalList } from "./types/user-type";
 export type ExtendedUser = DefaultSession["user"] & {
   id: string;
   phoneNumber?: string;
-  qualification?: string;
-  profession?: string;
   bio?: string;
   age?: number;
   gender?: string;

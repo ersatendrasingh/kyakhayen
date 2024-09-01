@@ -39,6 +39,7 @@ import axios from "axios";
 import { usePathname, useRouter } from "next/navigation";
 import { collectPersonalizationData } from "@/hooks/use-user-personalization";
 import OverlayLoader from "../loader/overlay-loader";
+import MealPlanLoader from "../loader/meal-plan-loader";
 interface PrakritiQuestionType extends PrakritiQuestion {
   options: PrakritiQuestionOption[];
 }
@@ -89,6 +90,7 @@ export default function PersonalizationForm({
   const [direction, setDirection] = useState("next");
   const [isFormValid, setIsFormValid] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [mealPlanLoading, setmealPlanLoading] = useState(false);
 
   const cuisinesRef = useRef(null);
   const allergiesRef = useRef(null);
@@ -140,21 +142,25 @@ export default function PersonalizationForm({
       const encodedCallbackUrl = encodeURIComponent(pathname || "");
       router.push("/auth/login?callbackUrl=" + encodedCallbackUrl);
     } else {
-      console.log("User is logged in. Proceeding to next step...");
       try {
         setLoading(true);
+        setmealPlanLoading(true);
         const data = collectPersonalizationData();
-
         const response = await axios.patch("/api/user/personalization", data);
         if (response.status === 200) {
-          setLoading(true);
           localStorage.setItem("personalization", "true");
           localStorage.removeItem("userData");
           localStorage.removeItem("currentStep");
-          router.push("/meal-plan");
+
+          if (response.data.isPersonalised) {
+            router.push("/meal-plan");
+          }
         }
       } catch (error) {
         console.error("Error:", error);
+      } finally {
+        setmealPlanLoading(false);
+        setLoading(false);
       }
     }
   };
@@ -171,6 +177,7 @@ export default function PersonalizationForm({
       }}
     >
       {loading && <OverlayLoader isLoading={loading} />}
+      {mealPlanLoading && <MealPlanLoader isLoading={mealPlanLoading} />}
 
       <Container>
         <div className="w-full flex flex-col items-center justify-center text-center relative">
