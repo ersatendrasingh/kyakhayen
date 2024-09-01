@@ -6,7 +6,7 @@ import { RecipeWithCategory } from "@/types/recipe";
 type GetRecipes = {
   title?: string;
   searchSlug?: string;
-  searchType?: string;
+  searchType?: "category" | "mealTime";
   page?: number;
   pageSize?: number;
 };
@@ -24,273 +24,122 @@ export const getPopularRecipes = async ({
   hasMore: boolean;
 }> => {
   try {
-    let recipes;
-    let totalRecipesCount;
+    let whereClause: any = { isPublished: true };
 
-    if (searchType && searchType === "category") {
-      const recipeCategories = await db.recipeCategories.findFirst({
-        where: {
-          slug: searchSlug,
-        },
-      });
-
-      totalRecipesCount = await db.recipes.count({
-        where: {
-          isPublished: true,
-          title: {
-            contains: title,
-          },
-          recipeCategoriesId: recipeCategories?.id,
-        },
-      });
-
-      recipes = await db.recipes.findMany({
-        where: {
-          isPublished: true,
-          title: {
-            contains: title,
-          },
-          recipeCategoriesId: recipeCategories?.id,
-        },
-        include: {
-          RecipeCategories: true,
-          recipeIngredients: {
-            include: {
-              unit: true,
-              ingredientForm: true,
-              ingredient: {
-                include: {
-                  IngredientUnitMeasurements: true,
-                },
-              },
-            },
-            orderBy: {
-              position: "asc",
-            },
-          },
-          recipeMethods: {
-            orderBy: {
-              position: "asc",
-            },
-          },
-          recipeHealthBenefits: {
-            orderBy: {
-              position: "asc",
-            },
-          },
-          recipeCookingMethods: {
-            include: {
-              cookingMethod: true,
-            },
-          },
-          recipeCuisine: {
-            include: {
-              cuisine: true,
-            },
-          },
-          recipeDietType: {
-            include: {
-              dietType: true,
-            },
-          },
-          recipeRecipeType: {
-            include: {
-              recipeType: true,
-            },
-          },
-          recipeNutrient: {
-            include: {
-              nutrient: true,
-            },
-          },
-          recipeCookingTime: true,
-          recipeMealTime: true,
-          recipeDifficulty: true,
-          recipeSeasons: true,
-        },
-        orderBy: {
-          updatedAt: "desc",
-        },
-        skip: (page - 1) * pageSize,
-        take: pageSize,
-      });
-    } else if (searchType && searchType === "mealTime") {
-      const recipeMealTime = await db.mealTimes.findFirst({
-        where: {
-          slug: searchSlug,
-        },
-      });
-
-      totalRecipesCount = await db.recipes.count({
-        where: {
-          isPublished: true,
-          title: {
-            contains: title,
-          },
-          recipeMealTime: {
-            some: { mealTimeId: recipeMealTime?.id },
-          },
-        },
-      });
-
-      recipes = await db.recipes.findMany({
-        where: {
-          isPublished: true,
-          title: {
-            contains: title,
-          },
-          recipeMealTime: {
-            some: { mealTimeId: recipeMealTime?.id },
-          },
-        },
-        include: {
-          RecipeCategories: true,
-          recipeIngredients: {
-            include: {
-              unit: true,
-              ingredientForm: true,
-              ingredient: {
-                include: {
-                  IngredientUnitMeasurements: true,
-                },
-              },
-            },
-            orderBy: {
-              position: "asc",
-            },
-          },
-          recipeMethods: {
-            orderBy: {
-              position: "asc",
-            },
-          },
-          recipeHealthBenefits: {
-            orderBy: {
-              position: "asc",
-            },
-          },
-          recipeCookingMethods: {
-            include: {
-              cookingMethod: true,
-            },
-          },
-          recipeCuisine: {
-            include: {
-              cuisine: true,
-            },
-          },
-          recipeDietType: {
-            include: {
-              dietType: true,
-            },
-          },
-          recipeRecipeType: {
-            include: {
-              recipeType: true,
-            },
-          },
-          recipeNutrient: {
-            include: {
-              nutrient: true,
-            },
-          },
-          recipeCookingTime: true,
-          recipeMealTime: true,
-          recipeDifficulty: true,
-          recipeSeasons: true,
-        },
-        orderBy: {
-          updatedAt: "desc",
-        },
-        skip: (page - 1) * pageSize,
-        take: pageSize,
-      });
-    } else {
-      totalRecipesCount = await db.recipes.count({
-        where: {
-          isPublished: true,
-          title: {
-            contains: title,
-          },
-        },
-      });
-
-      recipes = await db.recipes.findMany({
-        where: {
-          isPublished: true,
-          title: {
-            contains: title,
-          },
-        },
-        include: {
-          RecipeCategories: true,
-          recipeIngredients: {
-            include: {
-              unit: true,
-              ingredientForm: true,
-              ingredient: {
-                include: {
-                  IngredientUnitMeasurements: true,
-                },
-              },
-            },
-            orderBy: {
-              position: "asc",
-            },
-          },
-          recipeMethods: {
-            orderBy: {
-              position: "asc",
-            },
-          },
-          recipeHealthBenefits: {
-            orderBy: {
-              position: "asc",
-            },
-          },
-          recipeCookingMethods: {
-            include: {
-              cookingMethod: true,
-            },
-          },
-          recipeCuisine: {
-            include: {
-              cuisine: true,
-            },
-          },
-          recipeDietType: {
-            include: {
-              dietType: true,
-            },
-          },
-          recipeRecipeType: {
-            include: {
-              recipeType: true,
-            },
-          },
-          recipeNutrient: {
-            include: {
-              nutrient: true,
-            },
-          },
-          recipeCookingTime: true,
-          recipeMealTime: true,
-          recipeDifficulty: true,
-          recipeSeasons: true,
-        },
-        orderBy: {
-          updatedAt: "desc",
-        },
-        skip: (page - 1) * pageSize,
-        take: pageSize,
-      });
+    if (title) {
+      whereClause.title = {
+        contains: title,
+      };
     }
+
+    if (searchType && searchSlug) {
+      if (searchType === "category") {
+        const category = await db.recipeCategories.findFirst({
+          where: { slug: searchSlug },
+        });
+
+        if (category?.id) {
+          whereClause.recipeCategoriesId = category.id;
+        }
+      } else if (searchType === "mealTime") {
+        const mealTime = await db.mealTimes.findFirst({
+          where: { slug: searchSlug },
+        });
+
+        if (mealTime?.id) {
+          whereClause.recipeMealTime = {
+            some: { mealTimeId: mealTime.id },
+          };
+        }
+      }
+    }
+
+    // Fetch the total count of recipes
+    const totalRecipesCount = await db.recipes.count({
+      where: whereClause,
+    });
+
+    // Fetch the recipes with pagination
+    const recipes = await db.recipes.findMany({
+      where: whereClause,
+      include: {
+        RecipeCategories: {
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+            imageUrl: true,
+            position: true,
+          },
+        },
+        recipeIngredients: {
+          include: {
+            unit: true,
+            ingredientForm: true,
+            ingredient: {
+              include: {
+                IngredientUnitMeasurements: true,
+              },
+            },
+          },
+          orderBy: {
+            position: "asc",
+          },
+        },
+        recipeMethods: {
+          orderBy: {
+            position: "asc",
+          },
+        },
+        recipeHealthBenefits: {
+          orderBy: {
+            position: "asc",
+          },
+        },
+        recipeCookingMethods: {
+          include: {
+            cookingMethod: true,
+          },
+        },
+        recipeCuisine: {
+          include: {
+            cuisine: true,
+          },
+        },
+        recipeDietType: {
+          include: {
+            dietType: true,
+          },
+        },
+        recipeRecipeType: {
+          include: {
+            recipeType: true,
+          },
+        },
+        recipeNutrient: {
+          include: {
+            nutrient: true,
+          },
+        },
+        recipeCookingTime: true,
+        recipeMealTime: true,
+        recipeDifficulty: true,
+        recipeSeasons: true,
+        Review: true, // Include Review to match the RecipeWithCategory type
+        recipeComments: true, // Include recipeComments to match the RecipeWithCategory type
+      },
+      orderBy: {
+        updatedAt: "desc",
+      },
+      skip: (page - 1) * pageSize,
+      take: pageSize,
+    });
 
     const hasMore = page * pageSize < totalRecipesCount;
 
     return { recipes, hasMore };
   } catch (error) {
-    console.error("[GET_RECIPES]", error);
+    console.error("[GET_RECIPES_ERROR]", error);
     return { recipes: [], hasMore: false };
   }
 };

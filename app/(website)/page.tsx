@@ -154,6 +154,8 @@ export default async function Home() {
 
   const prakritiQuestions = await getPrakritiQuestions();
 
+  const user = await currentUser();
+
   return (
     <div>
       <HomeBanner
@@ -168,7 +170,7 @@ export default async function Home() {
         genders={genders}
       />
       <RecipeByMealTime title="Recipe By Meal Time" widgetItems={melaTimes} />
-      <RecommendedRecipes />
+      <RecommendedRecipes userId={user?.id} />
       <HomeCategory title="Recipe Categories" widgetItems={recipeCategories} />
       <PopularRecipes />
     </div>

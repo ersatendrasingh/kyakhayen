@@ -9,11 +9,10 @@ import RecipeSidebar from "@/components/recipes/recipe-sidebar";
 import { db } from "@/lib/db";
 
 import Container from "@/components/container";
-import { getRelatedRecipes } from "@/actions/get-related-recipe";
+
 import RecipeCommentSection from "@/components/recipes/recipe-comments-section";
 import RecipeReviewsSection from "@/components/recipes/recipe-reviews-section";
 import RecipeShareSection from "@/components/recipes/recipe-share-section";
-import { currentUser } from "@/lib/auth";
 
 type Props = {
   params: { recipeSlug: string };
@@ -82,9 +81,7 @@ const SingleRecipePage = async ({
   if (!recipe) {
     throw new Error("Recipe not found");
   }
-  const relatedRecipes = await getRelatedRecipes({
-    recipeId: recipe.id,
-  });
+
   const recipeCategories = await db.recipeCategories.findMany({
     orderBy: {
       name: "asc",
@@ -122,7 +119,7 @@ const SingleRecipePage = async ({
             />
           </div>
         </div>
-        <RelatedRecipeSlider relatedRecipes={relatedRecipes} />
+        <RelatedRecipeSlider recipeId={recipe.id} />
       </Container>
     </div>
   );
