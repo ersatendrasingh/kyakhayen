@@ -1,3 +1,4 @@
+"use server";
 import { RecipeWithCategory } from "@/types/recipe";
 import { GetRecipes } from "@/actions/get-recipes";
 import { db } from "@/lib/db";

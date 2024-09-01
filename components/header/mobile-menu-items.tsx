@@ -19,19 +19,20 @@ const navbarItems = [
     href: "/blog",
     hasChild: false,
   },
+
   {
-    label: "Ingredients",
-    href: "/recipes",
-    hasChild: false,
-  },
-  {
-    label: "Cuisines",
-    href: "/recipes",
+    label: "Pricing",
+    href: "/subscription-plans",
     hasChild: false,
   },
   {
     label: "Meal Plan",
     href: "/meal-plan",
+    hasChild: false,
+  },
+  {
+    label: "Contact Us",
+    href: "/contact-us",
     hasChild: false,
   },
 ];

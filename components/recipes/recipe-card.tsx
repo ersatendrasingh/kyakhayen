@@ -12,6 +12,7 @@ import { cn } from "@/lib/utils";
 import { formatTime } from "@/lib/formatTime";
 import { RecipeWithCategory } from "@/types/recipe";
 import { useCurrentUser } from "@/hooks/use-current-user";
+import { handleRecipeClick } from "@/lib/handle-recipe-click";
 
 interface RecipeCardProps {
   recipe: RecipeWithCategory;
@@ -53,6 +54,7 @@ const RecipeCard = ({ recipe }: RecipeCardProps) => {
       className={`max-w-sm min-h-[348px] bg-white rounded-md overflow-hidden shadow-lg transform transition-transform hover:shadow-xl hover:-translate-y-1 ${
         isInView ? "animate-slide-up" : ""
       }`}
+      onClick={() => handleRecipeClick(recipe.id, recipe.RecipeCategories!.id)}
     >
       <div className="h-full flex flex-col relative">
         {/* FavoriteButton component */}
