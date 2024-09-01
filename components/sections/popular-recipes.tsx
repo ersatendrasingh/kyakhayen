@@ -13,18 +13,19 @@ import RecipeCard from "@/components/recipes/recipe-card";
 import { RecipeWithCategory } from "@/types/recipe";
 import { GetRecipes } from "@/actions/get-recipes";
 import { getPopularRecipes } from "@/actions/get-popular-recipes";
+import { handleRecipeClick } from "@/lib/handle-recipe-click";
 
 const PopularRecipes = () => {
   const [recipes, setRecipes] = useState<RecipeWithCategory[]>([]);
-  const [currentPage, setCurrentPage] = useState<number>(1); // Explicitly define currentPage as number
-  const [loading, setLoading] = useState<boolean>(false); // Explicitly define loading state
-  const [allLoaded, setAllLoaded] = useState<boolean>(false); // Explicitly define allLoaded state
-  const [initialLoading, setInitialLoading] = useState<boolean>(true); // Explicitly define initialLoading state
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [allLoaded, setAllLoaded] = useState<boolean>(false);
+  const [initialLoading, setInitialLoading] = useState<boolean>(true);
 
   const fetchMoreRecipes = async () => {
     try {
       setLoading(true);
-      const response = await getPopularRecipes({ page: currentPage + 1 }); // Pass an object with page as a number
+      const response = await getPopularRecipes({ page: currentPage + 1 });
       const newRecipes = response.recipes;
 
       if (!response.hasMore) {
@@ -43,7 +44,7 @@ const PopularRecipes = () => {
   useEffect(() => {
     const fetchRecipes = async () => {
       try {
-        const response = await getPopularRecipes({ page: 1 }); // Pass an object with page as a number
+        const response = await getPopularRecipes({ page: 1 });
         const initialRecipes = response.recipes;
 
         setRecipes(initialRecipes);
@@ -66,7 +67,6 @@ const PopularRecipes = () => {
       setLoading(false);
     }
   }, [allLoaded]);
-
   return (
     <div className="w-full flex flex-col items-center justify-center pt-12 pb-10 mt-10 mb-10 bg-[#f9f9ff]">
       <Container>
@@ -101,6 +101,9 @@ const PopularRecipes = () => {
                   exit={{ opacity: 0, y: -20 }}
                   transition={{ duration: 0.3 }}
                   className="m-4"
+                  onClick={() =>
+                    handleRecipeClick(recipe.id, recipe.RecipeCategories!.id)
+                  }
                 >
                   <RecipeCard recipe={recipe} />
                 </motion.div>

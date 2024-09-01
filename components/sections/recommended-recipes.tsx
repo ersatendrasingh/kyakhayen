@@ -10,18 +10,35 @@ import Container from "@/components/container";
 import RecipeCard from "@/components/recipes/recipe-card";
 import { RecipeWithCategory } from "@/types/recipe";
 import { getRecommendedRecipes } from "@/actions/get-recommended-recipes";
+import { handleRecipeClick } from "@/lib/handle-recipe-click";
 
-const RecommendedRecipes = () => {
+interface RecommendedRecipesProps {
+  userId?: string;
+}
+
+const RecommendedRecipes = ({ userId }: RecommendedRecipesProps) => {
   const [recipes, setRecipes] = useState<RecipeWithCategory[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(false);
   const [allLoaded, setAllLoaded] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
-
   const fetchMoreRecipes = async () => {
     try {
       setLoading(true);
-      const response = await getRecommendedRecipes(currentPage + 1);
+
+      const behaviorData = JSON.parse(
+        localStorage.getItem("behaviorData") || "{}"
+      );
+      const categoryData = JSON.parse(
+        localStorage.getItem("categoryData") || "{}"
+      );
+      const response = await getRecommendedRecipes(
+        currentPage + 1,
+        userId!,
+        behaviorData,
+        categoryData
+      );
+
       const newRecipes = response.recipes;
 
       if (!response.hasMore) {
@@ -42,9 +59,25 @@ const RecommendedRecipes = () => {
   };
 
   useEffect(() => {
-    const fetchRecipes = async () => {
+    const fetchRecipes = async (userId: string) => {
       try {
-        const response = await getRecommendedRecipes(1);
+        console.log(
+          "Fetching more recipes...",
+          localStorage.getItem("behaviorData")
+        );
+        const behaviorData = JSON.parse(
+          localStorage.getItem("behaviorData") || "{}"
+        );
+        const categoryData = JSON.parse(
+          localStorage.getItem("categoryData") || "{}"
+        );
+        const response = await getRecommendedRecipes(
+          1,
+          userId,
+          behaviorData,
+          categoryData
+        );
+        console.log("Initial response:", response);
         const initialRecipes = response.recipes;
 
         setRecipes(initialRecipes);
@@ -59,7 +92,7 @@ const RecommendedRecipes = () => {
         setInitialLoading(false);
       }
     };
-    fetchRecipes();
+    fetchRecipes(userId || "");
   }, []);
 
   useEffect(() => {
@@ -67,7 +100,6 @@ const RecommendedRecipes = () => {
       setLoading(false);
     }
   }, [allLoaded]);
-
   return (
     <div className="w-full flex flex-col items-center justify-center pt-12 pb-10 mt-10 mb-10 bg-[#f9f9ff]">
       <Container>
@@ -102,6 +134,9 @@ const RecommendedRecipes = () => {
                   exit={{ opacity: 0, y: -20 }}
                   transition={{ duration: 0.3 }}
                   className="m-4"
+                  onClick={() =>
+                    handleRecipeClick(recipe.id, recipe.RecipeCategories!.id)
+                  }
                 >
                   <RecipeCard recipe={recipe} />
                 </motion.div>

@@ -88,6 +88,7 @@ export const GetRecipes = async ({
 
           recipeDifficulty: true,
           recipeSeasons: true,
+          Review: true,
           recipeComments: {
             where: {
               isPublished: true,
@@ -174,6 +175,7 @@ export const GetRecipes = async ({
 
           recipeDifficulty: true,
           recipeSeasons: true,
+          Review: true,
           recipeComments: {
             where: {
               isPublished: true,
@@ -252,6 +254,7 @@ export const GetRecipes = async ({
 
           recipeDifficulty: true,
           recipeSeasons: true,
+          Review: true,
           recipeComments: {
             where: {
               isPublished: true,
