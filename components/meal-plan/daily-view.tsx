@@ -1,5 +1,5 @@
 import { RecipeWithCategory } from "@/types/recipe";
-import MealPlanCard from "@/components/meal-plan/meal-plan-card"; // Adjust the import path as necessary
+import MealPlanCard from "@/components/meal-plan/meal-plan-card";
 import { MealTimes } from "@prisma/client";
 import { useEffect, useState } from "react";
 import { FaPlus, FaMinus } from "react-icons/fa";
@@ -72,7 +72,7 @@ const DailyView = ({ date }: DailyViewProps) => {
 
         const mealPlanResult = await getMealPlanFromS3({ date: formattedDate });
 
-        if (mealPlanResult) {
+        if (mealPlanResult && mealPlanResult.mealTimes.length > 0) {
           const { mealTimes, mealsByTime } = mealPlanResult;
           setMealsByTime(mealsByTime);
           setMealTimes(mealTimes);
@@ -81,7 +81,12 @@ const DailyView = ({ date }: DailyViewProps) => {
           if (mealTimes.length > 0) {
             setExpandedMealTime(mealTimes[0].slug);
           }
+          if (mealsByTime[mealTimes[0].slug].length === 0) {
+            setMealTimes([]);
+          }
         } else {
+          setMealTimes([]); // Clear the meal times
+          setMealsByTime({}); // Clear the meals
           toast.error("Meal plan not available for the selected date.", {
             position: "top-center",
             autoClose: 5000,
@@ -153,7 +158,22 @@ const DailyView = ({ date }: DailyViewProps) => {
       </div>
     );
   }
-
+  if (mealTimes.length === 0) {
+    return (
+      <div className="bg-white p-4 rounded-lg shadow-md flex flex-col items-center justify-center">
+        <Image
+          src="/assets/no-junk-food.gif"
+          alt="Loading"
+          width={200}
+          height={200}
+          className="my-5"
+        />
+        <h2 className="text-lg font-semibold mb-10 text-center animate-bounce">
+          No meals available for the selected date.
+        </h2>
+      </div>
+    );
+  }
   return (
     <div className="bg-white p-4 rounded-lg">
       <h2 className="text-md font-semibold text-center mb-4">

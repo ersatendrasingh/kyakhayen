@@ -1,16 +1,27 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { addDays, subDays } from "date-fns";
 import CalendarHeader from "@/components/calendar/calendar-header";
 import DailyView from "@/components/meal-plan/daily-view";
-import { useCurrentUser } from "@/hooks/use-current-user";
+
 import PersonalizationPrompt from "@/components/meal-plan/personalization-prompt";
 import SubscriptionPlanPrompt from "@/components/meal-plan/subscription-plan-prompt";
+import { useSession } from "next-auth/react";
+import { useCurrentUser } from "@/hooks/use-current-user";
 
 const MealPlan = () => {
   const user = useCurrentUser();
+  const { update } = useSession();
+  const hasRunOnce = useRef(false);
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+
+  useEffect(() => {
+    if (!hasRunOnce.current) {
+      update();
+      hasRunOnce.current = true;
+    }
+  }, [update]);
 
   const handleDayClick = (date: Date) => {
     setSelectedDate(date);

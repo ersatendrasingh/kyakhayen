@@ -60,10 +60,6 @@ const RecommendedRecipes = ({ userId }: RecommendedRecipesProps) => {
   useEffect(() => {
     const fetchRecipes = async (userId: string) => {
       try {
-        console.log(
-          "Fetching more recipes...",
-          localStorage.getItem("behaviorData")
-        );
         const behaviorData = JSON.parse(
           localStorage.getItem("behaviorData") || "{}"
         );
@@ -76,7 +72,7 @@ const RecommendedRecipes = ({ userId }: RecommendedRecipesProps) => {
           behaviorData,
           categoryData
         );
-        console.log("Initial response:", response);
+
         const initialRecipes = response.recipes;
 
         setRecipes(initialRecipes);

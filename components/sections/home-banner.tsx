@@ -88,7 +88,9 @@ const HomeBanner = ({
             localStorage.removeItem("userData");
             localStorage.removeItem("currentStep");
             localStorage.removeItem("needsPersonalizationUpdate");
-            router.push("/meal-plan");
+            if (response.data.isPersonalised) {
+              router.push("/meal-plan");
+            }
           }
         } catch (error) {
           console.error("Failed to update personalization data:", error);

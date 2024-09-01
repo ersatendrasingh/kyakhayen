@@ -146,8 +146,9 @@ export async function PATCH(req: Request) {
 
     // Check if personalization is complete
     const isPersonalised = isPersonalizationComplete(updatedUser);
+
     if (isPersonalised) {
-      await db.user.update({
+      const updatedUser = await db.user.update({
         where: {
           id: user.id,
         },
@@ -155,14 +156,13 @@ export async function PATCH(req: Request) {
           isPersonalised,
         },
       });
+
       //Call the generate meal plan queue
       const mealPlanQueue = new Queue("generateMealPlan");
       await mealPlanQueue.add("generateMealPlan", { userId: user.id });
-    }
 
-    return NextResponse.json(updatedUser, {
-      status: 200,
-    });
+      return NextResponse.json(updatedUser, { status: 200 });
+    }
   } catch (error) {
     console.log("[USER_PERSONALISATION]", error);
     return NextResponse.json("Internal Server Error", { status: 500 });
