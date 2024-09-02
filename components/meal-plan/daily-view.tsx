@@ -26,12 +26,13 @@ const DailyView = ({ date }: DailyViewProps) => {
   const [planEndWarning, setPlanEndWarning] = useState<boolean>(false);
   const [mealPlanStartDate, setMealPlanStartDate] = useState<Date>(new Date());
   const [mealPlanEndDate, setMealPlanEndDate] = useState<Date>(new Date());
-  // Function to normalize date (set time to midnight)
+
   const normalizeDate = (date: Date): Date => {
     const normalizedDate = new Date(date);
     normalizedDate.setHours(0, 0, 0, 0);
     return normalizedDate;
   };
+
   useEffect(() => {
     setPlanStartWarning(false);
     setPlanEndWarning(false);
@@ -67,7 +68,6 @@ const DailyView = ({ date }: DailyViewProps) => {
       setLoading(true);
 
       try {
-        // Fetch meal plan for the specified date
         const formattedDate = formatISO(date, { representation: "date" });
 
         const mealPlanResult = await getMealPlanFromS3({ date: formattedDate });
@@ -77,21 +77,14 @@ const DailyView = ({ date }: DailyViewProps) => {
           setMealsByTime(mealsByTime);
           setMealTimes(mealTimes);
 
-          // Expand the first meal time by default
           if (mealTimes.length > 0) {
             setExpandedMealTime(mealTimes[0].slug);
           }
-          if (mealsByTime[mealTimes[0].slug].length === 0) {
-            setMealTimes([]);
-          }
         } else {
-          setMealTimes([]); // Clear the meal times
-          setMealsByTime({}); // Clear the meals
           toast.error("Meal plan not available for the selected date.", {
             position: "top-center",
             autoClose: 5000,
           });
-
           console.log("Meal plan not available for the selected date.");
         }
       } catch (error) {
@@ -111,6 +104,12 @@ const DailyView = ({ date }: DailyViewProps) => {
       prevMealTime === mealTimeSlug ? null : mealTimeSlug
     );
   };
+  // Function to check if all meal arrays in mealsByTime are empty
+  const areAllMealsEmpty = () => {
+    return Object.values(mealsByTime).every(
+      (mealArray) => mealArray.length === 0
+    );
+  };
 
   if (loading) {
     return (
@@ -128,7 +127,7 @@ const DailyView = ({ date }: DailyViewProps) => {
       <div className="bg-white p-4 rounded-lg shadow-md flex flex-col items-center justify-center">
         <Image
           src="/assets/images/no.png"
-          alt="Loading"
+          alt="Warning"
           width={200}
           height={200}
           className="my-5"
@@ -146,24 +145,25 @@ const DailyView = ({ date }: DailyViewProps) => {
       <div className="bg-white p-4 rounded-lg shadow-md flex flex-col items-center justify-center">
         <Image
           src="/assets/images/no.png"
-          alt="Loading"
+          alt="Warning"
           width={200}
           height={200}
           className="my-5"
         />
         <h2 className="text-lg font-semibold mb-10 text-center">
-          Your meal plan is ended on {formatDate(mealPlanEndDate)}. Please
-          select a date on or before this date.
+          Your meal plan ended on {formatDate(mealPlanEndDate)}. Please select a
+          date on or before this date.
         </h2>
       </div>
     );
   }
-  if (mealTimes.length === 0) {
+  console.log("Meal By Time", mealsByTime);
+  if (areAllMealsEmpty()) {
     return (
       <div className="bg-white p-4 rounded-lg shadow-md flex flex-col items-center justify-center">
         <Image
           src="/assets/no-junk-food.gif"
-          alt="Loading"
+          alt="No Meals"
           width={200}
           height={200}
           className="my-5"
@@ -174,6 +174,7 @@ const DailyView = ({ date }: DailyViewProps) => {
       </div>
     );
   }
+
   return (
     <div className="bg-white p-4 rounded-lg">
       <h2 className="text-md font-semibold text-center mb-4">

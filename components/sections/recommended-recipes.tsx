@@ -13,9 +13,13 @@ import { getRecommendedRecipes } from "@/actions/get-recommended-recipes";
 
 interface RecommendedRecipesProps {
   userId?: string;
+  isPersonalized: boolean;
 }
 
-const RecommendedRecipes = ({ userId }: RecommendedRecipesProps) => {
+const RecommendedRecipes = ({
+  userId,
+  isPersonalized,
+}: RecommendedRecipesProps) => {
   const [recipes, setRecipes] = useState<RecipeWithCategory[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(false);
@@ -34,6 +38,7 @@ const RecommendedRecipes = ({ userId }: RecommendedRecipesProps) => {
       const response = await getRecommendedRecipes(
         currentPage + 1,
         userId!,
+        isPersonalized,
         behaviorData,
         categoryData
       );
@@ -69,6 +74,7 @@ const RecommendedRecipes = ({ userId }: RecommendedRecipesProps) => {
         const response = await getRecommendedRecipes(
           1,
           userId,
+          isPersonalized,
           behaviorData,
           categoryData
         );
