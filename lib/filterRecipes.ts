@@ -87,6 +87,7 @@ export const filterRecipesByUserPreferences = async (
     // Filter recipes based on user preferences
     const filteredRecipes = allRecipes.filter((recipe) => {
       // Check if recipe matches user's food preferences
+
       const matchesFoodPreference = (() => {
         switch (userData.foodPreferenceId) {
           case categoryMap["non veg"]:
@@ -135,14 +136,21 @@ export const filterRecipesByUserPreferences = async (
       //   !userData.cookingSkillId ||
       //   recipe.recipeDifficultyId! <= userData.cookingSkillId;
 
-      return (
+      // return (
+      //   matchesFoodPreference &&
+      //   !containsAllergens &&
+      //   matchesCuisinePreference &&
+      //   matchesHealthGoals &&
+      //   matchesPrakriti //&&
+      //   //matchesCookingSkill
+      // );
+
+      const matchesAnyPreference =
         matchesFoodPreference &&
         !containsAllergens &&
-        matchesCuisinePreference &&
-        matchesHealthGoals &&
-        matchesPrakriti //&&
-        //matchesCookingSkill
-      );
+        (matchesCuisinePreference || matchesHealthGoals || matchesPrakriti);
+
+      return matchesAnyPreference;
     });
 
     // Filter recipes by season

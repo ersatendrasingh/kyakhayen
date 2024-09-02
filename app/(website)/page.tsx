@@ -170,7 +170,10 @@ export default async function Home() {
         genders={genders}
       />
       <RecipeByMealTime title="Recipe By Meal Time" widgetItems={melaTimes} />
-      <RecommendedRecipes userId={user?.id} />
+      <RecommendedRecipes
+        userId={user?.id}
+        isPersonalized={user?.isPersonalised || false}
+      />
       <HomeCategory title="Recipe Categories" widgetItems={recipeCategories} />
       <PopularRecipes />
     </div>
