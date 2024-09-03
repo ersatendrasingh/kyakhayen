@@ -171,6 +171,7 @@ model Cuisines {
   title         String
   slug          String           @unique
   imageUrl      String?
+  position      Int
   recipeCuisine RecipeCuisines[]
   userCuisines  UserCuisines[]
 }
@@ -189,6 +190,7 @@ model Allergies {
   title           String
   slug            String            @unique
   imageUrl        String?
+  position        Int?
   recipeAllergies RecipeAllergies[]
   UserAllrgies    UserAllrgies[]
 }
@@ -225,6 +227,7 @@ model HealthGoals {
   title             String
   slug              String              @unique
   imageUrl          String?
+  position          Int?
   recipeHealthGoals recipeHealthGoals[]
   UserHealthGoals   UserHealthGoals[]
 }
@@ -259,6 +262,7 @@ model Disease {
   title         String
   slug          String          @unique
   imageUrl      String?
+  position      Int?
   recipeDisease recipeDisease[]
 }
 
@@ -275,6 +279,7 @@ model Nutrient {
   title          String
   slug           String           @unique
   imageUrl       String?
+  position       Int?
   recipeNutrient recipeNutrient[]
 }
 
@@ -291,6 +296,7 @@ model DietTypes {
   title          String
   slug           String           @unique
   imageUrl       String?
+  position       Int?
   recipeDietType recipeDietType[]
 }
 
@@ -307,6 +313,7 @@ model RecipeTypes {
   title            String
   slug             String             @unique
   imageUrl         String?
+  position         Int?
   recipeRecipeType recipeRecipeType[]
 }
 

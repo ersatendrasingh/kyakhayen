@@ -1,14 +1,24 @@
-import { DataTable } from "./_components/data-table";
-import { columns } from "./_components/columns";
 import { db } from "@/lib/db";
 
 import HealthGoalForm from "./_components/health-goal-form";
+import HealthGoalTable from "./_components/health-goal-table";
 const HealthGoalPage = async () => {
   const healthGoals = await db.healthGoals.findMany({
     orderBy: {
-      title: "asc",
+      position: "asc",
+    },
+    include: {
+      _count: {
+        select: {
+          recipeHealthGoals: true,
+        },
+      },
     },
   });
+  const healthGoalsWithRecipeCount = healthGoals.map((healthGoal) => ({
+    ...healthGoal,
+    totalRecipeCount: healthGoal._count.recipeHealthGoals,
+  }));
   return (
     <div className="p-6">
       <div className="grid grid-cols-2 gap-4">
@@ -16,7 +26,7 @@ const HealthGoalPage = async () => {
           <HealthGoalForm />
         </div>
         <div>
-          <DataTable columns={columns} data={healthGoals} />
+          <HealthGoalTable initialHealthGoals={healthGoalsWithRecipeCount} />
         </div>
       </div>
     </div>

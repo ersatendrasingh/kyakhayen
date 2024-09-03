@@ -13,9 +13,9 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-import { Allergies } from "@prisma/client";
+import { CookingMethods } from "@prisma/client";
 
-export const columns: ColumnDef<Allergies>[] = [
+export const columns: ColumnDef<CookingMethods>[] = [
   {
     accessorKey: "imageUrl",
     header: ({ column }) => {
@@ -73,7 +73,7 @@ export const columns: ColumnDef<Allergies>[] = [
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <Link href={`/admin/recipes/allergies/${id}`}>
+            <Link href={`/admin/recipes/cooking-methods/${id}`}>
               <DropdownMenuItem className="cursor-pointer">
                 <Pencil className="h-3 w-3 mr-2 cursor-pointer" />
                 Edit
