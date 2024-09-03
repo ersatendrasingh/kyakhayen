@@ -12,13 +12,12 @@ import {
 import { Grip, Loader2, Pencil, X } from "lucide-react";
 
 import { cn } from "@/lib/utils";
-import { IngredientsForm } from "./ingredients-form";
-import IngredientEditForm from "./ingredient-edit-form";
+
 import { ConfirmModal } from "@/components/modals/confirm-modal";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
-import { Badge } from "@/components/ui/badge";
+
 import BenefitEditForm from "./benefit-edit-form";
 
 interface BenefitsListProps {

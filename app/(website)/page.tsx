@@ -125,20 +125,35 @@ export default async function Home() {
   });
 
   const cuisines = await db.cuisines.findMany({
+    where: {
+      recipeCuisine: {
+        some: {},
+      },
+    },
     orderBy: {
-      title: "asc",
+      position: "asc",
     },
   });
 
   const allergies = await db.allergies.findMany({
+    where: {
+      recipeAllergies: {
+        some: {},
+      },
+    },
     orderBy: {
-      title: "asc",
+      position: "asc",
     },
   });
 
   const healthGoals = await db.healthGoals.findMany({
+    where: {
+      recipeHealthGoals: {
+        some: {},
+      },
+    },
     orderBy: {
-      title: "asc",
+      position: "asc",
     },
   });
   const cookingSkills = await db.recipeDifficulty.findMany({

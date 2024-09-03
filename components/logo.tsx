@@ -9,8 +9,8 @@ const Logo = () => {
       <div className="relative w-[180px] h-14">
         <Image
           alt="logo"
-          src="/assets/images/kyakhayen-logo.png"
-          //src="/assets/images/logo.png"
+          //src="/assets/images/kyakhayen-logo.png"
+          src="/assets/images/logo.png"
           priority
           fill
           sizes="180px"

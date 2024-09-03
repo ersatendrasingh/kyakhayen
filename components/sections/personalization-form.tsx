@@ -1,6 +1,13 @@
 "use client";
 
-import { useState, useEffect, useRef, createRef, RefObject } from "react";
+import {
+  useState,
+  useEffect,
+  useRef,
+  createRef,
+  RefObject,
+  useMemo,
+} from "react";
 import { Search } from "lucide-react";
 
 import { CSSTransition, TransitionGroup } from "react-transition-group";
@@ -40,6 +47,9 @@ import { usePathname, useRouter } from "next/navigation";
 import { collectPersonalizationData } from "@/hooks/use-user-personalization";
 import OverlayLoader from "../loader/overlay-loader";
 import MealPlanLoader from "../loader/meal-plan-loader";
+
+import dynamic from "next/dynamic";
+//import { ProgressBar } from "./progress-bar";
 interface PrakritiQuestionType extends PrakritiQuestion {
   options: PrakritiQuestionOption[];
 }
@@ -74,6 +84,10 @@ const getSavedStep = (): number => {
   }
 };
 
+const ProgressBar = dynamic(
+  () => import("@/components/sections/progress-bar"),
+  { ssr: false }
+);
 export default function PersonalizationForm({
   banner,
   className,
@@ -180,29 +194,15 @@ export default function PersonalizationForm({
       {mealPlanLoading && <MealPlanLoader isLoading={mealPlanLoading} />}
 
       <Container>
-        <div className="w-full flex flex-col items-center justify-center text-center relative">
-          <div className="hidden md:flex w-full my-3 justify-center">
-            <Sheet open={open} onOpenChange={setOpen}>
-              <SheetTrigger>
-                <div className="relative mt-3 w-full">
-                  <Search className="h-6 w-6 absolute top-3 left-3 text-slate-600" />
-                  <Input
-                    className="w-full md:w-[600px] h-12 pl-16 rounded-full bg-white shadow-md"
-                    placeholder="Search for recipes..."
-                  />
-                </div>
-              </SheetTrigger>
-              <SheetContent
-                side="top"
-                className="flex flex-row items-center justify-center"
-              >
-                <SearchInput onClose={() => setOpen(false)} />
-              </SheetContent>
-            </Sheet>
-          </div>
+        <div className="w-full flex-shrink-0">
+          <ProgressBar step={step} totalSteps={stepCount} />
+        </div>
+        <div className="w-full flex flex-col items-center justify-center text-center ">
+          {/* Progress Bar */}
+
           <div className="w-full flex flex-col items-center justify-center relative h-[300px] md:h-[300px]">
-            <span className="text-sm md:text-md font-medium p-2 mb-4 rounded-full text-black">
-              Personalize your self
+            <span className="text-sm md:text-md font-medium p-2   rounded-full text-black">
+              Personalize your experience by selecting your preferences
             </span>
             <TransitionGroup className="w-full h-full relative">
               {step === 1 && (

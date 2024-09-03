@@ -16,11 +16,18 @@ export async function POST(req: Request) {
     const title = formData.get("title") as string;
 
     const slug = slugify(title);
+    const lastCuisine = await db.cuisines.findFirst({
+      orderBy: {
+        position: "desc",
+      },
+    });
+    const newPosition = lastCuisine ? lastCuisine.position + 1 : 1;
 
     const cuisine = await db.cuisines.create({
       data: {
         title,
         slug,
+        position: newPosition,
       },
     });
     let imageUrl;
