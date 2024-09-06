@@ -21,7 +21,7 @@ const InstallPrompt = () => {
         if (pathname !== "/download-app") {
           setShowPrompt(true);
         }
-      }, 45000); // 30 seconds
+      }, 10000); // 10 seconds
 
       // Clean up the timer if the component unmounts
       return () => clearTimeout(timer);
