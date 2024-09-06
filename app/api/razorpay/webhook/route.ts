@@ -41,7 +41,10 @@ export async function POST(req: Request) {
         break;
       default:
         console.log("Unknown event type:", event);
-        return NextResponse.json("Unknown event type", { status: 400 });
+        return NextResponse.json(
+          { message: "Unknown event type" },
+          { status: 400 }
+        );
     }
 
     return response;
@@ -79,19 +82,18 @@ const handlePaymentCaptured = async (payload: any) => {
     });
 
     if (!order || order.paymentStatus === "Paid") {
-      console.log("Order not found");
-      return;
+      console.log("Order not found or already paid");
+      return NextResponse.json(
+        { message: "Order not found or already paid" },
+        { status: 400 }
+      );
     }
 
-    const plan = await db.plan.findUnique({
-      where: {
-        id: planId,
-      },
-    });
+    const plan = await db.plan.findUnique({ where: { id: planId } });
 
     if (!plan) {
       console.log("Plan not found");
-      return;
+      return NextResponse.json({ message: "Plan not found" }, { status: 400 });
     }
 
     // Find if the user has an active plan
@@ -253,7 +255,7 @@ const handlePaymentFailed = async (payload: any) => {
 
     if (!order) {
       console.log("Order not found");
-      return;
+      return NextResponse.json({ message: "Order not found" }, { status: 400 });
     }
 
     await db.order.update({
@@ -303,7 +305,7 @@ const handlePaymentFailed = async (payload: any) => {
 
     await sendEmail({
       to: process.env.ADMIN_EMAIL as string,
-      subject: "An order has been failed on Vedique using Razorpay",
+      subject: "An order has been failed on Kya Khayen using Razorpay",
       html: render(
         CustomerOrderAdminMail({
           subjectLine:
