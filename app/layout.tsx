@@ -11,6 +11,7 @@ import { auth } from "@/auth";
 import { ConfettiProvider } from "@/components/providers/confetti-provider";
 import { CartProvider } from "@/context/cart-context";
 import { UserCountryProvider } from "@/context/user-country-context";
+import InstallPrompt from "@/components/install-prompt";
 
 const poppins = Poppins({
   subsets: ["latin"],
@@ -77,6 +78,7 @@ export default async function RootLayout({
         <body className={`${poppins.variable}`} suppressHydrationWarning={true}>
           <ConfettiProvider />
           <ToastContainer />
+          <InstallPrompt />
           <NextTopLoader
             color="#ff3c28"
             initialPosition={0.08}
