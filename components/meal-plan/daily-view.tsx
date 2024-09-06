@@ -157,7 +157,7 @@ const DailyView = ({ date }: DailyViewProps) => {
       </div>
     );
   }
-  console.log("Meal By Time", mealsByTime);
+
   if (areAllMealsEmpty()) {
     return (
       <div className="bg-white p-4 rounded-lg shadow-md flex flex-col items-center justify-center">
