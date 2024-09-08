@@ -37,6 +37,7 @@ type Banner = {
 interface HomeBannerProps {
   banner: Banner;
   banners: Banner[];
+  featureBanners: Banner[];
   className?: string;
   cuisines: CuisinesType[];
   allergies: AllergiesType[];
@@ -50,6 +51,7 @@ interface HomeBannerProps {
 const HomeBanner = ({
   banner,
   banners,
+  featureBanners,
   cuisines,
   allergies,
   healthGoals,
@@ -111,7 +113,11 @@ const HomeBanner = ({
     <div className="relative">
       {isLoading && <OverlayLoader isLoading={isLoading} />}
       {user && user?.isPersonalised ? (
-        <HeroBannerCard banner={banner} banners={banners} />
+        <HeroBannerCard
+          banner={banner}
+          banners={banners}
+          featureBanners={featureBanners}
+        />
       ) : (
         <PersonalizationForm
           banner={banner}

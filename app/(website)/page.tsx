@@ -1,13 +1,9 @@
 import { Metadata } from "next";
-
-import HeroBannerCard from "@/components/sections/hero-banner-card";
 import HomeCategory from "@/components/sections/home-category";
-import PersonalizationForm from "@/components/sections/personalization-form";
 import PopularRecipes from "@/components/sections/popular-recipes";
 import { db } from "@/lib/db";
 import { getPrakritiQuestions } from "@/actions/get-prakriti-questions";
 import { currentUser } from "@/lib/auth";
-import { useCurrentUser } from "@/hooks/use-current-user";
 import HomeBanner from "@/components/sections/home-banner";
 import RecommendedRecipes from "@/components/sections/recommended-recipes";
 import RecipeByMealTime from "@/components/sections/recipe-by-mealtime";
@@ -26,37 +22,87 @@ const banners = [
   {
     id: 1,
     title: "Download Our App",
-    spanTxt: "Get the best features at your fingertips!",
+    spanTxt: "Get top features at your fingertips.",
     btnTxt: "Download Now",
     image: "/assets/images/home-banner-app-download.webp",
     href: "/download-app",
     points: [
-      "Personalized Meal Plans",
-      "Exclusive Recipes",
-      "Nutritional Insights",
-      "Community Support",
-      "Real-Time Notifications",
-      "Offline Access",
-      "User-Friendly Interface",
-      "Enjoy a seamless and enjoyable user experience",
+      "AI-Powered Meal Plans",
+      "Exclusive Recipe Library",
+      "Health and Nutrition Tips",
+      "Active Community Support",
+      "Personalized Alerts and Notifications",
+      "Track Your Progress",
+      "Simple and Intuitive Design",
     ],
   },
   {
     id: 2,
-    title: "Meal Plans",
-    spanTxt: "Reach your goals with custom meal plans.",
+    title: "Customized Meal Plans",
+    spanTxt: "Achieve goals with tailored plans.",
     btnTxt: "Get Started",
     image: "/assets/images/meal-plan.webp",
     href: "/meal-plan",
     points: [
-      "Weekly plans with easy-to-follow recipes",
-      "Adjustable serving sizes",
-      "Calorie and macronutrient tracking",
-      "Track your daily intake and meet your health goals",
-      "Meal prep tips and hacks",
-      "Detailed nutritional information for every recipe",
-      "Save your favorite recipes and meal plans offline",
-      "Flexible and easy to modify",
+      "AI Powered Meal Plans",
+      "Adjustable servings",
+      "Calorie tracking",
+      "Prep tips and hacks",
+      "Nutritional info per recipe",
+      "Save favorites offline",
+      "Flexible and modifiable",
+    ],
+  },
+];
+
+const featureBanner = [
+  {
+    id: 1,
+    title: "Achieve Health Goals",
+    spanTxt: "AI-driven path to better health.",
+    btnTxt: "Join Today",
+    image: "/assets/images/meal-plan.webp",
+    href: "/subscription-plans",
+    points: [
+      "Tailored to your health goals",
+      "Fully automated, personalized plans",
+      "Ayurvedic insights included",
+      "1, 3, 6, 12-month options",
+      "Clear path to success",
+      "Start your journey now",
+    ],
+  },
+  {
+    id: 2,
+    title: "Your Custom Diet Plan",
+    spanTxt: "Personalized, AI-powered diet plan.",
+    btnTxt: "Start Now",
+    image: "/assets/images/macbook-app-download.webp",
+    href: "/subscription-plans",
+    points: [
+      "AI-powered, tailored diet",
+      "Custom-fit for goals and allergies",
+      "Ayurvedic wellness insights",
+      "Science-backed nutrition",
+      "1, 3, 6, 12-month plans",
+      "Results in one month",
+    ],
+  },
+
+  {
+    id: 3,
+    title: "AI-Powered Nutrition",
+    spanTxt: "A unique diet plan crafted just for you.",
+    btnTxt: "Subscribe Now",
+    image: "/assets/images/home-banner-app-download.webp",
+    href: "/subscription-plans",
+    points: [
+      "Fully algorithm-driven diet plans",
+      "Personalized to your goals and body type",
+      "Aligns with your lifestyle preferences",
+      "Scientifically designed for results",
+      "Flexible subscription options",
+      "Join the future of personalized health",
     ],
   },
 ];
@@ -66,7 +112,7 @@ const homeBanner: Banner = {
   title: "Explore Kya Khayen?",
   spanTxt: "Search healthy recipes to enjoy with your friends and family.",
   btnTxt: "Explore Courses",
-  image: "/assets/images/home-banner-3.webp",
+  image: "/assets/images/home-banner-1.webp",
 };
 const meta = {
   title: "Kya Khayen - Your Ultimate Global Recipe Hub",
@@ -176,6 +222,7 @@ export default async function Home() {
       <HomeBanner
         banner={homeBanner}
         banners={banners}
+        featureBanners={featureBanner}
         cuisines={cuisines}
         allergies={allergies}
         healthGoals={healthGoals}
