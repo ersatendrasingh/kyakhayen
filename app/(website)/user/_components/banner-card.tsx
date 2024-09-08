@@ -31,9 +31,11 @@ const BannerCard = ({ className }: BannerCardProps) => {
   const hasRunOnce = useRef(false);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [imageUrl, setImageUrl] = useState(
-    user?.gender?.toLowerCase() === "male"
-      ? "/assets/images/man-user-circle-icon.webp"
-      : "/assets/images/woman-user-circle-icon.webp"
+    user?.gender
+      ? user?.gender?.toLowerCase() === "male"
+        ? "/assets/images/man-user-circle-icon.webp"
+        : "/assets/images/woman-user-circle-icon.webp"
+      : "/assets/images/profile.png"
   );
   const [isUploading, setIsUploading] = useState(false);
   useEffect(() => {
