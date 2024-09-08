@@ -2,14 +2,12 @@
 
 import { useState } from "react";
 import { Search } from "lucide-react";
-
 import { cn } from "@/lib/utils";
-
 import Container from "@/components/container";
 import { Input } from "@/components/ui/input";
 import { SearchInput } from "@/components/header/search-input";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import DownloadOurApp from "@/components/sections/slider/download-our-app";
+import HomeSlideBanner from "@/components/sections/slider/home-slide-banner";
 
 interface HeroBannerCardProps {
   banner: {
@@ -28,15 +26,40 @@ interface HeroBannerCardProps {
     points?: string[];
     href?: string;
   }[];
+  featureBanners: {
+    id: number;
+    title: string;
+    spanTxt: string;
+    btnTxt: string;
+    image: string;
+    points?: string[];
+    href?: string;
+  }[];
   className?: string;
 }
 
 export default function HeroBannerCard({
   banner,
   banners,
+  featureBanners,
   className,
 }: HeroBannerCardProps) {
   const [open, setOpen] = useState(false);
+
+  const isPWA = () => window.matchMedia("(display-mode: standalone)").matches;
+
+  const renderBanner = () => {
+    try {
+      if (typeof window !== "undefined" && isPWA()) {
+        return <HomeSlideBanner banners={featureBanners} />;
+      } else {
+        return <HomeSlideBanner banners={banners} />;
+      }
+    } catch (error) {
+      console.error("Error rendering banner:", error);
+      return <div>Error loading banner</div>;
+    }
+  };
 
   return (
     <div
@@ -52,7 +75,7 @@ export default function HeroBannerCard({
     >
       <Container>
         <div className="w-full flex flex-col items-center justify-center text-center">
-          <div className="hidden  w-full my-3 justify-center">
+          <div className="hidden w-full my-3 justify-center">
             <Sheet open={open} onOpenChange={setOpen}>
               <SheetTrigger>
                 <div className="relative mt-3 w-full">
@@ -73,7 +96,7 @@ export default function HeroBannerCard({
           </div>
 
           <div className="w-full h-full flex items-center justify-center">
-            <DownloadOurApp banners={banners} />
+            {renderBanner()}
           </div>
         </div>
       </Container>

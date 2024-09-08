@@ -11,12 +11,10 @@ import {
   Keyboard,
 } from "swiper/modules";
 import { IoIosArrowDroprightCircle } from "react-icons/io";
-
-import { cn } from "@/lib/utils";
 import Link from "next/link";
 import useWindowSize from "@/hooks/use-window-size";
 
-interface DownloadOurAppProps {
+interface HomeSlideBannerProps {
   banners: {
     id: number;
     title: string;
@@ -28,7 +26,7 @@ interface DownloadOurAppProps {
   }[];
 }
 
-const DownloadOurApp = ({ banners }: DownloadOurAppProps) => {
+const HomeSlideBanner = ({ banners }: HomeSlideBannerProps) => {
   const { width } = useWindowSize();
   const isMobile = width !== undefined && width <= 767;
 
@@ -53,17 +51,17 @@ const DownloadOurApp = ({ banners }: DownloadOurAppProps) => {
           <SwiperSlide key={banner.id}>
             <div className="w-full flex flex-col md:flex-row items-center justify-center">
               <div className="md:w-1/2 flex flex-col items-start md:ml-36 justify-end md:items-start p-4 text-left">
-                <h2 className="text-3xl font-bold text-websecondary mb-2">
+                <h2 className="text-3xl font-bold text-websecondary mb-2 break-words">
                   {banner.title}
                 </h2>
-                <p className="text-lg text-webprimary font-semibold mb-4">
+                <p className="text-lg text-webprimary font-semibold mb-4 break-words">
                   {banner.spanTxt}
                 </p>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                   {banner.points?.map((point, index) => (
                     <div
                       key={index}
-                      className="flex text-sm font-semibold items-center"
+                      className="flex text-sm font-semibold items-center break-words"
                     >
                       <span className="mr-2">
                         <IoIosArrowDroprightCircle className="text-md text-websecondary" />
@@ -95,4 +93,4 @@ const DownloadOurApp = ({ banners }: DownloadOurAppProps) => {
   );
 };
 
-export default DownloadOurApp;
+export default HomeSlideBanner;
