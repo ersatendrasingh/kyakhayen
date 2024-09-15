@@ -14,13 +14,29 @@ const BmiGaugeChart: React.FC<BmiGaugeChartProps> = ({ bmi }) => {
   };
 
   const getBmiColor = (bmi: number) => {
-    if (bmi < 18.5) return "#f5b342";
-    if (bmi < 24.9) return "#5cb85c";
-    if (bmi < 29.9) return "#f0ad4e";
-    return "#d9534f";
+    if (bmi < 18.5) return "#f5b342"; // yellow
+    if (bmi < 24.9) return "#5cb85c"; // green
+    if (bmi < 29.9) return "#f0ad4e"; // orange
+    return "#d9534f"; // red
   };
 
-  const bmiPercent = Math.min(bmi / 40, 1); // Cap the percentage at 1
+  const getBmiPercent = (bmi: number) => {
+    if (bmi < 18.5) {
+      // Underweight range
+      return (bmi / 18.5) * 0.25;
+    } else if (bmi < 24.9) {
+      // Healthy weight range
+      return 0.25 + ((bmi - 18.5) / (24.9 - 18.5)) * 0.25;
+    } else if (bmi < 29.9) {
+      // Overweight range
+      return 0.5 + ((bmi - 24.9) / (29.9 - 24.9)) * 0.25;
+    } else {
+      // Obese range
+      return 0.75 + ((bmi - 29.9) / (40 - 29.9)) * 0.25;
+    }
+  };
+
+  const bmiPercent = getBmiPercent(bmi);
 
   return (
     <div className="text-center">
