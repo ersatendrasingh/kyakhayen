@@ -3,8 +3,6 @@ import { Metadata } from "next";
 import PricingTable from "@/components/subscription-plans/pricing-table";
 import IntroSection from "@/components/subscription-plans/intro-section";
 
-import { getSubscriptionPlans } from "@/actions/get-subscription-plans";
-
 const meta = {
   title:
     "Subscription Plans - Kya Khayen? | Subscribe to Our Monthly Meal Plans",
@@ -50,12 +48,10 @@ export const metadata: Metadata = {
   },
 };
 const SubscriptionPlansPage = async () => {
-  const subscriptionPlans = await getSubscriptionPlans();
-
   return (
     <div>
       <IntroSection />
-      <PricingTable subscriptionPlans={subscriptionPlans} />
+      <PricingTable />
     </div>
   );
 };
