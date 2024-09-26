@@ -12,6 +12,7 @@ import { ConfettiProvider } from "@/components/providers/confetti-provider";
 import { CartProvider } from "@/context/cart-context";
 import { UserCountryProvider } from "@/context/user-country-context";
 import InstallPrompt from "@/components/install-prompt";
+import Head from "next/head";
 
 const poppins = Poppins({
   subsets: ["latin"],
@@ -40,6 +41,9 @@ export const metadata: Metadata = {
   title: meta.title,
   description: meta.description,
   keywords: meta.keywords,
+  other: {
+    "google-adsense-account": "ca-pub-2007753908126813",
+  },
   openGraph: {
     title: meta.title,
     description: meta.description,
@@ -75,6 +79,10 @@ export default async function RootLayout({
       <html lang="en">
         <GoogleAnalytics gaId={process.env.GOOGLE_ANALYTICS_ID as string} />
         <GoogleTagManager gtmId={process.env.GOOGLE_TAG_MANAGER_ID as string} />
+        <Head>
+          {/* Google AdSense verification meta tag */}
+          <meta name="google-adsense-account" content="ca-pub-20077" />
+        </Head>
         <body className={`${poppins.variable}`} suppressHydrationWarning={true}>
           <ConfettiProvider />
           <ToastContainer />
