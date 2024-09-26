@@ -40,6 +40,9 @@ export const metadata: Metadata = {
   title: meta.title,
   description: meta.description,
   keywords: meta.keywords,
+  other: {
+    "google-adsense-account": "ca-pub-2007753908126813",
+  },
   openGraph: {
     title: meta.title,
     description: meta.description,
@@ -75,6 +78,7 @@ export default async function RootLayout({
       <html lang="en">
         <GoogleAnalytics gaId={process.env.GOOGLE_ANALYTICS_ID as string} />
         <GoogleTagManager gtmId={process.env.GOOGLE_TAG_MANAGER_ID as string} />
+
         <body className={`${poppins.variable}`} suppressHydrationWarning={true}>
           <ConfettiProvider />
           <ToastContainer />
