@@ -69,6 +69,11 @@ const PricingTable = () => {
     }
   };
 
+  const getDurationInMonths = (days: number) => {
+    const months = Math.floor(days / 30); // Simplified conversion
+    return months === 1 ? "1 Month" : `${months} Months`;
+  };
+
   // Skeleton Loader Component
   const SkeletonCard = () => (
     <div className="relative bg-white shadow-md rounded-lg overflow-hidden animate-pulse flex flex-col justify-between min-h-full">
@@ -142,6 +147,13 @@ const PricingTable = () => {
                           ? `${userCurrency} ${plan.priceUsd}`
                           : `${userCurrency} ${plan.priceInr}`}
                       </p>
+                    </div>
+                    <div className="mt-4 w-full">
+                      {/* Ribbon Style for Duration */}
+                      <div className="bg-webprimary text-black font-bold py-3 px-3 -mx-6">
+                        {/* Use negative margin to remove space caused by padding */}
+                        {getDurationInMonths(plan.durationDays!)}
+                      </div>
                     </div>
 
                     <ul className="mt-6 space-y-3 flex-grow">

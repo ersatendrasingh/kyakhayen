@@ -16,7 +16,11 @@ export const getSubscriptionPlans = async (
         isPublished: true,
       },
       include: {
-        features: true,
+        features: {
+          orderBy: {
+            position: "asc",
+          },
+        },
       },
     });
 
