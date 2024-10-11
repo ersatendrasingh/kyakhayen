@@ -28,7 +28,7 @@ import {
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
-  onDragEnd: (result: DropResult) => void;
+  onDragEnd?: (result: DropResult) => void;
   filterableColumns?: string[];
   filterPlaceholder?: string;
 }
@@ -73,7 +73,7 @@ export function DataTable<TData, TValue>({
           />
         ))}
       </div>
-      <DragDropContext onDragEnd={onDragEnd}>
+      <DragDropContext onDragEnd={onDragEnd ?? (() => {})}>
         <Droppable droppableId="table-body">
           {(provided) => (
             <div
