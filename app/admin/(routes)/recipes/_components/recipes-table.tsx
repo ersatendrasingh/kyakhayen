@@ -1,7 +1,13 @@
 "use client";
 
 import { ColumnDef } from "@tanstack/react-table";
-import { ArrowUpDown, MoreHorizontal, Pencil, XCircle } from "lucide-react";
+import {
+  ArrowUpDown,
+  MoreHorizontal,
+  Pencil,
+  PlusCircle,
+  XCircle,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 import Image from "next/image";
@@ -392,6 +398,12 @@ const RecipesTable = ({
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-1/3"
           />
+          <Link href="/admin/recipes/create">
+            <Button>
+              <PlusCircle className="h-4 w-4 mr-2" />
+              New Recipe
+            </Button>
+          </Link>
         </div>
 
         {/* DataTable Component */}
