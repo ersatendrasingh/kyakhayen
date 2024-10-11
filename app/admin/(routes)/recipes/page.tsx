@@ -1,15 +1,53 @@
-import { DataTable } from "./_components/data-table";
-import { columns } from "./_components/columns";
 import { db } from "@/lib/db";
+import RecipesTable from "./_components/recipes-table";
+import { getRecipes } from "@/actions/get-all-recipes";
+
 const RecipesPage = async () => {
-  const recipes = await db.recipes.findMany({
+  const recipes = await getRecipes();
+  const recipeCategories = await db.recipeCategories.findMany({
     orderBy: {
-      createdAt: "desc",
+      position: "asc",
+    },
+  });
+  const cuisines = await db.cuisines.findMany({
+    where: {
+      recipeCuisine: {
+        some: {},
+      },
+    },
+    orderBy: {
+      position: "asc",
+    },
+  });
+  const healthGoals = await db.healthGoals.findMany({
+    where: {
+      recipeHealthGoals: {
+        some: {},
+      },
+    },
+    orderBy: {
+      position: "asc",
+    },
+  });
+  const mealTimes = await db.mealTimes.findMany({
+    where: {
+      recipeMealTime: {
+        some: {},
+      },
+    },
+    orderBy: {
+      position: "asc",
     },
   });
   return (
     <div className="p-6">
-      <DataTable columns={columns} data={recipes} />
+      <RecipesTable
+        initialRecipes={recipes}
+        categories={recipeCategories}
+        cuisines={cuisines}
+        healthGoals={healthGoals}
+        mealTimes={mealTimes}
+      />
     </div>
   );
 };

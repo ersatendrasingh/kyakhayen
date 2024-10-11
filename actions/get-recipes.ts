@@ -83,6 +83,16 @@ export const GetRecipes = async ({
               nutrient: true,
             },
           },
+          recipePrakriti: {
+            include: {
+              prakriti: true,
+            },
+          },
+          recipeHealthGoals: {
+            include: {
+              healthGoals: true,
+            },
+          },
           recipeCookingTime: true,
           recipeMealTime: true,
 
@@ -150,6 +160,11 @@ export const GetRecipes = async ({
               cookingMethod: true,
             },
           },
+          recipeHealthGoals: {
+            include: {
+              healthGoals: true,
+            },
+          },
           recipeCuisine: {
             include: {
               cuisine: true,
@@ -168,6 +183,11 @@ export const GetRecipes = async ({
           recipeNutrient: {
             include: {
               nutrient: true,
+            },
+          },
+          recipePrakriti: {
+            include: {
+              prakriti: true,
             },
           },
           recipeCookingTime: true,
@@ -225,6 +245,11 @@ export const GetRecipes = async ({
               position: "asc",
             },
           },
+          recipeHealthGoals: {
+            include: {
+              healthGoals: true,
+            },
+          },
           recipeCookingMethods: {
             include: {
               cookingMethod: true,
@@ -248,6 +273,11 @@ export const GetRecipes = async ({
           recipeNutrient: {
             include: {
               nutrient: true,
+            },
+          },
+          recipePrakriti: {
+            include: {
+              prakriti: true,
             },
           },
           recipeCookingTime: true,

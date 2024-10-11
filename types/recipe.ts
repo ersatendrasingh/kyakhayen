@@ -6,6 +6,7 @@ import {
   Ingredients,
   IngredientsForm,
   Nutrient,
+  Prakriti,
   RecipeCategories,
   RecipeCookingTime,
   RecipeDifficulty,
@@ -16,6 +17,7 @@ import {
   Recipes,
   Review,
   Units,
+  recipeHealthGoals,
   recipeMealTime,
 } from "@prisma/client";
 
@@ -31,6 +33,13 @@ export type RecipeCuisines = {
   cuisineId: string;
   recipeId: string;
   cuisine: Cuisines;
+};
+
+export type RecipePrakriti = {
+  id: string;
+  recipeId: string;
+  prakritiId: string;
+  prakriti: Prakriti;
 };
 
 export type RecipeDietType = {
@@ -76,6 +85,7 @@ export type RecipeWithCategory = Recipes & {
   RecipeCategories: RecipeCategories | null;
   recipeIngredients: RecipeIngredientType[];
   recipeMethods: RecipeMethods[];
+  recipeHealthGoals: recipeHealthGoals[];
   recipeHealthBenefits: RecipeHealthBenefits[];
   recipeCookingTime: RecipeCookingTime | null;
   recipeDietType: RecipeDietType[] | null;
@@ -87,5 +97,6 @@ export type RecipeWithCategory = Recipes & {
   recipeNutrient: RecipeNutrient[] | null;
   recipeMealTime: recipeMealTime[] | null;
   recipeComments: Comment[] | null;
+  recipePrakriti: RecipePrakriti[] | null;
   Review: Review[] | null;
 };
