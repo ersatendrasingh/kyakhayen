@@ -73,12 +73,18 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const session = await auth();
+
   return (
     <SessionProvider session={session}>
       <html lang="en">
         <GoogleAnalytics gaId={process.env.GOOGLE_ANALYTICS_ID as string} />
         <GoogleTagManager gtmId={process.env.GOOGLE_TAG_MANAGER_ID as string} />
-
+        <head>
+          <script
+            async
+            src="https://embed.tawk.to/670954742480f5b4f58c2786/1i9u73q43"
+          ></script>
+        </head>
         <body className={`${poppins.variable}`} suppressHydrationWarning={true}>
           <ConfettiProvider />
           <ToastContainer />
