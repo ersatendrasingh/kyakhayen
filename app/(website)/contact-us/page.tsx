@@ -6,23 +6,25 @@ import Container from "@/components/container";
 import { Button } from "@/components/ui/button";
 import ContactForm from "@/components/contact/contact-form";
 import { FAQ } from "@/components/contact/faqs";
+import { PageTitle } from "@/components/page-title";
 
 const meta = {
   title:
-    "Contact Us - Kya Khayen? | Your Ultimate Recipe and Meal Planning Platform",
+    "Contact Us - Kya Khayen? | Healthy Recipes and Meal Plans for Weight Loss",
   description:
-    "Learn more about Kya Khayen?, your personalized cooking assistant. Discover our mission, features, and how we help you find the perfect recipes and meal plans tailored to your preferences.",
-  image: `${process.env.NEXT_PUBLIC_APP_URL}/assets/images/contact-us.webp`,
+    "Have any questions about our personalized meal plans, diet charts or healthy recipes? Contact Kya Khayen today. We're here to assist you on your weight loss journey.",
+  image: `${process.env.NEXT_PUBLIC_APP_URL}/meta-images/contact-us.png`,
   keywords: [
-    "Kya Khayen?",
-    "about us",
-    "recipe platform",
-    "meal planning",
-    "personalized recipes",
-    "cooking assistant",
-    "health goals recipes",
-    "customized meal plans",
-    "indian cuisines",
+    "meal plan for weight loss female",
+    "best diet plan for weight loss",
+    "healthy meal plans for weight loss",
+    "best diet plan for weight loss for female",
+    "best diet to lose weight quickly",
+    "low calorie meal plan",
+    "diet chart for weight loss",
+    "nutrition plan for weight loss",
+    "healthy diet plan for weight loss",
+    "diet plan for weight loss for female",
   ],
 };
 
@@ -55,72 +57,66 @@ export const metadata: Metadata = {
 const ContactUsPage = () => {
   return (
     <div>
-      <section className="py-16 md:pt-12 md:pb-0 bg-gradient-to-r from-red-500 to-orange-500">
+      <PageTitle title="Contact Us" className="py-6" />
+      <section className="py-10 bg-gray-50">
         <Container>
           <div className="flex flex-col items-center justify-center">
             <div className="text-center">
-              <h1 className="text-4xl md:text-8xl font-bold text-white mb-8">
-                Contact Us
-              </h1>
-              <p className="text-md md:text-3xl text-white mb-8">
-                We love hearing from our users! Whether you have a question
-                about our recipes, feedback on our platform, or need support,
-                our team is here to help. Fill out the form below, and
-                we&apos;ll get back to you as soon as possible.
-              </p>
+              <h2 className="text-4xl text-websecondary mb-8">
+                Don't be a stranger! Simple send us a message
+              </h2>
             </div>
           </div>
         </Container>
       </section>
-      <section className="pt-10 bg-gradient-to-b from-neutral-100 via-red-100 to-red-200">
+      <section className="bg-gray-50 pb-10">
         <Container>
-          <div className="flex flex-col md:flex-row items-start justify-between">
-            <div className="w-full md:w-3/5 md:pt-10">
+          <div className="bg-white shadow-lg rounded-lg p-8 w-full max-w-5xl mx-auto ">
+            <div className="w-full ">
               <p className="text-sm font-bold bg-rose-200 text-rose-700 px-3 py-2 mb-3 rounded-full inline-block">
                 Have a question or feedback for us?
               </p>
               <ContactForm />
             </div>
-            <div className="w-full md:w-2/5 flex justify-center">
-              <div className="max-w-[450px] mx-auto">
-                <Image
-                  src="/assets/images/contact-us-kyakhayen.png"
-                  alt="Contact Us Image"
-                  width={450}
-                  height={650}
-                  className="rounded-lg"
-                />
-              </div>
-            </div>
           </div>
         </Container>
       </section>
 
-      <section className="py-10 md:py-10 bg-gradient-to-r from-red-500 to-orange-500 text-white">
+      <section className="py-10 md:py-10 bg-gray-50">
         <Container>
           <div className="flex flex-col md:flex-row items-center">
             <div className="w-full md:w-1/2 md:mr-5">
-              <h2 className="text-4xl md:text-6xl font-bold mb-4 text-left">
+              <h3 className="text-4xl text-websecondary mb-4 text-left">
                 Discover Our App
-              </h2>
-              <p className="text-lg mb-4">
-                Download the Kya Khayen? app and get personalized meal plans
-                tailored to your preferences and health goals. Enjoy a wide
-                variety of recipes and meal planning tools designed to make your
-                cooking experience delightful and hassle-free.
+              </h3>
+              <p className="text-lg leading-loose tracking-wide mb-4">
+                Download our Kya Khayen? mobile app and unlock the power of our
+                personalized meal plans customized to your food preferences,
+                allergies, body type and health goals. You can explore a highly
+                variety of Indian and international recipes for cooking and meal
+                planning. Our PWA app is available on both Android and iOS
+                devices.
               </p>
-              <p className="text-lg mb-4">With our app, you can:</p>
+              <p className="text-lg  leading-loose tracking-wide mb-4">
+                With our app, you can:
+              </p>
               <ul className="text-lg list-disc list-inside mb-4">
-                <li>
-                  Receive customized meal plans based on your dietary
-                  preferences
+                <li className="text-lg leading-loose tracking-wide mb-2">
+                  Access your personalized meal plans and recipes.
                 </li>
-                <li>
-                  Explore a vast collection of Indian and international recipes
+                <li className="text-lg leading-loose tracking-wide mb-2">
+                  Explore a wide range of Indian and international recipes with
+                  their nutritional values.
                 </li>
-                <li>Save your favorite recipes for easy access</li>
-                <li>Get step-by-step cooking instructions</li>
-                <li>Track your health goals with nutritious recipes</li>
+                <li className="text-lg leading-loose tracking-wide mb-2">
+                  You can save your favorite recipes for future reference.
+                </li>
+                <li className="text-lg leading-loose tracking-wide mb-2">
+                  You can track your progress and nutrition goals.
+                </li>
+                <li className="text-lg leading-loose tracking-wide mb-2">
+                  You can share your recipes and meal plans with your friends.
+                </li>
               </ul>
               <Link href="/download-app">
                 <Button
@@ -133,9 +129,9 @@ const ContactUsPage = () => {
               </Link>
             </div>
             <div className="w-full md:w-1/2 mt-5 md:mt-0">
-              <h2 className="text-4xl md:text-6xl font-bold mb-4 text-left">
+              <h4 className="text-4xl text-websecondary mb-4 text-left">
                 FAQs
-              </h2>
+              </h4>
               <FAQ />
             </div>
           </div>

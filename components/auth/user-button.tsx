@@ -53,7 +53,6 @@ export const UserButton = () => {
       setImageUrl(`${user.image}?t=${timestamp}`);
     }
   }, [user?.image]);
-
   if (!user) {
     return (
       <LoginButton>

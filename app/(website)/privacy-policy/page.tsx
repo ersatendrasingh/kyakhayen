@@ -1,20 +1,25 @@
 import { Metadata } from "next";
-import Link from "next/link";
 import React from "react";
 import Container from "@/components/container";
+import { PageTitle } from "@/components/page-title";
 
 const meta = {
-  title: "Privacy Policy - Kya Khayen?",
+  title:
+    "Privacy Policy - Kya Khayen? | Best diet plan for weight loss | Indian healthy recipes",
   description:
-    "Read the privacy policy of Kya Khayen? to understand how we collect, use, and protect your personal information when you use our services.",
+    "Discover how Kya Khayen ensures the safety of your personal information while delivering personalized meal plans, diet charts for weight loss and healthy recipes.",
+  image: `${process.env.NEXT_PUBLIC_APP_URL}/meta-images/privacy-policy.png`,
   keywords: [
-    "Kya Khayen?",
-    "privacy policy",
-    "data protection",
-    "personal information",
-    "user privacy",
-    "data collection",
-    "cookies",
+    "weight loss programs",
+    "best weight loss program",
+    "meal plan for weight loss",
+    "best diet to lose weight",
+    "healthy meals for weight loss",
+    "weight loss plan",
+    "7 day diet plan for weight loss",
+    "best meal plan for weight loss",
+    "weight loss meal programs",
+    "meal plan for weight loss female",
   ],
 };
 
@@ -27,11 +32,17 @@ export const metadata: Metadata = {
     description: meta.description,
     url: `${process.env.NEXT_PUBLIC_APP_URL}/privacy-policy`,
     type: "website",
+    images: [
+      {
+        url: meta.image,
+      },
+    ],
   },
   twitter: {
     title: meta.title,
     description: meta.description,
-    card: "summary",
+    images: [meta.image],
+    card: "summary_large_image",
   },
   alternates: {
     canonical: `${process.env.NEXT_PUBLIC_APP_URL}/privacy-policy`,
@@ -41,142 +52,166 @@ export const metadata: Metadata = {
 const PrivacyPolicyPage = () => {
   return (
     <div>
-      <section className="py-16 md:py-32 bg-gradient-to-r from-red-500 to-orange-500">
+      <PageTitle title="Privacy Policy" className="py-6" />
+      <section className="py-10 ">
         <Container>
-          <div className="text-center">
-            <h1 className="text-4xl md:text-8xl font-bold text-white mb-8">
-              Privacy Policy
-            </h1>
-            <p className="text-md md:text-3xl text-white mb-8">
+          <div className="w-full text-center">
+            <h2 className="text-2xl mb-4">
               This Privacy Policy explains how Kya Khayen? collects, uses, and
-              protects your personal information. By using our services, you
-              agree to the terms outlined in this policy.
+              protects your personal information.
+            </h2>
+            <p className="text-sm text-websecondary ml-4">
+              Last updated: November 15, 2024
             </p>
           </div>
-        </Container>
-      </section>
-      <section className="py-10 md:py-16 bg-white">
-        <Container>
-          <div className="text-left">
-            <h2 className="text-2xl md:text-4xl font-bold mb-4">
+          <div className="w-full py-10">
+            <h3 className="text-xl font-medium text-websecondary mb-2">
               1. Information We Collect
-            </h2>
-            <p className="mb-4">
+            </h3>
+            <p className="text-lg text-justify tracking-wide leading-loose mb-4">
               We collect various types of information in connection with the
-              services we provide, including:
+              services we are provide, including:
             </p>
             <ul className="list-disc pl-8 mb-4">
-              <li className="mb-2">
-                <strong>Personal Information:</strong> Name, email address, date
-                of birth, and other contact details.
+              <li className="text-lg text-justify tracking-wide leading-loose mb-2">
+                <strong>Personal Information:</strong> Name, email address,
+                phone number, date of birth, and other contact details like your
+                address country, state, city and zip code.
               </li>
-              <li className="mb-2">
+              <li className="text-lg text-justify tracking-wide leading-loose mb-2">
                 <strong>Usage Data:</strong> Information about how you use our
-                app, such as the recipes you view and the features you use.
+                kya khayen mobile app, such as visit history, search queries and
+                the reviews and ratings of recipes you give us.
               </li>
-              <li className="mb-2">
+              <li className="text-lg text-justify tracking-wide leading-loose mb-2">
                 <strong>Device Information:</strong> Information about the
-                device you use to access our services, including the type of
-                device, operating system, and browser.
+                device like the type of device and the operating system you use
+                to access our services.
               </li>
-              <li className="mb-2">
-                <strong>Location Information:</strong> Approximate location
-                information, such as your IP address.
+              <li className="text-lg text-justify tracking-wide leading-loose mb-2">
+                <strong>Location Information:</strong> Approximate geographic
+                your location, such as your IP address.
               </li>
             </ul>
-            <h2 className="text-2xl md:text-4xl font-bold mb-4">
+            <h4 className="text-xl font-medium text-websecondary mb-4">
               2. How We Use Your Information
-            </h2>
-            <p className="mb-4">
-              We use the information we collect to provide, maintain, and
-              improve our services, including:
+            </h4>
+            <p className="text-lg text-justify tracking-wide leading-loose mb-4">
+              We use your provided information for the following purposes:
             </p>
             <ul className="list-disc pl-8 mb-4">
-              <li className="mb-2">
-                Personalizing your experience and providing you with customized
-                content.
+              <li className="text-lg text-justify tracking-wide leading-loose mb-2">
+                <strong>Personalized Experience: </strong> Personalizing your
+                experience and providing you a customized and personalized meal
+                plan content.
               </li>
-              <li className="mb-2">
-                Responding to your comments, questions, and requests.
+              <li className="text-lg text-justify tracking-wide leading-loose mb-2">
+                <strong>Customer Support: </strong>To respond to your enquiries,
+                reviews, and comments promptly and effectively.
               </li>
-              <li className="mb-2">
-                Monitoring and analyzing usage and trends to improve our
-                services.
+              <li className="text-lg text-justify tracking-wide leading-loose mb-2">
+                <strong>Service Improvement: </strong>To improve our services,
+                features, and user experience. we monitor and analyze usage data
+                to understand how users interact with our services.
               </li>
-              <li className="mb-2">
-                Sending you technical notices, updates, security alerts, and
-                support messages.
+              <li className="text-lg text-justify tracking-wide leading-loose mb-2">
+                <strong>Notifications and Updates: </strong>To Sending you
+                technical notices, any updates, security alerts, and support
+                messages.
               </li>
             </ul>
-            <h2 className="text-2xl md:text-4xl font-bold mb-4">
+            <h4 className="text-xl font-medium text-websecondary mb-4">
               3. How We Share Your Information
-            </h2>
-            <p className="mb-4">
-              We do not share your personal information with third parties
-              except in the following circumstances:
+            </h4>
+            <p className="text-lg text-justify tracking-wide leading-loose mb-4">
+              We value your privacy and are committed to protecting your
+              personal information. We do not share your personal data with any
+              third parties, except in the following situations:
             </p>
             <ul className="list-disc pl-8 mb-4">
-              <li className="mb-2">With your consent or at your direction.</li>
-              <li className="mb-2">
-                To comply with legal obligations or respond to lawful requests
-                by public authorities.
+              <li className="text-lg text-justify tracking-wide leading-loose mb-2">
+                <strong>With Your Consent:</strong> When you give explicit
+                consent or direct us to share your information.
               </li>
-              <li className="mb-2">
-                To enforce our terms of service, protect our rights, privacy,
-                safety, or property, and/or that of you or others.
+              <li className="text-lg text-justify tracking-wide leading-loose mb-2">
+                <strong>Legal Obligations:</strong>
+                To comply with applicable laws, regulations, or any lawful
+                requests from public authorities.
               </li>
-              <li className="mb-2">
-                In connection with a merger, sale, or other asset transfer.
+              <li className="text-lg text-justify tracking-wide leading-loose mb-2">
+                <strong>Protection of Rights: </strong>
+                To enforce our safegaurd our rights, terms of service, privacy,
+                safety or property, and to protect you or others from harm.
+              </li>
+              <li className="text-lg text-justify tracking-wide leading-loose mb-2">
+                <strong>Business Transactions:</strong>
+                In relation to a business transactions that involves the
+                transfer of personal information, such as a merger, acquisition,
+                asset sale, or other comparable arrangement.
               </li>
             </ul>
-            <h2 className="text-2xl md:text-4xl font-bold mb-4">
+            <h4 className="text-xl font-medium text-websecondary mb-4">
               4. Your Rights and Choices
-            </h2>
-            <p className="mb-4">
-              You have certain rights regarding the personal information we
-              collect from you, including:
+            </h4>
+            <p className="text-lg text-justify tracking-wide leading-loose mb-4">
+              Regarding your personal data we gather and how we use it, you have
+              a number of rights. Among these rights are:
             </p>
             <ul className="list-disc pl-8 mb-4">
-              <li className="mb-2">
-                Accessing, updating, or deleting your personal information.
+              <li className="text-lg text-justify tracking-wide leading-loose mb-2">
+                <strong>Access and Updates:</strong>
+                Having the opportunity to view, update or remove your personal
+                data.
               </li>
-              <li className="mb-2">
-                Opting out of receiving promotional communications from us.
+              <li className="text-lg text-justify tracking-wide leading-loose mb-2">
+                <strong>Promotional Communications: </strong>
+                The choice to not receive emails, SMS, push notifications or
+                other communications from us that are promotional in nature.
               </li>
-              <li className="mb-2">
-                Restricting or objecting to the processing of your information.
+              <li className="text-lg text-justify tracking-wide leading-loose mb-2">
+                <strong>Data Processing:</strong>
+                In some cases, you have the right to limit or object to how your
+                personal information is processed.
               </li>
-              <li className="mb-2">
-                Requesting a copy of your personal data in a machine-readable
-                format.
+              <li className="text-lg text-justify tracking-wide leading-loose mb-2">
+                <strong>Data Portability:</strong>
+                The opportunity to request a copy of your personal information
+                in a machine readable format.
               </li>
             </ul>
-            <h2 className="text-2xl md:text-4xl font-bold mb-4">
+            <h4 className="text-xl font-medium text-websecondary mb-4">
               5. Data Security
-            </h2>
-            <p className="mb-4">
-              We implement a variety of security measures to ensure the safety
-              of your personal information. However, no method of transmission
-              over the internet or electronic storage is 100% secure, so we
-              cannot guarantee its absolute security.
+            </h4>
+            <p className="text-lg text-justify tracking-wide leading-loose mb-4">
+              We take the responsibility of ensuring the security of your
+              personal information and have implemented a variety of measures to
+              protect it from unauthorized access, disclosure, alteration, or
+              destruction.
             </p>
-            <h2 className="text-2xl md:text-4xl font-bold mb-4">
+            <p className="text-lg text-justify tracking-wide leading-loose mb-4">
+              These safeguards consist of safe approaches, access controls, and
+              encryption. Nevertheless, there is no totally safe way to store
+              data electronically or send it over the internet. Although we make
+              every effort to protect your data using commercially acceptable
+              methods, we are unable to provide a guranteed level of security.
+            </p>
+            <h5 className="text-xl font-medium text-websecondary mb-4">
               6. Changes to This Privacy Policy
-            </h2>
-            <p className="mb-4">
-              We may update this privacy policy from time to time. We will
-              notify you of any changes by posting the new privacy policy on
-              this page. You are advised to review this privacy policy
-              periodically for any changes.
+            </h5>
+            <p className="text-lg text-justify tracking-wide leading-loose mb-4">
+              This Privacy Policy may be updated from time to time to reflect
+              modifications to our procedures, offerings, or regulatory
+              requirements. The "Last Updated" date will be updated in top of
+              the page to reflect the last time this Privacy Policy was updated.
             </p>
-            <h2 className="text-2xl md:text-4xl font-bold mb-4">
+            <h6 className="text-xl font-medium text-websecondary mb-4">
               7. Contact Us
-            </h2>
-            <p className="mb-4">
+            </h6>
+            <p className="text-lg text-justify tracking-wide leading-loose mb-4">
               If you have any questions about this privacy policy, please
               contact us at:
             </p>
-            <p className="mb-4">
+            <p className="text-lg text-justify tracking-wide leading-loose mb-4">
               Email:{" "}
               <a href="mailto:mailtokyakhayen@gmail.com">
                 mailtokyakhayen@gmail.com

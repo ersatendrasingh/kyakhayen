@@ -5,129 +5,130 @@ import { Button } from "@/components/ui/button";
 
 const PublicView = () => {
   return (
-    <section className="py-16 md:pt-32 md:pb-12 bg-gradient-to-r from-red-500 to-orange-500">
+    <section className="py-16 ">
       <Container>
-        <div className="flex flex-col items-center justify-center text-white">
-          <h2 className="text-6xl font-bold mb-4">
+        <div className="flex flex-col items-center justify-center">
+          <h2 className="text-4xl text-websecondary mb-8">
             Welcome to Our Meal Planning Service
           </h2>
-          <p className="text-lg mb-6">
-            Discover the best way to plan your meals and achieve your dietary
-            goals with our personalized meal plans. Our service tailors each
-            meal to your unique preferences and nutritional needs, ensuring you
-            enjoy delicious, healthy, and balanced meals every day. Sign up now
-            to get started and take the first step towards a healthier
-            lifestyle!
+          <p className="text-lg text-center leading-loose tracking-wide mb-4">
+            At Kya Khayen?, we understand the importance of healthy living.
+            Whether you're aiming to lose weight, gain muscle, or maintain your
+            healthy lifestyle with a healthy and balanced diet, our main aim is
+            to transform your eating habits and improve your overall well-being
+            with our personalized healthy meal plans.
           </p>
+
           <Link href="/auth/register">
             <Button
               variant="secondary"
               size="lg"
-              className="bg-[#1e1a16] hover:bg-websecondary text-white rounded-full"
+              className="bg-[#1e1a16] hover:bg-webprimary text-white rounded-full"
             >
-              Sign Up Now It&apos;s Free
+              Join Kya Khayen?
             </Button>
           </Link>
           <Image
             src="/assets/images/meal-plan.webp"
-            alt="Meal Plan"
+            alt="best diet plan for weight loss for female"
             width={500}
             height={300}
             className="mb-6 rounded"
           />
-          <div className="text-left mb-6 w-full px-4">
-            <h3 className="text-6xl text-center font-bold mb-10">
-              Why Choose Us?
+          <div className="w-full flex flex-col items-center justify-center">
+            <h3 className="text-4xl text-websecondary mb-8">
+              Why Choose Our Meal Planning Service?
             </h3>
             <div className="flex flex-col md:flex-row">
               <div className="md:w-1/2 md:pr-4">
-                <h4 className="text-lg font-bold mb-2">
-                  Tailored to Your Needs
+                <h4 className="text-xl font-medium text-websecondary mb-2">
+                  Personalized Meal Plans
                 </h4>
-                <p className="text-md mb-4">
-                  Our meal plans are customized to fit your dietary preferences
-                  and nutritional needs. Whether you are looking to lose weight,
-                  gain muscle, or simply eat healthier, we have a plan for you.
+                <p className="text-lg tracking-wide text-justify leading-loose mb-4">
+                  Say goodbye to generic diets! We create a meal plan based on
+                  your food preferences, health goals, nutrition needs and your
+                  body type.
                 </p>
-                <h4 className="text-lg font-bold mb-2">
-                  Delicious & Healthy Recipes
+                <h4 className="text-xl font-medium text-websecondary mb-2">
+                  Nutritional Insights
                 </h4>
-                <p className="text-md mb-4">
-                  Enjoy a wide variety of delicious recipes that are both
-                  nutritious and easy to prepare. Our recipes are designed to
-                  keep your taste buds satisfied while supporting your health
-                  goals.
+                <p className="text-lg tracking-wide text-justify leading-loose mb-4">
+                  Each recipe comes with a detailed breakdown of total calories,
+                  carbohydrates, total fat, dietary fiber, protein and health
+                  benefits to keep you informed and motivated.
                 </p>
-                <h4 className="text-lg font-bold mb-2">Enhance Your Health</h4>
-                <p className="text-md mb-4">
-                  Improve your overall health and wellness with our
-                  comprehensive meal plans. From boosting your energy levels to
-                  improving digestion, our plans are designed to help you feel
-                  your best.
+
+                <h4 className="text-xl font-medium text-websecondary mb-2">
+                  Calorie and Nutrition Tracking
+                </h4>
+                <p className="text-lg tracking-wide text-justify leading-loose mb-4">
+                  Know exactly what you're eating with our advanced calorie and
+                  nutrition tracking features. You can monitor your daily intake
+                  and progress towards your goals.
                 </p>
               </div>
               <div className="md:w-1/2 md:pl-4">
-                <h4 className="text-lg font-bold mb-2">Track Your Progress</h4>
-                <p className="text-md mb-4">
-                  Easily track your dietary intake and monitor your progress.
-                  Our tools help you stay on top of your nutritional goals and
-                  make adjustments as needed.
-                </p>
-                <h4 className="text-lg font-bold mb-2">
-                  Expert Recommendations
+                <h4 className="text-xl font-medium text-websecondary mb-2">
+                  Recipe Customization
                 </h4>
-                <p className="text-md mb-4">
-                  Receive expert tips and recommendations to enhance your diet
-                  and lifestyle. Our team of nutritionists and dietitians
-                  provide valuable insights to help you stay motivated and
-                  informed.
+                <p className="text-lg tracking-wide text-justify leading-loose mb-4">
+                  Explore a wide range of varieties of recipes to meet your
+                  specific nutritional needs while keeping your healthy meals
+                  exciting and flavorful.
                 </p>
-                <h4 className="text-lg font-medium mb-2">
-                  It&apos;s Totally Free!
+
+                <h4 className="text-xl font-medium text-websecondary mb-2">
+                  Flexible Options
                 </h4>
-                <p className="text-md mb-4">
-                  Access all these benefits completely free of charge. Our
-                  service is designed to support your journey towards healthier
-                  eating without any financial commitment.
+                <p className="text-lg tracking-wide text-justify leading-loose mb-4">
+                  Whether you're vegan, keto, gluten-free, or just exploring new
+                  cuisines, our meal plans adapt to your preferences .
+                </p>
+                <h4 className="text-xl font-medium text-websecondary mb-2">
+                  Interactive Community
+                </h4>
+                <p className="text-lg tracking-wide text-justify leading-loose mb-4">
+                  Join our vibrant community of lively meal enthusiasts and
+                  share your culinary adventures with like-minded individuals
+                  who are also passionate about healthy living.
                 </p>
               </div>
             </div>
           </div>
-          <div className="text-left mb-6 w-full px-4">
-            <h3 className="text-6xl text-center font-bold mb-10">
-              How to Get Your Diet Plan
-            </h3>
+          <div className="w-full flex flex-col items-center justify-center mt-10">
+            <h3 className="text-4xl text-websecondary mb-8">How It Works</h3>
             <div className="flex flex-col md:flex-row">
               <div className="md:w-1/2 md:pr-4">
-                <h4 className="text-lg font-bold mb-2">Step 1: Sign Up</h4>
-                <p className="text-md mb-4">
-                  Start by creating an account with us. It&apos;s quick and
-                  easy!
-                </p>
-                <h4 className="text-lg font-bold mb-2">
-                  Step 2: Complete Personalization
+                <h4 className="text-xl font-medium text-websecondary mb-2">
+                  Step 1: Sign Up
                 </h4>
-                <p className="text-md mb-4">
-                  Tell us your dietary preferences and goals. This helps us
-                  create a personalized meal plan just for you.
+                <p className="text-lg tracking-wide text-justify leading-loose mb-4">
+                  Create an account with your email or your google account to
+                  get started.
+                </p>
+                <h4 className="text-xl font-medium text-websecondary mb-2">
+                  Step 3 : Complete Personalization
+                </h4>
+                <p className="text-lg tracking-wide text-justify leading-loose mb-4">
+                  Share your dietary preferences, health goals and some basic
+                  information about your body. This helps us create a
+                  personalized meal plan just for you.
                 </p>
               </div>
               <div className="md:w-1/2 md:pl-4">
-                <h4 className="text-lg font-bold mb-2">
-                  Step 3: Access Your Diet Plan
+                <h4 className="text-xl font-medium text-websecondary mb-2">
+                  Step 2: Subscribe a Plan
                 </h4>
-                <p className="text-md mb-4">
-                  Once personalized, access your customized meal plan tailored
-                  to fit your needs. Enjoy delicious meals that support your
-                  health and fitness goals.
+                <p className="text-lg tracking-wide text-justify leading-loose mb-4">
+                  Choose a subscription plan that fits your needs and unlock
+                  premium features like customized recipes, nutrition tracking.
                 </p>
-                <h4 className="text-lg font-bold mb-2">
-                  Step 4: Download Our App
+                <h4 className="text-xl font-medium text-websecondary mb-2">
+                  Step 4: Access Your Meal Plan and Enjoy
                 </h4>
-                <p className="text-md mb-4">
-                  Download our app to receive notifications, track your progress
-                  on the go, and access additional features to enhance your meal
-                  planning experience.
+                <p className="text-lg tracking-wide text-justify leading-loose mb-4">
+                  Once you done personalization, Access your personalized meal
+                  plan and start your journey to a healthy lifestyle today!
                 </p>
               </div>
             </div>
@@ -136,9 +137,9 @@ const PublicView = () => {
                 <Button
                   variant="secondary"
                   size="lg"
-                  className="bg-[#1e1a16] hover:bg-websecondary text-white rounded-full"
+                  className="bg-[#1e1a16] hover:bg-webprimary text-white rounded-full"
                 >
-                  Sign Up Now It&apos;s Free
+                  Join Kya Khayen?
                 </Button>
               </Link>
             </div>

@@ -4,23 +4,24 @@ import Link from "next/link";
 import React from "react";
 import Container from "@/components/container";
 import { Button } from "@/components/ui/button";
+import { PageTitle } from "@/components/page-title";
 
 const meta = {
-  title:
-    "About Us - Kya Khayen? | Your Ultimate Recipe and Meal Planning Platform",
+  title: "About Us - Kya Khayen? | Healthy Diet Plans for Weight Loss",
   description:
-    "Learn more about Kya Khayen?, your personalized cooking assistant. Discover our mission, features, and how we help you find the perfect recipes and meal plans tailored to your preferences.",
-  image: `${process.env.NEXT_PUBLIC_APP_URL}/assets/images/about-us.webp`,
+    "Discover personalized diet plans and healthy recipes to support your weight loss journey. We offer the best meal plans, low-calorie diet and weight loss programs.",
+  image: `${process.env.NEXT_PUBLIC_APP_URL}/meta-images/about-us.png`,
   keywords: [
-    "Kya Khayen?",
-    "about us",
-    "recipe platform",
-    "meal planning",
-    "personalized recipes",
-    "cooking assistant",
-    "health goals recipes",
-    "customized meal plans",
-    "indian cuisines",
+    "diet plan for weight loss",
+    "weight loss programs",
+    "best weight loss program",
+    "meal plan for weight loss",
+    "best diet to lose weight",
+    "healthy meals for weight loss",
+    "weight loss plan",
+    "7 day diet plan for weight loss",
+    "best meal plan for weight loss",
+    "weight loss meal programs",
   ],
 };
 
@@ -53,61 +54,70 @@ export const metadata: Metadata = {
 const AboutUsPage = () => {
   return (
     <div>
-      <section className="py-16 md:pt-32 md:pb-0 bg-gradient-to-r from-red-500 to-orange-500">
+      <PageTitle title="About Us" className="py-6 " />
+      <section className="py-16 md:pb-0 ">
         <Container>
           <div className="flex flex-col items-center justify-center">
             <div className="text-center">
-              <h1 className="text-4xl md:text-8xl font-bold text-white mb-8">
-                About Kya Khayen?
-              </h1>
-              <p className="text-md md:text-3xl text-white mb-8">
-                Welcome to Kya Khayen?, your ultimate recipe and meal planning
-                platform. Our mission is to simplify your cooking experience and
-                help you discover delicious recipes tailored to your preferences
-                and health goals.
+              <p className="text-lg leading-loose tracking-wide mb-8">
+                Welcome to Kya Khayen?, your personalized meal planning partner
+                in transforming the way of your eating habits and improve your
+                overall well-being. Our mission is to help you to achieve your
+                health goals whether you’re looking for a diet plan for weight
+                loss, a 7-days meal plan or simply healthy recipes, we have got
+                you covered.
               </p>
-              <Link href="/download-app">
-                <Button
-                  variant="secondary"
-                  size="lg"
-                  className="bg-[#1e1a16] hover:bg-websecondary text-white rounded-full"
-                >
-                  Download Our App
-                </Button>
-              </Link>
-            </div>
-            <div className="flex md:flex-row items-center justify-center mt-10">
-              <Image
-                src="/assets/images/about-us.webp"
-                alt="About Us Image"
-                width={700}
-                height={500}
-                className="rounded-lg"
-              />
             </div>
           </div>
         </Container>
       </section>
-      <section className="py-10 md:py-10 bg-gradient-to-r from-red-500 to-orange-500">
+      <section className="py-10 md:py-10 ">
         <Container>
           <div className="flex flex-col md:flex-row items-center justify-between">
-            <div className="md:w-1/2 text-white text-center md:text-left">
-              <h2 className="text-4xl md:text-8xl font-bold mb-6">
-                Our Mission
-              </h2>
-              <p className="text-lg mb-4 mr-4">
-                At Kya Khayen?, we aim to transform your home cooking experience
-                by providing personalized recipe recommendations and meal plans
-                that suit your unique preferences and dietary needs. We believe
-                that cooking should be enjoyable, accessible, and tailored to
-                your lifestyle.
+            <div className="flex flex-col items-center md:items-start md:flex-row">
+              <div className="flex mb-4 md:mb-0 md:mr-4">
+                <Image
+                  src="/assets/images/about-us.webp"
+                  alt="7 day diet plan for weight loss"
+                  width={600}
+                  height={400}
+                  className="rounded-lg"
+                />
+              </div>
+            </div>
+            <div className="md:w-1/2 text-center md:text-left">
+              <h2 className="text-4xl text-websecondary mb-8">Who We Are</h2>
+              <p className="text-lg text-justify leading-loose tracking-wide mb-4 mr-4">
+                We believe that healthy eating does not have to be boring or
+                complicated. Here we combine the power of AI-driven
+                recommendations, nutritional science, and expert support to
+                create a personalized meal plans that align with your food
+                preferences, health goals, allergies and body type.
+              </p>
+            </div>
+          </div>
+        </Container>
+      </section>
+      <section className="py-10 md:py-10 ">
+        <Container>
+          <div className="flex flex-col md:flex-row items-center justify-between">
+            <div className="md:w-1/2 text-center md:text-left">
+              <h2 className="text-4xl text-websecondary mb-8">Our Mission</h2>
+              <p className="text-lg text-justify leading-loose tracking-wide mb-4 mr-4">
+                Our mission is to help you to transform your home cooking
+                experience by providing personalized recipe recommendations and
+                healthy meal plans according to your food preferences, health
+                goals, allergies and body type. we believe that everyone
+                deserves a healthy and delicious meals that are unique as their
+                lifestyle. That's why we are committed to providing you with a
+                variety of recipes that are both easy to prepare and delicious.
               </p>
             </div>
             <div className="flex flex-col items-center md:items-start md:flex-row">
               <div className="flex mb-4 md:mb-0 md:mr-4">
                 <Image
                   src="/assets/images/our-mission.webp"
-                  alt="Our Mission Image"
+                  alt="best meal plan for weight loss"
                   width={800}
                   height={600}
                   className="rounded-lg"
@@ -115,64 +125,31 @@ const AboutUsPage = () => {
               </div>
             </div>
           </div>
-          <div className="flex justify-center mt-10">
-            <Link href="/meal-plan">
-              <Button
-                variant="secondary"
-                size="lg"
-                className="bg-[#1e1a16] hover:bg-websecondary text-white rounded-full"
-              >
-                Start Planning Your Meals
-              </Button>
-            </Link>
-          </div>
         </Container>
-      </section>
-      <section
-        className="py-16 bg-gradient-to-r from-red-500 to-orange-500"
-        id="our-features"
-      >
+      </section>{" "}
+      <section className="py-16 " id="our-features">
         <Container>
           <div className="flex flex-col items-center justify-center">
-            <div className="text-white text-center">
-              <h2 className="text-4xl text-left md:text-center md:text-8xl font-bold mb-8">
-                Our Features
+            <div className="text-center">
+              <h2 className="text-4xl text-websecondary mb-8">
+                Join Us on This Journey
               </h2>
-              <div className="flex flex-col md:flex-row items-center justify-center text-xl">
-                <div className="mb-8 md:mb-0 md:mr-8">
-                  <h3 className="text-4xl font-bold text-left mb-4">
-                    Personalized Recipes
-                  </h3>
-                  <p className="text-lg text-left mb-4">
-                    Get personalized recipe recommendations based on your taste
-                    preferences, dietary restrictions, and cooking skills. Our
-                    platform offers a wide variety of Indian cuisines, healthy
-                    recipes, and more.
-                  </p>
-                </div>
-                <div className="mb-8 md:mb-0 md:mr-8">
-                  <h3 className="text-4xl font-bold text-left mb-4">
-                    Meal Planning
-                  </h3>
-                  <p className="text-lg text-left mb-4">
-                    Plan your meals effortlessly with our customizable meal
-                    planning features. Set your health goals, choose your
-                    favorite cuisines, and receive a tailored meal plan that
-                    fits your lifestyle.
-                  </p>
-                </div>
-                <div>
-                  <h3 className="text-4xl font-bold text-left mb-4">
-                    Cooking Assistance
-                  </h3>
-                  <p className="text-lg text-left mb-4">
-                    Enhance your cooking skills with step-by-step instructions,
-                    video tutorials, and expert tips. Whether you&apos;re a
-                    beginner or an experienced cook, Kya Khayen? provides the
-                    guidance you need to prepare delicious meals with
-                    confidence.
-                  </p>
-                </div>
+              <p className="text-lg leading-loose tracking-wide mb-8">
+                Start your healthy journey with Kya Khayen? today and take the
+                first step toward a healthier, happier lifestyle. Join our
+                membership and unlock a world of personalized recipes,
+                recommendations and healthy meal plans.
+              </p>
+              <div className="flex justify-center mt-10">
+                <Link href="/auth/register">
+                  <Button
+                    variant="secondary"
+                    size="lg"
+                    className="bg-[#1e1a16] hover:bg-websecondary text-white rounded-full"
+                  >
+                    Join Now Kya Khayen?
+                  </Button>
+                </Link>
               </div>
             </div>
           </div>

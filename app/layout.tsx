@@ -26,12 +26,16 @@ const meta = {
     "Kya Khayen offers global cuisines at your fingertips. Discover meal inspiration, nutrition plans, and healthy recipes from around the world.",
   image: `${process.env.NEXT_PUBLIC_APP_URL}/meta-images/home.png`,
   keywords: [
-    "kya khayen healthy recipes",
+    "kya khayen",
+    "best weight loss program",
+    "meal plan for weight loss",
+    "healthy meals for weight loss",
+    "best meal plan for weight loss",
     "healthy diet plan for weight loss",
-    "best diet plan for weight loss",
-    "diet meal plans for weight loss",
-    "healthy breakfast recipe for weight loss",
-    "healthy diet plans",
+    "low calorie meal plan",
+    "diet chart for weight loss",
+    "indian healthy recipes",
+    "healthy recipes for weight loss",
   ],
 };
 
@@ -80,10 +84,10 @@ export default async function RootLayout({
         <GoogleAnalytics gaId={process.env.GOOGLE_ANALYTICS_ID as string} />
         <GoogleTagManager gtmId={process.env.GOOGLE_TAG_MANAGER_ID as string} />
         <head>
-          <script
+          {/* <script
             async
             src="https://embed.tawk.to/670954742480f5b4f58c2786/1i9u73q43"
-          ></script>
+          ></script> */}
         </head>
         <body className={`${poppins.variable}`} suppressHydrationWarning={true}>
           <ConfettiProvider />

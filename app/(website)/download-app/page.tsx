@@ -4,21 +4,25 @@ import Link from "next/link";
 import React from "react";
 import Container from "@/components/container";
 import { Button } from "@/components/ui/button";
+import { PageTitle } from "@/components/page-title";
 
 const meta = {
   title:
-    "Download Kya Khayen? - Your Personalized Cooking Assistant | PWA App for Android & iOS",
+    "Download Kya Khayen? | Best meal plan for weight loss | nutrition plan for weight loss",
   description:
-    "Download Kya Khayen?, the ultimate personalized cooking assistant. Discover a wide range of cuisines, customize your meal plans based on your preferences, and enhance your cooking skills.",
-  image: `${process.env.NEXT_PUBLIC_APP_URL}/assets/images/mobile-mealplan.webp`,
+    "Get customized meal plans for weight loss, discover healthy recipes, and explore Indian cuisines. Achieve your health goals with our nutrition plans for weight loss.",
+  image: `${process.env.NEXT_PUBLIC_APP_URL}/meta-images/download-app.png`,
   keywords: [
-    "Kya Khayen?",
-    "cooking assistant",
-    "personalized meal plan",
-    "PWA app",
-    "indian cuisines",
-    "health goals recipes",
-    "customized meal plans",
+    "low calorie meal plan",
+    "diet chart for weight loss",
+    "nutrition plan for weight loss",
+    "healthy diet plan for weight loss",
+    "diet plan for weight loss for female",
+    "healthy recipes",
+    "healthy cookbook",
+    "best healthy meals for weight loss",
+    "indian healthy recipes",
+    "recipes for weight loss",
   ],
 };
 
@@ -45,24 +49,26 @@ export const metadata: Metadata = {
     card: "summary_large_image",
   },
   alternates: {
-    canonical: `${process.env.NEXT_PUBLIC_APP_URL}/recipes`,
+    canonical: `${process.env.NEXT_PUBLIC_APP_URL}/download-app`,
   },
 };
 const DownloadApp = () => {
   return (
     <div>
-      <section className="py-16 md:pt-32 md:pb-0 bg-gradient-to-r from-red-500 to-orange-500">
+      <PageTitle title="Download Kya Khayen?" className="py-6" />
+      <section className="py-16 ">
         <Container>
           <div className="flex flex-col items-center justify-center">
             <div className="text-center">
-              <h1 className="text-4xl md:text-8xl font-bold text-white mb-8">
+              <h2 className="text-4xl text-websecondary mb-8">
                 Your Personalized Cooking Assistant
-              </h1>
-              <p className="text-md md:text-3xl text-white mb-8">
-                Discover culinary delights with Kya Khayen?. Get your ultimate
-                mealtime companion. From personalized recipe recommendations to
-                seamless organization and meal planning, Kya Khayen? simplifies
-                the joy of home cooking.
+              </h2>
+              <p className="text-lg text-center leading-loose tracking-wide mb-4">
+                Experience the comfort of Kya Khayen? anytime, anywhere with our
+                cutting-edge Progressive Web App (PWA). Designed and developed
+                to bring the best of personalized meal planning and healthy
+                eating at your fingertips, our mobile app makes it easier than
+                ever to stay on track with your culinary and health goals.
               </p>
               <Link href="#how-to-download">
                 <Button
@@ -70,21 +76,21 @@ const DownloadApp = () => {
                   size="lg"
                   className="bg-[#1e1a16] hover:bg-websecondary text-white rounded-full"
                 >
-                  Join Kya Khayen? Now
+                  Download Kya Khayen? Now
                 </Button>
               </Link>
             </div>
             <div className="flex md:flex-row items-center justify-center mt-10">
               <Image
                 src="/assets/images/macbook-mealplan.webp"
-                alt="Macbook Download Image"
+                alt="weight loss programs"
                 width={400}
                 height={400}
                 className="w-72 h-52 md:w-96 md:h-96 mb-4 md:mb-0"
               />
               <Image
                 src="/assets/images/mobile-app-download.webp"
-                alt="Mobile Download Image"
+                alt="meal plan for weight loss"
                 width={200}
                 height={300}
                 className="w-32 h-40 md:w-48 md:h-80  "
@@ -93,164 +99,136 @@ const DownloadApp = () => {
           </div>
         </Container>
       </section>
-      <section className="py-10 md:py-10 bg-gradient-to-r from-red-500 to-orange-500">
+      <section className="py-10 md:py-10">
         <Container>
           <div className="flex flex-col md:flex-row items-center justify-between">
-            <div className="md:w-1/2 text-white text-center md:text-left">
-              <h2 className="text-4xl md:text-8xl font-bold mb-6">
-                Customize Your Meal Plan
-              </h2>
+            <div className="text-center md:text-left">
+              <h3 className="text-4xl text-websecondary mb-8">
+                Key Benefits of Kya Khayen? App
+              </h3>
               <ul>
                 <li className="flex text-left items-center mb-4">
                   <span className="text-md md:text-4xl mr-4">&#8594;</span>
-                  <span className="text-lg">
-                    <strong>Customize Your Preferences:</strong> Choose from a
-                    wide range of cuisines, select any allergies you have, and
-                    set your health goals.
+                  <span className="text-lg leading-loose tracking-wide">
+                    <strong>Fast and Lightweight:</strong> Our meal plan mobile
+                    application loads quickly, ensuring a smooth and responsive
+                    user experience.
                   </span>
                 </li>
                 <li className="flex text-left items-center mb-4">
                   <span className="text-md md:text-4xl mr-4">&#8594;</span>
-                  <span className="text-lg">
-                    <strong>Personalize Your Profile:</strong> Provide details
-                    such as your date of birth, BMI, and body type to receive a
-                    personalized meal plan tailored just for you.
+                  <span className="text-lg leading-loose tracking-wide">
+                    <strong>Cross-Device Compatibility:</strong> Access our pwa
+                    app from your mobile, tablet, or desktop browser with
+                    consistent functionality.
                   </span>
                 </li>
                 <li className="flex text-left items-center mb-4">
                   <span className="text-md md:text-4xl mr-4">&#8594;</span>
-                  <span className="text-lg">
-                    <strong>Enhance Your Cooking Skills:</strong> Tailor your
-                    meal plan based on your cooking expertise and desired
-                    difficulty level.
+                  <span className="text-lg leading-loose tracking-wide">
+                    <strong>Always Updated:</strong> There are no any manual
+                    updates needed! Our app is automatically kept up-to-date
+                    with the latest features and improvements.
                   </span>
                 </li>
               </ul>
             </div>
-            <div className="flex flex-col items-center md:items-start md:flex-row">
-              <div className="hidden md:flex mb-4 md:mb-0 md:mr-4">
-                <Image
-                  src="/assets/images/smoothie.png"
-                  alt="Left Image 1"
-                  width={400}
-                  height={450}
-                  className="w-64 h-64 md:w-80 md:h-80"
-                />
-              </div>
-              <div>
-                <Image
-                  src="/assets/images/mobile-mealplan.webp"
-                  alt="Left Image 2"
-                  width={200}
-                  height={300}
-                  className="w-32 h-52 md:w-48 md:h-96"
-                />
-              </div>
+            <div className="items-center">
+              <Image
+                src="/assets/images/home-banner-app-download.webp"
+                alt="healthy meals for weight loss"
+                width={600}
+                height={600}
+              />
             </div>
-          </div>
-          <div className="flex justify-center mt-5">
-            <Link href="/meal-plan">
-              <Button
-                variant="secondary"
-                size="lg"
-                className="bg-[#1e1a16] hover:bg-websecondary text-white rounded-full"
-              >
-                Get Started Now
-              </Button>
-            </Link>
           </div>
         </Container>
       </section>
-      <section
-        className="py-16 md:py-32 bg-gradient-to-r from-red-500 to-orange-500"
-        id="how-to-download"
-      >
+      <section className="py-16 " id="how-to-download">
         <Container>
           <div className="flex flex-col items-center justify-center">
-            <div className="text-white text-center">
-              <h2 className="text-4xl md:text-8xl font-bold mb-8">
-                How To Download Our App
-              </h2>
-              <div className="flex flex-col md:flex-row items-center justify-center text-xl">
-                <div className="mb-8 md:mb-0 md:mr-8">
-                  <h3 className="text-4xl font-bold text-left mb-4">
-                    For Android
-                  </h3>
-                  <p className="text-lg text-left mb-4">
-                    Follow these simple steps to download our app on your
-                    Android device:
-                  </p>
-                  <ol className="list-decimal text-left">
-                    <li className="flex items-center text-left mb-4">
-                      <span className="text-md md:text-4xl mr-4">&#8594;</span>
-                      <span className="text-lg">Open your mobile browser.</span>
-                    </li>
-                    <li className="flex items-center text-left mb-4">
-                      <span className="text-md md:text-4xl mr-4">&#8594;</span>
-                      <span className="text-lg">
-                        Visit our website &quot;www.kyakhayen.com&quot;.
-                      </span>
-                    </li>
-                    <li className="flex items-center text-left mb-4">
-                      <span className="text-md md:text-4xl mr-4">&#8594;</span>
-                      <span className="text-lg">
-                        Look for the option menu in the browser.
-                      </span>
-                    </li>
-                    <li className="flex items-center text-left mb-4">
-                      <span className="text-md md:text-4xl mr-4">&#8594;</span>
-                      <span className="text-lg">
-                        Tap on &quot;Install App&quot; and confirm.
-                      </span>
-                    </li>
-                    <li className="flex items-center text-left mb-4">
-                      <span className="text-md md:text-4xl mr-4">&#8594;</span>
-                      <span className="text-lg">
-                        Once added, you&apos;ll find our app icon on your home
-                        screen. Tap to open!
-                      </span>
-                    </li>
-                  </ol>
-                </div>
-                <div>
-                  <h3 className="text-4xl font-bold text-left mb-4">For iOS</h3>
-                  <p className="text-lg text-left mb-4">
-                    Downloading our app on your iOS device is quick and easy.
-                    Just follow these steps:
-                  </p>
-                  <ol className="list-decimal text-left ">
-                    <li className="flex text-left items-center mb-4">
-                      <span className="text-md md:text-4xl mr-4">&#8594;</span>
-                      <span className="text-lg">Open your mobile browser.</span>
-                    </li>
-                    <li className="flex text-left items-center mb-4">
-                      <span className="text-md md:text-4xl mr-4">&#8594;</span>
-                      <span className="text-lg">
-                        Visit our website &quot;www.kyakhayen.com&quot;.
-                      </span>
-                    </li>
-                    <li className="flex text-left items-center mb-4">
-                      <span className="text-md md:text-4xl mr-4">&#8594;</span>
-                      <span className="text-lg">
-                        Look for the &quot;Add to Home Screen&quot; option in
-                        the browser menu.
-                      </span>
-                    </li>
-                    <li className="flex text-left items-center mb-4">
-                      <span className="text-md md:text-4xl mr-4">&#8594;</span>
-                      <span className="text-lg">
-                        Tap on &quot;Add to Home Screen&quot; and confirm.
-                      </span>
-                    </li>
-                    <li className="flex text-left items-center mb-4">
-                      <span className="text-md md:text-4xl mr-4">&#8594;</span>
-                      <span className="text-lg">
-                        Once added, you&apos;ll find our app icon on your home
-                        screen. Tap to open!
-                      </span>
-                    </li>
-                  </ol>
-                </div>
+            <h4 className="text-4xl text-websecondary mb-8">
+              How To Download Our App
+            </h4>
+            <div className="flex flex-col md:flex-row items-center justify-center text-xl">
+              <div className="mb-8 md:mb-0 md:mr-8">
+                <h5 className="text-4xl text-websecondary mb-8">For Android</h5>
+                <p className="text-lg text-left mb-4">
+                  Follow these steps to download Kya Khayen? app for Android:
+                </p>
+                <ol className="list-decimal text-left">
+                  <li className="flex items-center text-left mb-4">
+                    <span className="text-md md:text-4xl mr-4">&#8594;</span>
+                    <span className="text-lg">
+                      Just open your mobile browser.
+                    </span>
+                  </li>
+                  <li className="flex items-center text-left mb-4">
+                    <span className="text-md md:text-4xl mr-4">&#8594;</span>
+                    <span className="text-lg">
+                      Visit our website &quot;www.kyakhayen.com&quot;.
+                    </span>
+                  </li>
+                  <li className="flex items-center text-left mb-4">
+                    <span className="text-md md:text-4xl mr-4">&#8594;</span>
+                    <span className="text-lg">
+                      Go to the option menu in the browser.
+                    </span>
+                  </li>
+                  <li className="flex items-center text-left mb-4">
+                    <span className="text-md md:text-4xl mr-4">&#8594;</span>
+                    <span className="text-lg">
+                      Tap on &quot;Install App&quot; and confirm.
+                    </span>
+                  </li>
+                  <li className="flex items-center text-left mb-4">
+                    <span className="text-md md:text-4xl mr-4">&#8594;</span>
+                    <span className="text-lg">
+                      Once added, you&apos;ll find Kya Khayen? app icon on your
+                      home screen. Tap to open!
+                    </span>
+                  </li>
+                </ol>
+              </div>
+              <div>
+                <h6 className="text-4xl text-websecondary mb-8">For iOS</h6>
+                <p className="text-lg text-left mb-4">
+                  Follow these steps to download Kya Khayen? app for iOS:
+                </p>
+                <ol className="list-decimal text-left ">
+                  <li className="flex text-left items-center mb-4">
+                    <span className="text-md md:text-4xl mr-4">&#8594;</span>
+                    <span className="text-lg">
+                      Just open your mobile browser.
+                    </span>
+                  </li>
+                  <li className="flex text-left items-center mb-4">
+                    <span className="text-md md:text-4xl mr-4">&#8594;</span>
+                    <span className="text-lg">
+                      Visit our website &quot;www.kyakhayen.com&quot;.
+                    </span>
+                  </li>
+                  <li className="flex text-left items-center mb-4">
+                    <span className="text-md md:text-4xl mr-4">&#8594;</span>
+                    <span className="text-lg">
+                      Look for the &quot;Add to Home Screen&quot; option in the
+                      browser menu.
+                    </span>
+                  </li>
+                  <li className="flex text-left items-center mb-4">
+                    <span className="text-md md:text-4xl mr-4">&#8594;</span>
+                    <span className="text-lg">
+                      Tap on &quot;Add to Home Screen&quot; and confirm.
+                    </span>
+                  </li>
+                  <li className="flex text-left items-center mb-4">
+                    <span className="text-md md:text-4xl mr-4">&#8594;</span>
+                    <span className="text-lg">
+                      Once added, you&apos;ll find Kya Khayen? app icon on your
+                      home screen. Tap to open!
+                    </span>
+                  </li>
+                </ol>
               </div>
             </div>
           </div>
