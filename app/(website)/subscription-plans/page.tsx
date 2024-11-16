@@ -2,23 +2,30 @@ import { Metadata } from "next";
 
 import PricingTable from "@/components/subscription-plans/pricing-table";
 import IntroSection from "@/components/subscription-plans/intro-section";
+import { PageTitle } from "@/components/page-title";
 
 const meta = {
   title:
-    "Subscription Plans - Kya Khayen? | Subscribe to Our Monthly Meal Plans",
+    "Subscription Plans - Kya Khayen? | Best healthy meals for weight loss | Weight loss programs",
   description:
-    "Explore personalized meal plans with Kya Khayen?. Customize your meals based on your preferences, dietary restrictions, and health goals. Discover new recipes tailored just for you.",
-  image: `${process.env.NEXT_PUBLIC_APP_URL}/assets/images/home-banner-personalization.webp`,
+    "Explore our subscription plans to access affordable personalized nutrition plans. Enjoy healthy recipes, healthy cookbook and best healthy meals for weight loss.",
+  image: `${process.env.NEXT_PUBLIC_APP_URL}/meta-images/subscription-plans.png`,
   keywords: [
-    "Kya Khayen?",
-    "personalized meal plans",
-    "custom meal plans",
-    "recipe customization",
-    "dietary restrictions",
-    "health goals",
-    "tailored recipes",
-    "meal planning",
-    "nutrition",
+    "diet plan for weight loss",
+    "weight loss programs",
+    "best weight loss program",
+    "meal plan for weight loss",
+    "weight loss plan",
+    "7 day diet plan for weight loss",
+    "best meal plan for weight loss",
+    "meal plan for weight loss female",
+    "best diet plan for weight loss",
+    "best diet plan for weight loss for female",
+    "low calorie meal plan",
+    "diet chart for weight loss",
+    "nutrition plan for weight loss",
+    "healthy diet plan for weight loss",
+    "diet plan for weight loss for female",
   ],
 };
 
@@ -50,6 +57,7 @@ export const metadata: Metadata = {
 const SubscriptionPlansPage = async () => {
   return (
     <div>
+      <PageTitle title="Subscription Plans" className="py-6" />
       <IntroSection />
       <PricingTable />
     </div>

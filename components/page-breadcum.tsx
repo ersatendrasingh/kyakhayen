@@ -10,26 +10,35 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
+import { cn } from "@/lib/utils";
 
 interface PageBreadcumProps {
   currentPage: string;
+  className?: string;
+  otherClass?: string;
 }
 
-const PageBreadcum = ({ currentPage }: PageBreadcumProps) => {
+const PageBreadcum = ({
+  currentPage,
+  className,
+  otherClass,
+}: PageBreadcumProps) => {
   return (
     <Breadcrumb className="flex items-center justify-center  py-2 text-white font-bold">
       <BreadcrumbList>
         <BreadcrumbItem>
-          <BreadcrumbLink href="/" className="text-white">
+          <BreadcrumbLink href="/" className={cn("text-white", className)}>
             Home
           </BreadcrumbLink>
         </BreadcrumbItem>
         <BreadcrumbSeparator>
-          <SlashIcon />
+          <SlashIcon className="text-white" />
         </BreadcrumbSeparator>
 
         <BreadcrumbItem>
-          <BreadcrumbPage>{currentPage}</BreadcrumbPage>
+          <BreadcrumbPage className={cn("text-white", otherClass)}>
+            {currentPage}
+          </BreadcrumbPage>
         </BreadcrumbItem>
       </BreadcrumbList>
     </Breadcrumb>

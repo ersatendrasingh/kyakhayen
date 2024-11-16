@@ -180,7 +180,7 @@ const ContactForm = () => {
     }
   };
   return (
-    <div className="w-full flex flex-col items-start justify-start bg-white rounded-md p-4 shadow-sm transition mb-10">
+    <div className="w-full flex flex-col items-start justify-start bg-white rounded-md mb-10">
       <h1 className="text-2xl font-bold">Contact Us</h1>
       <div className="space-y-8 mt-2 w-full">
         <Form {...form}>

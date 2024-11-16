@@ -9,6 +9,7 @@ import PersonalizationPrompt from "@/components/meal-plan/personalization-prompt
 import SubscriptionPlanPrompt from "@/components/meal-plan/subscription-plan-prompt";
 import { useSession } from "next-auth/react";
 import { useCurrentUser } from "@/hooks/use-current-user";
+import PublicView from "./public-view";
 
 const MealPlan = () => {
   const user = useCurrentUser();
@@ -34,6 +35,10 @@ const MealPlan = () => {
   const handleNextDay = () => {
     setSelectedDate((prevDate) => addDays(prevDate, 1));
   };
+
+  if (!user) {
+    return <PublicView />;
+  }
 
   if (user && !user.isPersonalised) {
     return <PersonalizationPrompt />;

@@ -120,15 +120,18 @@ const meta = {
     "Kya Khayen offers global cuisines at your fingertips. Discover meal inspiration, nutrition plans, and healthy recipes from around the world.",
   image: `${process.env.NEXT_PUBLIC_APP_URL}/meta-images/home.png`,
   keywords: [
-    "kya khayen healthy recipes",
+    "kya khayen",
+    "best weight loss program",
+    "meal plan for weight loss",
+    "healthy meals for weight loss",
+    "best meal plan for weight loss",
     "healthy diet plan for weight loss",
-    "best diet plan for weight loss",
-    "diet meal plans for weight loss",
-    "healthy breakfast recipe for weight loss",
-    "healthy diet plans",
+    "low calorie meal plan",
+    "diet chart for weight loss",
+    "indian healthy recipes",
+    "healthy recipes for weight loss",
   ],
 };
-
 export const metadata: Metadata = {
   title: meta.title,
   description: meta.description,
