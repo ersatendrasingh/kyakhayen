@@ -137,12 +137,7 @@ const SingleRecipePage = async ({
     recipeCuisine: recipeCuisine || ["Global"],
     recipeIngredient: recipeIngredients || [],
     recipeInstructions: recipeMethods || [],
-    aggregateRating: {
-      "@type": "AggregateRating",
-      ratingValue:
-        recipe.Review?.reduce((acc, review) => acc + review.rating, 0) || "0",
-      reviewCount: recipe.Review?.length || "0",
-    },
+
     nutrition: {
       "@type": "NutritionInformation",
       calories: totalCalories,
@@ -151,10 +146,11 @@ const SingleRecipePage = async ({
 
   return (
     <div className="w-full bg-slate-100 pb-8">
-      <Head>
-        {/* Injecting JSON-LD Structured Data */}
-        <script type="application/ld+json">{JSON.stringify(jsonLdData)}</script>
-      </Head>
+      {/* JSON-LD */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdData) }}
+      />
       <Container>
         <div className="flex flex-col md:flex-row">
           {/* Left section */}
