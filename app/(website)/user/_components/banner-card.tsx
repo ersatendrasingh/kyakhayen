@@ -27,7 +27,6 @@ interface BannerCardProps {
 
 const BannerCard = ({ className }: BannerCardProps) => {
   const user = useCurrentUser();
-  console.log("user in banner card", user);
   const { update } = useSession();
   const hasRunOnce = useRef(false);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
@@ -39,12 +38,12 @@ const BannerCard = ({ className }: BannerCardProps) => {
       : "/assets/images/profile.png"
   );
   const [isUploading, setIsUploading] = useState(false);
-  // useEffect(() => {
-  //   if (!hasRunOnce.current) {
-  //     update();
-  //     hasRunOnce.current = true;
-  //   }
-  // }, [update]);
+  useEffect(() => {
+    if (!hasRunOnce.current) {
+      update();
+      hasRunOnce.current = true;
+    }
+  }, [update]);
 
   useEffect(() => {
     if (user?.image) {

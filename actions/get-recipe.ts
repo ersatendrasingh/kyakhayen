@@ -37,6 +37,16 @@ export const getRecipeBySlug = async ({
             position: "asc",
           },
         },
+        recipeHealthGoals: {
+          include: {
+            healthGoals: true,
+          },
+        },
+        recipePrakriti: {
+          include: {
+            prakriti: true,
+          },
+        },
         recipeMethods: {
           where: {
             isPublished: true,

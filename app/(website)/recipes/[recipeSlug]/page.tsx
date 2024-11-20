@@ -13,6 +13,8 @@ import Container from "@/components/container";
 import RecipeCommentSection from "@/components/recipes/recipe-comments-section";
 import RecipeReviewsSection from "@/components/recipes/recipe-reviews-section";
 import RecipeShareSection from "@/components/recipes/recipe-share-section";
+import RecipeNotFound from "@/components/recipes/recipe-not-found";
+import Head from "next/head";
 
 type Props = {
   params: { recipeSlug: string };
@@ -23,31 +25,27 @@ export async function generateMetadata(
   { params, searchParams }: Props,
   parent: ResolvingMetadata
 ): Promise<Metadata> {
-  // read route params
   const recipeSlug = params.recipeSlug;
 
-  // fetch data
+  // Fetch data
   const recipe = await getRecipeBySlug({
     recipeSlug: recipeSlug as string,
   });
 
-  // optionally access and extend (rather than replace) parent metadata
+  if (!recipe) {
+    return {
+      title: "Recipe Not Found - KyaKhayen",
+      description: "The recipe you are looking for does not exist.",
+    };
+  }
+
   const previousImages = (await parent).openGraph?.images || [];
   const plainTextDescription = recipe?.description!.replace(/<[^>]*>/g, "");
-
-  // Meta description length limit set karna
   const metaDescription = plainTextDescription!.substring(0, 160);
+
   return {
     title: `${recipe?.title} - KyaKhayen`,
     description: metaDescription,
-    keywords: [
-      "kya khayen healthy recipes",
-      "healthy diet plan for weight loss",
-      "best diet plan for weight loss",
-      "diet meal plans for weight loss",
-      "healthy breakfast recipe for weight loss",
-      "healthy diet plans",
-    ],
     openGraph: {
       title: recipe?.title,
       description: metaDescription,
@@ -69,17 +67,16 @@ export async function generateMetadata(
 
 const SingleRecipePage = async ({
   params,
-  searchParams,
 }: {
   params: { recipeSlug: string };
-  searchParams: { [category: string]: string | string[] | undefined };
 }) => {
   const slug = params.recipeSlug;
 
-  const recipe = await getRecipeBySlug({ recipeSlug: slug as string });
+  const recipe = await getRecipeBySlug({ recipeSlug: slug });
 
   if (!recipe) {
-    throw new Error("Recipe not found");
+    // Render the RecipeNotFound component for missing recipes
+    return <RecipeNotFound />;
   }
 
   const recipeCategories = await db.recipeCategories.findMany({
@@ -92,10 +89,75 @@ const SingleRecipePage = async ({
       title: "asc",
     },
   });
+
+  const totalMinutes =
+    (recipe.recipeCookingTime?.prepTime || 0) +
+    (recipe.recipeCookingTime?.cookTime || 0) +
+    (recipe.recipeCookingTime?.restTime || 0);
+
+  // Convert minutes to ISO 8601 duration format
+  const formatTime = (minutes: number) => `PT${minutes}M`;
+
+  const prepTime = formatTime(recipe.recipeCookingTime?.prepTime || 0);
+  const cookTime = formatTime(recipe.recipeCookingTime?.cookTime || 0);
+  const totalTime = formatTime(totalMinutes);
+
+  const recipeCuisine = recipe.recipeCuisine?.map((c) => c.cuisine.title);
+
+  const recipeIngredients = recipe.recipeIngredients.map(
+    (ingredient) => ingredient.ingredient.name
+  );
+
+  const recipeMethods = recipe.recipeMethods.map((method) => ({
+    "@type": "HowToStep",
+    name: method.title,
+  }));
+
+  const totalCalories = recipe.recipeIngredients.reduce(
+    (acc, ingredient) => acc + (ingredient.ingredient.calories || 0),
+    0
+  );
+
+  // JSON-LD structured data for Schema.org
+  const jsonLdData = {
+    "@context": "https://schema.org",
+    "@type": "Recipe",
+    name: recipe.title,
+    description: recipe.description?.replace(/<[^>]*>/g, ""),
+    image: recipe.imageUrl,
+    author: {
+      "@type": "Person",
+      name: "KyaKhayen",
+    },
+    datePublished: recipe.createdAt,
+    prepTime: prepTime,
+    cookTime: cookTime,
+    totalTime: totalTime,
+    recipeCategory: recipe.RecipeCategories || "General",
+    recipeCuisine: recipeCuisine || ["Global"],
+    recipeIngredient: recipeIngredients || [],
+    recipeInstructions: recipeMethods || [],
+    aggregateRating: {
+      "@type": "AggregateRating",
+      ratingValue:
+        recipe.Review?.reduce((acc, review) => acc + review.rating, 0) || "0",
+      reviewCount: recipe.Review?.length || "0",
+    },
+    nutrition: {
+      "@type": "NutritionInformation",
+      calories: totalCalories,
+    },
+  };
+
   return (
     <div className="w-full bg-slate-100 pb-8">
+      <Head>
+        {/* Injecting JSON-LD Structured Data */}
+        <script type="application/ld+json">{JSON.stringify(jsonLdData)}</script>
+      </Head>
       <Container>
-        <div className="flex flex-col md:flex-row ">
+        <div className="flex flex-col md:flex-row">
+          {/* Left section */}
           <div className="w-full lg:w-4/6 mr-0 lg:mr-8">
             <BannerCard
               recipe={recipe}
@@ -112,6 +174,8 @@ const SingleRecipePage = async ({
               comments={recipe.recipeComments || []}
             />
           </div>
+
+          {/* Right section */}
           <div className="w-full lg:w-2/6">
             <RecipeSidebar
               recipeCategories={recipeCategories}
@@ -119,6 +183,8 @@ const SingleRecipePage = async ({
             />
           </div>
         </div>
+
+        {/* Related recipes */}
         <RelatedRecipeSlider recipeId={recipe.id} />
       </Container>
     </div>
