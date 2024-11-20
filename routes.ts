@@ -1,24 +1,9 @@
 /**
- * An array of routes that are accessible to the public
- * These routes do not require authentication
+ * An array of routes that are not accessible to the public
+ * These routes will require authentication
  * @type {string[]}
  */
-export const publicRoutes = [
-  "/",
-  "/auth/new-verification",
-  "/cart",
-  "/checkout",
-  "/recipes",
-  "/meal-plan",
-  "/blog",
-  "/search",
-  "/download-app",
-  "/about-us",
-  "/privacy-policy",
-  "/terms-and-conditions",
-  "/contact-us",
-  "/subscription-plans",
-];
+export const protectedRoutes = ["/success"];
 
 /**
  * An array of routes that are used for authentication
@@ -62,7 +47,38 @@ export const articlePrefix = "/blog/";
 export const adminRoutePrefix = "/admin";
 
 /**
+ * The prefix for User Dashboard routes
+ * Routes that start with this prefix are used for User Dashboard purposes
+ * @type {string}
+ */
+export const userRoutePrefix = "/user";
+
+/**
  * The default redirect path after logging in
  * @type {string}
  */
 export const DEFAULT_LOGIN_REDIRECT = "/user/dashboard";
+
+/**
+ * Determines whether a given route is valid
+ * @param {string} pathname - The path to check
+ * @returns {boolean} True if the route is valid, false otherwise
+ */
+export const isValidRoute = (pathname: string) => {
+  const exactRoutes = [...protectedRoutes, ...authRoutes];
+  const prefixes = [
+    apiAuthPrefix,
+    recipePrefix,
+    articlePrefix,
+    adminRoutePrefix,
+    userRoutePrefix,
+  ];
+
+  // Check for exact matches
+  if (exactRoutes.includes(pathname)) {
+    return true;
+  }
+
+  // Check if the pathname starts with any of the prefixes
+  return prefixes.some((prefix) => pathname.startsWith(prefix));
+};

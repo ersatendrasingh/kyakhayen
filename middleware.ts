@@ -5,9 +5,10 @@ import {
   DEFAULT_LOGIN_REDIRECT,
   apiAuthPrefix,
   authRoutes,
-  publicRoutes,
+  protectedRoutes,
   recipePrefix,
   articlePrefix,
+  isValidRoute,
 } from "@/routes";
 
 const { auth } = NextAuth(authConfig);
@@ -19,8 +20,12 @@ export default auth((req): any => {
   const isApiAuthRoute = nextUrl.pathname.startsWith(apiAuthPrefix);
   const isRecipeRoute = nextUrl.pathname.startsWith(recipePrefix);
   const isArticleRoute = nextUrl.pathname.startsWith(articlePrefix);
-  const isPublicRoute = publicRoutes.includes(nextUrl.pathname);
+  const isProtectedRoute = protectedRoutes.includes(nextUrl.pathname);
   const isAuthRoute = authRoutes.includes(nextUrl.pathname);
+
+  if (!isValidRoute(nextUrl.pathname)) {
+    return null;
+  }
 
   if (isApiAuthRoute) return null;
   if (isRecipeRoute) return null;
@@ -31,7 +36,7 @@ export default auth((req): any => {
     }
     return null;
   }
-  if (!isLoggedIn && !isPublicRoute) {
+  if (!isLoggedIn && isProtectedRoute) {
     let callbackUrl = nextUrl.pathname;
     if (nextUrl.search) {
       callbackUrl += nextUrl.search;
@@ -49,5 +54,8 @@ export default auth((req): any => {
 
 // Optionally, don't invoke Middleware on some paths
 export const config = {
-  matcher: ["/((?!.+\\.[\\w]+$|_next).*)", "/", "/(api|trpc)(.*)"],
+  matcher: [
+    "/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)",
+    "/(api|trpc)(.*)",
+  ],
 };
