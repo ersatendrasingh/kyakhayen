@@ -123,7 +123,8 @@ const SingleRecipePage = async ({
     "@context": "https://schema.org",
     "@type": "Recipe",
     name: recipe.title,
-    description: recipe.description?.replace(/<[^>]*>/g, ""),
+    description:
+      recipe.description?.replace(/<[^>]*>/g, "").substring(0, 157) + "...",
     image: recipe.imageUrl,
     author: {
       "@type": "Person",
@@ -133,11 +134,11 @@ const SingleRecipePage = async ({
     prepTime: prepTime,
     cookTime: cookTime,
     totalTime: totalTime,
-    recipeCategory: recipe.RecipeCategories || "General",
+    recipeYield: "1 serving",
+    recipeCategory: recipe.RecipeCategories?.name || "General",
     recipeCuisine: recipeCuisine || ["Global"],
     recipeIngredient: recipeIngredients || [],
     recipeInstructions: recipeMethods || [],
-
     nutrition: {
       "@type": "NutritionInformation",
       calories: totalCalories,
