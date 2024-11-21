@@ -20,6 +20,15 @@ const NextConfig = {
       ignoreDuringBuilds: true,
     },
   }),
+  async redirects() {
+    return [
+      {
+        source: "/admin",
+        destination: "/admin/dashboard",
+        permanent: true,
+      },
+    ];
+  },
   images: {
     domains: [
       "kyakhayen-dev.s3.ap-south-1.amazonaws.com",

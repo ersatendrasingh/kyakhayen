@@ -40,6 +40,7 @@ export const getArticles = async ({
               category: true,
             },
           },
+          articleComments: true,
         },
 
         orderBy: {
@@ -60,6 +61,7 @@ export const getArticles = async ({
               category: true,
             },
           },
+          articleComments: true,
         },
 
         orderBy: {

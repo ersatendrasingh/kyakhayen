@@ -18,13 +18,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   let articles = await getArticles({});
 
   const recipesRoutes = recipes.map((recipe) => ({
-    url: `${process.env.NEXT_PUBLIC_APP_URL}/recipes/${recipe.slug}`,
+    url: `${process.env.NEXT_PUBLIC_APP_URL}/${recipe.slug}`,
     lastModified: recipe.updatedAt,
     changeFrequency: changeFrequency,
   }));
 
   const articlesRoutes = articles.map((article) => ({
-    url: `${process.env.NEXT_PUBLIC_APP_URL}/blog/${article.slug}`,
+    url: `${process.env.NEXT_PUBLIC_APP_URL}/${article.slug}`,
     lastModified: article.updatedAt,
     changeFrequency: changeFrequency,
   }));
@@ -36,6 +36,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     "/about-us",
     "/contact-us",
     "/meal-plan",
+    "/subscription-plans",
     "/download-app",
     "/privacy-policy",
     "/auth/login",
