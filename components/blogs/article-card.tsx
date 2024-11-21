@@ -29,13 +29,13 @@ const ArticleCard = ({ article }: ArticleCardProps) => {
         isInView ? "animate-slide-up" : ""
       }`}
     >
-      <Link href={`/blog/${article.slug}`}>
+      <Link href={`/${article.slug}`}>
         <div className="h-full flex flex-col">
           <div className="relative">
             <Image
               className="w-full"
-              src={article.imageUrl || "https://via.placeholder.com/300x200"}
-              alt={article.title || "Recipe Image"}
+              src={article.imageUrl || "/meta-images/recipe-page.jpg"}
+              alt={article.title || "Article Image"}
               width={300}
               height={200}
             />

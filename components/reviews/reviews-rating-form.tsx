@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useCurrentUser } from "@/hooks/use-current-user";
 import dynamic from "next/dynamic"; // Import dynamic from next/dynamic
 import { FaStar } from "react-icons/fa";
@@ -30,7 +30,6 @@ const StarRatingSkeleton = () => (
 
 const DynamicStarRatings = dynamic(() => import("react-star-ratings"), {
   ssr: false,
-  loading: () => <StarRatingSkeleton />,
 });
 
 interface ReviewsRatingFormProps {
@@ -48,7 +47,18 @@ export const ReviewsRatingForm = ({
 
   const [ratingError, setRatingError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
   const user = useCurrentUser();
+
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  if (!isClient) {
+    return <StarRatingSkeleton />;
+  }
 
   const validateRating = () => {
     if (rating < 1 || rating > 5) {
@@ -69,7 +79,7 @@ export const ReviewsRatingForm = ({
       return;
     }
 
-    setIsSubmitting(true); // Set submission status to true
+    setIsSubmitting(true);
 
     try {
       const response = await axios.post("/api/reviews", {

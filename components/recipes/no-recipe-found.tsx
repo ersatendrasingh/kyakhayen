@@ -18,7 +18,7 @@ export const NoRecipesFound = ({ keyparam }: NoRecipesFoundProps) => {
           &quot;.
         </p>
         <Link href={`/recipes`}>
-          <Button variant="link">View All Recipes</Button>
+          <Button variant="link">Browse All Recipes</Button>
         </Link>
       </div>
     </div>

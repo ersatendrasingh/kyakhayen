@@ -1,4 +1,3 @@
-import { Metadata, ResolvingMetadata } from "next";
 import { getRecipeBySlug } from "@/actions/get-recipe";
 
 import BannerCard from "@/components/recipes/banner-card";
@@ -14,68 +13,15 @@ import RecipeCommentSection from "@/components/recipes/recipe-comments-section";
 import RecipeReviewsSection from "@/components/recipes/recipe-reviews-section";
 import RecipeShareSection from "@/components/recipes/recipe-share-section";
 import RecipeNotFound from "@/components/recipes/recipe-not-found";
-import Head from "next/head";
 
-type Props = {
-  params: { recipeSlug: string };
-  searchParams: { [category: string]: string | string[] | undefined };
-};
-
-export async function generateMetadata(
-  { params, searchParams }: Props,
-  parent: ResolvingMetadata
-): Promise<Metadata> {
-  const recipeSlug = params.recipeSlug;
-
-  // Fetch data
-  const recipe = await getRecipeBySlug({
-    recipeSlug: recipeSlug as string,
-  });
-
-  if (!recipe) {
-    return {
-      title: "Recipe Not Found - KyaKhayen",
-      description: "The recipe you are looking for does not exist.",
-    };
-  }
-
-  const previousImages = (await parent).openGraph?.images || [];
-  const plainTextDescription = recipe?.description!.replace(/<[^>]*>/g, "");
-  const metaDescription = plainTextDescription!.substring(0, 160);
-
-  return {
-    title: `${recipe?.title} - KyaKhayen`,
-    description: metaDescription,
-    openGraph: {
-      title: recipe?.title,
-      description: metaDescription,
-      url: `${process.env.NEXT_PUBLIC_APP_URL}/recipes/${recipeSlug}`,
-      type: "article",
-      images: [recipe?.imageUrl as string, ...previousImages],
-    },
-    twitter: {
-      title: recipe?.title,
-      description: metaDescription,
-      images: [recipe?.imageUrl as string, ...previousImages],
-      card: "summary_large_image",
-    },
-    alternates: {
-      canonical: `${process.env.NEXT_PUBLIC_APP_URL}/recipes/${recipeSlug}`,
-    },
-  };
+interface SingleRecipeProps {
+  recipeSlug: string;
 }
 
-const SingleRecipePage = async ({
-  params,
-}: {
-  params: { recipeSlug: string };
-}) => {
-  const slug = params.recipeSlug;
-
-  const recipe = await getRecipeBySlug({ recipeSlug: slug });
+const SingleRecipe = async ({ recipeSlug }: SingleRecipeProps) => {
+  const recipe = await getRecipeBySlug({ recipeSlug });
 
   if (!recipe) {
-    // Render the RecipeNotFound component for missing recipes
     return <RecipeNotFound />;
   }
 
@@ -95,7 +41,6 @@ const SingleRecipePage = async ({
     (recipe.recipeCookingTime?.cookTime || 0) +
     (recipe.recipeCookingTime?.restTime || 0);
 
-  // Convert minutes to ISO 8601 duration format
   const formatTime = (minutes: number) => `PT${minutes}M`;
 
   const prepTime = formatTime(recipe.recipeCookingTime?.prepTime || 0);
@@ -118,7 +63,6 @@ const SingleRecipePage = async ({
     0
   );
 
-  // JSON-LD structured data for Schema.org
   const jsonLdData = {
     "@context": "https://schema.org",
     "@type": "Recipe",
@@ -147,14 +91,12 @@ const SingleRecipePage = async ({
 
   return (
     <div className="w-full bg-slate-100 pb-8">
-      {/* JSON-LD */}
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdData) }}
       />
       <Container>
         <div className="flex flex-col md:flex-row">
-          {/* Left section */}
           <div className="w-full lg:w-4/6 mr-0 lg:mr-8">
             <BannerCard
               recipe={recipe}
@@ -172,7 +114,6 @@ const SingleRecipePage = async ({
             />
           </div>
 
-          {/* Right section */}
           <div className="w-full lg:w-2/6">
             <RecipeSidebar
               recipeCategories={recipeCategories}
@@ -181,11 +122,10 @@ const SingleRecipePage = async ({
           </div>
         </div>
 
-        {/* Related recipes */}
         <RelatedRecipeSlider recipeId={recipe.id} />
       </Container>
     </div>
   );
 };
 
-export default SingleRecipePage;
+export default SingleRecipe;

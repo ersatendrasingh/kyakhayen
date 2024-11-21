@@ -66,10 +66,10 @@ const RecipeCard = ({ recipe }: RecipeCardProps) => {
           />
         </div>
         <div className="relative">
-          <Link href={`/recipes/${recipe.slug}`}>
+          <Link href={`/${recipe.slug}`}>
             <Image
               className="w-full"
-              src={recipe.imageUrl || "https://via.placeholder.com/300x200"}
+              src={recipe.imageUrl || "/meta-images/recipe-page.jpg"}
               alt={recipe.title || "Recipe Image"}
               width={300}
               height={200}
@@ -128,7 +128,7 @@ const RecipeCard = ({ recipe }: RecipeCardProps) => {
                 </div>
               ))}
           </div>
-          <Link href={`/recipes/${recipe.slug}`}>
+          <Link href={`/${recipe.slug}`}>
             <div className="font-bold text-xl mb-2">{recipe.title}</div>
           </Link>
           <p className="text-gray-700 text-base mb-2">
