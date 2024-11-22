@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
+import dynamic from "next/dynamic";
 import { toast } from "react-toastify";
-import { FaSave, FaStar, FaTimes } from "react-icons/fa";
+import { FaSave, FaTimes } from "react-icons/fa";
 import {
   AlarmClock,
   EllipsisVertical,
@@ -22,7 +23,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { CommentDeleteConfirmModal } from "@/components/modals/comment-delete-confirm-modal";
 import { useCurrentUser } from "@/hooks/use-current-user";
-import dynamic from "next/dynamic";
+
+import StarRatingSkeleton from "@/components/reviews/star-rating-skelton";
 
 interface ReviewsRatingListProps {
   recipeId: string;
@@ -30,29 +32,8 @@ interface ReviewsRatingListProps {
   onReviewAdded: () => void;
 }
 
-const StarRatingSkeleton = () => (
-  <div className="flex space-x-2 items-center">
-    <div className="animate-pulse">
-      <FaStar className="text-gray-300 w-6 h-6" />
-    </div>
-    <div className="animate-pulse">
-      <FaStar className="text-gray-300 w-6 h-6" />
-    </div>
-    <div className="animate-pulse">
-      <FaStar className="text-gray-300 w-6 h-6" />
-    </div>
-    <div className="animate-pulse">
-      <FaStar className="text-gray-300 w-6 h-6" />
-    </div>
-    <div className="animate-pulse">
-      <FaStar className="text-gray-300 w-6 h-6" />
-    </div>
-  </div>
-);
-
 const DynamicStarRatings = dynamic(() => import("react-star-ratings"), {
   ssr: false,
-  loading: () => <StarRatingSkeleton />,
 });
 
 const ReviewsRatingList = ({
@@ -64,12 +45,17 @@ const ReviewsRatingList = ({
   const [reviewToDelete, setReviewToDelete] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
-  // State for edit functionality
   const [editingReviewId, setEditingReviewId] = useState<string | null>(null);
   const [editRating, setEditRating] = useState<number>(0);
   const [editContent, setEditContent] = useState<string>("");
 
   const user = useCurrentUser();
+
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   useEffect(() => {
     fetchUserAvatars(reviews);
@@ -94,7 +80,9 @@ const ReviewsRatingList = ({
       console.error("Failed to fetch user avatars:", error);
     }
   };
-
+  if (!isClient) {
+    return <StarRatingSkeleton />;
+  }
   const renderReviews = (reviews: ReviewWithRelations[]) => {
     const defaultUserImageUrl = "/assets/images/guest-user.webp";
 

@@ -5,8 +5,10 @@ import { RecipeWithCategory } from "@/types/recipe";
 
 export const getRecipeBySlug = async ({
   recipeSlug,
+  recipeMetaSlug,
 }: {
-  recipeSlug?: string;
+  recipeSlug: string;
+  recipeMetaSlug?: string | null;
 }): Promise<RecipeWithCategory | null> => {
   try {
     if (recipeSlug === undefined) {
@@ -19,7 +21,10 @@ export const getRecipeBySlug = async ({
     const recipe = await db.recipes.findFirst({
       where: {
         isPublished: true,
-        slug: recipeSlug,
+        AND: [
+          { slug: recipeSlug },
+          ...(recipeMetaSlug ? [{ metaSlug: recipeMetaSlug }] : []),
+        ],
       },
       include: {
         RecipeCategories: true,

@@ -29,7 +29,13 @@ const ArticleCard = ({ article }: ArticleCardProps) => {
         isInView ? "animate-slide-up" : ""
       }`}
     >
-      <Link href={`/${article.slug}`}>
+      <Link
+        href={
+          article.metaSlug
+            ? `/${article.slug}-${article.metaSlug}`
+            : `/${article.slug}`
+        }
+      >
         <div className="h-full flex flex-col">
           <div className="relative">
             <Image

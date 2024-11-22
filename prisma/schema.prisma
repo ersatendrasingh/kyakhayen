@@ -10,6 +10,9 @@ datasource db {
 model Recipes {
   id                   String                 @id @default(uuid())
   title                String                 @db.Text
+  metaTitle            String?                @db.Text
+  metaDescription      String?                @db.LongText
+  metaSlug             String?                @db.Text
   slug                 String                 @unique
   description          String?                @db.LongText
   imageUrl             String?
@@ -633,6 +636,9 @@ model Post {
   id              String         @id @default(uuid())
   title           String
   slug            String         @unique
+  metaTitle       String?        @db.Text
+  metaDescription String?        @db.LongText
+  metaSlug        String?        @db.Text
   content         String?        @db.LongText
   imageUrl        String?
   isPublished     Boolean        @default(false)

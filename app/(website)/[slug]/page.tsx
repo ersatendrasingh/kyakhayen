@@ -14,25 +14,29 @@ export async function generateMetadata(
   const recipes = await GetRecipes({});
   const blogs = await getArticles({});
 
-  const recipe = recipes.find((r) => r.slug === slug);
+  const recipe = recipes.find((r) => {
+    const combinedSlug = r.metaSlug ? `${r.slug}-${r.metaSlug}` : r.slug;
+    return combinedSlug === slug;
+  });
+
   if (recipe) {
     const previousImages = (await parent).openGraph?.images || [];
     const plainTextDescription = recipe.description?.replace(/<[^>]*>/g, "");
     const metaDescription = plainTextDescription!.substring(0, 160);
 
     return {
-      title: `${recipe.title} - KyaKhayen`,
-      description: metaDescription,
+      title: recipe.metaTitle || `${recipe.title} - KyaKhayen`,
+      description: recipe.metaDescription || metaDescription,
       openGraph: {
-        title: recipe.title,
-        description: metaDescription,
+        title: recipe.metaTitle || recipe.title,
+        description: recipe.metaDescription || metaDescription,
         url: `${process.env.NEXT_PUBLIC_APP_URL}/${slug}`,
         type: "article",
         images: [recipe.imageUrl!, ...previousImages],
       },
       twitter: {
-        title: recipe.title,
-        description: metaDescription,
+        title: recipe.metaTitle || recipe.title,
+        description: recipe.metaDescription || metaDescription,
         images: [recipe.imageUrl!, ...previousImages],
         card: "summary_large_image",
       },
@@ -42,25 +46,28 @@ export async function generateMetadata(
     };
   }
 
-  const blog = blogs.find((b) => b.slug === slug);
+  const blog = blogs.find((b) => {
+    const combinedSlug = b.metaSlug ? `${b.slug}-${b.metaSlug}` : b.slug;
+    return combinedSlug === slug;
+  });
   if (blog) {
     const previousImages = (await parent).openGraph?.images || [];
     const plainTextDescription = blog.content?.replace(/<[^>]*>/g, "");
     const metaDescription = plainTextDescription!.substring(0, 160);
 
     return {
-      title: `${blog.title} - KyaKhayen`,
-      description: metaDescription,
+      title: blog.metaTitle || `${blog.title} - KyaKhayen`,
+      description: blog.metaDescription || metaDescription,
       openGraph: {
-        title: blog.title,
-        description: metaDescription,
+        title: blog.metaTitle || blog.title,
+        description: blog.metaDescription || metaDescription,
         url: `${process.env.NEXT_PUBLIC_APP_URL}/blog/${slug}`,
         type: "article",
         images: [blog.imageUrl!, ...previousImages],
       },
       twitter: {
-        title: blog.title,
-        description: metaDescription,
+        title: blog.metaTitle || blog.title,
+        description: blog.metaDescription || metaDescription,
         images: [blog.imageUrl!, ...previousImages],
         card: "summary_large_image",
       },
@@ -100,13 +107,24 @@ export default async function SlugPage({
 
   const recipes = await GetRecipes({});
   const blogs = await getArticles({});
-
-  if (recipes.some((recipe) => recipe.slug === slug)) {
-    return <SingleRecipe recipeSlug={slug} />;
+  const recipe = recipes.find((r) => {
+    const combinedSlug = r.metaSlug ? `${r.slug}-${r.metaSlug}` : r.slug;
+    return combinedSlug === slug;
+  });
+  if (recipe) {
+    return (
+      <SingleRecipe recipeSlug={recipe.slug} recipeMetaSlug={recipe.metaSlug} />
+    );
   }
 
-  if (blogs.some((blog) => blog.slug === slug)) {
-    return <SingleArticle articleSlug={slug} />;
+  const blog = blogs.find((b) => {
+    const combinedSlug = b.metaSlug ? `${b.slug}-${b.metaSlug}` : b.slug;
+    return combinedSlug === slug;
+  });
+  if (blog) {
+    return (
+      <SingleArticle articleSlug={blog.slug} articleMetaSlug={blog.metaSlug} />
+    );
   }
 
   return notFound();

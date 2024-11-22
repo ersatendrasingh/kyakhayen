@@ -9,6 +9,7 @@ import {
   recipePrefix,
   articlePrefix,
   isValidRoute,
+  adminRoutePrefix,
 } from "@/routes";
 
 const { auth } = NextAuth(authConfig);
@@ -22,6 +23,7 @@ export default auth((req): any => {
   const isArticleRoute = nextUrl.pathname.startsWith(articlePrefix);
   const isProtectedRoute = protectedRoutes.includes(nextUrl.pathname);
   const isAuthRoute = authRoutes.includes(nextUrl.pathname);
+  const isAdminRoute = nextUrl.pathname.startsWith(adminRoutePrefix);
 
   if (!isValidRoute(nextUrl.pathname)) {
     return null;
@@ -36,7 +38,7 @@ export default auth((req): any => {
     }
     return null;
   }
-  if (!isLoggedIn && isProtectedRoute) {
+  if ((!isLoggedIn && isProtectedRoute) || (!isLoggedIn && isAdminRoute)) {
     let callbackUrl = nextUrl.pathname;
     if (nextUrl.search) {
       callbackUrl += nextUrl.search;

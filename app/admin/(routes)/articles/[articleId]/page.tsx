@@ -11,6 +11,7 @@ import { CategoryForm } from "./_components/category-form";
 
 import { Banner } from "@/components/banner";
 import { ArticleActions } from "./_components/article-actions";
+import { ArticleMetaDataForm } from "./_components/article-meta-data-form";
 
 const ArticleIdPage = async ({ params }: { params: { articleId: string } }) => {
   const post = await db.post.findUnique({
@@ -94,6 +95,11 @@ const ArticleIdPage = async ({ params }: { params: { articleId: string } }) => {
                 value: category.id,
               }))}
             />
+            <div className="flex items-center mt-4 gap-x-2">
+              <IconBadge icon={ListChecks} />
+              <h2 className="text-md">Article Meta Data for SEO</h2>
+            </div>
+            <ArticleMetaDataForm initialData={post} postId={post.id} />
           </div>
           <div className="space-y-6">
             <div>

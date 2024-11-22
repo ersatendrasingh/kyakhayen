@@ -16,10 +16,14 @@ import RecipeNotFound from "@/components/recipes/recipe-not-found";
 
 interface SingleRecipeProps {
   recipeSlug: string;
+  recipeMetaSlug: string | null;
 }
 
-const SingleRecipe = async ({ recipeSlug }: SingleRecipeProps) => {
-  const recipe = await getRecipeBySlug({ recipeSlug });
+const SingleRecipe = async ({
+  recipeSlug,
+  recipeMetaSlug,
+}: SingleRecipeProps) => {
+  const recipe = await getRecipeBySlug({ recipeSlug, recipeMetaSlug });
 
   if (!recipe) {
     return <RecipeNotFound />;
@@ -68,6 +72,7 @@ const SingleRecipe = async ({ recipeSlug }: SingleRecipeProps) => {
     "@type": "Recipe",
     name: recipe.title,
     description:
+      recipe.metaDescription ||
       recipe.description?.replace(/<[^>]*>/g, "").substring(0, 157) + "...",
     image: recipe.imageUrl,
     author: {

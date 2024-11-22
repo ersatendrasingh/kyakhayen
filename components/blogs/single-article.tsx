@@ -9,13 +9,23 @@ import ArticleDetails from "@/components/blogs/article-details";
 import ArticleSidebar from "@/components/blogs/article-sidebar";
 import ArticleComments from "@/components/blogs/article-comments";
 import ArticleShareSection from "@/components/blogs/article-share-section";
-const SingleArticle = async ({ articleSlug }: { articleSlug: string }) => {
+import ArticleNotFound from "@/components/blogs/article-not-found";
+const SingleArticle = async ({
+  articleSlug,
+  articleMetaSlug,
+}: {
+  articleSlug: string;
+  articleMetaSlug?: string | null;
+}) => {
   const article = await getArticleBySlug({
     blogSlug: articleSlug as string,
+    blogMetaSlug: articleMetaSlug as string | null,
   });
 
+  console.log("slugs", articleSlug, "articleMetaSlug", articleMetaSlug);
+
   if (!article) {
-    throw new Error("Article not found");
+    return <ArticleNotFound />;
   }
 
   const categories = await db.category.findMany({

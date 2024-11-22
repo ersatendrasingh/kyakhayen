@@ -10,20 +10,11 @@ const meta = {
   description:
     "Explore diverse recipes at Kya Khayen. Find nutrition-packed meals, diet plans, and healthy recipes for every taste bud.",
   image: `${process.env.NEXT_PUBLIC_APP_URL}/meta-images/recipe-page.jpg`,
-  keywords: [
-    "kya khayen healthy recipes",
-    "healthy diet plan for weight loss",
-    "best diet plan for weight loss",
-    "diet meal plans for weight loss",
-    "healthy breakfast recipe for weight loss",
-    "healthy diet plans",
-  ],
 };
 
 export const metadata: Metadata = {
   title: meta.title,
   description: meta.description,
-  keywords: meta.keywords,
   openGraph: {
     title: meta.title,
     description: meta.description,
