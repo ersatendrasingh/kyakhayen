@@ -3,36 +3,28 @@ import MealPlan from "@/components/meal-plan/meal-plan";
 
 import { PageTitle } from "@/components/page-title";
 const meta = {
-  title:
-    "Personalized Meal Plans - Kya Khayen? | Diet chart for weight loss | best meal plan for weight loss",
+  title: "Personalized Meal Plans | Diet chart for weight loss",
   description:
-    "Our meal planning service offers customized meal plans, healthy balanced diets, low calorie recipes, and healthy meal plans for weight loss and overall well-being.",
+    "Explore the best diet chart for weight loss, diet charts with 7-day detox plans, weight loss diets for women, and food plans for pregnant women.",
   image: `${process.env.NEXT_PUBLIC_APP_URL}/meta-images/meal-plan.png`,
-  keywords: [
-    "Kya Khayen?",
-    "personalized meal plans",
-    "meal plans for weight loss",
-    "healthy recipes for weight loss",
-    "custom diet plans",
-    "recipe customization",
-    "meal plans to gain muscle",
-    "balanced diet plans",
-    "calorie-conscious meal plans",
-    "nutrition-based recipes",
-    "meal planning service",
-    "healthy meal plans",
-    "diet plans for females",
-    "Indian meal plans",
-    "low-calorie meal plans",
-    "7-day diet plan",
-    "weight loss meal ideas",
-  ],
 };
 
 export const metadata: Metadata = {
   title: meta.title,
   description: meta.description,
-  keywords: meta.keywords,
+  robots: {
+    index: true,
+    follow: true,
+    nocache: false,
+    googleBot: {
+      index: true,
+      follow: true,
+      noimageindex: false,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
   openGraph: {
     title: meta.title,
     description: meta.description,
@@ -41,6 +33,9 @@ export const metadata: Metadata = {
     images: [
       {
         url: meta.image,
+        width: 1200,
+        height: 630,
+        alt: meta.title,
       },
     ],
   },

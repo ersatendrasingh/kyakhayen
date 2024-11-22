@@ -7,29 +7,28 @@ import { Button } from "@/components/ui/button";
 import { PageTitle } from "@/components/page-title";
 
 const meta = {
-  title:
-    "Download Kya Khayen? | Best meal plan for weight loss | nutrition plan for weight loss",
+  title: "Download Kya Khayen App | free diet plan for weight loss",
   description:
-    "Get customized meal plans for weight loss, discover healthy recipes, and explore Indian cuisines. Achieve your health goals with our nutrition plans for weight loss.",
+    "Try our 7-day weight loss diet plans, low-carb meal ideas, and detox diet programs. Enjoy healthy breakfasts, dinners, and snacks for kids that fit your lifestyle.",
   image: `${process.env.NEXT_PUBLIC_APP_URL}/meta-images/download-app.png`,
-  keywords: [
-    "low calorie meal plan",
-    "diet chart for weight loss",
-    "nutrition plan for weight loss",
-    "healthy diet plan for weight loss",
-    "diet plan for weight loss for female",
-    "healthy recipes",
-    "healthy cookbook",
-    "best healthy meals for weight loss",
-    "indian healthy recipes",
-    "recipes for weight loss",
-  ],
 };
 
 export const metadata: Metadata = {
   title: meta.title,
   description: meta.description,
-  keywords: meta.keywords,
+  robots: {
+    index: true,
+    follow: true,
+    nocache: false,
+    googleBot: {
+      index: true,
+      follow: true,
+      noimageindex: false,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
   openGraph: {
     title: meta.title,
     description: meta.description,
@@ -39,6 +38,9 @@ export const metadata: Metadata = {
     images: [
       {
         url: meta.image,
+        width: 1200,
+        height: 630,
+        alt: meta.title,
       },
     ],
   },

@@ -9,29 +9,28 @@ import { FAQ } from "@/components/contact/faqs";
 import { PageTitle } from "@/components/page-title";
 
 const meta = {
-  title:
-    "Contact Us - Kya Khayen? | Healthy Recipes and Meal Plans for Weight Loss",
+  title: "Contact Us - Kya Khayen | weight loss diets for women",
   description:
-    "Have any questions about our personalized meal plans, diet charts or healthy recipes? Contact Kya Khayen today. We're here to assist you on your weight loss journey.",
+    "Have any questions about our personalized diet plan, weight loss programs or healthy recipes? Feel free to get in touch with us!",
   image: `${process.env.NEXT_PUBLIC_APP_URL}/meta-images/contact-us.png`,
-  keywords: [
-    "meal plan for weight loss female",
-    "best diet plan for weight loss",
-    "healthy meal plans for weight loss",
-    "best diet plan for weight loss for female",
-    "best diet to lose weight quickly",
-    "low calorie meal plan",
-    "diet chart for weight loss",
-    "nutrition plan for weight loss",
-    "healthy diet plan for weight loss",
-    "diet plan for weight loss for female",
-  ],
 };
 
 export const metadata: Metadata = {
   title: meta.title,
   description: meta.description,
-  keywords: meta.keywords,
+  robots: {
+    index: true,
+    follow: true,
+    nocache: false,
+    googleBot: {
+      index: true,
+      follow: true,
+      noimageindex: false,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
   openGraph: {
     title: meta.title,
     description: meta.description,
@@ -40,6 +39,9 @@ export const metadata: Metadata = {
     images: [
       {
         url: meta.image,
+        width: 1200,
+        height: 630,
+        alt: meta.title,
       },
     ],
   },

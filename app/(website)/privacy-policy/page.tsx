@@ -4,29 +4,28 @@ import Container from "@/components/container";
 import { PageTitle } from "@/components/page-title";
 
 const meta = {
-  title:
-    "Privacy Policy - Kya Khayen? | Best diet plan for weight loss | Indian healthy recipes",
+  title: "Privacy Policy - Kya Khayen | free dietary plans for weight loss",
   description:
-    "Discover how Kya Khayen ensures the safety of your personal information while delivering personalized meal plans, diet charts for weight loss and healthy recipes.",
+    "Discover low-carb meal plans, intermittent fasting diets, and 7-day weight loss plans. Explore healthy recipes, breakfast ideas, and easy dinner recipes.",
   image: `${process.env.NEXT_PUBLIC_APP_URL}/meta-images/privacy-policy.png`,
-  keywords: [
-    "weight loss programs",
-    "best weight loss program",
-    "meal plan for weight loss",
-    "best diet to lose weight",
-    "healthy meals for weight loss",
-    "weight loss plan",
-    "7 day diet plan for weight loss",
-    "best meal plan for weight loss",
-    "weight loss meal programs",
-    "meal plan for weight loss female",
-  ],
 };
 
 export const metadata: Metadata = {
   title: meta.title,
   description: meta.description,
-  keywords: meta.keywords,
+  robots: {
+    index: true,
+    follow: true,
+    nocache: false,
+    googleBot: {
+      index: true,
+      follow: true,
+      noimageindex: false,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
   openGraph: {
     title: meta.title,
     description: meta.description,
@@ -35,6 +34,9 @@ export const metadata: Metadata = {
     images: [
       {
         url: meta.image,
+        width: 1200,
+        height: 630,
+        alt: meta.title,
       },
     ],
   },
