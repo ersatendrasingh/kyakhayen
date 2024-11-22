@@ -17,17 +17,27 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   let recipes = await GetRecipes({});
   let articles = await getArticles({});
 
-  const recipesRoutes = recipes.map((recipe) => ({
-    url: `${process.env.NEXT_PUBLIC_APP_URL}/${recipe.slug}`,
-    lastModified: recipe.updatedAt,
-    changeFrequency: changeFrequency,
-  }));
+  const recipesRoutes = recipes.map((recipe) => {
+    const combinedSlug = recipe.metaSlug
+      ? `${recipe.slug}-${recipe.metaSlug}`
+      : recipe.slug;
+    return {
+      url: `${process.env.NEXT_PUBLIC_APP_URL}/${combinedSlug}`,
+      lastModified: recipe.updatedAt,
+      changeFrequency: changeFrequency,
+    };
+  });
 
-  const articlesRoutes = articles.map((article) => ({
-    url: `${process.env.NEXT_PUBLIC_APP_URL}/${article.slug}`,
-    lastModified: article.updatedAt,
-    changeFrequency: changeFrequency,
-  }));
+  const articlesRoutes = articles.map((article) => {
+    const combinedSlug = article.metaSlug
+      ? `${article.slug}-${article.metaSlug}`
+      : article.slug;
+    return {
+      url: `${process.env.NEXT_PUBLIC_APP_URL}/${combinedSlug}`,
+      lastModified: article.updatedAt,
+      changeFrequency: changeFrequency,
+    };
+  });
 
   const routes = [
     "/",
