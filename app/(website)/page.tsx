@@ -114,51 +114,6 @@ const homeBanner: Banner = {
   btnTxt: "Explore Courses",
   image: "/assets/images/home-banner-1.webp",
 };
-const meta = {
-  title: "Kya Khayen - Your Ultimate Global Recipe Hub",
-  description:
-    "Kya Khayen offers global cuisines at your fingertips. Discover meal inspiration, nutrition plans, and healthy recipes from around the world.",
-  image: `${process.env.NEXT_PUBLIC_APP_URL}/meta-images/home.png`,
-  keywords: [
-    "kya khayen",
-    "best weight loss program",
-    "meal plan for weight loss",
-    "healthy meals for weight loss",
-    "best meal plan for weight loss",
-    "healthy diet plan for weight loss",
-    "low calorie meal plan",
-    "diet chart for weight loss",
-    "indian healthy recipes",
-    "healthy recipes for weight loss",
-  ],
-};
-export const metadata: Metadata = {
-  title: meta.title,
-  description: meta.description,
-  keywords: meta.keywords,
-  openGraph: {
-    title: meta.title,
-    description: meta.description,
-    url: process.env.NEXT_PUBLIC_APP_URL,
-    locale: "en-US",
-    siteName: meta.title,
-    type: "website",
-    images: [
-      {
-        url: meta.image,
-      },
-    ],
-  },
-  twitter: {
-    title: meta.title,
-    description: meta.description,
-    images: [meta.image],
-    card: "summary_large_image",
-  },
-  alternates: {
-    canonical: process.env.NEXT_PUBLIC_APP_URL,
-  },
-};
 
 export default async function Home() {
   const melaTimes = await db.mealTimes.findMany({

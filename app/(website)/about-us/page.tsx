@@ -7,28 +7,28 @@ import { Button } from "@/components/ui/button";
 import { PageTitle } from "@/components/page-title";
 
 const meta = {
-  title: "About Us - Kya Khayen? | Healthy Diet Plans for Weight Loss",
+  title: "About Us - Kya Khayen | Weight loss meal plan for women",
   description:
-    "Discover personalized diet plans and healthy recipes to support your weight loss journey. We offer the best meal plans, low-calorie diet and weight loss programs.",
+    "Find easy dinner recipes, healthy snack ideas, and weight loss meal plans for women. Explore everything you need for a healthier lifestyle.",
   image: `${process.env.NEXT_PUBLIC_APP_URL}/meta-images/about-us.png`,
-  keywords: [
-    "diet plan for weight loss",
-    "weight loss programs",
-    "best weight loss program",
-    "meal plan for weight loss",
-    "best diet to lose weight",
-    "healthy meals for weight loss",
-    "weight loss plan",
-    "7 day diet plan for weight loss",
-    "best meal plan for weight loss",
-    "weight loss meal programs",
-  ],
 };
 
 export const metadata: Metadata = {
   title: meta.title,
   description: meta.description,
-  keywords: meta.keywords,
+  robots: {
+    index: true,
+    follow: true,
+    nocache: false,
+    googleBot: {
+      index: true,
+      follow: true,
+      noimageindex: false,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
   openGraph: {
     title: meta.title,
     description: meta.description,
@@ -37,6 +37,9 @@ export const metadata: Metadata = {
     images: [
       {
         url: meta.image,
+        width: 1200,
+        height: 630,
+        alt: meta.title,
       },
     ],
   },

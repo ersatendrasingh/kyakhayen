@@ -5,34 +5,28 @@ import IntroSection from "@/components/subscription-plans/intro-section";
 import { PageTitle } from "@/components/page-title";
 
 const meta = {
-  title:
-    "Subscription Plans - Kya Khayen? | Best healthy meals for weight loss | Weight loss programs",
+  title: "Weight loss programs | pregnancy diet chart | keto diet plan",
   description:
-    "Explore our subscription plans to access affordable personalized nutrition plans. Enjoy healthy recipes, healthy cookbook and best healthy meals for weight loss.",
+    "Subscribe to our personalized meal plans and achieve your health goals! Get a 7-day diet plan for weight loss, pregnancy diet charts, and detox programs.",
   image: `${process.env.NEXT_PUBLIC_APP_URL}/meta-images/subscription-plans.png`,
-  keywords: [
-    "diet plan for weight loss",
-    "weight loss programs",
-    "best weight loss program",
-    "meal plan for weight loss",
-    "weight loss plan",
-    "7 day diet plan for weight loss",
-    "best meal plan for weight loss",
-    "meal plan for weight loss female",
-    "best diet plan for weight loss",
-    "best diet plan for weight loss for female",
-    "low calorie meal plan",
-    "diet chart for weight loss",
-    "nutrition plan for weight loss",
-    "healthy diet plan for weight loss",
-    "diet plan for weight loss for female",
-  ],
 };
 
 export const metadata: Metadata = {
   title: meta.title,
   description: meta.description,
-  keywords: meta.keywords,
+  robots: {
+    index: true,
+    follow: true,
+    nocache: false,
+    googleBot: {
+      index: true,
+      follow: true,
+      noimageindex: false,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
   openGraph: {
     title: meta.title,
     description: meta.description,
@@ -41,6 +35,9 @@ export const metadata: Metadata = {
     images: [
       {
         url: meta.image,
+        width: 1200,
+        height: 630,
+        alt: meta.title,
       },
     ],
   },

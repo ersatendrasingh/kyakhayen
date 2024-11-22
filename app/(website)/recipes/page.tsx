@@ -6,15 +6,28 @@ import { NoRecipesFound } from "@/components/recipes/no-recipe-found";
 import RecipeCard from "@/components/recipes/recipe-card";
 
 const meta = {
-  title: "Recipes - KyaKhayen: Explore 5 Billion+ Culinary Creations",
+  title: "Healthy Recipes for Weight Loss | Easy Recipes and Diet Plans",
   description:
-    "Explore diverse recipes at Kya Khayen. Find nutrition-packed meals, diet plans, and healthy recipes for every taste bud.",
+    "Become motivated with healthy recipes for weight loss, meal plans for women, pregnancy diet charts, dinner ideas, breakfast options, and diabetic meal plans.",
   image: `${process.env.NEXT_PUBLIC_APP_URL}/meta-images/recipe-page.jpg`,
 };
 
 export const metadata: Metadata = {
   title: meta.title,
   description: meta.description,
+  robots: {
+    index: true,
+    follow: true,
+    nocache: false,
+    googleBot: {
+      index: true,
+      follow: true,
+      noimageindex: false,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
   openGraph: {
     title: meta.title,
     description: meta.description,
@@ -24,6 +37,9 @@ export const metadata: Metadata = {
     images: [
       {
         url: meta.image,
+        width: 1200,
+        height: 630,
+        alt: meta.title,
       },
     ],
   },

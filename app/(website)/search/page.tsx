@@ -7,33 +7,39 @@ import { NoRecipesFound } from "@/components/recipes/no-recipe-found";
 import RecipeCard from "@/components/recipes/recipe-card";
 
 const meta = {
-  title: "Recipes - KyaKhayen: Explore 5 Billion+ Culinary Creations",
+  title: "Search healthy recipes | diet plans | weight loss diet",
   description:
-    "Explore diverse recipes at Kya Khayen. Find nutrition-packed meals, diet plans, and healthy recipes for every taste bud.",
+    "Search for healthy recipes, diet plans, weight loss programs, healthy meal ideas, and more. Find the perfect keto nutrition plan for your health journey!",
   image: `${process.env.NEXT_PUBLIC_APP_URL}/meta-images/recipe-page.jpg`,
-  keywords: [
-    "kya khayen healthy recipes",
-    "healthy diet plan for weight loss",
-    "best diet plan for weight loss",
-    "diet meal plans for weight loss",
-    "healthy breakfast recipe for weight loss",
-    "healthy diet plans",
-  ],
 };
 
 export const metadata: Metadata = {
   title: meta.title,
   description: meta.description,
-  keywords: meta.keywords,
+  robots: {
+    index: true,
+    follow: true,
+    nocache: false,
+    googleBot: {
+      index: true,
+      follow: true,
+      noimageindex: false,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
   openGraph: {
     title: meta.title,
     description: meta.description,
     url: `${process.env.NEXT_PUBLIC_APP_URL}/recipes`,
-
     type: "website",
     images: [
       {
         url: meta.image,
+        width: 1200,
+        height: 630,
+        alt: meta.title,
       },
     ],
   },

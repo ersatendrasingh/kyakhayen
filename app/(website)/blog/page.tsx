@@ -6,33 +6,39 @@ import { PageHeader } from "@/components/page-header";
 import { Metadata } from "next";
 
 const meta = {
-  title: "Delicious Recipes and Cooking Tips | Kyakahyen Blog",
+  title: "Blog - Kya Khayen | diet plan for weight loss for female",
   description:
-    "Discover a wide variety of delicious recipes, cooking tips, and culinary inspiration on the Kyakahyen Blog. From quick and easy meals to gourmet dishes, find everything you need to elevate your home cooking experience.",
+    "From weight loss diets for women to pregnancy diet charts and diabetic diet chart, discover healthy meals and healthy snack ideas for your health goal.",
   image: `${process.env.NEXT_PUBLIC_APP_URL}/meta-images/recipe-page.jpg`,
-  keywords: [
-    "kya khayen healthy recipes",
-    "healthy diet plan for weight loss",
-    "best diet plan for weight loss",
-    "diet meal plans for weight loss",
-    "healthy breakfast recipe for weight loss",
-    "healthy diet plans",
-  ],
 };
 
 export const metadata: Metadata = {
   title: meta.title,
   description: meta.description,
-  keywords: meta.keywords,
+  robots: {
+    index: true,
+    follow: true,
+    nocache: false,
+    googleBot: {
+      index: true,
+      follow: true,
+      noimageindex: false,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
   openGraph: {
     title: meta.title,
     description: meta.description,
     url: `${process.env.NEXT_PUBLIC_APP_URL}/blog`,
-
     type: "website",
     images: [
       {
         url: meta.image,
+        width: 1200,
+        height: 630,
+        alt: meta.title,
       },
     ],
   },

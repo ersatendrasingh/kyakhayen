@@ -21,31 +21,28 @@ const poppins = Poppins({
 });
 
 const meta = {
-  title: "Kya Khayen - Your Ultimate Global Recipe Hub",
+  title: "Kya Khayen | Healthy Recipes & Meal Plans for Weight Loss",
   description:
-    "Kya Khayen offers global cuisines at your fingertips. Discover meal inspiration, nutrition plans, and healthy recipes from around the world.",
+    "Explore healthy recipes, weight loss meal plans, and pregnancy diet charts. Find vegetarian recipes, healthy snacks for kids, and personalized weight loss programs.",
   image: `${process.env.NEXT_PUBLIC_APP_URL}/meta-images/home.png`,
-  keywords: [
-    "kya khayen",
-    "best weight loss program",
-    "meal plan for weight loss",
-    "healthy meals for weight loss",
-    "best meal plan for weight loss",
-    "healthy diet plan for weight loss",
-    "low calorie meal plan",
-    "diet chart for weight loss",
-    "indian healthy recipes",
-    "healthy recipes for weight loss",
-  ],
 };
 
 export const metadata: Metadata = {
   manifest: "/manifest.json",
   title: meta.title,
   description: meta.description,
-  keywords: meta.keywords,
-  other: {
-    "google-adsense-account": "ca-pub-2007753908126813",
+  robots: {
+    index: true,
+    follow: true,
+    nocache: false,
+    googleBot: {
+      index: true,
+      follow: true,
+      noimageindex: false,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
   },
   openGraph: {
     title: meta.title,
@@ -57,6 +54,9 @@ export const metadata: Metadata = {
     images: [
       {
         url: meta.image,
+        width: 1200,
+        height: 630,
+        alt: meta.title,
       },
     ],
   },
@@ -83,12 +83,6 @@ export default async function RootLayout({
       <html lang="en">
         <GoogleAnalytics gaId={process.env.GOOGLE_ANALYTICS_ID as string} />
         <GoogleTagManager gtmId={process.env.GOOGLE_TAG_MANAGER_ID as string} />
-        <head>
-          {/* <script
-            async
-            src="https://embed.tawk.to/670954742480f5b4f58c2786/1i9u73q43"
-          ></script> */}
-        </head>
         <body className={`${poppins.variable}`} suppressHydrationWarning={true}>
           <ConfettiProvider />
           <ToastContainer />

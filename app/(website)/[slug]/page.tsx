@@ -25,14 +25,40 @@ export async function generateMetadata(
     const metaDescription = plainTextDescription!.substring(0, 160);
 
     return {
-      title: recipe.metaTitle || `${recipe.title} - KyaKhayen`,
+      title: recipe.metaTitle || `${recipe.title} - Kya Khayen`,
       description: recipe.metaDescription || metaDescription,
+      robots: {
+        index: true,
+        follow: true,
+        nocache: false,
+        googleBot: {
+          index: true,
+          follow: true,
+          noimageindex: false,
+          "max-video-preview": -1,
+          "max-image-preview": "large",
+          "max-snippet": -1,
+        },
+      },
       openGraph: {
         title: recipe.metaTitle || recipe.title,
         description: recipe.metaDescription || metaDescription,
         url: `${process.env.NEXT_PUBLIC_APP_URL}/${slug}`,
         type: "article",
-        images: [recipe.imageUrl!, ...previousImages],
+        images: [
+          {
+            url: String(recipe.imageUrl || previousImages[0]),
+            width: 1200,
+            height: 630,
+            alt: String(recipe.metaTitle ?? recipe.title),
+          },
+          ...previousImages.slice(1).map((img) => ({
+            url: String(img),
+            width: 1200,
+            height: 630,
+            alt: "Additional Image",
+          })),
+        ],
       },
       twitter: {
         title: recipe.metaTitle || recipe.title,
