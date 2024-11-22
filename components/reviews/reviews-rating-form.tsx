@@ -1,32 +1,11 @@
 import { useEffect, useState } from "react";
 import { useCurrentUser } from "@/hooks/use-current-user";
-import dynamic from "next/dynamic"; // Import dynamic from next/dynamic
-import { FaStar } from "react-icons/fa";
-import LoginPopup from "../modals/login-popup";
+import dynamic from "next/dynamic";
+import LoginPopup from "@/components/modals/login-popup";
 import axios from "axios";
 import { toast } from "react-toastify";
-import { FaSpinner } from "react-icons/fa"; // Import the spinner icon
-
-// Placeholder component for loading state
-const StarRatingSkeleton = () => (
-  <div className="flex space-x-2 items-center">
-    <div className="animate-pulse">
-      <FaStar className="text-gray-300 w-6 h-6" />
-    </div>
-    <div className="animate-pulse">
-      <FaStar className="text-gray-300 w-6 h-6" />
-    </div>
-    <div className="animate-pulse">
-      <FaStar className="text-gray-300 w-6 h-6" />
-    </div>
-    <div className="animate-pulse">
-      <FaStar className="text-gray-300 w-6 h-6" />
-    </div>
-    <div className="animate-pulse">
-      <FaStar className="text-gray-300 w-6 h-6" />
-    </div>
-  </div>
-);
+import { FaSpinner } from "react-icons/fa";
+import StarRatingSkeleton from "@/components/reviews/star-rating-skelton";
 
 const DynamicStarRatings = dynamic(() => import("react-star-ratings"), {
   ssr: false,

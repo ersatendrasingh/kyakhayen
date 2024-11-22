@@ -4,8 +4,10 @@ import { PostWithCategory } from "@/types/article";
 
 export const getArticleBySlug = async ({
   blogSlug,
+  blogMetaSlug,
 }: {
-  blogSlug?: string;
+  blogSlug: string;
+  blogMetaSlug?: string | null;
 }): Promise<PostWithCategory | null> => {
   try {
     if (blogSlug === undefined) {
@@ -18,7 +20,10 @@ export const getArticleBySlug = async ({
     const post = await db.post.findFirst({
       where: {
         isPublished: true,
-        slug: blogSlug,
+        AND: [
+          { slug: blogSlug },
+          ...(blogMetaSlug ? [{ metaSlug: blogMetaSlug }] : []),
+        ],
       },
       include: {
         PostCategory: {

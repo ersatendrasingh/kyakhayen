@@ -54,7 +54,7 @@ const RecipeMethods = ({ recipeMethods }: RecipeMethodsProps) => {
                 <Preview
                   value={method.description}
                   className={cn(
-                    "text-md font-lg pb-5",
+                    "text-md font-lg ml-10 pb-5",
                     checkedMethod.includes(method.id)
                       ? "text-gray-500 line-through opacity-75"
                       : "text-foreground"

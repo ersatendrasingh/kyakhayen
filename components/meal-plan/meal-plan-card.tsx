@@ -13,7 +13,13 @@ const MealPlanCard = ({ recipe }: MealPlanCardProps) => {
   return (
     <div className="w-full flex flex-row items-center justify-between p-4 bg-white border border-gray-200 rounded-md shadow-md transition-transform hover:shadow-lg hover:-translate-y-1">
       <div className="flex flex-col flex-grow">
-        <Link href={`/${recipe.slug}`}>
+        <Link
+          href={
+            recipe.metaSlug
+              ? `/${recipe.slug}-${recipe.metaSlug}`
+              : `/${recipe.slug}`
+          }
+        >
           <div className="flex flex-col h-full">
             <div className="flex items-center mb-2">
               <div className="text-lg font-bold">{recipe.title}</div>

@@ -28,6 +28,7 @@ import { RecipeDietTypeForm } from "./_components/recipe-diet-type-form";
 import { RecipeNutritionValuesForm } from "./_components/recipe-nutrition-values-form";
 import { RecipeRecipeTypeForm } from "./_components/recipe-recipe-type-form";
 import { HealthBenefitsForm } from "./_components/health-benefits-form";
+import { RecipeMetaDataForm } from "./_components/recipe-meta-data-form";
 
 const RecipeIdPage = async ({ params }: { params: { recipeId: string } }) => {
   const recipe = await db.recipes.findUnique({
@@ -459,6 +460,11 @@ const RecipeIdPage = async ({ params }: { params: { recipeId: string } }) => {
                 <h2 className="text-md">Recipe Health Benefits</h2>
               </div>
               <HealthBenefitsForm initialData={recipe} recipeId={recipe.id} />
+              <div className="flex items-center mt-4 gap-x-2">
+                <IconBadge icon={ListChecks} />
+                <h2 className="text-md">Recipe Meta Data For SEO</h2>
+              </div>
+              <RecipeMetaDataForm initialData={recipe} recipeId={recipe.id} />
             </div>
           </div>
         </div>
