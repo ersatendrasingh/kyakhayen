@@ -7,6 +7,7 @@ import { currentUser } from "@/lib/auth";
 import HomeBanner from "@/components/sections/home-banner";
 import RecommendedRecipes from "@/components/sections/recommended-recipes";
 import RecipeByMealTime from "@/components/sections/recipe-by-mealtime";
+import { IntroSection } from "@/components/sections/intro-secion";
 
 type Banner = {
   id: number;
@@ -189,6 +190,7 @@ export default async function Home() {
         prakritiQuestions={prakritiQuestions}
         genders={genders}
       />
+      <IntroSection />
       <RecipeByMealTime title="Recipe By Meal Time" widgetItems={melaTimes} />
       <RecommendedRecipes
         userId={user?.id}

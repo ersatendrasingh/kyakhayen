@@ -21,9 +21,9 @@ export const PageHeader = ({ title, className }: PageHeaderProps) => {
       <Container>
         <div className="flex items-start  justify-start">
           <div className="text-start w-full">
-            <h2 className="text-2xl lg:text-3xl xl:text-4xl mb-2 text-white font-bold transition-all duration-1000 ease-in-out transform animate-slide-in">
+            <h1 className="text-2xl lg:text-3xl xl:text-4xl mb-2 text-white font-bold transition-all duration-1000 ease-in-out transform animate-slide-in">
               {title}
-            </h2>
+            </h1>
             <PageBreadcum currentPage={title} />
           </div>
         </div>

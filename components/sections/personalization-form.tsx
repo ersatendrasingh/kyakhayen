@@ -1,14 +1,7 @@
 "use client";
 
-import {
-  useState,
-  useEffect,
-  useRef,
-  createRef,
-  RefObject,
-  useMemo,
-} from "react";
-import { Search } from "lucide-react";
+import { useState, useEffect, useRef, createRef, RefObject } from "react";
+import axios from "axios";
 
 import { CSSTransition, TransitionGroup } from "react-transition-group";
 
@@ -24,9 +17,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import DateOfBirth from "@/components/user-personalization/date-of-birth";
 import HeightWeight from "@/components/user-personalization/height-weight";
 import Container from "@/components/container";
-import { Input } from "@/components/ui/input";
-import { SearchInput } from "@/components/header/search-input";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
 import {
   Allergies as AllergiesType,
@@ -41,15 +31,13 @@ import {
 import { PrakritiQuestionForm } from "../user-personalization/prakriti-question-form";
 
 import { useCurrentUser } from "@/hooks/use-current-user";
-import axios from "axios";
 
 import { usePathname, useRouter } from "next/navigation";
 import { collectPersonalizationData } from "@/hooks/use-user-personalization";
-import OverlayLoader from "../loader/overlay-loader";
-import MealPlanLoader from "../loader/meal-plan-loader";
+import OverlayLoader from "@/components/loader/overlay-loader";
+import MealPlanLoader from "@/components/loader/meal-plan-loader";
 
-import dynamic from "next/dynamic";
-//import { ProgressBar } from "./progress-bar";
+import { ProgressBar } from "@/components/sections/progress-bar";
 interface PrakritiQuestionType extends PrakritiQuestion {
   options: PrakritiQuestionOption[];
 }
@@ -77,17 +65,13 @@ const getSavedStep = (): number => {
       const savedStep = localStorage.getItem("currentStep");
       return savedStep ? JSON.parse(savedStep) : 1;
     }
-    return 1; // Fallback if localStorage is not available
+    return 1;
   } catch (error) {
     console.error("Error parsing saved step:", error);
-    return 1; // Handle any errors gracefully
+    return 1;
   }
 };
 
-const ProgressBar = dynamic(
-  () => import("@/components/sections/progress-bar"),
-  { ssr: false }
-);
 export default function PersonalizationForm({
   banner,
   className,
@@ -99,7 +83,6 @@ export default function PersonalizationForm({
   genders,
   prakritiQuestions,
 }: BannerProps) {
-  const [open, setOpen] = useState(false);
   const [step, setStep] = useState<number>(() => getSavedStep());
   const [direction, setDirection] = useState("next");
   const [isFormValid, setIsFormValid] = useState(false);
@@ -178,6 +161,7 @@ export default function PersonalizationForm({
       }
     }
   };
+
   return (
     <div
       className={cn(
@@ -194,13 +178,13 @@ export default function PersonalizationForm({
       {mealPlanLoading && <MealPlanLoader isLoading={mealPlanLoading} />}
 
       <Container>
-        <div className="w-full flex-shrink-0">
+        <div className="w-full justify-center h-[50px] items-center flex">
           <ProgressBar step={step} totalSteps={stepCount} />
         </div>
         <div className="w-full flex flex-col items-center justify-center text-center ">
           {/* Progress Bar */}
 
-          <div className="w-full flex flex-col items-center justify-center relative h-[300px] md:h-[300px]">
+          <div className="w-full md:w-[700px] flex flex-col items-center justify-center relative h-[300px] md:h-[300px]">
             <span className="text-sm md:text-md font-medium p-2   rounded-full text-black">
               Personalize your experience by selecting your preferences
             </span>

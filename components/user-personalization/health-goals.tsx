@@ -11,7 +11,7 @@ import { Navigation, Mousewheel, Keyboard } from "swiper/modules";
 import { cn } from "@/lib/utils";
 import { HealthGoals as HealthGoalType } from "@prisma/client";
 
-import { Skeleton } from "@/components/ui/skeleton";
+import { PersonalizationSkelton } from "@/components/user-personalization/personalization-skelton";
 import useWindowSize from "@/hooks/use-window-size";
 
 interface HealthGoalsProps {
@@ -72,16 +72,7 @@ const HealthGoals = ({
   const isHealthGoalSelected = (healthGoalId: string) =>
     selectedHealthGoals.includes(healthGoalId);
   if (loading) {
-    return (
-      <div className="w-full flex items-center justify-between">
-        <Skeleton className="h-32 w-32 bg-red-100 rounded-full mx-3" />
-        <Skeleton className="h-32 w-32 bg-red-100 rounded-full mx-3" />
-        <Skeleton className="h-32 w-32 bg-red-100 rounded-full mx-3 hidden md:flex" />
-        <Skeleton className="h-32 w-32 bg-red-100 rounded-full mx-3 hidden md:flex" />
-        <Skeleton className="h-32 w-32 bg-red-100 rounded-full mx-3 hidden md:flex" />
-        <Skeleton className="h-32 w-32 bg-red-100 rounded-full mx-3 hidden md:flex" />
-      </div>
-    );
+    return <PersonalizationSkelton />;
   }
   const isMobile = width !== undefined && width <= 767;
   return (
@@ -100,7 +91,7 @@ const HealthGoals = ({
           className="w-full"
           cssMode={true}
           spaceBetween={isMobile ? 0 : 20}
-          slidesPerView={isMobile ? 3 : 7}
+          slidesPerView={isMobile ? 3 : 9}
           navigation={true}
           mousewheel={true}
           keyboard={true}
@@ -111,7 +102,7 @@ const HealthGoals = ({
               key={healthGoal.id}
               onClick={() => toggleHealthGoalSelection(healthGoal.id)}
               className={cn(
-                "rounded-full p-2 w-[120px] md:w-[150px] text-center hover:text-websecondary hover:border-300 transition duration-300 text-sm font-semibold relative cursor-pointer"
+                "rounded-full p-2 w-[112px] text-center hover:text-websecondary hover:border-300 transition duration-300 text-sm font-semibold relative cursor-pointer"
               )}
             >
               <div className="relative overflow-hidden group">
@@ -120,8 +111,8 @@ const HealthGoals = ({
                     healthGoal.imageUrl || "/assets/images/default-category.jpg"
                   }
                   alt={healthGoal.title || "Category Image"}
-                  width={180}
-                  height={180}
+                  width={112}
+                  height={112}
                   className="rounded-full"
                 />
                 <span
