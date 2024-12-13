@@ -75,26 +75,6 @@ export default function HeroBannerCard({
     >
       <Container>
         <div className="w-full flex flex-col items-center justify-center text-center">
-          <div className="hidden w-full my-3 justify-center">
-            <Sheet open={open} onOpenChange={setOpen}>
-              <SheetTrigger>
-                <div className="relative mt-3 w-full">
-                  <Search className="h-6 w-6 absolute top-3 left-3 text-slate-600" />
-                  <Input
-                    className="w-full md:w-[600px] h-12 pl-16 rounded-full bg-white shadow-md"
-                    placeholder="Search for recipes..."
-                  />
-                </div>
-              </SheetTrigger>
-              <SheetContent
-                side="top"
-                className="flex flex-row items-center justify-center"
-              >
-                <SearchInput onClose={() => setOpen(false)} />
-              </SheetContent>
-            </Sheet>
-          </div>
-
           <div className="w-full h-full flex items-center justify-center">
             {renderBanner()}
           </div>

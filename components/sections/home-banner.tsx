@@ -80,7 +80,7 @@ const HomeBanner = ({
       const personalizationData = collectPersonalizationData();
       if (personalizationData) {
         try {
-          setIsLoading(true);
+          //setIsLoading(true);
           const response = await axios.patch(
             "/api/user/personalization",
             personalizationData

@@ -3,11 +3,10 @@
 import { useEffect, useState } from "react";
 
 import { cn } from "@/lib/utils";
-import { Skeleton } from "@/components/ui/skeleton";
+import { PersonalizationSkelton } from "@/components/user-personalization/personalization-skelton";
 import { Button } from "@/components/ui/button";
 
 import { PrakritiQuestionOption } from "@prisma/client";
-import { db } from "@/lib/db";
 import axios from "axios";
 
 interface PrakritiQuestionFormProps {
@@ -116,16 +115,7 @@ export const PrakritiQuestionForm = ({
   };
 
   if (loading) {
-    return (
-      <div className="w-full flex items-center justify-between">
-        <Skeleton className="h-32 w-32 bg-red-100 rounded-full mx-3" />
-        <Skeleton className="h-32 w-32 bg-red-100 rounded-full mx-3" />
-        <Skeleton className="h-32 w-32 bg-red-100 rounded-full mx-3 hidden md:flex" />
-        <Skeleton className="h-32 w-32 bg-red-100 rounded-full mx-3 hidden md:flex" />
-        <Skeleton className="h-32 w-32 bg-red-100 rounded-full mx-3 hidden md:flex" />
-        <Skeleton className="h-32 w-32 bg-red-100 rounded-full mx-3 hidden md:flex" />
-      </div>
-    );
+    return <PersonalizationSkelton />;
   }
   return (
     <div>

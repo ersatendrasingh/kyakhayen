@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { Skeleton } from "@/components/ui/skeleton";
+import { PersonalizationSkelton } from "@/components/user-personalization/personalization-skelton";
 
 interface HeightWeightProps {
   title: string;
@@ -159,16 +159,7 @@ const HeightWeight = ({ title, setIsFormValid }: HeightWeightProps) => {
   ]);
 
   if (loading) {
-    return (
-      <div className="w-full flex items-center justify-between">
-        <Skeleton className="h-32 w-32 bg-red-100 rounded-full mx-3" />
-        <Skeleton className="h-32 w-32 bg-red-100 rounded-full mx-3" />
-        <Skeleton className="h-32 w-32 bg-red-100 rounded-full mx-3 hidden md:flex" />
-        <Skeleton className="h-32 w-32 bg-red-100 rounded-full mx-3 hidden md:flex" />
-        <Skeleton className="h-32 w-32 bg-red-100 rounded-full mx-3 hidden md:flex" />
-        <Skeleton className="h-32 w-32 bg-red-100 rounded-full mx-3 hidden md:flex" />
-      </div>
-    );
+    return <PersonalizationSkelton />;
   }
 
   return (

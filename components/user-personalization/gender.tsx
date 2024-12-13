@@ -10,7 +10,7 @@ import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
 import { Navigation, Mousewheel, Keyboard } from "swiper/modules";
-import { Skeleton } from "@/components/ui/skeleton";
+import { PersonalizationSkelton } from "@/components/user-personalization/personalization-skelton";
 import useWindowSize from "@/hooks/use-window-size";
 
 interface GenderProps {
@@ -68,17 +68,9 @@ const Gender = ({ genders, title, setIsFormValid }: GenderProps) => {
 
   const isGenderSelected = (genderId: string) => selectedGender === genderId;
   const isMobile = width !== undefined && width <= 767;
+
   if (loading) {
-    return (
-      <div className="w-full flex items-center justify-between">
-        <Skeleton className="h-32 w-32 bg-red-100 rounded-full mx-3" />
-        <Skeleton className="h-32 w-32 bg-red-100 rounded-full mx-3" />
-        <Skeleton className="h-32 w-32 bg-red-100 rounded-full mx-3 hidden md:flex" />
-        <Skeleton className="h-32 w-32 bg-red-100 rounded-full mx-3 hidden md:flex" />
-        <Skeleton className="h-32 w-32 bg-red-100 rounded-full mx-3 hidden md:flex" />
-        <Skeleton className="h-32 w-32 bg-red-100 rounded-full mx-3 hidden md:flex" />
-      </div>
-    );
+    return <PersonalizationSkelton />;
   }
 
   return (
@@ -89,7 +81,7 @@ const Gender = ({ genders, title, setIsFormValid }: GenderProps) => {
 
       <div
         className={cn(
-          "w-full md:w-[320px]  items-center justify-center",
+          "w-full md:w-[300px]  items-center justify-center",
           isMobile && "w-[240px]"
         )}
       >
@@ -108,7 +100,7 @@ const Gender = ({ genders, title, setIsFormValid }: GenderProps) => {
               key={gender.id}
               onClick={() => toggleGenderSelection(gender.id)}
               className={cn(
-                "rounded-full bg-slate-200 p-5 text-center w-[120px] md:w-[150px] hover:text-websecondary hover:border-300 transition duration-300 text-sm font-semibold relative cursor-pointer",
+                "rounded-full bg-slate-200 p-5 text-center w-[112px] hover:text-websecondary hover:border-300 transition duration-300 text-sm font-semibold relative cursor-pointer",
                 isGenderSelected(gender.id) &&
                   "bg-red-500 opacity-100 text-white"
               )}
@@ -117,8 +109,8 @@ const Gender = ({ genders, title, setIsFormValid }: GenderProps) => {
                 <Image
                   src={gender.imageUrl || "/assets/images/default-category.jpg"}
                   alt={gender.title || "Gender Image"}
-                  width={150}
-                  height={150}
+                  width={112}
+                  height={112}
                 />
               </div>
             </SwiperSlide>

@@ -11,7 +11,7 @@ import { Navigation, Mousewheel, Keyboard } from "swiper/modules";
 import { cn } from "@/lib/utils";
 import { RecipeDifficulty } from "@prisma/client";
 
-import { Skeleton } from "@/components/ui/skeleton";
+import { PersonalizationSkelton } from "@/components/user-personalization/personalization-skelton";
 import useWindowSize from "@/hooks/use-window-size";
 
 interface CookingSkillsProps {
@@ -70,16 +70,7 @@ const CookingSkills = ({
     selectedCookingSkill === cookingSkillId;
 
   if (loading) {
-    return (
-      <div className="w-full flex items-center justify-between">
-        <Skeleton className="h-32 w-32 bg-red-100 rounded-full mx-3" />
-        <Skeleton className="h-32 w-32 bg-red-100 rounded-full mx-3" />
-        <Skeleton className="h-32 w-32 bg-red-100 rounded-full mx-3 hidden md:flex" />
-        <Skeleton className="h-32 w-32 bg-red-100 rounded-full mx-3 hidden md:flex" />
-        <Skeleton className="h-32 w-32 bg-red-100 rounded-full mx-3 hidden md:flex" />
-        <Skeleton className="h-32 w-32 bg-red-100 rounded-full mx-3 hidden md:flex" />
-      </div>
-    );
+    return <PersonalizationSkelton />;
   }
   const isMobile = width !== undefined && width <= 767;
   return (
@@ -90,7 +81,7 @@ const CookingSkills = ({
 
       <div
         className={cn(
-          "w-full  md:w-[538px] flex items-center justify-center mx-auto",
+          "w-full  md:w-[425px] flex items-center justify-center mx-auto",
           isMobile && "w-[280px]"
         )}
       >
@@ -109,7 +100,7 @@ const CookingSkills = ({
               key={cookingSkill.id}
               onClick={() => toggleCookingSkillSelection(cookingSkill.id)}
               className={cn(
-                "rounded-full p-2 text-center w-[120px] md:w-[150px] hover:text-websecondary hover:border-300 transition duration-300 text-sm font-semibold relative cursor-pointer"
+                "rounded-full p-2 text-center w-[112px] hover:text-websecondary hover:border-300 transition duration-300 text-sm font-semibold relative cursor-pointer"
               )}
             >
               <div className="relative overflow-hidden group">
@@ -119,8 +110,8 @@ const CookingSkills = ({
                     "/assets/images/default-category.jpg"
                   }
                   alt={cookingSkill.title || "Cooking Skill Image"}
-                  width={150}
-                  height={150}
+                  width={112}
+                  height={112}
                   className="rounded-full"
                 />
                 <span

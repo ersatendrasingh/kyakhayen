@@ -2,18 +2,19 @@
 
 import Image from "next/image";
 import { useEffect, useState } from "react";
+
 import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
 import { Navigation, Mousewheel, Keyboard } from "swiper/modules";
 
-import { cn } from "@/lib/utils";
-import { Skeleton } from "@/components/ui/skeleton";
-
 import { Cuisines as CuisinesType } from "@prisma/client";
-import Container from "../container";
+
 import useWindowSize from "@/hooks/use-window-size";
+import { cn } from "@/lib/utils";
+
+import { PersonalizationSkelton } from "@/components/user-personalization/personalization-skelton";
 
 interface CuisinesProps {
   cuisines: CuisinesType[];
@@ -71,16 +72,7 @@ const Cuisines = ({ cuisines, title, setIsFormValid }: CuisinesProps) => {
   const isCuisineSelected = (cuisineId: string) =>
     selectedCuisines?.includes(cuisineId) || false;
   if (loading) {
-    return (
-      <div className="w-full flex items-center justify-between">
-        <Skeleton className="h-32 w-32 bg-red-100 rounded-full mx-3" />
-        <Skeleton className="h-32 w-32 bg-red-100 rounded-full mx-3" />
-        <Skeleton className="h-32 w-32 bg-red-100 rounded-full mx-3 hidden md:flex" />
-        <Skeleton className="h-32 w-32 bg-red-100 rounded-full mx-3 hidden md:flex" />
-        <Skeleton className="h-32 w-32 bg-red-100 rounded-full mx-3 hidden md:flex" />
-        <Skeleton className="h-32 w-32 bg-red-100 rounded-full mx-3 hidden md:flex" />
-      </div>
-    );
+    return <PersonalizationSkelton />;
   }
 
   const isMobile = width !== undefined && width <= 767;
@@ -99,7 +91,7 @@ const Cuisines = ({ cuisines, title, setIsFormValid }: CuisinesProps) => {
           className="w-full"
           cssMode={true}
           spaceBetween={isMobile ? 0 : 20}
-          slidesPerView={isMobile ? 3 : 7}
+          slidesPerView={isMobile ? 3 : 9}
           navigation={true}
           mousewheel={true}
           keyboard={true}
@@ -110,7 +102,7 @@ const Cuisines = ({ cuisines, title, setIsFormValid }: CuisinesProps) => {
               key={cuisine.id}
               onClick={() => toggleCuisineSelection(cuisine.id)}
               className={cn(
-                "rounded-full p-2 w-[120px] md:w-[150px] text-center hover:text-websecondary hover:border-300 transition duration-300 text-sm font-semibold relative cursor-pointer"
+                "rounded-full p-2 w-[112px] text-center hover:text-websecondary hover:border-300 transition duration-300 text-sm font-semibold relative cursor-pointer"
               )}
             >
               <div className="relative overflow-hidden group">
@@ -119,8 +111,8 @@ const Cuisines = ({ cuisines, title, setIsFormValid }: CuisinesProps) => {
                     cuisine.imageUrl || "/assets/images/default-category.jpg"
                   }
                   alt={cuisine.title || "Category Image"}
-                  width={150}
-                  height={150}
+                  width={112}
+                  height={112}
                   className="rounded-full"
                 />
                 <span

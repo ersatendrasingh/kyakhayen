@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Loader2 } from "lucide-react";
+import { Loader, Loader2 } from "lucide-react";
 import Image from "next/image";
 
 interface OverlayLoaderProps {
@@ -14,14 +14,8 @@ const OverlayLoader = ({ isLoading }: OverlayLoaderProps) => {
       }`}
     >
       <div className="bg-gray-900 bg-opacity-50 absolute inset-0"></div>
-      <div className="z-10 bg-white w-[200px] h-[200px]  items-center justify-center p-8 rounded-xl shadow-lg">
-        <Image
-          src="/assets/cook.gif"
-          alt="Badge Icon"
-          width={100}
-          height={100}
-          className="ml-3"
-        />
+      <div className=" relative z-10 bg-white text-center  items-center justify-center p-8 rounded-xl shadow-lg">
+        <Loader className="size-6 animate-spin" />
       </div>
     </div>
   );

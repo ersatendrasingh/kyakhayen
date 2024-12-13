@@ -6,12 +6,20 @@ interface ProgressBarProps {
   totalSteps: number;
 }
 
-const ProgressBar = ({ step, totalSteps }: ProgressBarProps) => {
-  const [progressPercentage, setProgressPercentage] = useState(0);
+export const ProgressBar = ({ step, totalSteps }: ProgressBarProps) => {
+  const [progressPercentage, setProgressPercentage] = useState<number | null>(
+    null
+  );
 
   useEffect(() => {
+    // Ensure this runs only on the client
     setProgressPercentage((step / totalSteps) * 100);
   }, [step, totalSteps]);
+
+  // Render nothing on the server to avoid hydration mismatch
+  if (progressPercentage === null) {
+    return null;
+  }
 
   // Determine text color based on progress percentage
   const textColor = progressPercentage < 50 ? "text-black" : "text-white";
@@ -31,5 +39,3 @@ const ProgressBar = ({ step, totalSteps }: ProgressBarProps) => {
     </div>
   );
 };
-
-export default ProgressBar;

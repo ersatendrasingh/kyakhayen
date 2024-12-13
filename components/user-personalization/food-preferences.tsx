@@ -10,10 +10,10 @@ import "swiper/css/navigation";
 import "swiper/css/pagination";
 import { Navigation, Mousewheel, Keyboard } from "swiper/modules";
 
-import { Skeleton } from "@/components/ui/skeleton";
-
 import { RecipeCategories as FoodPreferencesType } from "@prisma/client";
 import useWindowSize from "@/hooks/use-window-size";
+
+import { PersonalizationSkelton } from "@/components/user-personalization/personalization-skelton";
 
 interface FoodPreferencesProps {
   foodPreferences: FoodPreferencesType[];
@@ -76,16 +76,7 @@ const FoodPreferences = ({
     selectedFoodPreference === foodPreferenceId;
 
   if (loading) {
-    return (
-      <div className="w-full flex items-center justify-between">
-        <Skeleton className="h-32 w-32 bg-red-100 rounded-full mx-3" />
-        <Skeleton className="h-32 w-32 bg-red-100 rounded-full mx-3" />
-        <Skeleton className="h-32 w-32 bg-red-100 rounded-full mx-3 hidden md:flex" />
-        <Skeleton className="h-32 w-32 bg-red-100 rounded-full mx-3 hidden md:flex" />
-        <Skeleton className="h-32 w-32 bg-red-100 rounded-full mx-3 hidden md:flex" />
-        <Skeleton className="h-32 w-32 bg-red-100 rounded-full mx-3 hidden md:flex" />
-      </div>
-    );
+    return <PersonalizationSkelton />;
   }
   const isMobile = width !== undefined && width <= 767;
   return (
@@ -96,7 +87,7 @@ const FoodPreferences = ({
 
       <div
         className={cn(
-          "w-full  md:w-[860px] flex items-center justify-center",
+          "w-full  md:w-[700px] flex items-center justify-center",
           isMobile && "max-w-[360px]"
         )}
       >
@@ -115,7 +106,7 @@ const FoodPreferences = ({
               key={foodPreference.id}
               onClick={() => toggleFoodPreferenceSelection(foodPreference.id)}
               className={cn(
-                "rounded-full p-2 text-center w-[120px] md:w-[150px] hover:text-websecondary hover:border-300 transition duration-300 text-sm font-semibold relative cursor-pointer"
+                "rounded-full p-2 text-center w-[112px] hover:text-websecondary hover:border-300 transition duration-300 text-sm font-semibold relative cursor-pointer"
               )}
             >
               <div className="relative overflow-hidden group">
@@ -125,8 +116,8 @@ const FoodPreferences = ({
                     "/assets/images/default-category.jpg"
                   }
                   alt={foodPreference.name || "Category Image"}
-                  width={150}
-                  height={150}
+                  width={112}
+                  height={112}
                   className="rounded-full"
                 />
                 <span
