@@ -141,7 +141,7 @@ const PricingTable = () => {
                     </div>
                   )}
 
-                  <div className="bg-gradient-to-r from-red-500 to-orange-500 text-white pt-2 px-4 rounded-t-lg text-center">
+                  <div className="bg-websecondary text-white pt-2 px-4 rounded-t-lg text-center">
                     <h3 className="text-lg mb-2">{plan.name}</h3>
                   </div>
 
@@ -176,7 +176,7 @@ const PricingTable = () => {
                       ))}
                     </ul>
                     <Button
-                      className="mt-8 w-full bg-gradient-to-r from-red-500 to-orange-500 hover:bg-black text-white py-3 rounded-lg transition-colors duration-300"
+                      className="mt-8 w-full bg-websecondary hover:bg-black text-white py-3 rounded-lg transition-colors duration-300"
                       onClick={() => handleAddToCartAndCheckout(plan)}
                     >
                       {loadingCheckout ? (

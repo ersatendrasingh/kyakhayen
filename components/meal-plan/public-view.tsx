@@ -7,7 +7,7 @@ const PublicView = () => {
   return (
     <section className="py-16 ">
       <Container>
-        <div className="flex flex-col items-center justify-center">
+        <div className="flex flex-col items-center text-center md:text-left justify-center">
           <h2 className="text-4xl text-websecondary mb-8">
             Welcome to Our Meal Planning Service
           </h2>
@@ -107,21 +107,21 @@ const PublicView = () => {
                   get started.
                 </p>
                 <h4 className="text-xl font-medium text-websecondary mb-2">
+                  Step 2: Subscribe a Plan
+                </h4>
+                <p className="text-lg tracking-wide text-justify leading-loose mb-4">
+                  Choose a subscription plan that fits your needs and unlock
+                  premium features like customized recipes, nutrition tracking.
+                </p>
+              </div>
+              <div className="md:w-1/2 md:pl-4">
+                <h4 className="text-xl font-medium text-websecondary mb-2">
                   Step 3 : Complete Personalization
                 </h4>
                 <p className="text-lg tracking-wide text-justify leading-loose mb-4">
                   Share your dietary preferences, health goals and some basic
                   information about your body. This helps us create a
                   personalized meal plan just for you.
-                </p>
-              </div>
-              <div className="md:w-1/2 md:pl-4">
-                <h4 className="text-xl font-medium text-websecondary mb-2">
-                  Step 2: Subscribe a Plan
-                </h4>
-                <p className="text-lg tracking-wide text-justify leading-loose mb-4">
-                  Choose a subscription plan that fits your needs and unlock
-                  premium features like customized recipes, nutrition tracking.
                 </p>
                 <h4 className="text-xl font-medium text-websecondary mb-2">
                   Step 4: Access Your Meal Plan and Enjoy

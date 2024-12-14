@@ -124,7 +124,7 @@ export const ReviewsRatingForm = ({
           />
           <button
             onClick={handleSubmit}
-            className={`pt-2 bg-gradient-to-r from-red-500 to-orange-500 px-4 py-2 text-white rounded-md ${
+            className={`pt-2 bg-websecondary px-4 py-2 text-white rounded-md ${
               isSubmitting ? "opacity-50 cursor-not-allowed" : "cursor-pointer"
             }`}
             disabled={isSubmitting} // Disable button while submitting
@@ -143,7 +143,7 @@ export const ReviewsRatingForm = ({
         <div className="flex items-center justify-center text-center mt-4">
           <button
             onClick={() => setShowPopup(true)}
-            className="pt-2 bg-gradient-to-r from-red-500 to-orange-500 cursor-pointer px-4 py-2 text-white rounded-md"
+            className="pt-2 bg-websecondary cursor-pointer px-4 py-2 text-white rounded-md"
           >
             Login to Submit Review
           </button>
