@@ -14,18 +14,16 @@ export const PageHeader = ({ title, className }: PageHeaderProps) => {
   return (
     <div
       className={cn(
-        "w-full flex bg-gradient-to-r from-red-500 to-orange-500 ",
+        "w-full flex bg-websecondary items-center justify-center ",
         className
       )}
     >
       <Container>
-        <div className="flex items-start  justify-start">
-          <div className="text-start w-full">
-            <h1 className="text-2xl lg:text-3xl xl:text-4xl mb-2 text-white font-bold transition-all duration-1000 ease-in-out transform animate-slide-in">
-              {title}
-            </h1>
-            <PageBreadcum currentPage={title} />
-          </div>
+        <div className="w-full">
+          <h1 className="text-2xl lg:text-3xl xl:text-4xl mb-2 text-white transition-all duration-1000 ease-in-out transform animate-slide-in">
+            {title}
+          </h1>
+          <PageBreadcum currentPage={title} />
         </div>
       </Container>
     </div>

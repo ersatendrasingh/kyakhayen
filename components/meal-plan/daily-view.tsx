@@ -10,6 +10,7 @@ import { formatDate } from "@/lib/formatDate";
 import { formatISO } from "date-fns";
 import { toast } from "react-toastify";
 import { getUserLatestPlanDates } from "@/actions/get-user-meal-plan-dates";
+import { Loader } from "lucide-react";
 
 interface DailyViewProps {
   date: Date;
@@ -117,7 +118,7 @@ const DailyView = ({ date }: DailyViewProps) => {
         <h2 className="text-md font-semibold mb-4">
           Meals for {date.toDateString()}
         </h2>
-        <Image src="/assets/cook.gif" alt="Loading" width={200} height={200} />
+        <Loader className="size-6 animate-spin" />
       </div>
     );
   }

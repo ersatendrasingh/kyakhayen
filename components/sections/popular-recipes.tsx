@@ -109,7 +109,7 @@ const PopularRecipes = () => {
           {!initialLoading && !loading && !allLoaded && (
             <Button
               onClick={fetchMoreRecipes}
-              className="bg-gradient-to-r from-red-500 to-orange-500 text-white font-semibold py-2 px-6 rounded-full shadow-lg transition-transform transform hover:scale-105"
+              className="bg-websecondary text-white font-semibold py-2 px-6 rounded-full shadow-lg transition-transform transform hover:scale-105"
             >
               Load More Recipes
             </Button>

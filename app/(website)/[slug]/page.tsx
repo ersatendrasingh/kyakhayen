@@ -67,7 +67,7 @@ export async function generateMetadata(
         card: "summary_large_image",
       },
       alternates: {
-        canonical: `${process.env.NEXT_PUBLIC_APP_URL}/recipe/${slug}`,
+        canonical: `${process.env.NEXT_PUBLIC_APP_URL}/${slug}`,
       },
     };
   }
@@ -87,7 +87,7 @@ export async function generateMetadata(
       openGraph: {
         title: blog.metaTitle || blog.title,
         description: blog.metaDescription || metaDescription,
-        url: `${process.env.NEXT_PUBLIC_APP_URL}/blog/${slug}`,
+        url: `${process.env.NEXT_PUBLIC_APP_URL}/${slug}`,
         type: "article",
         images: [blog.imageUrl!, ...previousImages],
       },
@@ -98,7 +98,7 @@ export async function generateMetadata(
         card: "summary_large_image",
       },
       alternates: {
-        canonical: `${process.env.NEXT_PUBLIC_APP_URL}/blog/${slug}`,
+        canonical: `${process.env.NEXT_PUBLIC_APP_URL}/${slug}`,
       },
     };
   }
