@@ -116,7 +116,7 @@ export const CommentsForm = ({
                 <Button
                   type="submit"
                   disabled={isSubmitting || !isValid}
-                  className="pt-2 bg-gradient-to-r from-red-500 to-orange-500 cursor-pointer"
+                  className="pt-2 bg-websecondary cursor-pointer"
                 >
                   {isSubmitting
                     ? "Submitting..."
@@ -134,7 +134,7 @@ export const CommentsForm = ({
             variant="destructive"
             size="default"
             onClick={() => setShowPopup(true)}
-            className="pt-2 bg-gradient-to-r from-red-500 to-orange-500 cursor-pointer"
+            className="pt-2 bg-websecondary cursor-pointer"
           >
             Login to Comment
           </Button>

@@ -9,7 +9,7 @@ const IntroSection = () => {
     <section className="pt-16">
       <Container>
         <div className="flex flex-col items-center justify-center ">
-          <h2 className="text-4xl text-websecondary mb-8">
+          <h2 className="text-4xl text-center text-websecondary mb-8">
             Why Subscribe to Kya Khayen?
           </h2>
           <p className="text-lg text-center leading-loose tracking-wide mb-4">
@@ -38,7 +38,7 @@ const IntroSection = () => {
             height={300}
             className="my-6 rounded"
           />
-          <div className="w-full flex flex-col items-center justify-center py-10">
+          <div className="w-full flex flex-col text-center md:text-left items-center justify-center py-10">
             <h3 className="text-4xl text-websecondary mb-8">What We Offer</h3>
             <div className="flex flex-col md:flex-row">
               <div className="md:w-1/2 md:pr-4">
@@ -101,7 +101,7 @@ const IntroSection = () => {
               </div>
             </div>
           </div>
-          <div className="w-full flex flex-col items-center justify-center py-10">
+          <div className="w-full flex flex-col items-center justify-center text-center md:text-left py-10">
             <h5 className="text-4xl text-websecondary mb-8">
               How to Get Started
             </h5>
@@ -115,21 +115,21 @@ const IntroSection = () => {
                   It&apos;s quick and very easy!
                 </p>
                 <h6 className="text-xl font-medium text-websecondary mb-2">
+                  Step 2: Buy a Subscription Plan
+                </h6>
+                <p className="text-lg text-justify tracking-wide leading-loose mb-4">
+                  Choose a subscription plan that fits your needs to unlock your
+                  customized meal plan and exclusive features.
+                </p>
+              </div>
+              <div className="md:w-1/2 md:pl-4">
+                <h6 className="text-xl font-medium text-websecondary mb-2">
                   Step 3: Complete Your Personalization Questions
                 </h6>
                 <p className="text-lg text-justify tracking-wide leading-loose mb-4">
                   Let us know your nutrition preferences (food preferences,
                   allergen, cuisines and health goals) and body type. This helps
                   us to create a personalized meal plan for you.
-                </p>
-              </div>
-              <div className="md:w-1/2 md:pl-4">
-                <h6 className="text-xl font-medium text-websecondary mb-2">
-                  Step 2: Buy a Subscription Plan
-                </h6>
-                <p className="text-lg text-justify tracking-wide leading-loose mb-4">
-                  Choose a subscription plan that fits your needs to unlock your
-                  customized meal plan and exclusive features.
                 </p>
                 <h6 className="text-xl font-medium text-websecondary mb-2">
                   Step 4: Access your Personalized Meal Plan and Enjoy
