@@ -149,12 +149,7 @@ const RecipeOverview = ({ recipe, quantity }: RecipeOverviewProps) => {
         )}
       </div>
 
-      {recipe.description && (
-        <>
-          <h1 className="text-2xl font-bold mt-4">Description</h1>
-          <Preview value={recipe.description} />
-        </>
-      )}
+      {recipe.description && <Preview value={recipe.description} />}
     </div>
   );
 };

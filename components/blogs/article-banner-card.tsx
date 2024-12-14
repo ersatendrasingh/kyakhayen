@@ -32,9 +32,9 @@ const ArticleBannerCard = ({ article, className }: ArticleBannerCardProps) => {
             />
           </div>
           <ArticleBreadcum currentArticle={article.title} />
-          <h1 className="text-2xl lg:text-4xl font-bold mb-4 text-center lg:text-left">
+          <h2 className="text-2xl lg:text-4xl font-bold mb-4 text-center lg:text-left">
             {article.title}
-          </h1>
+          </h2>
           <ArticleAuthor
             authorName="Kyakhayen?"
             authorPhoto={guestAuthor}

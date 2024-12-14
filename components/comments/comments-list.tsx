@@ -155,9 +155,9 @@ const CommentsList = ({
     } catch (error) {
       console.error("Error deleting comment:", error);
     } finally {
-      setDeletingId(null); // Reset deletingId state
-      setCommentToDelete(null); // Reset the state
-      setIsModalOpen(false); // Close the modal
+      setDeletingId(null);
+      setCommentToDelete(null);
+      setIsModalOpen(false);
     }
   };
 
@@ -328,9 +328,9 @@ const CommentsList = ({
   return (
     <div className="w-full flex flex-col items-start justify-start bg-white rounded-md p-4 shadow-sm transition mb-10">
       <div className="flex justify-between w-full border-b-2 border-gray-200 mb-4">
-        <h1 className="text-xl font-bold text-gray-800 mb-4">
+        <h4 className="text-xl font-bold text-gray-800 mb-4">
           Questions & Replies
-        </h1>
+        </h4>
         {comments.length > 0 && (
           <p className="text-right font-bold text-websecondary text-xl">
             Comments: ({comments.length})

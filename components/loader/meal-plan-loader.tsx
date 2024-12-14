@@ -1,4 +1,4 @@
-import Image from "next/image";
+import { Loader } from "lucide-react";
 
 interface MealPlanLoaderProps {
   isLoading: boolean;
@@ -13,12 +13,7 @@ const MealPlanLoader = ({ isLoading }: MealPlanLoaderProps) => {
     >
       <div className="bg-gray-900 bg-opacity-50 absolute inset-0"></div>
       <div className="inset-0 flex flex-col items-center justify-center bg-white bg-opacity-100 p-10 rounded-md z-10">
-        <Image
-          src="/assets/nutrition-plan.gif"
-          alt="Loading"
-          width={80}
-          height={80}
-        />
+        <Loader className="size-6 animate-spin" />
         <p className="mt-2 font-semibold animate-bounce text-websecondary">
           Your meal plan is being generated. Please wait...
         </p>

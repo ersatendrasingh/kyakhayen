@@ -1,12 +1,8 @@
 "use client";
 
-import { useState } from "react";
-import { Search } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Container from "@/components/container";
-import { Input } from "@/components/ui/input";
-import { SearchInput } from "@/components/header/search-input";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+
 import HomeSlideBanner from "@/components/sections/slider/home-slide-banner";
 
 interface HeroBannerCardProps {
@@ -44,8 +40,6 @@ export default function HeroBannerCard({
   featureBanners,
   className,
 }: HeroBannerCardProps) {
-  const [open, setOpen] = useState(false);
-
   const isPWA = () => window.matchMedia("(display-mode: standalone)").matches;
 
   const renderBanner = () => {

@@ -7,7 +7,7 @@ import Link from "next/link";
 
 export const IntroSection = () => {
   return (
-    <section className="bg-websecondary py-16">
+    <section className="bg-websecondary py-12 md:py-0">
       <Container>
         <div className="flex flex-col md:flex-row items-center justify-between gap-8">
           <div className="flex-1 text-center md:text-left">

@@ -88,7 +88,7 @@ const RecipeMethods = ({ recipeMethods }: RecipeMethodsProps) => {
                       : "text-foreground"
                   )}
                 >
-                  <h1 className="text-md font-medium">Mark as completed</h1>
+                  <h5 className="text-md font-medium">Mark as completed</h5>
                 </label>
               </div>
             </li>

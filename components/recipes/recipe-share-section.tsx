@@ -11,7 +11,7 @@ const RecipeShareSection = ({ recipe }: RecipeShareSectionProps) => {
   const recipeUrl = `${process.env.NEXT_PUBLIC_APP_URL}/recipes/${recipe.slug}`;
   return (
     <div className="w-full flex flex-col items-start justify-start bg-white rounded-md p-4 shadow-sm transition mb-10">
-      <h1 className="text-2xl font-bold">Share this recipe</h1>
+      <h2 className="text-2xl font-bold">Share this recipe</h2>
       <SocialShare
         url={recipeUrl}
         title={recipe.title}

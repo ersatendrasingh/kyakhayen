@@ -8,10 +8,10 @@ interface ArticleShareSectionProps {
 }
 
 const ArticleShareSection = ({ article }: ArticleShareSectionProps) => {
-  const articleUrl = `${process.env.NEXT_PUBLIC_APP_URL}/blog/${article.slug}`;
+  const articleUrl = `${process.env.NEXT_PUBLIC_APP_URL}/${article.slug}`;
   return (
     <div className="w-full flex flex-col items-start justify-start bg-white rounded-md p-4 shadow-sm transition mb-10">
-      <h1 className="text-2xl font-bold">Share this article</h1>
+      <h3 className="text-2xl font-bold">Share this article</h3>
       <SocialShare
         url={articleUrl}
         title={article.title}
