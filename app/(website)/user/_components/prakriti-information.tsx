@@ -2,7 +2,6 @@ import { PrakritiQuestionForm } from "@/components/user-personalization/prakriti
 import { useState, useEffect, useRef, createRef, RefObject } from "react";
 import { CSSTransition, TransitionGroup } from "react-transition-group";
 import { PrakritiQuestion, PrakritiQuestionOption } from "@prisma/client";
-import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { useCurrentUser } from "@/hooks/use-current-user";
 import { collectPersonalizationData } from "@/hooks/use-user-personalization";
@@ -20,20 +19,10 @@ interface PrakritiInformationProps {
   prakritiQuestions: PrakritiQuestionType[];
 }
 
-const getSavedStep = (): number => {
-  try {
-    const savedStep = localStorage.getItem("currentStep");
-    return savedStep ? JSON.parse(savedStep) : 1;
-  } catch (error) {
-    console.error("Error parsing saved step:", error);
-    return 1;
-  }
-};
-
 const PrakritiInformation: React.FC<PrakritiInformationProps> = ({
   prakritiQuestions,
 }) => {
-  const [step, setStep] = useState<number>(() => getSavedStep());
+  const [step, setStep] = useState<number>(1);
   const [direction, setDirection] = useState<"next" | "prev">("next");
   const [isFormValid, setIsFormValid] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -105,14 +94,15 @@ const PrakritiInformation: React.FC<PrakritiInformationProps> = ({
     // Navigate to meal plan page or perform other actions
     router.push("/meal-plan");
   };
+
   return (
     <>
       <div className="w-full flex flex-col  relative">
         <h2 className="text-xl text-start font-bold border-b-2 border-slate-200 pb-2 text-gray-700">
           Prakriti (Body type) Information
         </h2>
-        <div className="w-full flex flex-col items-center justify-center relative h-[300px] md:h-[300px] overflow-hidden">
-          <TransitionGroup className="w-full h-full relative overflow-hidden">
+        <div className="w-full md:w-[700px] flex flex-col items-center justify-center relative h-[300px] md:h-[300px]">
+          <TransitionGroup className="w-full h-full relative">
             {prakritiQuestions.map(
               (question, index) =>
                 step === 1 + index && (
@@ -164,7 +154,7 @@ const PrakritiInformation: React.FC<PrakritiInformationProps> = ({
                 size="main"
                 disabled={!isFormValid}
                 onClick={handleDoneButtonClick}
-                className="bg-gradient-to-r from-red-500 to-orange-500"
+                className="bg-websecondary"
               >
                 Done
               </Button>
@@ -174,7 +164,7 @@ const PrakritiInformation: React.FC<PrakritiInformationProps> = ({
                 size="main"
                 onClick={nextStep}
                 disabled={!isFormValid}
-                className="bg-gradient-to-r from-red-500 to-orange-500"
+                className="bg-websecondary"
               >
                 Next
               </Button>
