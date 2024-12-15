@@ -296,7 +296,7 @@ const HeightAndWeight = () => {
               <Button
                 type="submit"
                 disabled={isSubmitting || !isFormValid}
-                className="pt-2 bg-gradient-to-r from-red-500 to-orange-500 cursor-pointer"
+                className="pt-2 bg-websecondary text-white cursor-pointer"
               >
                 Update
               </Button>

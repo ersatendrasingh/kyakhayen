@@ -54,7 +54,6 @@ export const PrakritiQuestionForm = ({
 }: PrakritiQuestionFormProps) => {
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
-
   useEffect(() => {
     setIsFormValid(selectedOption !== null);
   }, [selectedOption, setIsFormValid]);
@@ -117,6 +116,7 @@ export const PrakritiQuestionForm = ({
   if (loading) {
     return <PersonalizationSkelton />;
   }
+
   return (
     <div>
       <h1 className="text-2xl xl:text-3xl mb-3 text-center font-semibold transition-all duration-1000 ease-in-out transform animate-slide-in text-websecondary">

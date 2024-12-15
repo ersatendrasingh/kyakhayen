@@ -236,7 +236,7 @@ const GeneralInformation = () => {
               <Button
                 type="submit"
                 disabled={isSubmitting || !isValid}
-                className="pt-2 bg-gradient-to-r from-red-500 to-orange-500 cursor-pointer"
+                className="pt-2 bg-websecondary text-white cursor-pointer"
               >
                 Update Profile
               </Button>

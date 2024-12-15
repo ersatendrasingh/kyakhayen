@@ -1,8 +1,8 @@
+import { MetadataRoute } from "next";
 import { getArticles } from "@/actions/get-articles";
 import { GetRecipes } from "@/actions/get-recipes";
-import { MetadataRoute } from "next";
 
-type changeFrequency =
+type ChangeFrequency =
   | "always"
   | "hourly"
   | "daily"
@@ -12,19 +12,72 @@ type changeFrequency =
   | "never";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const changeFrequency: changeFrequency = "daily";
+  const baseUrl =
+    process.env.NEXT_PUBLIC_APP_URL || "https://www.kyakhayen.com";
+  const changeFrequency: ChangeFrequency = "daily";
 
-  let recipes = await GetRecipes({});
-  let articles = await getArticles({});
+  const recipes = await GetRecipes({});
+  const articles = await getArticles({});
+
+  const staticRoutes = [
+    { url: "/", lastModified: "2024-12-14", changeFrequency: "daily" },
+    { url: "/recipes", lastModified: "2024-12-14", changeFrequency: "daily" },
+    { url: "/blog", lastModified: "2024-12-14", changeFrequency: "daily" },
+    {
+      url: "/about-us",
+      lastModified: "2024-12-14",
+      changeFrequency: "yearly",
+    },
+    {
+      url: "/contact-us",
+      lastModified: "2024-12-14",
+      changeFrequency: "yearly",
+    },
+    { url: "/meal-plan", lastModified: "2024-12-14", changeFrequency: "daily" },
+    {
+      url: "/subscription-plans",
+      lastModified: "2024-12-14",
+      changeFrequency: "monthly",
+    },
+    {
+      url: "/download-app",
+      lastModified: "2024-12-14",
+      changeFrequency: "yearly",
+    },
+    {
+      url: "/privacy-policy",
+      lastModified: "2024-12-14",
+      changeFrequency: "yearly",
+    },
+    {
+      url: "/auth/login",
+      lastModified: "2024-12-14",
+      changeFrequency: "yearly",
+    },
+    {
+      url: "/auth/register",
+      lastModified: "2024-12-14",
+      changeFrequency: "yearly",
+    },
+  ].map((route) => ({
+    url: `${baseUrl}${route.url}`,
+    lastModified: route.lastModified,
+    changeFrequency: route.changeFrequency as ChangeFrequency,
+  }));
 
   const recipesRoutes = recipes.map((recipe) => {
     const combinedSlug = recipe.metaSlug
       ? `${recipe.slug}-${recipe.metaSlug}`
       : recipe.slug;
+
+    const lastModifiedDate = new Date(recipe.updatedAt)
+      .toISOString()
+      .split("T")[0];
+
     return {
-      url: `${process.env.NEXT_PUBLIC_APP_URL}/${combinedSlug}`,
-      lastModified: recipe.updatedAt,
-      changeFrequency: changeFrequency,
+      url: `${baseUrl}/${combinedSlug}`,
+      lastModified: lastModifiedDate,
+      changeFrequency,
     };
   });
 
@@ -32,30 +85,17 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const combinedSlug = article.metaSlug
       ? `${article.slug}-${article.metaSlug}`
       : article.slug;
+
+    const lastModifiedDate = new Date(article.updatedAt)
+      .toISOString()
+      .split("T")[0];
+
     return {
-      url: `${process.env.NEXT_PUBLIC_APP_URL}/${combinedSlug}`,
-      lastModified: article.updatedAt,
-      changeFrequency: changeFrequency,
+      url: `${baseUrl}/${combinedSlug}`,
+      lastModified: lastModifiedDate,
+      changeFrequency,
     };
   });
 
-  const routes = [
-    "/",
-    "/recipes",
-    "/blog",
-    "/about-us",
-    "/contact-us",
-    "/meal-plan",
-    "/subscription-plans",
-    "/download-app",
-    "/privacy-policy",
-    "/auth/login",
-    "/auth/register",
-  ].map((route) => ({
-    url: `${process.env.NEXT_PUBLIC_APP_URL}${route}`,
-    lastModified: new Date().toISOString(),
-    changeFrequency: changeFrequency,
-  }));
-
-  return [...routes, ...recipesRoutes, ...articlesRoutes];
+  return [...staticRoutes, ...recipesRoutes, ...articlesRoutes];
 }
