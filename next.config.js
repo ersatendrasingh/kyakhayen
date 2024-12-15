@@ -29,30 +29,6 @@ const NextConfig = {
       },
     ];
   },
-  async headers() {
-    return [
-      {
-        // Apply to all static files in the "public" directory
-        source: "/(.*)", // Match all routes
-        headers: [
-          {
-            key: "Cache-Control",
-            value: "public, max-age=86400, immutable", // Cache for 24 hours (86400 seconds)
-          },
-        ],
-      },
-      {
-        // Optionally, you can add cache headers for API routes or specific paths
-        source: "/api/(.*)", // Example for API routes
-        headers: [
-          {
-            key: "Cache-Control",
-            value: "public, max-age=3600", // Cache API routes for 1 hour
-          },
-        ],
-      },
-    ];
-  },
   images: {
     domains: [
       "kyakhayen-dev.s3.ap-south-1.amazonaws.com",

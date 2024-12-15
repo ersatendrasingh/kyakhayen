@@ -4,6 +4,7 @@ import { cn } from "@/lib/utils";
 import Container from "@/components/container";
 
 import HomeSlideBanner from "@/components/sections/slider/home-slide-banner";
+import Image from "next/image";
 
 interface HeroBannerCardProps {
   banner: {
@@ -61,15 +62,20 @@ export default function HeroBannerCard({
         "w-full flex items-center justify-center overflow-hidden",
         className
       )}
-      style={{
-        backgroundImage: `url(${banner.image})`,
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-      }}
     >
       <Container>
         <div className="w-full flex flex-col items-center justify-center text-center">
           <div className="w-full h-full flex items-center justify-center">
+            <div className="relative w-full h-full">
+              <Image
+                src={banner.image} // Your banner image
+                alt="Banner Image"
+                layout="fill"
+                objectFit="cover"
+                objectPosition="center"
+                priority // Ensures the banner image is prioritized for faster LCP
+              />
+            </div>
             {renderBanner()}
           </div>
         </div>
