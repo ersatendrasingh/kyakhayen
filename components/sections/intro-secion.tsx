@@ -29,7 +29,9 @@ export const IntroSection = () => {
               </Button>
 
               <Button className="px-6 py-3 border-2 border-white text-white font-medium bg-transparent rounded-lg hover:bg-webprimary hover:text-white transition">
-                <Link href="/subscription-plans">Learn More</Link>
+                <Link href="/subscription-plans">
+                  View Our Subscriptions Plans
+                </Link>
               </Button>
             </div>
           </div>

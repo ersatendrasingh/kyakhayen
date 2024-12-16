@@ -66,16 +66,19 @@ export default function HeroBannerCard({
       <Container>
         <div className="w-full flex flex-col items-center justify-center text-center">
           <div className="w-full h-full flex items-center justify-center">
-            <div className="relative w-full h-full">
+            <div className="absolute w-full h-full">
               <Image
-                src={banner.image} // Your banner image
-                alt="Banner Image"
+                src={banner.image}
+                alt={banner.title || "Hero Banner"}
                 layout="fill"
                 objectFit="cover"
                 objectPosition="center"
-                priority // Ensures the banner image is prioritized for faster LCP
+                priority
+                quality={90}
+                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
               />
             </div>
+
             {renderBanner()}
           </div>
         </div>

@@ -128,7 +128,6 @@ const HomeBanner = ({
           foodPreferences={foodPreferences}
           prakritiQuestions={prakritiQuestions}
           genders={genders}
-          className="md:py-12 py-10"
         />
       )}
     </div>

@@ -38,6 +38,7 @@ import OverlayLoader from "@/components/loader/overlay-loader";
 import MealPlanLoader from "@/components/loader/meal-plan-loader";
 
 import { ProgressBar } from "@/components/sections/progress-bar";
+import Image from "next/image";
 interface PrakritiQuestionType extends PrakritiQuestion {
   options: PrakritiQuestionOption[];
 }
@@ -165,281 +166,287 @@ export default function PersonalizationForm({
   return (
     <div
       className={cn(
-        "w-full flex items-center justify-center overflow-hidden",
+        "w-full flex flex-col items-center justify-center overflow-hidden",
         className
       )}
-      style={{
-        backgroundImage: `url(${banner.image})`,
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-      }}
     >
-      {loading && <OverlayLoader isLoading={loading} />}
-      {mealPlanLoading && <MealPlanLoader isLoading={mealPlanLoading} />}
+      <div className="relative w-full py-12 flex-shrink-0">
+        <Image
+          src={banner.image}
+          alt="Personalization Banner"
+          layout="fill"
+          objectFit="cover"
+          objectPosition="center"
+          priority
+          quality={90} // Improves image optimization.
+        />
+        {loading && <OverlayLoader isLoading={loading} />}
+        {mealPlanLoading && <MealPlanLoader isLoading={mealPlanLoading} />}
 
-      <Container>
-        <div className="w-full justify-center h-[50px] items-center flex">
-          <ProgressBar step={step} totalSteps={stepCount} />
-        </div>
-        <div className="w-full flex flex-col items-center justify-center text-center ">
-          {/* Progress Bar */}
+        <Container>
+          <div className="abosolute w-full justify-center h-[50px] items-center flex">
+            <ProgressBar step={step} totalSteps={stepCount} />
+          </div>
+          <div className="w-full flex flex-col items-center justify-center text-center ">
+            {/* Progress Bar */}
 
-          <div className="w-full md:w-[700px] flex flex-col items-center justify-center relative h-[300px] md:h-[300px]">
-            <span className="text-sm md:text-md font-medium p-2   rounded-full text-black">
-              Personalize your experience by selecting your preferences
-            </span>
-            <TransitionGroup className="w-full h-full relative">
-              {step === 1 && (
-                <CSSTransition
-                  key="cuisines"
-                  nodeRef={cuisinesRef}
-                  timeout={500}
-                  classNames={
-                    direction === "next" ? "slide-next" : "slide-prev"
-                  }
-                  unmountOnExit
-                >
-                  <div
-                    ref={cuisinesRef}
-                    className="absolute w-full h-full flex items-center justify-center"
+            <div className="w-full md:w-[700px] flex flex-col items-center justify-center relative h-[300px] md:h-[300px]">
+              <span className="text-sm md:text-md font-medium p-2   rounded-full text-black">
+                Personalize your experience by selecting your preferences
+              </span>
+              <TransitionGroup className="w-full h-full relative">
+                {step === 1 && (
+                  <CSSTransition
+                    key="cuisines"
+                    nodeRef={cuisinesRef}
+                    timeout={500}
+                    classNames={
+                      direction === "next" ? "slide-next" : "slide-prev"
+                    }
+                    unmountOnExit
                   >
-                    <Cuisines
-                      cuisines={cuisines}
-                      title="What are your favourite cuisines?"
-                      setIsFormValid={setIsFormValid}
-                    />
-                  </div>
-                </CSSTransition>
-              )}
-              {step === 2 && (
-                <CSSTransition
-                  key="foodPreferences"
-                  nodeRef={foodPreferenceRef}
-                  timeout={500}
-                  classNames={
-                    direction === "next" ? "slide-next" : "slide-prev"
-                  }
-                  unmountOnExit
-                >
-                  <div
-                    ref={foodPreferenceRef}
-                    className="absolute w-full h-full flex items-center justify-center"
+                    <div
+                      ref={cuisinesRef}
+                      className="absolute w-full h-full flex items-center justify-center"
+                    >
+                      <Cuisines
+                        cuisines={cuisines}
+                        title="What are your favourite cuisines?"
+                        setIsFormValid={setIsFormValid}
+                      />
+                    </div>
+                  </CSSTransition>
+                )}
+                {step === 2 && (
+                  <CSSTransition
+                    key="foodPreferences"
+                    nodeRef={foodPreferenceRef}
+                    timeout={500}
+                    classNames={
+                      direction === "next" ? "slide-next" : "slide-prev"
+                    }
+                    unmountOnExit
                   >
-                    <FoodPreferences
-                      title="What are your favourite food preferences?"
-                      foodPreferences={foodPreferences}
-                      setIsFormValid={setIsFormValid}
-                    />
-                  </div>
-                </CSSTransition>
-              )}
+                    <div
+                      ref={foodPreferenceRef}
+                      className="absolute w-full h-full flex items-center justify-center"
+                    >
+                      <FoodPreferences
+                        title="What are your favourite food preferences?"
+                        foodPreferences={foodPreferences}
+                        setIsFormValid={setIsFormValid}
+                      />
+                    </div>
+                  </CSSTransition>
+                )}
 
-              {step === 3 && (
-                <CSSTransition
-                  key="healthGoals"
-                  nodeRef={healthGoalsRef}
-                  timeout={500}
-                  classNames={
-                    direction === "next" ? "slide-next" : "slide-prev"
-                  }
-                  unmountOnExit
-                >
-                  <div
-                    ref={healthGoalsRef}
-                    className="absolute w-full h-full flex items-center justify-center"
+                {step === 3 && (
+                  <CSSTransition
+                    key="healthGoals"
+                    nodeRef={healthGoalsRef}
+                    timeout={500}
+                    classNames={
+                      direction === "next" ? "slide-next" : "slide-prev"
+                    }
+                    unmountOnExit
                   >
-                    <HealthGoals
-                      title="What are your health goals?"
-                      healthGoals={healthGoals}
-                      setIsFormValid={setIsFormValid}
-                    />
-                  </div>
-                </CSSTransition>
-              )}
-              {step === 4 && (
-                <CSSTransition
-                  key="allergies"
-                  nodeRef={allergiesRef}
-                  timeout={500}
-                  classNames={
-                    direction === "next" ? "slide-next" : "slide-prev"
-                  }
-                  unmountOnExit
-                >
-                  <div
-                    ref={allergiesRef}
-                    className="absolute w-full h-full flex items-center justify-center"
+                    <div
+                      ref={healthGoalsRef}
+                      className="absolute w-full h-full flex items-center justify-center"
+                    >
+                      <HealthGoals
+                        title="What are your health goals?"
+                        healthGoals={healthGoals}
+                        setIsFormValid={setIsFormValid}
+                      />
+                    </div>
+                  </CSSTransition>
+                )}
+                {step === 4 && (
+                  <CSSTransition
+                    key="allergies"
+                    nodeRef={allergiesRef}
+                    timeout={500}
+                    classNames={
+                      direction === "next" ? "slide-next" : "slide-prev"
+                    }
+                    unmountOnExit
                   >
-                    <Allergies
-                      title="Do you have any food allergies?"
-                      allergies={allergies}
-                      setIsFormValid={setIsFormValid}
-                    />
-                  </div>
-                </CSSTransition>
-              )}
-              {step === 5 && (
-                <CSSTransition
-                  key="cookingSkills"
-                  nodeRef={cookingSkillsRef}
-                  timeout={500}
-                  classNames={
-                    direction === "next" ? "slide-next" : "slide-prev"
-                  }
-                  unmountOnExit
-                >
-                  <div
-                    ref={cookingSkillsRef}
-                    className="absolute w-full h-full flex items-center justify-center"
+                    <div
+                      ref={allergiesRef}
+                      className="absolute w-full h-full flex items-center justify-center"
+                    >
+                      <Allergies
+                        title="Do you have any food allergies?"
+                        allergies={allergies}
+                        setIsFormValid={setIsFormValid}
+                      />
+                    </div>
+                  </CSSTransition>
+                )}
+                {step === 5 && (
+                  <CSSTransition
+                    key="cookingSkills"
+                    nodeRef={cookingSkillsRef}
+                    timeout={500}
+                    classNames={
+                      direction === "next" ? "slide-next" : "slide-prev"
+                    }
+                    unmountOnExit
                   >
-                    <CookingSkills
-                      title="How would you describe your cooking skills?"
-                      cookingSkills={cookingSkills}
-                      setIsFormValid={setIsFormValid}
-                    />
-                  </div>
-                </CSSTransition>
-              )}
-              {step === 6 && (
-                <CSSTransition
-                  key="gender"
-                  nodeRef={genderRef}
-                  timeout={500}
-                  classNames={
-                    direction === "next" ? "slide-next" : "slide-prev"
-                  }
-                  unmountOnExit
-                >
-                  <div
-                    ref={genderRef}
-                    className="absolute w-full h-full flex items-center justify-center"
+                    <div
+                      ref={cookingSkillsRef}
+                      className="absolute w-full h-full flex items-center justify-center"
+                    >
+                      <CookingSkills
+                        title="How would you describe your cooking skills?"
+                        cookingSkills={cookingSkills}
+                        setIsFormValid={setIsFormValid}
+                      />
+                    </div>
+                  </CSSTransition>
+                )}
+                {step === 6 && (
+                  <CSSTransition
+                    key="gender"
+                    nodeRef={genderRef}
+                    timeout={500}
+                    classNames={
+                      direction === "next" ? "slide-next" : "slide-prev"
+                    }
+                    unmountOnExit
                   >
-                    <Gender
-                      title="What is your gender?"
-                      genders={genders}
-                      setIsFormValid={setIsFormValid}
-                    />
-                  </div>
-                </CSSTransition>
-              )}
-              {step === 7 && (
-                <CSSTransition
-                  key="dateOfBirth"
-                  nodeRef={dateOfBirthRef}
-                  timeout={500}
-                  classNames={
-                    direction === "next" ? "slide-next" : "slide-prev"
-                  }
-                  unmountOnExit
-                >
-                  <div
-                    ref={dateOfBirthRef}
-                    className="absolute w-full h-full flex items-center justify-center"
+                    <div
+                      ref={genderRef}
+                      className="absolute w-full h-full flex items-center justify-center"
+                    >
+                      <Gender
+                        title="What is your gender?"
+                        genders={genders}
+                        setIsFormValid={setIsFormValid}
+                      />
+                    </div>
+                  </CSSTransition>
+                )}
+                {step === 7 && (
+                  <CSSTransition
+                    key="dateOfBirth"
+                    nodeRef={dateOfBirthRef}
+                    timeout={500}
+                    classNames={
+                      direction === "next" ? "slide-next" : "slide-prev"
+                    }
+                    unmountOnExit
                   >
-                    <DateOfBirth
-                      title="What is your date of birth?"
-                      setIsFormValid={setIsFormValid}
-                    />
-                  </div>
-                </CSSTransition>
-              )}
-              {step === 8 && (
-                <CSSTransition
-                  key="heightWeight"
-                  nodeRef={heightWeightRef}
-                  timeout={500}
-                  classNames={
-                    direction === "next" ? "slide-next" : "slide-prev"
-                  }
-                  unmountOnExit
-                >
-                  <div
-                    ref={heightWeightRef}
-                    className="absolute w-full h-full flex items-center justify-center"
+                    <div
+                      ref={dateOfBirthRef}
+                      className="absolute w-full h-full flex items-center justify-center"
+                    >
+                      <DateOfBirth
+                        title="What is your date of birth?"
+                        setIsFormValid={setIsFormValid}
+                      />
+                    </div>
+                  </CSSTransition>
+                )}
+                {step === 8 && (
+                  <CSSTransition
+                    key="heightWeight"
+                    nodeRef={heightWeightRef}
+                    timeout={500}
+                    classNames={
+                      direction === "next" ? "slide-next" : "slide-prev"
+                    }
+                    unmountOnExit
                   >
-                    <HeightWeight
-                      title="What is your height and weight?"
-                      setIsFormValid={setIsFormValid}
-                    />
-                  </div>
-                </CSSTransition>
-              )}
+                    <div
+                      ref={heightWeightRef}
+                      className="absolute w-full h-full flex items-center justify-center"
+                    >
+                      <HeightWeight
+                        title="What is your height and weight?"
+                        setIsFormValid={setIsFormValid}
+                      />
+                    </div>
+                  </CSSTransition>
+                )}
 
-              {step > 8 &&
-                prakritiQuestions.length > 0 &&
-                prakritiQuestions.map(
-                  (question, index) =>
-                    step === 9 + index && (
-                      <CSSTransition
-                        key={`prakriti-${index}`}
-                        nodeRef={
-                          dynamicRefs.current[
-                            index
-                          ] as RefObject<HTMLDivElement>
-                        }
-                        timeout={500}
-                        classNames={
-                          direction === "next" ? "slide-next" : "slide-prev"
-                        }
-                        unmountOnExit
-                      >
-                        <div
-                          ref={
+                {step > 8 &&
+                  prakritiQuestions.length > 0 &&
+                  prakritiQuestions.map(
+                    (question, index) =>
+                      step === 9 + index && (
+                        <CSSTransition
+                          key={`prakriti-${index}`}
+                          nodeRef={
                             dynamicRefs.current[
                               index
                             ] as RefObject<HTMLDivElement>
                           }
-                          className="absolute w-full h-full flex items-center justify-center"
+                          timeout={500}
+                          classNames={
+                            direction === "next" ? "slide-next" : "slide-prev"
+                          }
+                          unmountOnExit
                         >
-                          <PrakritiQuestionForm
-                            title={question.question}
-                            options={question.options}
-                            questionId={question.id}
-                            setIsFormValid={setIsFormValid}
-                          />
-                        </div>
-                      </CSSTransition>
-                    )
-                )}
-            </TransitionGroup>
+                          <div
+                            ref={
+                              dynamicRefs.current[
+                                index
+                              ] as RefObject<HTMLDivElement>
+                            }
+                            className="absolute w-full h-full flex items-center justify-center"
+                          >
+                            <PrakritiQuestionForm
+                              title={question.question}
+                              options={question.options}
+                              questionId={question.id}
+                              setIsFormValid={setIsFormValid}
+                            />
+                          </div>
+                        </CSSTransition>
+                      )
+                  )}
+              </TransitionGroup>
+            </div>
+            <div className="w-full flex items-center justify-center mt-5 space-x-4 z-10">
+              {loading ? (
+                <>
+                  <Skeleton className="h-10 w-32 bg-red-100 rounded-full" />
+                  <Skeleton className="h-10 w-28 bg-red-100 rounded-full" />
+                </>
+              ) : (
+                <>
+                  {step > 1 && (
+                    <Button variant="outline" size="main" onClick={prevStep}>
+                      Back
+                    </Button>
+                  )}
+                  {isAllStepsCompleted ? (
+                    <Button
+                      variant="main"
+                      size="main"
+                      disabled={!isFormValid}
+                      onClick={handleDoneButtonClick}
+                    >
+                      Done
+                    </Button>
+                  ) : (
+                    <Button
+                      variant="main"
+                      size="main"
+                      onClick={nextStep}
+                      disabled={!isFormValid}
+                    >
+                      Next
+                    </Button>
+                  )}
+                </>
+              )}
+            </div>
           </div>
-          <div className="w-full flex items-center justify-center mt-5 space-x-4">
-            {loading ? (
-              <>
-                <Skeleton className="h-10 w-32 bg-red-100 rounded-full" />
-                <Skeleton className="h-10 w-28 bg-red-100 rounded-full" />
-              </>
-            ) : (
-              <>
-                {step > 1 && (
-                  <Button variant="outline" size="main" onClick={prevStep}>
-                    Back
-                  </Button>
-                )}
-                {isAllStepsCompleted ? (
-                  <Button
-                    variant="main"
-                    size="main"
-                    disabled={!isFormValid}
-                    onClick={handleDoneButtonClick}
-                  >
-                    Done
-                  </Button>
-                ) : (
-                  <Button
-                    variant="main"
-                    size="main"
-                    onClick={nextStep}
-                    disabled={!isFormValid}
-                  >
-                    Next
-                  </Button>
-                )}
-              </>
-            )}
-          </div>
-        </div>
-      </Container>
+        </Container>
+      </div>
     </div>
   );
 }
