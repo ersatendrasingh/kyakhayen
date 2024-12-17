@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { GoogleAnalytics } from "@next/third-parties/google";
 import { GoogleTagManager } from "@next/third-parties/google";
 import { SessionProvider } from "next-auth/react";
 import { Poppins } from "next/font/google";
@@ -81,7 +80,6 @@ export default async function RootLayout({
   return (
     <SessionProvider session={session}>
       <html lang="en">
-        <GoogleAnalytics gaId={process.env.GOOGLE_ANALYTICS_ID as string} />
         <GoogleTagManager gtmId={process.env.GOOGLE_TAG_MANAGER_ID as string} />
         <body className={`${poppins.variable}`} suppressHydrationWarning={true}>
           <ConfettiProvider />
