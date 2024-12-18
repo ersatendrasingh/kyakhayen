@@ -22,7 +22,7 @@ const EmptyCart = () => {
           Explore our subscription plans to find the best option for you.
         </p>
         <Link href="/subscription-plans">
-          <Button className="bg-gradient-to-r from-red-500 to-orange-500 text-white hover:bg-gradient-to-r hover:from-red-600 hover:to-orange-600 text-md font-bold px-6 py-3 rounded-md">
+          <Button className="bg-websecondary text-white hover:bg-black text-md font-bold px-6 py-3 rounded-md">
             Join Kya Khayen?
           </Button>
         </Link>

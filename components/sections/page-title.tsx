@@ -14,14 +14,14 @@ export default function PageTitle({ title, className }: PageTitleProps) {
   return (
     <div
       className={cn(
-        "w-full flex items-center bg-gradient-to-r from-red-500 to-orange-500 text-white bg-opacity-25 mt-2",
+        "w-full flex items-center justify-center bg-gradient-to-r from-red-600 to-red-700 text-white bg-opacity-25 mt-2 py-4",
         className
       )}
     >
       <Container>
-        <div className="flex items-center  justify-center">
+        <div className="flex items-center justify-center">
           <div className=" text-center w-full">
-            <h2 className="text-2xl lg:text-3xl xl:text-5xl mb-6 font-bold transition-all duration-1000 ease-in-out transform animate-slide-in">
+            <h2 className="text-2xl lg:text-3xl xl:text-4xl mb-2 transition-all duration-1000 ease-in-out transform animate-slide-in">
               {title}
             </h2>
             <PageBreadcum currentPage={title} />

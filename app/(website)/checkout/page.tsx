@@ -23,7 +23,7 @@ const CheckoutPage = () => {
 
   return (
     <div className="w-full bg-slate-100 pb-20">
-      <PageTitle title="Checkout" className="py-2" />
+      <PageTitle title="Checkout" />
       <Container>
         <div className="w-full flex">
           <CheckoutForm />
