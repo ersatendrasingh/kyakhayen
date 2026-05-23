@@ -1,25 +1,19 @@
-import { DataTable } from "./_components/data-table";
-import { columns } from "./_components/columns";
+import { RecipeCategoriesDashboard } from "@/components/admin/recipe-categories/recipe-categories-dashboard";
 import { db } from "@/lib/db";
-import RecipeCategoryForm from "./_components/recipe-category-form";
+
 const CategoriesPage = async () => {
   const recipeCategories = await db.recipeCategories.findMany({
-    orderBy: {
-      name: "asc",
+    orderBy: [{ position: "asc" }, { name: "asc" }],
+    include: {
+      _count: {
+        select: {
+          recipe: true,
+        },
+      },
     },
   });
-  return (
-    <div className="p-6">
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <RecipeCategoryForm />
-        </div>
-        <div>
-          <DataTable columns={columns} data={recipeCategories} />
-        </div>
-      </div>
-    </div>
-  );
+
+  return <RecipeCategoriesDashboard categories={recipeCategories} />;
 };
 
 export default CategoriesPage;

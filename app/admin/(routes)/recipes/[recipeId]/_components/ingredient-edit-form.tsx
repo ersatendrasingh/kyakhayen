@@ -8,7 +8,7 @@ import { Form, FormControl, FormField, FormItem } from "@/components/ui/form";
 import Select from "react-select";
 import { Input } from "@/components/ui/input";
 import axios from "axios";
-import { toast } from "react-toastify";
+import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 interface IngredientEditFormProps {
   ingredient: RecipeIngredients;
@@ -58,8 +58,7 @@ const IngredientEditForm = ({
         values
       );
       toast.success("Recipe ingredient updated successfully", {
-        position: "top-center",
-        autoClose: 5000,
+        duration: 5000,
       });
 
       onSave({ ...ingredient, ...values });
@@ -67,8 +66,7 @@ const IngredientEditForm = ({
       router.refresh();
     } catch {
       toast.error("Something went wrong while updating recipe ingredient", {
-        position: "top-center",
-        autoClose: 5000,
+        duration: 5000,
       });
     }
   };

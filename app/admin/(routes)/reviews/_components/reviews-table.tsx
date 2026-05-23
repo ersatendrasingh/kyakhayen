@@ -18,43 +18,18 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import axios from "axios";
-import { toast } from "react-toastify";
+import { toast } from "sonner";
 import { DataTable } from "./data-table";
 import { useRouter } from "next/navigation";
 import { ConfirmModal } from "@/components/modals/confirm-modal";
 import { useState } from "react";
 import { CommentDeleteConfirmModal } from "@/components/modals/comment-delete-confirm-modal";
 import { ReviewWithRelations } from "@/types/review";
-import { FaStar } from "react-icons/fa";
-import dynamic from "next/dynamic";
+import StarRating from "@/components/reviews/star-rating";
 
 interface ReviewsTableProps {
   reviews: ReviewWithRelations[];
 }
-const StarRatingSkeleton = () => (
-  <div className="flex space-x-2 items-center">
-    <div className="animate-pulse">
-      <FaStar className="text-gray-300 w-6 h-6" />
-    </div>
-    <div className="animate-pulse">
-      <FaStar className="text-gray-300 w-6 h-6" />
-    </div>
-    <div className="animate-pulse">
-      <FaStar className="text-gray-300 w-6 h-6" />
-    </div>
-    <div className="animate-pulse">
-      <FaStar className="text-gray-300 w-6 h-6" />
-    </div>
-    <div className="animate-pulse">
-      <FaStar className="text-gray-300 w-6 h-6" />
-    </div>
-  </div>
-);
-
-const DynamicStarRatings = dynamic(() => import("react-star-ratings"), {
-  ssr: false,
-  loading: () => <StarRatingSkeleton />,
-});
 const ReviewsTable = ({ reviews }: ReviewsTableProps) => {
   const [reviewToDelete, setReviewToDelete] = useState<string | null>(null);
   const [postId, setPostId] = useState<string | null>(null);
@@ -66,26 +41,22 @@ const ReviewsTable = ({ reviews }: ReviewsTableProps) => {
       const response = await axios.post(`/api/reviews/${postId}/${id}/approve`);
       if (response.status === 200) {
         toast.success("Review approved successfully", {
-          position: "top-center",
-          autoClose: 5000,
+          duration: 5000,
         });
         router.refresh();
       } else {
         toast.error(response.data, {
-          position: "top-center",
-          autoClose: 5000,
+          duration: 5000,
         });
       }
     } catch (error: any) {
       if (error.response && error.response.status === 409) {
         toast.error("Review already approved", {
-          position: "top-center",
-          autoClose: 5000,
+          duration: 5000,
         });
       } else {
         toast.error("An error occurred while approving the review", {
-          position: "top-center",
-          autoClose: 5000,
+          duration: 5000,
         });
       }
     }
@@ -98,26 +69,22 @@ const ReviewsTable = ({ reviews }: ReviewsTableProps) => {
       );
       if (response.status === 200) {
         toast.success("Review unapproved successfully", {
-          position: "top-center",
-          autoClose: 5000,
+          duration: 5000,
         });
         router.refresh();
       } else {
         toast.error("Something went wrong", {
-          position: "top-center",
-          autoClose: 5000,
+          duration: 5000,
         });
       }
     } catch (error: any) {
       if (error.response && error.response.status === 409) {
         toast.error("Review already unapproved", {
-          position: "top-center",
-          autoClose: 5000,
+          duration: 5000,
         });
       } else {
         toast.error("An error occurred while unapproving the review", {
-          position: "top-center",
-          autoClose: 5000,
+          duration: 5000,
         });
       }
     }
@@ -130,20 +97,17 @@ const ReviewsTable = ({ reviews }: ReviewsTableProps) => {
       );
       if (response.status === 200) {
         toast.success("Review deleted successfully", {
-          position: "top-center",
-          autoClose: 5000,
+          duration: 5000,
         });
         router.refresh();
       } else {
         toast.error("Something went wrong", {
-          position: "top-center",
-          autoClose: 5000,
+          duration: 5000,
         });
       }
     } catch (error: any) {
       toast.error("An error occurred while deleting the review", {
-        position: "top-center",
-        autoClose: 5000,
+        duration: 5000,
       });
     }
   };
@@ -205,13 +169,10 @@ const ReviewsTable = ({ reviews }: ReviewsTableProps) => {
           <span className="text-md font-bold mr-2">
             {row.getValue("rating")}
           </span>
-          <DynamicStarRatings
-            rating={row.getValue("rating")}
-            starRatedColor="red"
-            starEmptyColor="gray"
-            numberOfStars={5}
-            starDimension="20px"
-            starSpacing="1px"
+          <StarRating
+            value={Number(row.getValue("rating"))}
+            size={20}
+            activeClassName="fill-red-600 text-red-600"
           />
         </div>
       ),

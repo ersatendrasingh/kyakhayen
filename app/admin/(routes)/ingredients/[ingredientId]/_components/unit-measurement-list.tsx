@@ -15,7 +15,7 @@ import { cn } from "@/lib/utils";
 // import IngredientEditForm from "./ingredient-edit-form";
 import { ConfirmModal } from "@/components/modals/confirm-modal";
 import axios from "axios";
-import { toast } from "react-toastify";
+import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 type MeasurementType = IngredientUnitMeasurements & {
   unit?: Units;
@@ -60,15 +60,13 @@ const UnitMeasurementList = ({
         `/api/ingredients/${ingredientId}/unit-measurements/${id}`
       );
       toast.success("Measurement deleted successfully", {
-        position: "top-center",
-        autoClose: 5000,
+        duration: 5000,
       });
 
       router.refresh();
     } catch {
       toast.error("Something went wrong while deleting measurement", {
-        position: "top-center",
-        autoClose: 5000,
+        duration: 5000,
       });
     } finally {
       setDeletingId(null);

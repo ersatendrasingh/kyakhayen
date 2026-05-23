@@ -4,7 +4,7 @@ import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { useRouter } from "next/navigation";
-import { toast } from "react-toastify";
+import { toast } from "sonner";
 import { Loader2, Pencil, PlusCircleIcon } from "lucide-react";
 import { useState } from "react";
 import axios from "axios";
@@ -48,16 +48,14 @@ export const MethodsForm = ({ initialData, recipeId }: MethodsFormProps) => {
     try {
       await axios.post(`/api/recipes/${recipeId}/methods`, values);
       toast.success("Recipe method created successfully", {
-        position: "top-center",
-        autoClose: 5000,
+        duration: 5000,
       });
       form.reset();
       toggleCreate();
       router.refresh();
     } catch {
       toast.error("Something went wrong while creating recipe method", {
-        position: "top-center",
-        autoClose: 5000,
+        duration: 5000,
       });
     }
   };
@@ -70,14 +68,12 @@ export const MethodsForm = ({ initialData, recipeId }: MethodsFormProps) => {
         list: updateData,
       });
       toast.success("Recipe methods reordered successfully", {
-        position: "top-center",
-        autoClose: 5000,
+        duration: 5000,
       });
       router.refresh();
     } catch {
       toast.error("Something went wrong while reordering recipe methods", {
-        position: "top-center",
-        autoClose: 5000,
+        duration: 5000,
       });
     } finally {
       setIsUpdating(false);

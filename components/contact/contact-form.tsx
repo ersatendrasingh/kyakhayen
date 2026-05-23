@@ -25,7 +25,7 @@ import { useUserCountry } from "@/context/user-country-context";
 import { useCallback, useEffect, useState } from "react";
 import { City, Country, State } from "@/types/country-state-city";
 import axios from "axios";
-import { toast } from "react-toastify";
+import { toast } from "sonner";
 
 import { Button } from "../ui/button";
 
@@ -77,6 +77,27 @@ const ContactForm = () => {
     setSelectedCountryCode,
   ]);
 
+  async function fetchStates(countryId: number) {
+    try {
+      const response = await axios.post("/api/states", { countryId });
+      const statesData = response.data;
+      setStates(statesData);
+      setSelectedState(null);
+    } catch (error: any) {
+      throw new Error("Error fetching states:", error);
+    }
+  }
+
+  async function fetchCities(stateId: number) {
+    try {
+      const response = await axios.post("/api/cities", { stateId });
+      const citiesData = response.data;
+      setCities(citiesData);
+    } catch (error: any) {
+      throw new Error("Error fetching cities:", error);
+    }
+  }
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -112,25 +133,6 @@ const ContactForm = () => {
     fetchStates(country.id);
   };
 
-  const fetchStates = async (countryId: number) => {
-    try {
-      const response = await axios.post("/api/states", { countryId });
-      const statesData = response.data;
-      setStates(statesData);
-      setSelectedState(null);
-    } catch (error: any) {
-      throw new Error("Error fetching states:", error);
-    }
-  };
-  const fetchCities = async (stateId: number) => {
-    try {
-      const response = await axios.post("/api/cities", { stateId });
-      const citiesData = response.data;
-      setCities(citiesData);
-    } catch (error: any) {
-      throw new Error("Error fetching cities:", error);
-    }
-  };
   const handleStateChange = (state: State) => {
     setSelectedState(state);
     fetchCities(state.id);
@@ -159,22 +161,19 @@ const ContactForm = () => {
         setSelectedCity(null);
 
         toast.success(response.data, {
-          position: "top-center",
-          autoClose: 5000,
+          duration: 5000,
         });
       }
     } catch (error: any) {
       if (axios.isAxiosError(error)) {
         console.error("Axios Error:", error.response?.data || error.message);
         toast.error(error.response?.data || error.message, {
-          position: "top-center",
-          autoClose: 5000,
+          duration: 5000,
         });
       } else {
         console.error("Error:", error.message);
         toast.error(error.message, {
-          position: "top-center",
-          autoClose: 5000,
+          duration: 5000,
         });
       }
     }

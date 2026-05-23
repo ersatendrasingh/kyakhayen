@@ -4,7 +4,7 @@ import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { useRouter } from "next/navigation";
-import { toast } from "react-toastify";
+import { toast } from "sonner";
 import { FaCloudSunRain } from "react-icons/fa";
 import { Pencil, PlusCircleIcon, Signal } from "lucide-react";
 import { useState } from "react";
@@ -56,15 +56,13 @@ export const SeasonsForm = ({
     try {
       await axios.patch(`/api/recipes/${recipeId}`, values);
       toast.success("Recipe season updated successfully", {
-        position: "top-center",
-        autoClose: 5000,
+        duration: 5000,
       });
       toggleEdit();
       router.refresh();
     } catch {
       toast.error("Something went wrong while updating recipe season", {
-        position: "top-center",
-        autoClose: 5000,
+        duration: 5000,
       });
     }
   };

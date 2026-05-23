@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { toast } from "react-toastify";
+import { toast } from "sonner";
 import { FaReply, FaSave, FaTimes } from "react-icons/fa";
 import {
   AlarmClock,
@@ -10,8 +10,6 @@ import {
   Trash,
   Loader2,
 } from "lucide-react";
-import Linkify from "react-linkify";
-import linkify from "linkify-it";
 import axios from "axios";
 import Image from "next/image";
 
@@ -29,6 +27,7 @@ import {
 import { CommentDeleteConfirmModal } from "@/components/modals/comment-delete-confirm-modal";
 import LikeButton from "@/components/comments/like-button";
 import { useCurrentUser } from "@/hooks/use-current-user";
+import LinkedText from "@/components/linked-text";
 
 interface CommentsListProps {
   postId?: string;
@@ -55,11 +54,7 @@ const CommentsList = ({
 
   const user = useCurrentUser();
 
-  useEffect(() => {
-    fetchUserAvatars(comments);
-  }, [comments]);
-
-  const fetchUserAvatars = async (comments: CommentWithRelations[]) => {
+  async function fetchUserAvatars(comments: CommentWithRelations[]) {
     const userIds: string[] = comments
       .filter((comment) => comment.userId)
       .map((comment) => comment.userId!);
@@ -77,7 +72,11 @@ const CommentsList = ({
     } catch (error) {
       console.error("Failed to fetch user avatars:", error);
     }
-  };
+  }
+
+  useEffect(() => {
+    fetchUserAvatars(comments);
+  }, [comments]);
 
   const handleReplyClick = (commentId: string) => {
     setReplyingTo(commentId === replyingTo ? null : commentId);
@@ -113,14 +112,12 @@ const CommentsList = ({
       );
       if (response.status === 200) {
         toast.success("Comment updated successfully!", {
-          position: "top-center",
-          autoClose: 5000,
+          duration: 5000,
         });
         onCommentAdded(); // Refresh the comments list
       } else {
         toast.error("Failed to update comment", {
-          position: "top-center",
-          autoClose: 5000,
+          duration: 5000,
         });
         throw new Error("Failed to update comment");
       }
@@ -141,14 +138,12 @@ const CommentsList = ({
       );
       if (response.status === 200) {
         toast.success("Comment deleted successfully!", {
-          position: "top-center",
-          autoClose: 5000,
+          duration: 5000,
         });
         onCommentAdded(); // Refresh the comments list
       } else {
         toast.error("Failed to delete comment", {
-          position: "top-center",
-          autoClose: 5000,
+          duration: 5000,
         });
         throw new Error("Failed to delete comment");
       }
@@ -269,22 +264,7 @@ const CommentsList = ({
                   </div>
                 </div>
               ) : (
-                <Linkify
-                  componentDecorator={(decoratedHref, decoratedText, key) => (
-                    <a
-                      href={decoratedHref}
-                      key={key}
-                      className="text-red-600 hover:text-webprimary underline break-words"
-                      style={{ wordBreak: "break-word" }}
-                    >
-                      {decoratedText}
-                    </a>
-                  )}
-                >
-                  <div className="w-full break-words whitespace-normal">
-                    {comment.content}
-                  </div>
-                </Linkify>
+                <LinkedText text={comment.content} className="w-full" />
               )}
 
               {comment.isPublished ? null : (

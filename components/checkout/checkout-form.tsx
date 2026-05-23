@@ -9,7 +9,7 @@ import { useForm, FormProvider } from "react-hook-form";
 import { checkoutSchema } from "@/schemas";
 import { useCurrentUser } from "@/hooks/use-current-user";
 import axios from "axios";
-import { toast } from "react-toastify";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { FaArrowRight } from "react-icons/fa";
 import { useRouter } from "next/navigation";
@@ -233,7 +233,7 @@ const CheckoutForm = () => {
         const data = response.data;
 
         var options = {
-          key: process.env.RAZORPAY_KEY,
+          key: process.env.NEXT_PUBLIC_RAZORPAY_KEY,
           name: "Kya Khayen",
           currency: data.currency,
           amount: data.amount,
@@ -263,8 +263,7 @@ const CheckoutForm = () => {
                 values.phoneNumber
               );
               toast.error("Payment Cancelled", {
-                position: "top-center",
-                autoClose: 5000,
+                duration: 5000,
               });
             } else if (
               response.error &&
@@ -279,8 +278,7 @@ const CheckoutForm = () => {
                 values.phoneNumber
               );
               toast.error("Payment failed", {
-                position: "top-center",
-                autoClose: 5000,
+                duration: 5000,
               });
             } else if (response.razorpay_payment_id) {
               emptyCart();
@@ -294,8 +292,7 @@ const CheckoutForm = () => {
                 values.phoneNumber
               );
               toast.error("Payment cancelled", {
-                position: "top-center",
-                autoClose: 5000,
+                duration: 5000,
               });
             }
           },
@@ -309,8 +306,7 @@ const CheckoutForm = () => {
                 values.phoneNumber
               );
               toast.error("Payment Cancelled", {
-                position: "top-center",
-                autoClose: 5000,
+                duration: 5000,
               });
             },
           },
@@ -325,8 +321,7 @@ const CheckoutForm = () => {
       }
     } catch {
       toast.error("Something went wrong while creating order", {
-        position: "top-center",
-        autoClose: 5000,
+        duration: 5000,
       });
     }
   };

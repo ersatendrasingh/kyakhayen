@@ -6,7 +6,7 @@ import { useForm } from "react-hook-form";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import axios from "axios";
-import { toast } from "react-toastify";
+import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -37,13 +37,11 @@ const CouponCreatePage = () => {
       const response = await axios.post("/api/coupons", values);
       router.push(`/admin/coupons/${response.data.id}`);
       toast.success("Coupon created successfully", {
-        position: "top-center",
-        autoClose: 5000,
+        duration: 5000,
       });
     } catch {
       toast.error("Something went wrong while creating coupon", {
-        position: "top-center",
-        autoClose: 5000,
+        duration: 5000,
       });
     }
   };

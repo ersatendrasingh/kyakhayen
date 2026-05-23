@@ -1,14 +1,23 @@
 import { NextResponse } from "next/server";
 
 import { db } from "@/lib/db";
-import { deleteFolderFromS3, deleteImageFromS3 } from "@/lib/s3utils";
+import {
+  deleteFolderFromS3,
+  deleteImageFromS3,
+  getStorageKeyFromUrl,
+  getVerifiedPublicMediaKey,
+} from "@/lib/s3utils";
 import { currentUser } from "@/lib/auth";
 import { slugify } from "@/lib/slugify";
 
-export async function DELETE(
-  req: Request,
-  { params }: { params: { nutrientId: string } }
-) {
+type UpdateNutrientBody = {
+  title?: string;
+  imageUrl?: string | null;
+  isPublished?: boolean;
+};
+
+export async function DELETE(_req: Request, props: { params: Promise<{ nutrientId: string }> }) {
+  const params = await props.params;
   try {
     const user = await currentUser();
     if (!user || user.role !== "ADMIN") {
@@ -17,61 +26,101 @@ export async function DELETE(
     const { nutrientId } = params;
 
     const nutrient = await db.nutrient.findUnique({
-      where: {
-        id: nutrientId,
+      where: { id: nutrientId },
+      include: {
+        _count: {
+          select: { recipeNutrient: true },
+        },
       },
     });
 
     if (!nutrient) {
       return NextResponse.json("Nutrient not found", { status: 404 });
     }
-    if (nutrient.imageUrl) {
-      const key = nutrient.imageUrl.split(
-        `${process.env.AWS_BUCKET_NAME as string}.s3.${
-          process.env.AWS_REGION as string
-        }.amazonaws.com/`
-      )[1];
-      await deleteImageFromS3(key);
+    if (nutrient._count.recipeNutrient > 0) {
+      return NextResponse.json("Nutrient is linked to recipes", { status: 409 });
     }
-    await deleteFolderFromS3(nutrientId);
 
     const deletedNutrient = await db.nutrient.delete({
-      where: {
-        id: nutrientId,
-      },
+      where: { id: nutrientId },
     });
+
+    try {
+      await deleteFolderFromS3(`nutrients/${nutrientId}`);
+    } catch (error) {
+      console.error("[NUTRIENT_MEDIA_CLEANUP]", error);
+    }
+
     return NextResponse.json(deletedNutrient, { status: 200 });
   } catch (error) {
     console.log("[NUTRIENT_ID_DELETE]", error);
     return NextResponse.json("Internal Server Error", { status: 500 });
   }
 }
-export async function PATCH(
-  req: Request,
-  { params }: { params: { nutrientId: string } }
-) {
+export async function PATCH(req: Request, props: { params: Promise<{ nutrientId: string }> }) {
+  const params = await props.params;
   try {
     const user = await currentUser();
     if (!user || user.role !== "ADMIN") {
       return NextResponse.json("Unauthorized", { status: 401 });
     }
     const { nutrientId } = params;
-    const { title, ...values } = await req.json();
-    let slug: string | undefined;
-    if (title) {
-      slug = slugify(title);
+    const { title, imageUrl, isPublished } = (await req.json()) as UpdateNutrientBody;
+
+    if (title === undefined && imageUrl === undefined && isPublished === undefined) {
+      return NextResponse.json("No nutrient changes supplied", { status: 400 });
+    }
+
+    const normalizedTitle = title?.trim();
+    if (title !== undefined && !normalizedTitle) {
+      return NextResponse.json("Nutrient title is required", { status: 400 });
+    }
+    if (isPublished !== undefined && typeof isPublished !== "boolean") {
+      return NextResponse.json("Invalid published state", { status: 400 });
+    }
+
+    const currentNutrient = await db.nutrient.findUnique({
+      where: { id: nutrientId },
+    });
+
+    if (!currentNutrient) {
+      return NextResponse.json("Nutrient not found", { status: 404 });
+    }
+
+    const normalizedImageUrl =
+      imageUrl === undefined ? undefined : imageUrl?.trim() || null;
+    if (normalizedImageUrl) {
+      try {
+        getVerifiedPublicMediaKey(normalizedImageUrl);
+      } catch {
+        return NextResponse.json("Invalid nutrient image URL", { status: 400 });
+      }
     }
 
     const nutrient = await db.nutrient.update({
-      where: {
-        id: nutrientId,
-      },
+      where: { id: nutrientId },
       data: {
-        ...(title && { title }),
-        ...(slug && { slug }),
-        ...values,
+        ...(normalizedTitle && {
+          title: normalizedTitle,
+          slug: slugify(normalizedTitle),
+        }),
+        ...(imageUrl !== undefined && { imageUrl: normalizedImageUrl }),
+        ...(isPublished !== undefined && { isPublished }),
       },
     });
+
+    if (
+      normalizedImageUrl !== undefined &&
+      currentNutrient.imageUrl &&
+      currentNutrient.imageUrl !== normalizedImageUrl
+    ) {
+      try {
+        await deleteImageFromS3(getStorageKeyFromUrl(currentNutrient.imageUrl));
+      } catch (error) {
+        console.error("[NUTRIENT_IMAGE_REPLACEMENT_CLEANUP]", error);
+      }
+    }
+
     return NextResponse.json(nutrient, { status: 200 });
   } catch (error) {
     console.log("[NUTRIENTID]", error);

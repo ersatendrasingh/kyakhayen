@@ -1,14 +1,16 @@
 import { NextResponse } from "next/server";
 
 import { db } from "@/lib/db";
-import { deleteFolderFromS3, deleteImageFromS3 } from "@/lib/s3utils";
+import {
+  deleteFolderFromS3,
+  deleteImageFromS3,
+  getStorageKeyFromUrl,
+} from "@/lib/s3utils";
 import { currentUser } from "@/lib/auth";
 import { slugify } from "@/lib/slugify";
 
-export async function DELETE(
-  req: Request,
-  { params }: { params: { recipeId: string } }
-) {
+export async function DELETE(req: Request, props: { params: Promise<{ recipeId: string }> }) {
+  const params = await props.params;
   try {
     const user = await currentUser();
     if (!user || user.role !== "ADMIN") {
@@ -26,14 +28,9 @@ export async function DELETE(
       return NextResponse.json("Recipe not found", { status: 404 });
     }
     if (recipe.imageUrl) {
-      const key = recipe.imageUrl.split(
-        `${process.env.AWS_BUCKET_NAME as string}.s3.${
-          process.env.AWS_REGION as string
-        }.amazonaws.com/`
-      )[1];
-      await deleteImageFromS3(key);
+      await deleteImageFromS3(getStorageKeyFromUrl(recipe.imageUrl));
     }
-    await deleteFolderFromS3(recipeId);
+    await deleteFolderFromS3(`recipes/${recipeId}`);
 
     const deletedRecipe = await db.recipes.delete({
       where: {
@@ -46,10 +43,8 @@ export async function DELETE(
     return NextResponse.json("Internal Server Error", { status: 500 });
   }
 }
-export async function PATCH(
-  req: Request,
-  { params }: { params: { recipeId: string } }
-) {
+export async function PATCH(req: Request, props: { params: Promise<{ recipeId: string }> }) {
+  const params = await props.params;
   try {
     const user = await currentUser();
     if (!user || user.role !== "ADMIN") {

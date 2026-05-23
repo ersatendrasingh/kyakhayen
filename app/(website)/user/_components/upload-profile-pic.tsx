@@ -1,8 +1,7 @@
-import { useCurrentUser } from "@/hooks/use-current-user";
 import axios from "axios";
 import { CameraIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { toast } from "react-toastify";
+import { toast } from "sonner";
 import { useSession } from "next-auth/react";
 interface UploadProfilePicProps {
   setImagePreview: React.Dispatch<React.SetStateAction<string | null>>;
@@ -14,7 +13,6 @@ const UploadProfilePic = ({
   setIsUploading,
 }: UploadProfilePicProps) => {
   const router = useRouter();
-  const user = useCurrentUser();
   const { update } = useSession();
   async function resizeAndPreviewImage(
     file: File,
@@ -68,60 +66,60 @@ const UploadProfilePic = ({
     const fileInput = e.target;
 
     if (!fileInput.files) {
+      setIsUploading(false);
       toast.error("No file was chosen", {
-        position: "top-center",
-        autoClose: 5000,
+        duration: 5000,
       });
       return;
     }
     const file = fileInput.files[0];
 
     if (!file.type.startsWith("image")) {
+      setIsUploading(false);
       toast.error(`Selected File is invalid`, {
-        position: "top-center",
-        autoClose: 5000,
+        duration: 5000,
       });
       return;
     }
     const resizedFile = await resizeAndPreviewImage(file, 200, 200);
     try {
-      let formData = new FormData();
-      formData.append("file", resizedFile);
-      if (user && user.id) {
-        formData.append("userId", user?.id);
-      }
-      if (user && user?.image) {
-        formData.append("previousImage", user?.image);
-      }
+      const { data } = await axios.post<{
+        uploadUrl: string;
+        publicUrl: string;
+      }>("/api/media/presign", {
+        fileName: "profile.jpg",
+        fileSize: resizedFile.size,
+        fileType: "image/jpeg",
+        profile: true,
+      });
 
-      const response = await axios.post(
-        "/api/user/update-profile-pic",
-        formData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        }
-      );
+      await axios.put(data.uploadUrl, resizedFile, {
+        headers: {
+          "Cache-Control": "public, max-age=31536000, immutable",
+          "Content-Type": "image/jpeg",
+        },
+      });
+
+      const response = await axios.post("/api/user/update-profile-pic", {
+        imageUrl: data.publicUrl,
+      });
       update();
       if (response.status !== 200) {
         toast.error("Something went wrong while uploading file", {
-          position: "top-center",
-          autoClose: 5000,
+          duration: 5000,
         });
         return;
       } else if (response.status === 200) {
         router.refresh();
         setIsUploading(false);
         toast.success("Profile picture updated successfully", {
-          position: "top-center",
-          autoClose: 5000,
+          duration: 5000,
         });
       }
     } catch (error) {
+      setIsUploading(false);
       toast.error("Something went wrong while uploading file", {
-        position: "top-center",
-        autoClose: 5000,
+        duration: 5000,
       });
     }
   };

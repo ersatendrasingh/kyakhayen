@@ -14,7 +14,6 @@ export const filterRecipesByUserPreferences = async (
       include: {
         userCuisines: true,
         UserAllrgies: true,
-        UserHealthGoals: true,
       },
     });
 
@@ -28,9 +27,14 @@ export const filterRecipesByUserPreferences = async (
     const allRecipes = await GetRecipes({});
 
     // Fetch all recipe categories and create a category map
-    const recipeCategories = await db.recipeCategories.findMany();
+    const recipeCategories = await db.recipeCategories.findMany({
+      where: { isPublished: true },
+    });
     const categoryMap = recipeCategories.reduce((map, category) => {
-      map[category.name.toLowerCase()] = category.id;
+      map[category.slug] = category.id;
+      if (category.slug === "egg") {
+        map.eggetarian = category.id;
+      }
       return map;
     }, {} as { [key: string]: string });
 
@@ -41,15 +45,9 @@ export const filterRecipesByUserPreferences = async (
     const userCuisineIds = userData.userCuisines.map(
       (cuisine) => cuisine.cuisineId
     );
-    const userHealthGoalIds = userData.UserHealthGoals.map(
-      (goal) => goal.healthGoalId
-    );
-
     // Fetch recipe-related data
     const recipeAllergies = await db.recipeAllergies.findMany();
     const recipeCuisines = await db.recipeCuisines.findMany();
-    const recipeHealthGoals = await db.recipeHealthGoals.findMany();
-    const recipePrakritis = await db.recipePrakriti.findMany();
 
     // Create maps for filtering
     const recipeAllergyMap = recipeAllergies.reduce((map, allergy) => {
@@ -68,22 +66,6 @@ export const filterRecipesByUserPreferences = async (
       return map;
     }, {} as { [key: string]: string[] });
 
-    const recipeHealthGoalMap = recipeHealthGoals.reduce((map, goal) => {
-      if (!map[goal.recipeId]) {
-        map[goal.recipeId] = [];
-      }
-      map[goal.recipeId].push(goal.healthGoalId);
-      return map;
-    }, {} as { [key: string]: string[] });
-
-    const recipePrakritiMap = recipePrakritis.reduce((map, prakriti) => {
-      if (!map[prakriti.recipeId]) {
-        map[prakriti.recipeId] = [];
-      }
-      map[prakriti.recipeId].push(prakriti.prakritiId);
-      return map;
-    }, {} as { [key: string]: string[] });
-
     // Filter recipes based on user preferences
     const filteredRecipes = allRecipes.filter((recipe) => {
       // Check if recipe matches user's food preferences
@@ -94,10 +76,10 @@ export const filterRecipesByUserPreferences = async (
             return true; // Non-veg users can eat all types of food
           case categoryMap["veg"]:
             return recipe.recipeCategoriesId === categoryMap["veg"];
-          case categoryMap["egg"]:
+          case categoryMap["eggetarian"]:
             return (
               recipe.recipeCategoriesId === categoryMap["veg"] ||
-              recipe.recipeCategoriesId === categoryMap["egg"]
+              recipe.recipeCategoriesId === categoryMap["eggetarian"]
             );
           case categoryMap["pescetarian"]:
             return (
@@ -121,16 +103,6 @@ export const filterRecipesByUserPreferences = async (
         (cuisineId) => userCuisineIds.includes(cuisineId)
       );
 
-      // Check if recipe matches user's health goals
-      const matchesHealthGoals = recipeHealthGoalMap[recipe.id]?.some(
-        (goalId) => userHealthGoalIds.includes(goalId)
-      );
-
-      // Check if recipe matches user's prakriti
-      const matchesPrakriti = recipePrakritiMap[recipe.id]?.some(
-        (prakritiId) => prakritiId === userData.prakritiId
-      );
-
       // Check if recipe matches user's cooking skill level   - This will be removed in the future
       // const matchesCookingSkill =
       //   !userData.cookingSkillId ||
@@ -139,16 +111,14 @@ export const filterRecipesByUserPreferences = async (
       // return (
       //   matchesFoodPreference &&
       //   !containsAllergens &&
-      //   matchesCuisinePreference &&
-      //   matchesHealthGoals &&
-      //   matchesPrakriti //&&
+      //   matchesCuisinePreference //&&
       //   //matchesCookingSkill
       // );
 
       const matchesAnyPreference =
         matchesFoodPreference &&
         !containsAllergens &&
-        (matchesCuisinePreference || matchesHealthGoals || matchesPrakriti);
+        (userCuisineIds.length === 0 || matchesCuisinePreference);
 
       return matchesAnyPreference;
     });

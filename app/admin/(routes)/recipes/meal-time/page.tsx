@@ -1,24 +1,35 @@
-import { DataTable } from "./_components/data-table";
-import { columns } from "./_components/columns";
+import { MealTimesDashboard } from "@/components/admin/recipe-meal-times/meal-times-dashboard";
 import { db } from "@/lib/db";
 
-import MealTimeForm from "./_components/meal-time-form";
 const MealTimePage = async () => {
-  const mealTimes = await db.mealTimes.findMany({
-    orderBy: {
-      title: "asc",
-    },
-  });
+  const [mealTimes, recipesScheduled, totalRecipes] = await Promise.all([
+    db.mealTimes.findMany({
+      orderBy: [{ position: "asc" }, { title: "asc" }],
+      include: {
+        _count: {
+          select: {
+            recipeMealTime: true,
+          },
+        },
+      },
+    }),
+    db.recipes.count({
+      where: {
+        recipeMealTime: {
+          some: {},
+        },
+      },
+    }),
+    db.recipes.count(),
+  ]);
+
   return (
-    <div className="p-6">
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <MealTimeForm />
-        </div>
-        <div>
-          <DataTable columns={columns} data={mealTimes} />
-        </div>
-      </div>
+    <div className="p-4 sm:p-6 lg:p-8">
+      <MealTimesDashboard
+        mealTimes={mealTimes}
+        recipesScheduled={recipesScheduled}
+        untaggedRecipes={totalRecipes - recipesScheduled}
+      />
     </div>
   );
 };

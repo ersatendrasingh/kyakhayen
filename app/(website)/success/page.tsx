@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import { toast } from "react-toastify";
+import { toast } from "sonner";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { CircleCheckBig } from "lucide-react";

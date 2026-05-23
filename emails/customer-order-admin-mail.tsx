@@ -1,4 +1,5 @@
-import { Img } from "@react-email/components";
+import { Img } from "react-email";
+import { getPublicMediaUrl } from "@/lib/s3utils";
 
 interface CustomerOrderAdminMailProps {
   subjectLine: string;
@@ -17,7 +18,7 @@ interface CustomerOrderAdminMailProps {
     items: {
       name: string;
       quantity: number;
-      durationMonths: number;
+      durationDays: number | null;
       priceInr: number;
       priceUsd: number;
     }[];
@@ -94,7 +95,7 @@ const CustomerOrderAdminMail = ({
           style={{ color: "#fff", textDecoration: "none" }}
         >
           <Img
-            src="https://kyakhayen-prod.s3.ap-south-1.amazonaws.com/others/kyakhayen-white-logo.png"
+            src={getPublicMediaUrl("others/kyakhayen-white-logo.png")}
             alt="Kya Khayen Logo"
             width={260}
             height={80}
@@ -224,9 +225,9 @@ const CustomerOrderAdminMail = ({
                   {`x${item.quantity}`}
                 </td>
                 <td style={{ padding: "10px", borderBottom: "1px solid #ddd" }}>
-                  {item.durationMonths > 1
-                    ? `${item.durationMonths} Months`
-                    : "1 Month"}
+                  {item.durationDays && item.durationDays > 1
+                    ? `${item.durationDays} Days`
+                    : `${item.durationDays || 0} Day`}
                 </td>
                 <td
                   style={{

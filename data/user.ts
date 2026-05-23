@@ -26,7 +26,6 @@ export const getUserById = async (id: string) => {
       where: { id },
       include: {
         gender: true,
-        userPrakriti: true,
         foodPreference: true,
         cookingSkill: true,
         UserPlan: {

@@ -21,7 +21,7 @@ import { IngredientsForm } from "./ingredients-form";
 import IngredientEditForm from "./ingredient-edit-form";
 import { ConfirmModal } from "@/components/modals/confirm-modal";
 import axios from "axios";
-import { toast } from "react-toastify";
+import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 
 type RecipeIngredient = RecipeIngredients & {
@@ -108,15 +108,13 @@ const IngredientsList = ({
       setDeletingId(id);
       await axios.delete(`/api/recipes/${recipeId}/ingredients/${id}`);
       toast.success("Recipe ingredient deleted successfully", {
-        position: "top-center",
-        autoClose: 5000,
+        duration: 5000,
       });
 
       router.refresh();
     } catch {
       toast.error("Something went wrong while deleting recipe ingredient", {
-        position: "top-center",
-        autoClose: 5000,
+        duration: 5000,
       });
     } finally {
       setDeletingId(null);

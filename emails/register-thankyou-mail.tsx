@@ -1,4 +1,5 @@
-import { Img } from "@react-email/components"; // Ensure Img component is correctly imported
+import { Img } from "react-email";
+import { getPublicMediaUrl } from "@/lib/s3utils";
 
 interface RegisterThankyouMailProps {
   name: string;
@@ -34,7 +35,7 @@ const RegisterThankyouMail = ({ name, token }: RegisterThankyouMailProps) => {
           style={{ color: "#fff", textDecoration: "none" }}
         >
           <Img
-            src="https://kyakhayen-prod.s3.ap-south-1.amazonaws.com/others/kyakhayen-white-logo.png"
+            src={getPublicMediaUrl("others/kyakhayen-white-logo.png")}
             alt="Kya Khayen Logo"
             width={260}
             height={80}
@@ -89,14 +90,13 @@ const RegisterThankyouMail = ({ name, token }: RegisterThankyouMailProps) => {
           </a>
         </div>
         <p style={{ fontSize: "16px", marginBottom: "10px", color: "#666" }}>
-          To kickstart your health journey with a completely FREE personalized
-          7-day diet plan and mouth-watering recipes tailored to your tastes and
-          health goals, please take a moment to complete your personalization.
-          Your path to a healthier lifestyle begins with us!
+          To get your personalized 7-day meal plan and recipes tailored to your
+          tastes, favourite cuisines and ingredient exclusions, please complete
+          your preferences.
         </p>
 
         <Img
-          src="https://kyakhayen-prod.s3.ap-south-1.amazonaws.com/others/free-offer.gif"
+          src={getPublicMediaUrl("others/free-offer.gif")}
           alt="Free Offer"
           width="100%"
           height="auto"
@@ -104,7 +104,7 @@ const RegisterThankyouMail = ({ name, token }: RegisterThankyouMailProps) => {
         />
         <a href="https://www.kyakhayen.com/">
           <Img
-            src="https://kyakhayen-prod.s3.ap-south-1.amazonaws.com/others/meal-plan.jpg"
+            src={getPublicMediaUrl("others/meal-plan.jpg")}
             alt="Download Our App"
             width="100%"
             height="auto"
@@ -135,7 +135,7 @@ const RegisterThankyouMail = ({ name, token }: RegisterThankyouMailProps) => {
         </div>
         <p style={{ fontSize: "16px", marginBottom: "10px", color: "#666" }}>
           Once you&apos;ve completed your personalization, we&apos;ll send you
-          your personalized diet plan right away!
+          your personalized meal plan right away!
         </p>
 
         <p style={{ fontSize: "16px", marginBottom: "10px", color: "#666" }}>
@@ -193,7 +193,7 @@ const RegisterThankyouMail = ({ name, token }: RegisterThankyouMailProps) => {
         </h2>
         <a href="https://www.kyakhayen.com/download-app">
           <Img
-            src="https://kyakhayen-prod.s3.ap-south-1.amazonaws.com/others/download-app.jpg"
+            src={getPublicMediaUrl("others/download-app.jpg")}
             alt="Download Our App"
             width="100%"
             height="auto"
@@ -258,7 +258,7 @@ const RegisterThankyouMail = ({ name, token }: RegisterThankyouMailProps) => {
                 style={{ color: "#fff", textDecoration: "none" }}
               >
                 <Img
-                  src="https://kyakhayen-prod.s3.ap-south-1.amazonaws.com/others/facebook.png"
+                  src={getPublicMediaUrl("others/facebook.png")}
                   alt="Facebook"
                   width={24}
                   height={24}
@@ -272,7 +272,7 @@ const RegisterThankyouMail = ({ name, token }: RegisterThankyouMailProps) => {
                 style={{ color: "#fff", textDecoration: "none" }}
               >
                 <Img
-                  src="https://kyakhayen-prod.s3.ap-south-1.amazonaws.com/others/x-icon.png"
+                  src={getPublicMediaUrl("others/x-icon.png")}
                   alt="Twitter"
                   width={24}
                   height={24}
@@ -286,7 +286,7 @@ const RegisterThankyouMail = ({ name, token }: RegisterThankyouMailProps) => {
                 style={{ color: "#fff", textDecoration: "none" }}
               >
                 <Img
-                  src="https://kyakhayen-prod.s3.ap-south-1.amazonaws.com/others/social.png"
+                  src={getPublicMediaUrl("others/social.png")}
                   alt="Instagram"
                   width={24}
                   height={24}
@@ -300,7 +300,7 @@ const RegisterThankyouMail = ({ name, token }: RegisterThankyouMailProps) => {
                 style={{ color: "#fff", textDecoration: "none" }}
               >
                 <Img
-                  src="https://kyakhayen-prod.s3.ap-south-1.amazonaws.com/others/youtube.png"
+                  src={getPublicMediaUrl("others/youtube.png")}
                   alt="YouTube"
                   width={24}
                   height={24}

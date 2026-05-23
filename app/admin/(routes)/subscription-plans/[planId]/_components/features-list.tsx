@@ -14,7 +14,7 @@ import { cn } from "@/lib/utils";
 
 import { ConfirmModal } from "@/components/modals/confirm-modal";
 import axios from "axios";
-import { toast } from "react-toastify";
+import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 
@@ -86,15 +86,13 @@ const FeaturesList = ({
       setDeletingId(id);
       await axios.delete(`/api/subscription-plans/${planId}/features/${id}`);
       toast.success("Plan feature deleted successfully", {
-        position: "top-center",
-        autoClose: 5000,
+        duration: 5000,
       });
 
       router.refresh();
     } catch {
       toast.error("Something went wrong while deleting plan feature", {
-        position: "top-center",
-        autoClose: 5000,
+        duration: 5000,
       });
     } finally {
       setDeletingId(null);

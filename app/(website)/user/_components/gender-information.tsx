@@ -6,7 +6,7 @@ import { GrUpdate } from "react-icons/gr";
 import Image from "next/image";
 import axios from "axios";
 import { User } from "@prisma/client";
-import { toast } from "react-toastify";
+import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
 import { useSession } from "next-auth/react";
@@ -56,8 +56,7 @@ const GenderInformation = ({ userData, genders }: GenderInformationProps) => {
         if (response.status === 200) {
           update();
           toast.success("Gender updated successfully", {
-            position: "top-center",
-            autoClose: 5000,
+            duration: 5000,
           });
           router.refresh();
           setIsExpanded(false);

@@ -12,11 +12,12 @@ import { MethodImageForm } from "./_components/method-image-form";
 import { MethodVideoForm } from "./_components/method-video-form";
 import { MethodActions } from "./_components/method-actions";
 
-const MethodIdPage = async ({
-  params,
-}: {
-  params: { recipeId: string; methodId: string };
-}) => {
+const MethodIdPage = async (
+  props: {
+    params: Promise<{ recipeId: string; methodId: string }>;
+  }
+) => {
+  const params = await props.params;
   const method = await db.recipeMethods.findUnique({
     where: {
       id: params.methodId,

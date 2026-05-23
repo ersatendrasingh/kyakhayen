@@ -1,13 +1,12 @@
 "use client";
 
-import { FaBars, FaHome, FaSearch, FaRegCalendarAlt } from "react-icons/fa";
+import { FaHome, FaSearch, FaRegCalendarAlt } from "react-icons/fa";
 import { MdFoodBank } from "react-icons/md";
 
 import { RiAccountCircleLine } from "react-icons/ri";
 import Link from "next/link";
 
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { MobileMenuItems } from "@/components/header/mobile-menu-items";
 import { LoginButton } from "@/components/auth/login-button";
 import { useCurrentUser } from "@/hooks/use-current-user";
 import { SearchInput } from "@/components/header/search-input";
@@ -18,7 +17,7 @@ const MobileMenu = () => {
   const user = useCurrentUser();
 
   return (
-    <div className="fixed md:hidden z-50 bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-4 py-2">
+    <div className="fixed bottom-0 left-0 right-0 z-50 border-t border-border bg-background/95 px-4 py-2 text-muted-foreground backdrop-blur md:hidden">
       <div className="flex flex-row items-center justify-between">
         <div>
           <Link href="/" className="flex flex-col items-center justify-center">

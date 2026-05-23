@@ -2,15 +2,15 @@ import type { Metadata } from "next";
 import { GoogleTagManager } from "@next/third-parties/google";
 import { SessionProvider } from "next-auth/react";
 import { Poppins } from "next/font/google";
-import { ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
 import NextTopLoader from "nextjs-toploader";
 import "./globals.css";
 import { auth } from "@/auth";
 import { ConfettiProvider } from "@/components/providers/confetti-provider";
+import { Toaster } from "@/components/ui/sonner";
 import { CartProvider } from "@/context/cart-context";
 import { UserCountryProvider } from "@/context/user-country-context";
 import InstallPrompt from "@/components/install-prompt";
+import { ThemeProvider } from "@/components/theme-provider";
 
 const poppins = Poppins({
   subsets: ["latin"],
@@ -20,9 +20,9 @@ const poppins = Poppins({
 });
 
 const meta = {
-  title: "Kya Khayen | Healthy Recipes & Meal Plans for Weight Loss",
+  title: "Kya Khayen | Recipes & Everyday Meal Plans",
   description:
-    "Explore healthy recipes, weight loss meal plans, and pregnancy diet charts. Find vegetarian recipes, healthy snacks for kids, and personalized weight loss programs.",
+    "Explore Indian and international recipes, easy meal plans, vegetarian ideas, snacks for kids, and personalized cooking inspiration.",
   image: `${process.env.NEXT_PUBLIC_APP_URL}/meta-images/home.png`,
 };
 
@@ -78,29 +78,36 @@ export default async function RootLayout({
   const session = await auth();
 
   return (
-    <SessionProvider session={session}>
-      <html lang="en">
+    <html lang="en" suppressHydrationWarning>
+      <body className={`${poppins.variable}`}>
         <GoogleTagManager gtmId={process.env.GOOGLE_TAG_MANAGER_ID as string} />
-        <body className={`${poppins.variable}`} suppressHydrationWarning={true}>
-          <ConfettiProvider />
-          <ToastContainer />
-          <InstallPrompt />
-          <NextTopLoader
-            color="#ff3c28"
-            initialPosition={0.08}
-            crawlSpeed={200}
-            height={3}
-            crawl={false}
-            showSpinner={false}
-            easing="ease"
-            speed={200}
-            shadow="0 0 10px #ff3c28,0 0 5px #ff3c28"
-          />
-          <UserCountryProvider>
-            <CartProvider>{children}</CartProvider>
-          </UserCountryProvider>
-        </body>
-      </html>
-    </SessionProvider>
+        <SessionProvider session={session}>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+          >
+            <ConfettiProvider />
+            <Toaster position="bottom-right" />
+            <InstallPrompt />
+            <NextTopLoader
+              color="var(--primary)"
+              initialPosition={0.08}
+              crawlSpeed={200}
+              height={3}
+              crawl={false}
+              showSpinner={false}
+              easing="ease"
+              speed={200}
+              shadow="0 0 10px var(--primary), 0 0 5px var(--primary)"
+            />
+            <UserCountryProvider>
+              <CartProvider>{children}</CartProvider>
+            </UserCountryProvider>
+          </ThemeProvider>
+        </SessionProvider>
+      </body>
+    </html>
   );
 }

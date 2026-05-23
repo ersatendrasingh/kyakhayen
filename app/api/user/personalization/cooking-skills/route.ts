@@ -33,9 +33,7 @@ export async function PUT(req: Request) {
         data: { cookingSkillId: newCookingSkill.id },
         include: {
           userCuisines: true,
-          UserHealthGoals: true,
           UserAllrgies: true,
-          userPrakriti: true,
         },
       });
       const isPersonalised = isPersonalizationComplete(updatedUser);

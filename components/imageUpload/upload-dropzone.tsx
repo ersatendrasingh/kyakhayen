@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { toast } from "react-toastify";
+import { toast } from "sonner";
 
 import ImagePreview from "./image-preview";
 
@@ -20,8 +20,7 @@ const UploadDropZone = ({
 
     if (!fileInput.files) {
       toast.error("No file was chosen", {
-        position: "top-center",
-        autoClose: 5000,
+        duration: 5000,
       });
       return;
     }
@@ -29,8 +28,7 @@ const UploadDropZone = ({
 
     if (!file.type.startsWith("image")) {
       toast.error(`Selected File is invalid`, {
-        position: "top-center",
-        autoClose: 5000,
+        duration: 5000,
       });
       return;
     }

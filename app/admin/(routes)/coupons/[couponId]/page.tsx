@@ -16,7 +16,8 @@ import { CouponProductForm } from "./_components/coupon-product-form";
 import { CouponActions } from "./_components/coupon-actions";
 import { CouponExpiryForm } from "./_components/coupon-expiry-form";
 
-const CouponIdPage = async ({ params }: { params: { couponId: string } }) => {
+const CouponIdPage = async (props: { params: Promise<{ couponId: string }> }) => {
+  const params = await props.params;
   const coupon = await db.coupon.findUnique({
     where: {
       id: params.couponId,

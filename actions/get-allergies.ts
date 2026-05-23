@@ -15,7 +15,14 @@ export const getAllergies = async ({
   userId,
 }: getAllergiesInput): Promise<Allergy[]> => {
   try {
-    const allAllergies = await db.allergies.findMany();
+    const allAllergies = await db.allergies.findMany({
+      where: {
+        isPublished: true,
+      },
+      orderBy: {
+        position: "asc",
+      },
+    });
 
     const userAllergies = await db.userAllrgies.findMany({
       where: {

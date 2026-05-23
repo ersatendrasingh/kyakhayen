@@ -5,9 +5,9 @@ import IntroSection from "@/components/subscription-plans/intro-section";
 import { PageTitle } from "@/components/page-title";
 
 const meta = {
-  title: "Weight loss programs | pregnancy diet chart | keto diet plan",
+  title: "Personalized Meal Plans | Kya Khayen Subscriptions",
   description:
-    "Subscribe to our personalized meal plans and achieve your health goals! Get a 7-day diet plan for weight loss, pregnancy diet charts, and detox programs.",
+    "Subscribe for personalized meal ideas built around cuisine preferences, ingredient exclusions and your cooking routine.",
   image: `${process.env.NEXT_PUBLIC_APP_URL}/meta-images/subscription-plans.png`,
 };
 

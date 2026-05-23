@@ -3,7 +3,7 @@
 import axios from "axios";
 import { Trash } from "lucide-react";
 import { useState } from "react";
-import { toast } from "react-toastify";
+import { toast } from "sonner";
 
 import { ConfirmModal } from "@/components/modals/confirm-modal";
 import { Button } from "@/components/ui/button";
@@ -34,16 +34,14 @@ export const MethodActions = ({
           `/api/recipes/${recipeId}/methods/${methodId}/unpublish`
         );
         toast.success("Method unpublished successfully", {
-          position: "top-center",
-          autoClose: 5000,
+          duration: 5000,
         });
       } else {
         await axios.patch(
           `/api/recipes/${recipeId}/methods/${methodId}/publish`
         );
         toast.success("Method published successfully", {
-          position: "top-center",
-          autoClose: 5000,
+          duration: 5000,
         });
       }
 
@@ -59,16 +57,14 @@ export const MethodActions = ({
       setIsLoading(true);
       await axios.delete(`/api/recipes/${recipeId}/methods/${methodId}`);
       toast.success("Method deleted successfully", {
-        position: "top-center",
-        autoClose: 5000,
+        duration: 5000,
       });
 
       router.push(`/admin/recipes/${recipeId}`);
       router.refresh();
     } catch (error) {
       toast.error("Something went wrong while deleting method", {
-        position: "top-center",
-        autoClose: 5000,
+        duration: 5000,
       });
     } finally {
       setIsLoading(false);

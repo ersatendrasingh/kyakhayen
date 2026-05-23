@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { toast } from "react-toastify";
+import { toast } from "sonner";
 import { Pencil } from "lucide-react";
 import { useState } from "react";
 import axios from "axios";
@@ -70,15 +70,13 @@ export const ArticleMetaDataForm = ({
     try {
       await axios.patch(`/api/articles/${postId}`, values);
       toast.success("Article meta data updated successfully", {
-        position: "top-center",
-        autoClose: 5000,
+        duration: 5000,
       });
       toggleEdit();
       router.refresh();
     } catch {
       toast.error("Something went wrong while updating article meta data", {
-        position: "top-center",
-        autoClose: 5000,
+        duration: 5000,
       });
     }
   };

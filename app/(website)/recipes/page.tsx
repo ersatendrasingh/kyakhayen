@@ -6,9 +6,9 @@ import { NoRecipesFound } from "@/components/recipes/no-recipe-found";
 import RecipeCard from "@/components/recipes/recipe-card";
 
 const meta = {
-  title: "Healthy Recipes for Weight Loss | Easy Recipes and Diet Plans",
+  title: "Easy Recipes and Meal Ideas | Kya Khayen",
   description:
-    "Become motivated with healthy recipes for weight loss, meal plans for women, pregnancy diet charts, dinner ideas, breakfast options, and diabetic meal plans.",
+    "Discover easy recipes, dinner ideas, breakfast options, vegetarian dishes and practical meals for everyday cooking.",
   image: `${process.env.NEXT_PUBLIC_APP_URL}/meta-images/recipe-page.jpg`,
 };
 
@@ -54,13 +54,13 @@ export const metadata: Metadata = {
   },
 };
 
-const RecipePage = async ({
-  params,
-  searchParams,
-}: {
-  params: { recipeSlug: string };
-  searchParams: { k?: string; type?: string };
-}) => {
+const RecipePage = async (
+  props: {
+    params: Promise<{ recipeSlug: string }>;
+    searchParams: Promise<{ k?: string; type?: string }>;
+  }
+) => {
+  const searchParams = await props.searchParams;
   const recipes = await GetRecipes({
     searchSlug: searchParams.k || undefined,
     searchType: searchParams.type || undefined,
@@ -69,7 +69,7 @@ const RecipePage = async ({
   return (
     <div>
       <PageHeader title="Recipes" className="py-6" />
-      <div className="py-12 bg-slate-100">
+      <div className="bg-muted/35 py-12">
         <Container>
           {recipes.length === 0 && <NoRecipesFound key={searchParams.k!} />}
           {searchParams && (

@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 
 import { currentUser } from "@/lib/auth";
+import { getIngredientSlug, normalizeIngredientName } from "@/lib/ingredients";
 
 export async function POST(req: Request) {
   try {
@@ -12,10 +13,12 @@ export async function POST(req: Request) {
       return NextResponse.json("Unauthorized", { status: 401 });
     }
     const { name } = await req.json();
+    const normalizedName = normalizeIngredientName(name);
 
     const ingredient = await db.ingredients.create({
       data: {
-        name,
+        name: normalizedName,
+        slug: getIngredientSlug(normalizedName),
       },
     });
     return NextResponse.json(ingredient, { status: 200 });

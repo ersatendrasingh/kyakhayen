@@ -1,38 +1,40 @@
-import nodemailer from "nodemailer";
-const domain = process.env.NEXT_PUBLIC_APP_URL;
 type EmailPayload = {
   to: string;
   subject: string;
   html: string;
 };
 
-// Replace with your SMTP credentials
-const smtpOptions = {
-  host: process.env.SMTP_HOST || "smtp.mailtrap.io",
-  port: parseInt(process.env.SMTP_PORT || "2525"),
-
-  auth: {
-    user: process.env.SMTP_USER || "user",
-    pass: process.env.SMTP_PASSWORD || "password",
-  },
-};
-
 export const sendEmail = async (data: EmailPayload) => {
-  const transporter = nodemailer.createTransport({
-    ...smtpOptions,
+  const apiKey = process.env.RESEND_API_KEY;
+  const fromEmail = process.env.EMAIL_FROM_ADDRESS;
+  const fromName = process.env.EMAIL_FROM_NAME || "Kya Khayen";
+
+  if (!apiKey || !fromEmail) {
+    throw new Error(
+      "Email delivery is not configured. Set RESEND_API_KEY and EMAIL_FROM_ADDRESS."
+    );
+  }
+
+  if (!data.to?.trim()) {
+    throw new Error("Email recipient is not configured. Set ADMIN_EMAIL where required.");
+  }
+
+  const response = await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      from: `${fromName} <${fromEmail}>`,
+      ...data,
+    }),
   });
 
-  return await transporter.sendMail({
-    from: `${process.env.SMTP_FROM_NAME} <${process.env.SMTP_FROM_EMAIL}>`,
-    ...data,
-  });
-};
+  if (!response.ok) {
+    const reason = await response.text();
+    throw new Error(`Email delivery failed: ${reason}`);
+  }
 
-export const sendPasswordResetEmail = async (email: string, token: string) => {
-  const resetLink = `${domain}/auth/new-password?token=${token}`;
-  await sendEmail({
-    to: email,
-    subject: "Reset your password",
-    html: `<p>Click <a href="${resetLink}">here</a> to reset password.</p>`,
-  });
+  return response.json();
 };

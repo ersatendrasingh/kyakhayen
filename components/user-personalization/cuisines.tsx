@@ -6,7 +6,7 @@ import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
-import { Navigation, Mousewheel, Keyboard, Virtual } from "swiper/modules";
+import { Navigation, Mousewheel, Keyboard } from "swiper/modules";
 
 import { Cuisines as CuisinesType } from "@prisma/client";
 import useWindowSize from "@/hooks/use-window-size";
@@ -75,11 +75,6 @@ const Cuisines = ({ cuisines, title, setIsFormValid }: CuisinesProps) => {
 
   const isMobile = width !== undefined && width <= 767;
 
-  // Generate an array of visible items for the swiper (only the items that should be visible initially)
-  const visibleCuisines = isMobile
-    ? cuisines.slice(0, 3)
-    : cuisines.slice(0, 9);
-
   return (
     <div>
       <h1 className="text-2xl xl:text-3xl mb-3 font-semibold transition-all duration-1000 ease-in-out transform animate-slide-in text-websecondary">
@@ -93,14 +88,12 @@ const Cuisines = ({ cuisines, title, setIsFormValid }: CuisinesProps) => {
       >
         <Swiper
           className="w-full"
-          cssMode={true}
           spaceBetween={isMobile ? 0 : 20}
           slidesPerView={isMobile ? 3 : 9}
           navigation={true}
           mousewheel={true}
           keyboard={true}
-          modules={[Navigation, Mousewheel, Keyboard, Virtual]} // Include the Virtual module for dynamic rendering
-          virtual={{ slides: visibleCuisines }} // Use virtual slides based on visible items
+          modules={[Navigation, Mousewheel, Keyboard]}
         >
           {cuisines.map((cuisine) => (
             <SwiperSlide

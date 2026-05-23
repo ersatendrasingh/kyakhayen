@@ -4,7 +4,7 @@ import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { useRouter } from "next/navigation";
-import { toast } from "react-toastify";
+import { toast } from "sonner";
 import { Loader2, Pencil, PlusCircleIcon } from "lucide-react";
 import { useState } from "react";
 import axios from "axios";
@@ -49,16 +49,14 @@ export const FeaturesForm = ({ initialData, planId }: FeaturesFormProps) => {
     try {
       await axios.post(`/api/subscription-plans/${planId}/features`, values);
       toast.success("Plan feature created successfully", {
-        position: "top-center",
-        autoClose: 5000,
+        duration: 5000,
       });
       form.reset();
       toggleCreate();
       router.refresh();
     } catch {
       toast.error("Something went wrong while creating plan feature", {
-        position: "top-center",
-        autoClose: 5000,
+        duration: 5000,
       });
     }
   };
@@ -71,14 +69,12 @@ export const FeaturesForm = ({ initialData, planId }: FeaturesFormProps) => {
         list: updateData,
       });
       toast.success("Plan features reordered successfully", {
-        position: "top-center",
-        autoClose: 5000,
+        duration: 5000,
       });
       router.refresh();
     } catch {
       toast.error("Something went wrong while reordering plan features", {
-        position: "top-center",
-        autoClose: 5000,
+        duration: 5000,
       });
     } finally {
       setIsUpdating(false);

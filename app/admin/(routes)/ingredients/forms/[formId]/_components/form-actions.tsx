@@ -3,7 +3,7 @@
 import axios from "axios";
 import { Trash } from "lucide-react";
 import { useState } from "react";
-import { toast } from "react-toastify";
+import { toast } from "sonner";
 
 import { ConfirmModal } from "@/components/modals/confirm-modal";
 import { Button } from "@/components/ui/button";
@@ -22,16 +22,14 @@ export const FormActions = ({ formId }: FormActionsProps) => {
       setIsLoading(true);
       await axios.delete(`/api/ingredients/ingredients-form/${formId}`);
       toast.success("Ingredient form deleted successfully", {
-        position: "top-center",
-        autoClose: 5000,
+        duration: 5000,
       });
 
       router.push(`/admin/ingredients/forms`);
       router.refresh();
     } catch (error) {
       toast.error("Something went wrong while deleting ingredient category", {
-        position: "top-center",
-        autoClose: 5000,
+        duration: 5000,
       });
     } finally {
       setIsLoading(false);

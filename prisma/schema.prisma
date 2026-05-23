@@ -8,32 +8,33 @@ datasource db {
 }
 
 model Recipes {
-  id                   String                 @id @default(uuid())
-  title                String                 @db.Text
-  metaTitle            String?                @db.Text
-  metaDescription      String?                @db.LongText
-  metaSlug             String?                @db.Text
-  slug                 String                 @unique
-  description          String?                @db.LongText
+  id                   String                       @id @default(uuid())
+  sourceSystem         String?
+  sourceId             Int?
+  title                String                       @db.Text
+  metaTitle            String?                      @db.Text
+  metaDescription      String?                      @db.LongText
+  metaSlug             String?                      @db.Text
+  slug                 String                       @unique
+  description          String?                      @db.LongText
   imageUrl             String?
-  RecipeCategories     RecipeCategories?      @relation(fields: [recipeCategoriesId], references: [id])
+  RecipeCategories     RecipeCategories?            @relation(fields: [recipeCategoriesId], references: [id])
   recipeCategoriesId   String?
   recipeDifficultyId   String?
   recipeSeasonsId      String?
-  views                Int                    @default(0)
-  recipeDifficulty     RecipeDifficulty?      @relation(fields: [recipeDifficultyId], references: [id])
+  views                Int                          @default(0)
+  recipeDifficulty     RecipeDifficulty?            @relation(fields: [recipeDifficultyId], references: [id])
+  recipeDifficulties   RecipeDifficultyAssignment[]
   recipeIngredients    RecipeIngredients[]
   recipeMethods        RecipeMethods[]
-  recipeHealthBenefits RecipeHealthBenefits[]
-  recipeSeasons        RecipeSeasons?         @relation(fields: [recipeSeasonsId], references: [id])
+  recipeSeasons        RecipeSeasons?               @relation(fields: [recipeSeasonsId], references: [id])
+  recipeSeasonTags     RecipeSeasonAssignment[]
   recipeCookingTime    RecipeCookingTime?
   recipeCookingMethods RecipeCookingMethod[]
+  recipeBodyTypes      RecipeBodyType[]
   recipeCuisine        RecipeCuisines[]
   recipeAllergies      RecipeAllergies[]
-  recipePrakriti       RecipePrakriti[]
-  recipeHealthGoals    recipeHealthGoals[]
   recipeMealTime       recipeMealTime[]
-  recipeDisease        recipeDisease[]
   recipeNutrient       recipeNutrient[]
   recipeDietType       recipeDietType[]
   recipeRecipeType     recipeRecipeType[]
@@ -47,6 +48,8 @@ model Recipes {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@unique([sourceSystem, sourceId])
 }
 
 model RecipeViews {
@@ -76,6 +79,7 @@ model RecipeCategories {
   slug     String    @unique
   imageUrl String?
   position Int?
+  isPublished Boolean @default(false)
   recipe   Recipes[]
   User     User[]
 }
@@ -118,27 +122,41 @@ model RecipeMethods {
   updatedAt DateTime @updatedAt
 }
 
-model RecipeHealthBenefits {
-  id       String  @id @default(uuid())
-  title    String  @db.Text
-  position Int
-  recipeId String
-  recipe   Recipes @relation(fields: [recipeId], references: [id], onDelete: Cascade)
-}
-
 model RecipeDifficulty {
-  id       String    @id @default(uuid())
-  title    String
-  imageUrl String?
-  position Int?
-  Recipes  Recipes[]
-  User     User[]
+  id          String                       @id @default(uuid())
+  title       String
+  imageUrl    String?
+  position    Int?
+  Recipes     Recipes[]
+  assignments RecipeDifficultyAssignment[]
+  User        User[]
 }
 
 model RecipeSeasons {
-  id      String    @id @default(uuid())
-  title   String
-  Recipes Recipes[]
+  id          String                   @id @default(uuid())
+  title       String
+  Recipes     Recipes[]
+  assignments RecipeSeasonAssignment[]
+}
+
+model RecipeDifficultyAssignment {
+  id                 String           @id @default(uuid())
+  recipeId           String
+  recipeDifficultyId String
+  recipe             Recipes          @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+  difficulty         RecipeDifficulty @relation(fields: [recipeDifficultyId], references: [id], onDelete: Cascade)
+
+  @@unique([recipeId, recipeDifficultyId])
+}
+
+model RecipeSeasonAssignment {
+  id              String        @id @default(uuid())
+  recipeId        String
+  recipeSeasonsId String
+  recipe          Recipes       @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+  season          RecipeSeasons @relation(fields: [recipeSeasonsId], references: [id], onDelete: Cascade)
+
+  @@unique([recipeId, recipeSeasonsId])
 }
 
 model RecipeCookingTime {
@@ -157,6 +175,8 @@ model CookingMethods {
   title               String
   slug                String                @unique
   imageUrl            String?
+  position            Int?
+  isPublished         Boolean               @default(false)
   recipeCookingMethod RecipeCookingMethod[]
 }
 
@@ -169,12 +189,34 @@ model RecipeCookingMethod {
   cookingMethod CookingMethods @relation(fields: [cookingMethodId], references: [id], onDelete: Cascade)
 }
 
+model BodyTypes {
+  id              String           @id @default(uuid())
+  title           String
+  slug            String           @unique
+  imageUrl        String?
+  position        Int?
+  isPublished     Boolean          @default(false)
+  recipeBodyTypes RecipeBodyType[]
+}
+
+model RecipeBodyType {
+  id         String @id @default(uuid())
+  recipeId   String
+  bodyTypeId String
+
+  recipe   Recipes   @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+  bodyType BodyTypes @relation(fields: [bodyTypeId], references: [id], onDelete: Cascade)
+
+  @@unique([recipeId, bodyTypeId])
+}
+
 model Cuisines {
   id            String           @id @default(uuid())
   title         String
   slug          String           @unique
   imageUrl      String?
   position      Int?
+  isPublished   Boolean          @default(false)
   recipeCuisine RecipeCuisines[]
   userCuisines  UserCuisines[]
 }
@@ -194,6 +236,7 @@ model Allergies {
   slug            String            @unique
   imageUrl        String?
   position        Int?
+  isPublished     Boolean           @default(false)
   recipeAllergies RecipeAllergies[]
   UserAllrgies    UserAllrgies[]
 }
@@ -207,48 +250,13 @@ model RecipeAllergies {
   allergies Allergies @relation(fields: [allergyId], references: [id], onDelete: Cascade)
 }
 
-model Prakriti {
-  id                     String                   @id @default(uuid())
-  title                  String
-  slug                   String                   @unique
-  imageUrl               String?
-  recipePrakriti         RecipePrakriti[]
-  PrakritiQuestionOption PrakritiQuestionOption[]
-  User                   User[]
-}
-
-model RecipePrakriti {
-  id         String   @id @default(uuid())
-  recipeId   String
-  prakritiId String
-  recipe     Recipes  @relation(fields: [recipeId], references: [id], onDelete: Cascade)
-  prakriti   Prakriti @relation(fields: [prakritiId], references: [id], onDelete: Cascade)
-}
-
-model HealthGoals {
-  id                String              @id @default(uuid())
-  title             String
-  slug              String              @unique
-  imageUrl          String?
-  position          Int?
-  recipeHealthGoals recipeHealthGoals[]
-  UserHealthGoals   UserHealthGoals[]
-}
-
-model recipeHealthGoals {
-  id           String      @id @default(uuid())
-  recipeId     String
-  healthGoalId String
-  recipe       Recipes     @relation(fields: [recipeId], references: [id], onDelete: Cascade)
-  healthGoals  HealthGoals @relation(fields: [healthGoalId], references: [id], onDelete: Cascade)
-}
-
 model MealTimes {
   id             String           @id @default(uuid())
   title          String
   slug           String           @unique
   imageUrl       String?
   position       Int?
+  isPublished    Boolean          @default(false)
   recipeMealTime recipeMealTime[]
 }
 
@@ -260,29 +268,13 @@ model recipeMealTime {
   mealTime   MealTimes @relation(fields: [mealTimeId], references: [id], onDelete: Cascade)
 }
 
-model Disease {
-  id            String          @id @default(uuid())
-  title         String
-  slug          String          @unique
-  imageUrl      String?
-  position      Int?
-  recipeDisease recipeDisease[]
-}
-
-model recipeDisease {
-  id        String  @id @default(uuid())
-  recipeId  String
-  diseaseId String
-  recipe    Recipes @relation(fields: [recipeId], references: [id], onDelete: Cascade)
-  disease   Disease @relation(fields: [diseaseId], references: [id], onDelete: Cascade)
-}
-
 model Nutrient {
   id             String           @id @default(uuid())
   title          String
   slug           String           @unique
   imageUrl       String?
   position       Int?
+  isPublished    Boolean          @default(false)
   recipeNutrient recipeNutrient[]
 }
 
@@ -300,6 +292,7 @@ model DietTypes {
   slug           String           @unique
   imageUrl       String?
   position       Int?
+  isPublished    Boolean          @default(false)
   recipeDietType recipeDietType[]
 }
 
@@ -317,6 +310,7 @@ model RecipeTypes {
   slug             String             @unique
   imageUrl         String?
   position         Int?
+  isPublished      Boolean            @default(false)
   recipeRecipeType recipeRecipeType[]
 }
 
@@ -329,8 +323,13 @@ model recipeRecipeType {
 }
 
 model Ingredients {
-  id                   String @id @default(uuid())
+  id                   String  @id @default(uuid())
   name                 String
+  slug                 String? @unique
+  sourceSystem         String?
+  sourceId             Int?
+  nutritionSource      String?
+  nutritionBasisGrams  Float   @default(100)
   calories             Float?
   carbohydrate         Float?
   totalFat             Float?
@@ -347,7 +346,7 @@ model Ingredients {
   folates              Float?
   calcium              Float?
   iron                 Float?
-  phophorus            Float?
+  phosphorus           Float?
   potassium            Float?
   sodium               Float?
   zinc                 Float?
@@ -361,6 +360,8 @@ model Ingredients {
   createdAt                  DateTime                     @default(now())
   updatedAt                  DateTime                     @updatedAt
   IngredientUnitMeasurements IngredientUnitMeasurements[]
+
+  @@unique([sourceSystem, sourceId])
 }
 
 model IngredientUnitMeasurements {
@@ -370,6 +371,8 @@ model IngredientUnitMeasurements {
   unit         Units       @relation(fields: [unitId], references: [id])
   ingredient   Ingredients @relation(fields: [ingredientId], references: [id])
   values       Float
+
+  @@unique([ingredientId, unitId])
 }
 
 model IngredientCategories {
@@ -428,26 +431,14 @@ model User {
   bio                   String?                @db.Text
   role                  UserRole               @default(USER)
   accounts              Account[]
-  heightFt              Int?
-  heightInch            Int?
-  heightCm              Int?
-  weightKg              Int?
-  weightLbs             Int?
-  bmi                   Float?
-  dob                   DateTime?
-  age                   Int?
   genderId              String?
   gender                Gender?                @relation(fields: [genderId], references: [id])
   foodPreferenceId      String?
   foodPreference        RecipeCategories?      @relation(fields: [foodPreferenceId], references: [id])
   cookingSkillId        String?
   cookingSkill          RecipeDifficulty?      @relation(fields: [cookingSkillId], references: [id])
-  prakritiId            String?
-  userPrakriti          Prakriti?              @relation(fields: [prakritiId], references: [id])
-  prakriti              UserPrakriti[]
   userCuisines          UserCuisines[]
   UserAllrgies          UserAllrgies[]
-  UserHealthGoals       UserHealthGoals[]
   Post                  Post[]
   Comment               Comment[]
   UserPlan              UserPlan[]
@@ -557,35 +548,6 @@ model Gender {
   User     User[]
 }
 
-model PrakritiQuestion {
-  id          String                   @id @default(uuid())
-  question    String
-  isPublished Boolean                  @default(false)
-  options     PrakritiQuestionOption[]
-}
-
-model PrakritiQuestionOption {
-  id         String            @id @default(uuid())
-  value      String
-  questionId String
-  prakritiId String
-  position   Int
-  parkriti   Prakriti          @relation(fields: [prakritiId], references: [id])
-  question   PrakritiQuestion? @relation(fields: [questionId], references: [id], onDelete: Cascade)
-
-  @@index([questionId])
-  @@index([prakritiId])
-}
-
-model UserPrakriti {
-  id         String @id @default(uuid())
-  userId     String
-  user       User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  questionId String
-  prakritiId String
-  optionId   String
-}
-
 model UserCuisines {
   id        String   @id @default(uuid())
   userId    String
@@ -607,18 +569,6 @@ model UserAllrgies {
 
   @@unique([userId, allergyId])
   @@index([allergyId])
-  @@index([userId])
-}
-
-model UserHealthGoals {
-  id           String      @id @default(uuid())
-  userId       String
-  healthGoalId String
-  user         User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-  healthGoal   HealthGoals @relation(fields: [healthGoalId], references: [id], onDelete: Cascade)
-
-  @@unique([userId, healthGoalId])
-  @@index([healthGoalId])
   @@index([userId])
 }
 

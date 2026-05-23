@@ -1,14 +1,11 @@
 import { NextResponse } from "next/server";
 
 import { db } from "@/lib/db";
-import { deleteFolderFromS3, deleteImageFromS3 } from "@/lib/s3utils";
 import { currentUser } from "@/lib/auth";
 import { slugify } from "@/lib/slugify";
 
-export async function DELETE(
-  req: Request,
-  { params }: { params: { categoryId: string } }
-) {
+export async function DELETE(req: Request, props: { params: Promise<{ categoryId: string }> }) {
+  const params = await props.params;
   try {
     const user = await currentUser();
     if (!user || user.role !== "ADMIN") {
@@ -37,10 +34,8 @@ export async function DELETE(
     return NextResponse.json("Internal Server Error", { status: 500 });
   }
 }
-export async function PATCH(
-  req: Request,
-  { params }: { params: { categoryId: string } }
-) {
+export async function PATCH(req: Request, props: { params: Promise<{ categoryId: string }> }) {
+  const params = await props.params;
   try {
     const user = await currentUser();
     if (!user || user.role !== "ADMIN") {

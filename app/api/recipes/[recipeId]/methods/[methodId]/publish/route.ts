@@ -4,8 +4,9 @@ import { NextResponse } from "next/server";
 
 export async function PATCH(
   req: Request,
-  { params }: { params: { recipeId: string; methodId: string } }
+  props: { params: Promise<{ recipeId: string; methodId: string }> }
 ) {
+  const params = await props.params;
   try {
     const user = await currentUser();
     if (!user || user.role !== "ADMIN") {

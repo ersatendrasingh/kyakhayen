@@ -8,11 +8,12 @@ import { CategoryNameForm } from "./_components/category-name-form";
 import { ImageForm } from "./_components/image-form";
 import { CategoryActions } from "./_components/category-actions";
 
-const RecipeCategoryIdPage = async ({
-  params,
-}: {
-  params: { categoryId: string };
-}) => {
+const RecipeCategoryIdPage = async (
+  props: {
+    params: Promise<{ categoryId: string }>;
+  }
+) => {
+  const params = await props.params;
   const category = await db.category.findUnique({
     where: {
       id: params.categoryId,

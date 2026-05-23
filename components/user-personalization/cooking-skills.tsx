@@ -87,7 +87,6 @@ const CookingSkills = ({
       >
         <Swiper
           className="w-full "
-          cssMode={true}
           spaceBetween={20}
           slidesPerView={isMobile ? 2 : 3}
           navigation={true}

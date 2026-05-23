@@ -55,13 +55,6 @@ interface RecipesTableProps {
     title: string;
     slug: string;
     imageUrl: string | null;
-    position: number;
-  }[];
-  healthGoals: {
-    id: string;
-    title: string;
-    slug: string;
-    imageUrl: string | null;
     position: number | null;
   }[];
 }
@@ -71,23 +64,18 @@ const RecipesTable = ({
   categories,
   mealTimes,
   cuisines,
-  healthGoals,
 }: RecipesTableProps) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [selectedMealTime, setSelectedMealTime] = useState<string | null>(null);
   const [selectedCuisine, setSelectedCuisine] = useState<string | null>(null);
-  const [selectedHealthGoal, setSelectedHealthGoal] = useState<string | null>(
-    null
-  );
   const [searchQuery, setSearchQuery] = useState("");
 
   const clearFilters = () => {
     setSelectedCategory(null);
     setSelectedMealTime(null);
     setSelectedCuisine(null);
-    setSelectedHealthGoal(null);
     setSearchQuery("");
   };
   const getFilteredRecipes = () => {
@@ -111,14 +99,6 @@ const RecipesTable = ({
       filteredRecipes = filteredRecipes.filter((recipe) =>
         recipe.recipeCuisine?.some(
           (cuisine) => cuisine.cuisineId === selectedCuisine
-        )
-      );
-    }
-
-    if (selectedHealthGoal) {
-      filteredRecipes = filteredRecipes.filter((recipe) =>
-        recipe.recipeHealthGoals?.some(
-          (healthGoal) => healthGoal.healthGoalId === selectedHealthGoal
         )
       );
     }
@@ -234,7 +214,7 @@ const RecipesTable = ({
                   "text-green-500 border-green-500",
                 RecipeCategories?.name === "Pescetarian" &&
                   "text-blue-500 border-blue-500",
-                RecipeCategories?.name === "Egg" &&
+                RecipeCategories?.name === "Eggetarian" &&
                   "text-yellow-500 border-yellow-500",
                 RecipeCategories?.name === "Vegan" &&
                   "text-pink-500 border-pink-500"
@@ -358,23 +338,6 @@ const RecipesTable = ({
               {cuisines.map((cuisine) => (
                 <SelectItem key={cuisine.id} value={cuisine.id}>
                   {cuisine.title}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-
-          {/* Health Goal Filter */}
-          <Select
-            value={selectedHealthGoal || ""}
-            onValueChange={(value) => setSelectedHealthGoal(value)}
-          >
-            <SelectTrigger className="w-full h-12">
-              <SelectValue placeholder="Select health goal" />
-            </SelectTrigger>
-            <SelectContent>
-              {healthGoals.map((goal) => (
-                <SelectItem key={goal.id} value={goal.id}>
-                  {goal.title}
                 </SelectItem>
               ))}
             </SelectContent>

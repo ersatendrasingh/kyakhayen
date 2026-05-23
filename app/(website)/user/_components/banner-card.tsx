@@ -4,7 +4,6 @@ import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { Loader2 } from "lucide-react";
 import { RiVerifiedBadgeFill } from "react-icons/ri";
-import { BsCalendar2DateFill } from "react-icons/bs";
 import { GoUnverified } from "react-icons/go";
 import { FaTransgender } from "react-icons/fa6";
 
@@ -147,12 +146,6 @@ const BannerCard = ({ className }: BannerCardProps) => {
                   </div>
                 )}
 
-                {user?.age && (
-                  <p className="text-sky-100 mr-4 text-sm font-medium mt-2 lg:mt-0">
-                    <BsCalendar2DateFill className="inline w-4 h-4 mr-2" />
-                    {user?.age + " Years Old"}
-                  </p>
-                )}
                 {user?.gender && (
                   <p className="text-sky-100 mr-4 text-sm font-medium mt-2 lg:mt-0">
                     <FaTransgender className="inline w-4 h-4 mr-2" />

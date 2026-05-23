@@ -4,8 +4,9 @@ import { NextResponse } from "next/server";
 
 export async function DELETE(
   req: Request,
-  { params }: { params: { postId: string; commentId: string } }
+  props: { params: Promise<{ postId: string; commentId: string }> }
 ) {
+  const params = await props.params;
   try {
     const { postId, commentId } = params;
     const user = await currentUser();

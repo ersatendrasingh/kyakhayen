@@ -1,12 +1,11 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useCurrentUser } from "@/hooks/use-current-user";
 import { useRouter } from "next/navigation";
 import axios from "axios";
-import { toast } from "react-toastify";
-import Image from "next/image";
-import { Heart, HeartOff, Loader2 } from "lucide-react";
+import { toast } from "sonner";
+import { Heart, Loader2 } from "lucide-react";
 
 interface FavoriteButtonProps {
   recipeId: string;
@@ -19,17 +18,12 @@ const FavoriteButton = ({
   classNames,
   initialIsFavorited = false,
 }: FavoriteButtonProps) => {
-  const [isFavorited, setIsFavorited] = useState<boolean | undefined>(
-    undefined
-  );
+  const [favoriteOverride, setFavoriteOverride] = useState<boolean | null>(null);
+  const isFavorited = favoriteOverride ?? initialIsFavorited;
   const [isLoading, setIsLoading] = useState(false);
 
   const user = useCurrentUser();
   const router = useRouter();
-
-  useEffect(() => {
-    setIsFavorited(initialIsFavorited);
-  }, [initialIsFavorited]);
 
   const handleFavorite = async () => {
     try {
@@ -44,23 +38,20 @@ const FavoriteButton = ({
       });
 
       if (response.status === 200) {
-        setIsFavorited(true);
+        setFavoriteOverride(true);
         setIsLoading(false);
         toast.success("Recipe added to favorites", {
-          position: "top-center",
-          autoClose: 5000,
+          duration: 5000,
         });
       } else {
         toast.error("Something went wrong", {
-          position: "top-center",
-          autoClose: 5000,
+          duration: 5000,
         });
       }
     } catch (error) {
       console.error(error);
       toast.error("Something went wrong", {
-        position: "top-center",
-        autoClose: 5000,
+        duration: 5000,
       });
     }
   };
@@ -76,23 +67,20 @@ const FavoriteButton = ({
       const response = await axios.delete(`/api/favorites/${recipeId}`);
 
       if (response.status === 200) {
-        setIsFavorited(false);
+        setFavoriteOverride(false);
         setIsLoading(false);
         toast.success("Recipe removed from favorites", {
-          position: "top-center",
-          autoClose: 5000,
+          duration: 5000,
         });
       } else {
         toast.error("Something went wrong", {
-          position: "top-center",
-          autoClose: 5000,
+          duration: 5000,
         });
       }
     } catch (error) {
       console.error(error);
       toast.error("Something went wrong", {
-        position: "top-center",
-        autoClose: 5000,
+        duration: 5000,
       });
     }
   };
@@ -103,28 +91,24 @@ const FavoriteButton = ({
         onClick={isFavorited ? handleUnfavorite : handleFavorite}
         title={isFavorited ? "Remove from favorites" : "Add to favorites"}
       >
-        {isFavorited === undefined ? (
-          <div className="flex items-center bg-white rounded-b-3xl py-1 px-1">
-            <Loader2 className="animate-spin w-4 h-4" stroke="green" />
-          </div>
-        ) : isFavorited ? (
-          <div className="flex items-center bg-white rounded-b-3xl py-1 px-1">
+        {isFavorited ? (
+          <div className="flex items-center rounded-b-3xl bg-card px-1 py-1 shadow-sm">
             {isLoading ? (
               <div className="flex items-center">
-                <Loader2 className="animate-spin w-4 h-4" stroke="green" />
+                <Loader2 className="size-4 animate-spin text-primary" />
               </div>
             ) : (
-              <Heart fill="red" stroke="red" size={20} />
+              <Heart className="fill-primary text-primary" size={20} />
             )}
           </div>
         ) : (
-          <div className="flex items-center bg-white rounded-b-3xl py-1 px-1">
+          <div className="flex items-center rounded-b-3xl bg-card px-1 py-1 shadow-sm">
             {isLoading ? (
               <div className="flex items-center">
-                <Loader2 className="animate-spin w-4 h-4" stroke="red" />
+                <Loader2 className="size-4 animate-spin text-primary" />
               </div>
             ) : (
-              <Heart fill="green" stroke="green" size={20} />
+              <Heart className="fill-secondary text-primary" size={20} />
             )}
           </div>
         )}

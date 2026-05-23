@@ -3,7 +3,7 @@
 import axios from "axios";
 import { Trash } from "lucide-react";
 import { useState } from "react";
-import { toast } from "react-toastify";
+import { toast } from "sonner";
 
 import { ConfirmModal } from "@/components/modals/confirm-modal";
 import { Button } from "@/components/ui/button";
@@ -33,14 +33,12 @@ export const PlanActions = ({
       if (isPublished) {
         await axios.patch(`/api/subscription-plans/${planId}/unpublish`);
         toast.success("Subscription plan unpublished successfully", {
-          position: "top-center",
-          autoClose: 5000,
+          duration: 5000,
         });
       } else {
         await axios.patch(`/api/subscription-plans/${planId}/publish`);
         toast.success("Subscription plan published successfully", {
-          position: "top-center",
-          autoClose: 5000,
+          duration: 5000,
         });
         confetti.onOpen();
       }
@@ -48,8 +46,7 @@ export const PlanActions = ({
       router.refresh();
     } catch {
       toast.error("Something went wrong while unpublishing subscription plan", {
-        position: "top-center",
-        autoClose: 5000,
+        duration: 5000,
       });
     } finally {
       setIsLoading(false);
@@ -60,16 +57,14 @@ export const PlanActions = ({
       setIsLoading(true);
       await axios.delete(`/api/subscription-plans/${planId}`);
       toast.success("Subscription plan deleted successfully", {
-        position: "top-center",
-        autoClose: 5000,
+        duration: 5000,
       });
 
       router.push(`/admin/subscription-plans`);
       router.refresh();
     } catch (error) {
       toast.error("Something went wrong while deleting subscription plan", {
-        position: "top-center",
-        autoClose: 5000,
+        duration: 5000,
       });
     } finally {
       setIsLoading(false);

@@ -12,7 +12,7 @@ import { useForm } from "react-hook-form";
 import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import axios from "axios";
-import { toast } from "react-toastify";
+import { toast } from "sonner";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { useCurrentUser } from "@/hooks/use-current-user";
@@ -94,13 +94,11 @@ const GeneralInformation = () => {
       router.push(`/user/profile/`);
 
       toast.success("Profile updated successfully", {
-        position: "top-center",
-        autoClose: 5000,
+        duration: 5000,
       });
     } catch {
       toast.error("Something went wrong while updating profile", {
-        position: "top-center",
-        autoClose: 5000,
+        duration: 5000,
       });
     }
   };

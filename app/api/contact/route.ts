@@ -2,7 +2,7 @@ import { db } from "@/lib/db";
 import { NextResponse } from "next/server";
 import ContactThankyouMail from "@/emails/contact-thankyou-mail";
 import ContactAdminMail from "@/emails/contact-admin-mail";
-import { render } from "@react-email/render";
+import { render } from "react-email";
 import { sendEmail } from "@/lib/mail";
 
 export async function POST(req: Request) {
@@ -45,7 +45,7 @@ export async function POST(req: Request) {
     await sendEmail({
       to: combinedData.email,
       subject: "Thank you for contact with us!",
-      html: render(
+      html: await render(
         ContactThankyouMail({
           name: combinedData.name,
         })
@@ -54,7 +54,7 @@ export async function POST(req: Request) {
     await sendEmail({
       to: process.env.ADMIN_EMAIL as string,
       subject: "New contact query from kyakhayen",
-      html: render(
+      html: await render(
         ContactAdminMail({
           name: combinedData.name,
           email: combinedData.email,

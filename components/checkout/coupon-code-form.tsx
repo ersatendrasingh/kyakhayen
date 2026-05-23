@@ -17,7 +17,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { couponSchema } from "@/schemas";
 import { Button } from "@/components/ui/button";
-import { toast } from "react-toastify";
+import { toast } from "sonner";
 import { CartItem } from "@/types/cart-item";
 import { Loader2 } from "lucide-react";
 
@@ -70,8 +70,7 @@ const CouponCodeForm = ({ onApplyCoupon, cartItems }: CouponCodeFormProps) => {
       if (axios.isAxiosError(error)) {
         const errorMessage = error.response?.data || "Something went wrong";
         toast.error(errorMessage, {
-          position: "top-center",
-          autoClose: 5000,
+          duration: 5000,
         });
         setCouponStatus(errorMessage);
       } else {

@@ -6,9 +6,9 @@ import { PageHeader } from "@/components/page-header";
 import { Metadata } from "next";
 
 const meta = {
-  title: "Blog - Kya Khayen | diet plan for weight loss for female",
+  title: "Blog - Kya Khayen | Cooking Ideas and Food Guides",
   description:
-    "From weight loss diets for women to pregnancy diet charts and diabetic diet chart, discover healthy meals and healthy snack ideas for your health goal.",
+    "Discover recipe ideas, kitchen tips, seasonal ingredients and snack inspiration for everyday home cooking.",
   image: `${process.env.NEXT_PUBLIC_APP_URL}/meta-images/recipe-page.jpg`,
 };
 
@@ -52,13 +52,13 @@ export const metadata: Metadata = {
     canonical: `${process.env.NEXT_PUBLIC_APP_URL}/blog`,
   },
 };
-const BlogPage = async ({
-  params,
-  searchParams,
-}: {
-  params: { blogSlug: string };
-  searchParams: { k?: string; type?: string };
-}) => {
+const BlogPage = async (
+  props: {
+    params: Promise<{ blogSlug: string }>;
+    searchParams: Promise<{ k?: string; type?: string }>;
+  }
+) => {
+  const searchParams = await props.searchParams;
   const articles = await getArticles({
     searchSlug: searchParams.k || undefined,
     searchType: searchParams.type || undefined,

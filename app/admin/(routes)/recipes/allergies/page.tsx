@@ -1,34 +1,35 @@
+import { AllergiesDashboard } from "@/components/admin/recipe-allergies/allergies-dashboard";
 import { db } from "@/lib/db";
 
-import AllergyForm from "./_components/allergy-form";
-import AllergiesTable from "./_components/allergies-table";
 const AllergiesPage = async () => {
-  const allergies = await db.allergies.findMany({
-    orderBy: {
-      position: "asc",
-    },
-    include: {
-      _count: {
-        select: {
-          recipeAllergies: true,
+  const [allergies, recipesTagged, totalRecipes] = await Promise.all([
+    db.allergies.findMany({
+      orderBy: [{ position: "asc" }, { title: "asc" }],
+      include: {
+        _count: {
+          select: {
+            recipeAllergies: true,
+          },
         },
       },
-    },
-  });
-  const allergiesWithRecipeCount = allergies.map((allergy) => ({
-    ...allergy,
-    totalRecipeCount: allergy._count.recipeAllergies,
-  }));
+    }),
+    db.recipes.count({
+      where: {
+        recipeAllergies: {
+          some: {},
+        },
+      },
+    }),
+    db.recipes.count(),
+  ]);
+
   return (
-    <div className="p-6">
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <AllergyForm />
-        </div>
-        <div>
-          <AllergiesTable initialAllergies={allergiesWithRecipeCount} />
-        </div>
-      </div>
+    <div className="p-4 sm:p-6 lg:p-8">
+      <AllergiesDashboard
+        allergies={allergies}
+        recipesTagged={recipesTagged}
+        untaggedRecipes={totalRecipes - recipesTagged}
+      />
     </div>
   );
 };

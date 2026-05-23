@@ -3,7 +3,7 @@
 import axios from "axios";
 import { Trash } from "lucide-react";
 import { useState } from "react";
-import { toast } from "react-toastify";
+import { toast } from "sonner";
 
 import { ConfirmModal } from "@/components/modals/confirm-modal";
 import { Button } from "@/components/ui/button";
@@ -33,14 +33,12 @@ export const IngredientActions = ({
       if (isPublished) {
         await axios.patch(`/api/ingredients/${ingredientId}/unpublish`);
         toast.success("Ingredient unpublished successfully", {
-          position: "top-center",
-          autoClose: 5000,
+          duration: 5000,
         });
       } else {
         await axios.patch(`/api/ingredients/${ingredientId}/publish`);
         toast.success("Ingredient published successfully", {
-          position: "top-center",
-          autoClose: 5000,
+          duration: 5000,
         });
         confetti.onOpen();
       }
@@ -48,8 +46,7 @@ export const IngredientActions = ({
       router.refresh();
     } catch {
       toast.error("Something went wrong while unpublishing ingredient", {
-        position: "top-center",
-        autoClose: 5000,
+        duration: 5000,
       });
     } finally {
       setIsLoading(false);
@@ -60,16 +57,14 @@ export const IngredientActions = ({
       setIsLoading(true);
       await axios.delete(`/api/ingredients/${ingredientId}`);
       toast.success("Ingredient deleted successfully", {
-        position: "top-center",
-        autoClose: 5000,
+        duration: 5000,
       });
 
       router.push(`/admin/ingredients`);
       router.refresh();
     } catch (error) {
       toast.error("Something went wrong while deleting ingredient", {
-        position: "top-center",
-        autoClose: 5000,
+        duration: 5000,
       });
     } finally {
       setIsLoading(false);

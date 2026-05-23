@@ -1,7 +1,6 @@
 "use client";
 
 import {
-  Boxes,
   CircleDollarSign,
   Home,
   LogOut,
@@ -31,11 +30,6 @@ const userMenu = [
     name: "My Subscriptions",
     href: "/user/subscriptions",
     menuIcon: CircleDollarSign,
-  },
-  {
-    name: "My Wellness Summary",
-    href: "/user/wellness-summary",
-    menuIcon: Boxes,
   },
   {
     name: "My Preferences",

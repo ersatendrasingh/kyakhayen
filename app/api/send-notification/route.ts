@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import admin from "@/lib/firebaseAdmin";
+import { sendFirebaseMessage } from "@/lib/firebaseAdmin";
 import { db } from "@/lib/db"; // Your database setup
+import { getPublicMediaUrl } from "@/lib/s3utils";
 
 export async function POST(req: NextRequest) {
   try {
@@ -25,7 +26,7 @@ export async function POST(req: NextRequest) {
         },
         android: {
           notification: {
-            icon: "https://kyakhayen-prod.s3.ap-south-1.amazonaws.com/others/kya-khayen-favicon.png",
+            icon: getPublicMediaUrl("others/kya-khayen-favicon.png"),
             color: "#f45342",
           },
         },
@@ -37,7 +38,7 @@ export async function POST(req: NextRequest) {
 
       try {
         // Send the notification using Firebase Admin SDK
-        const response = await admin.messaging().send(message);
+        const response = await sendFirebaseMessage(message);
         console.log(`Notification sent successfully to ${user.email}`);
         return { success: true, email: user.email, response };
       } catch (error: any) {

@@ -2,10 +2,8 @@ import { currentUser } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { NextResponse } from "next/server";
 
-export async function GET(
-  req: Request,
-  { params }: { params: { postId: string } }
-) {
+export async function GET(req: Request, props: { params: Promise<{ postId: string }> }) {
+  const params = await props.params;
   try {
     const { postId } = params;
 

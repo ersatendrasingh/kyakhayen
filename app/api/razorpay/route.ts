@@ -2,12 +2,7 @@ import { currentUser } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { NextResponse } from "next/server";
 import Razorpay from "razorpay";
-import shortid from "shortid";
-
-const razorpay = new Razorpay({
-  key_id: process.env.RAZORPAY_KEY_ID as string,
-  key_secret: process.env.RAZORPAY_KEY_SECRET as string,
-});
+import { randomUUID } from "node:crypto";
 
 export async function POST(req: Request) {
   try {
@@ -15,6 +10,20 @@ export async function POST(req: Request) {
     if (!user) {
       return NextResponse.json("Unauthorized", { status: 401 });
     }
+
+    const keyId = process.env.RAZORPAY_KEY_ID;
+    const keySecret = process.env.RAZORPAY_KEY_SECRET;
+    if (!keyId || !keySecret) {
+      return NextResponse.json(
+        "Payment gateway is not configured.",
+        { status: 503 }
+      );
+    }
+
+    const razorpay = new Razorpay({
+      key_id: keyId,
+      key_secret: keySecret,
+    });
 
     const userId = await db.user.findUnique({
       where: {
@@ -45,7 +54,7 @@ export async function POST(req: Request) {
     const options = {
       amount: (amount * 100).toString(),
       currency,
-      receipt: shortid.generate(),
+      receipt: randomUUID(),
       payment_capture: 1,
       notes: {
         name,

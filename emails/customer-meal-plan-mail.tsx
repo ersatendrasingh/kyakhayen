@@ -1,4 +1,5 @@
-import { Img } from "@react-email/components";
+import { Img } from "react-email";
+import { getPublicMediaUrl } from "@/lib/s3utils";
 
 interface CustomerMealPlanMailProps {
   subjectLine: string;
@@ -38,7 +39,7 @@ const CustomerMealPlanMail = ({
           style={{ color: "#fff", textDecoration: "none" }}
         >
           <Img
-            src="https://kyakhayen-prod.s3.ap-south-1.amazonaws.com/others/kyakhayen-white-logo.png"
+            src={getPublicMediaUrl("others/kyakhayen-white-logo.png")}
             alt="Kya Khayen Logo"
             width={260}
             height={80}
@@ -154,7 +155,7 @@ const CustomerMealPlanMail = ({
         </h2>
         <a href="https://www.kyakhayen.com/download-app">
           <Img
-            src="https://kyakhayen-prod.s3.ap-south-1.amazonaws.com/others/download-app.jpg"
+            src={getPublicMediaUrl("others/download-app.jpg")}
             alt="Download Our App"
             width="100%"
             height="auto"
@@ -218,7 +219,7 @@ const CustomerMealPlanMail = ({
                 style={{ color: "#fff", textDecoration: "none" }}
               >
                 <Img
-                  src="https://kyakhayen-prod.s3.ap-south-1.amazonaws.com/others/facebook.png"
+                  src={getPublicMediaUrl("others/facebook.png")}
                   alt="Facebook"
                   width={24}
                   height={24}
@@ -232,7 +233,7 @@ const CustomerMealPlanMail = ({
                 style={{ color: "#fff", textDecoration: "none" }}
               >
                 <Img
-                  src="https://kyakhayen-prod.s3.ap-south-1.amazonaws.com/others/x-icon.png"
+                  src={getPublicMediaUrl("others/x-icon.png")}
                   alt="Twitter"
                   width={24}
                   height={24}
@@ -246,7 +247,7 @@ const CustomerMealPlanMail = ({
                 style={{ color: "#fff", textDecoration: "none" }}
               >
                 <Img
-                  src="https://kyakhayen-prod.s3.ap-south-1.amazonaws.com/others/social.png"
+                  src={getPublicMediaUrl("others/social.png")}
                   alt="Instagram"
                   width={24}
                   height={24}
@@ -260,7 +261,7 @@ const CustomerMealPlanMail = ({
                 style={{ color: "#fff", textDecoration: "none" }}
               >
                 <Img
-                  src="https://kyakhayen-prod.s3.ap-south-1.amazonaws.com/others/youtube.png"
+                  src={getPublicMediaUrl("others/youtube.png")}
                   alt="YouTube"
                   width={24}
                   height={24}

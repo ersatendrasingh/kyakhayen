@@ -1,6 +1,6 @@
 "use server";
 
-import { render } from "@react-email/render";
+import { render } from "react-email";
 
 import { db } from "@/lib/db";
 import { getUserByEmail } from "@/data/user";
@@ -51,7 +51,7 @@ export const newVerification = async (token: string) => {
     to: existingUser.email as string,
     subject:
       "🎉 Congratulations " + existingUser.name + ", Your Email is Verified!✅",
-    html: render(
+    html: await render(
       EmailVerifiedMail({
         name: existingUser.name as string,
       })

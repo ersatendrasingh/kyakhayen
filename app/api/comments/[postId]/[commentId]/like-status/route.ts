@@ -4,10 +4,15 @@ import { NextResponse } from "next/server";
 
 export async function GET(
   req: Request,
-  {
-    params: { postId, commentId },
-  }: { params: { postId: string; commentId: string } }
+  props: { params: Promise<{ postId: string; commentId: string }> }
 ) {
+  const params = await props.params;
+
+  const {
+    postId,
+    commentId
+  } = params;
+
   try {
     const user = await currentUser();
 

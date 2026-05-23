@@ -18,7 +18,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import axios from "axios";
-import { toast } from "react-toastify";
+import { toast } from "sonner";
 import { DataTable } from "./data-table";
 import { useRouter } from "next/navigation";
 import { ConfirmModal } from "@/components/modals/confirm-modal";
@@ -43,26 +43,22 @@ const CommentsTable = ({ comments }: CommentsTableProps) => {
       );
       if (response.status === 200) {
         toast.success("Comment approved successfully", {
-          position: "top-center",
-          autoClose: 5000,
+          duration: 5000,
         });
         router.refresh();
       } else {
         toast.error(response.data, {
-          position: "top-center",
-          autoClose: 5000,
+          duration: 5000,
         });
       }
     } catch (error: any) {
       if (error.response && error.response.status === 409) {
         toast.error("Comment already approved", {
-          position: "top-center",
-          autoClose: 5000,
+          duration: 5000,
         });
       } else {
         toast.error("An error occurred while approving the comment", {
-          position: "top-center",
-          autoClose: 5000,
+          duration: 5000,
         });
       }
     }
@@ -75,26 +71,22 @@ const CommentsTable = ({ comments }: CommentsTableProps) => {
       );
       if (response.status === 200) {
         toast.success("Comment unapproved successfully", {
-          position: "top-center",
-          autoClose: 5000,
+          duration: 5000,
         });
         router.refresh();
       } else {
         toast.error("Something went wrong", {
-          position: "top-center",
-          autoClose: 5000,
+          duration: 5000,
         });
       }
     } catch (error: any) {
       if (error.response && error.response.status === 409) {
         toast.error("Comment already unapproved", {
-          position: "top-center",
-          autoClose: 5000,
+          duration: 5000,
         });
       } else {
         toast.error("An error occurred while unapproving the comment", {
-          position: "top-center",
-          autoClose: 5000,
+          duration: 5000,
         });
       }
     }
@@ -107,20 +99,17 @@ const CommentsTable = ({ comments }: CommentsTableProps) => {
       );
       if (response.status === 200) {
         toast.success("Comment deleted successfully", {
-          position: "top-center",
-          autoClose: 5000,
+          duration: 5000,
         });
         router.refresh();
       } else {
         toast.error("Something went wrong", {
-          position: "top-center",
-          autoClose: 5000,
+          duration: 5000,
         });
       }
     } catch (error: any) {
       toast.error("An error occurred while deleting the comment", {
-        position: "top-center",
-        autoClose: 5000,
+        duration: 5000,
       });
     }
   };

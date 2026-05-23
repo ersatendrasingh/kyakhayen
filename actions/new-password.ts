@@ -2,7 +2,7 @@
 
 import * as z from "zod";
 import bcrypt from "bcryptjs";
-import { render } from "@react-email/render";
+import { render } from "react-email";
 
 import { NewPasswordSchema } from "@/schemas";
 import { getPasswordResetTokenByToken } from "@/data/password-reset-token";
@@ -58,7 +58,7 @@ export const newPassword = async (
   await sendEmail({
     to: existingUser.email as string,
     subject: "Password Reset Complete: Welcome Back!",
-    html: render(
+    html: await render(
       PasswordResetConfirmationMail({
         name: existingUser.name as string,
       })

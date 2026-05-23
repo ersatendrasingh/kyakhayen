@@ -8,12 +8,8 @@ import HeroBannerCard from "@/components/sections/hero-banner-card";
 import {
   Allergies as AllergiesType,
   Cuisines as CuisinesType,
-  HealthGoals as HealthGoalType,
-  Gender as GenderType,
   RecipeCategories,
   RecipeDifficulty,
-  PrakritiQuestionOption,
-  PrakritiQuestion,
 } from "@prisma/client";
 import { collectPersonalizationData } from "@/hooks/use-user-personalization";
 import axios from "axios";
@@ -22,9 +18,6 @@ import { Loader2 } from "lucide-react";
 import { Session } from "next-auth";
 import OverlayLoader from "../loader/overlay-loader";
 
-interface PrakritiQuestionType extends PrakritiQuestion {
-  options: PrakritiQuestionOption[];
-}
 type Banner = {
   id: number;
   title: string;
@@ -41,11 +34,8 @@ interface HomeBannerProps {
   className?: string;
   cuisines: CuisinesType[];
   allergies: AllergiesType[];
-  healthGoals: HealthGoalType[];
   cookingSkills: RecipeDifficulty[];
   foodPreferences: RecipeCategories[];
-  genders: GenderType[];
-  prakritiQuestions: PrakritiQuestionType[];
 }
 
 const HomeBanner = ({
@@ -54,11 +44,8 @@ const HomeBanner = ({
   featureBanners,
   cuisines,
   allergies,
-  healthGoals,
   cookingSkills,
-  prakritiQuestions,
   foodPreferences,
-  genders,
 }: HomeBannerProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
@@ -123,11 +110,8 @@ const HomeBanner = ({
           banner={banner}
           cuisines={cuisines}
           allergies={allergies}
-          healthGoals={healthGoals}
           cookingSkills={cookingSkills}
           foodPreferences={foodPreferences}
-          prakritiQuestions={prakritiQuestions}
-          genders={genders}
         />
       )}
     </div>

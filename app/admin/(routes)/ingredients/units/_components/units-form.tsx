@@ -6,7 +6,7 @@ import { useForm } from "react-hook-form";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import axios from "axios";
-import { toast } from "react-toastify";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -43,14 +43,12 @@ const UnitsForm = () => {
 
         router.refresh();
         toast.success("Units created successfully", {
-          position: "top-center",
-          autoClose: 5000,
+          duration: 5000,
         });
       }
     } catch {
       toast.error("Something went wrong while creating units", {
-        position: "top-center",
-        autoClose: 5000,
+        duration: 5000,
       });
     }
   };

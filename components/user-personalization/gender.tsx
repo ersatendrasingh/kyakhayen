@@ -87,7 +87,6 @@ const Gender = ({ genders, title, setIsFormValid }: GenderProps) => {
       >
         <Swiper
           className="w-full"
-          cssMode={true}
           spaceBetween={20}
           slidesPerView={2}
           navigation={true}

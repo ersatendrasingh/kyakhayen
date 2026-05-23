@@ -57,6 +57,27 @@ const BillingForm = ({ isSubmitting }: BillingFormProps) => {
     setSelectedCountryCode,
   ]);
 
+  async function fetchStates(countryId: number) {
+    try {
+      const response = await axios.post("/api/states", { countryId });
+      const statesData = response.data;
+      setStates(statesData);
+      setSelectedState(null);
+    } catch (error: any) {
+      throw new Error("Error fetching states:", error);
+    }
+  }
+
+  async function fetchCities(stateId: number) {
+    try {
+      const response = await axios.post("/api/cities", { stateId });
+      const citiesData = response.data;
+      setCities(citiesData);
+    } catch (error: any) {
+      throw new Error("Error fetching cities:", error);
+    }
+  }
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -92,25 +113,6 @@ const BillingForm = ({ isSubmitting }: BillingFormProps) => {
     fetchStates(country.id);
   };
 
-  const fetchStates = async (countryId: number) => {
-    try {
-      const response = await axios.post("/api/states", { countryId });
-      const statesData = response.data;
-      setStates(statesData);
-      setSelectedState(null);
-    } catch (error: any) {
-      throw new Error("Error fetching states:", error);
-    }
-  };
-  const fetchCities = async (stateId: number) => {
-    try {
-      const response = await axios.post("/api/cities", { stateId });
-      const citiesData = response.data;
-      setCities(citiesData);
-    } catch (error: any) {
-      throw new Error("Error fetching cities:", error);
-    }
-  };
   const handleStateChange = (state: State) => {
     setSelectedState(state);
     fetchCities(state.id);

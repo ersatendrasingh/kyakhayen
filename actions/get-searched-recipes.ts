@@ -52,6 +52,7 @@ export const GetSearchedRecipes = async ({
             recipeDietType: {
               some: {
                 dietType: {
+                  isPublished: true,
                   title: {
                     contains: k,
                   },
@@ -63,6 +64,7 @@ export const GetSearchedRecipes = async ({
             recipeRecipeType: {
               some: {
                 recipeType: {
+                  isPublished: true,
                   title: {
                     contains: k,
                   },
@@ -105,11 +107,6 @@ export const GetSearchedRecipes = async ({
             position: "asc",
           },
         },
-        recipeHealthBenefits: {
-          orderBy: {
-            position: "asc",
-          },
-        },
         recipeCookingMethods: {
           include: {
             cookingMethod: true,
@@ -121,20 +118,38 @@ export const GetSearchedRecipes = async ({
           },
         },
         recipeDietType: {
+          where: {
+            dietType: {
+              isPublished: true,
+            },
+          },
           include: {
             dietType: true,
           },
         },
         recipeRecipeType: {
+          where: {
+            recipeType: {
+              isPublished: true,
+            },
+          },
           include: {
             recipeType: true,
           },
         },
         recipeNutrient: {
+          where: {
+            nutrient: {
+              isPublished: true,
+            },
+          },
           include: {
             nutrient: true,
           },
         },
+        recipeMealTime: true,
+        recipeComments: true,
+        Review: true,
         recipeCookingTime: true,
 
         recipeDifficulty: true,

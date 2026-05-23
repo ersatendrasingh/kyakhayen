@@ -13,14 +13,10 @@ const IntroSection = () => {
             Why Subscribe to Kya Khayen?
           </h2>
           <p className="text-lg text-center leading-loose tracking-wide mb-4">
-            Achieve your health and fitness goals effectively with our
-            algorithm-based, automatically generated personalized nutrition
-            plans. We create personalized meal plans based on your taste,
-            allergen, health goal and your body type. Whether you want to lose
-            weight, gain muscle, or you want just eat a balanced diet, our diet
-            plans make healthy eating easy and enjoyable. Become a member today
-            and transform your life with delicious, nutritious meals designed
-            just for you!
+            Plan everyday cooking with personalized meal ideas based on your
+            tastes, favourite cuisines, ingredient exclusions and cooking
+            skills. Become a member to discover recipes that are practical,
+            delicious and easy to organize through the week.
           </p>
           <Link href="#pricing">
             <Button
@@ -33,7 +29,7 @@ const IntroSection = () => {
           </Link>
           <Image
             src="/assets/images/meal-plan.webp"
-            alt="weight loss meal programs"
+            alt="personalized meal plans"
             width={500}
             height={300}
             className="my-6 rounded"
@@ -43,23 +39,20 @@ const IntroSection = () => {
             <div className="flex flex-col md:flex-row">
               <div className="md:w-1/2 md:pr-4">
                 <h4 className="text-xl font-medium text-websecondary mb-2">
-                  Personalized Healthy Diet Plans
+                  Personalized Meal Plans
                 </h4>
                 <p className="text-lg text-justify tracking-wide leading-loose mb-4">
                   We create custom meal plans specifically based on your dietary
-                  preferences, health goals, allergies and body type. Whether
-                  you're looking to lose weight, gain muscle, or improve your
-                  overall health, our plans ensure every diet is both delicious
-                  and nutritious.
+                  preferences, cuisines and ingredients you avoid. Our plans
+                  keep recipe discovery practical, varied and delicious.
                 </p>
 
                 <h4 className="text-xl font-medium text-websecondary mb-2">
-                  Real Time Progress Tracking
+                  Easy Planning Tools
                 </h4>
                 <p className="text-lg tracking-wide text-justify leading-loose mb-4">
-                  Track your health and fitness history with our advanced real
-                  time progress tracking tools. Easily monitor your weight
-                  changes, calorie intake, and overall improvement.
+                  Save favourite ideas and organize meals through the week
+                  with simple planning tools.
                 </p>
                 <h4 className="text-xl font-medium text-websecondary mb-2">
                   Community Support
@@ -67,15 +60,15 @@ const IntroSection = () => {
                 <p className="text-lg text-justify tracking-wide leading-loose mb-4">
                   Become a member of our lively foodie community and share your
                   culinary explorations with like-minded peoples who share your
-                  enthusiasm for healthy living.
+                  enthusiasm for cooking.
                 </p>
               </div>
               <div className="md:w-1/2 md:pl-4">
                 <h4 className="text-xl font-medium text-websecondary mb-2">
-                  Delicious and Healthy Recipes Library
+                  Delicious Recipes Library
                 </h4>
                 <p className="text-lg text-justify tracking-wide leading-loose mb-4">
-                  Explore our growing library of healthy and delicious recipes
+                  Explore our growing library of delicious recipes
                   that are easy to make. You can filter recipes by your dietary
                   needs, such as veg, non-veg, pescetarian, egg free, vegan,
                   gluten-free or high-protein meals.
@@ -86,17 +79,15 @@ const IntroSection = () => {
                 <p className="text-lg text-justify tracking-wide leading-loose mb-4">
                   Access full functionality on the go with our easy-to-use PWA
                   Kya Khayen mobile app. Here you can get reminders, track your
-                  progress, and stay connected to your plan on the go.
+                  saved ideas, and stay connected to your plan on the go.
                 </p>
 
                 <h4 className="text-xl font-medium text-websecondary mb-2">
                   AI-Driven Delicious Recipes Recommendations
                 </h4>
                 <p className="text-lg text-justify tracking-wide leading-loose mb-4">
-                  Our nutrition platform uses advanced AI to analyze your
-                  progress and provide you usefull recommendations. You can also
-                  get personalized meal plans recommendations such as what to
-                  eat next.
+                  Our platform uses your recipe preferences to suggest ideas
+                  you may enjoy and help answer what to cook next.
                 </p>
               </div>
             </div>
@@ -127,9 +118,9 @@ const IntroSection = () => {
                   Step 3: Complete Your Personalization Questions
                 </h6>
                 <p className="text-lg text-justify tracking-wide leading-loose mb-4">
-                  Let us know your nutrition preferences (food preferences,
-                  allergen, cuisines and health goals) and body type. This helps
-                  us to create a personalized meal plan for you.
+                  Let us know your food preferences, ingredient exclusions,
+                  favourite cuisines and cooking skill. This helps us create
+                  meal ideas for you.
                 </p>
                 <h6 className="text-xl font-medium text-websecondary mb-2">
                   Step 4: Access your Personalized Meal Plan and Enjoy
@@ -137,8 +128,7 @@ const IntroSection = () => {
                 <p className="text-lg text-justify tracking-wide leading-loose mb-4">
                   Once your personalization is complete, you can access your
                   personal meal plan, which is customized to your needs. Enjoy
-                  delicious meals that are just for you support health and
-                  fitness goals.
+                  delicious meals chosen around your preferences.
                 </p>
               </div>
             </div>

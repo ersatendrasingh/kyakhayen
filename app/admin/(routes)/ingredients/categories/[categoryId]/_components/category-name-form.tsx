@@ -8,7 +8,7 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { toast } from "react-toastify";
+import { toast } from "sonner";
 import { Pencil } from "lucide-react";
 import { useState } from "react";
 import axios from "axios";
@@ -43,15 +43,13 @@ export const CategoryNameForm = ({
     try {
       await axios.patch(`/api/ingredients/categories/${categoryId}`, values);
       toast.success("Category name updated successfully", {
-        position: "top-center",
-        autoClose: 5000,
+        duration: 5000,
       });
       toggleEdit();
       router.refresh();
     } catch {
       toast.error("Something went wrong while updating category name", {
-        position: "top-center",
-        autoClose: 5000,
+        duration: 5000,
       });
     }
   };

@@ -8,7 +8,7 @@ import Image from "next/image";
 import { getMealPlanFromS3 } from "@/actions/get-meal-plan-from-s3";
 import { formatDate } from "@/lib/formatDate";
 import { formatISO } from "date-fns";
-import { toast } from "react-toastify";
+import { toast } from "sonner";
 import { getUserLatestPlanDates } from "@/actions/get-user-meal-plan-dates";
 import { Loader } from "lucide-react";
 
@@ -83,8 +83,7 @@ const DailyView = ({ date }: DailyViewProps) => {
           }
         } else {
           toast.error("Meal plan not available for the selected date.", {
-            position: "top-center",
-            autoClose: 5000,
+            duration: 5000,
           });
           console.log("Meal plan not available for the selected date.");
         }

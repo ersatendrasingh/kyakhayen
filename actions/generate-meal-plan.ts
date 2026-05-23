@@ -5,16 +5,24 @@ import { generateRecipesForDate } from "@/lib/assignDiet";
 
 import { formatISO } from "date-fns";
 import { sendEmail } from "@/lib/mail";
-import { render } from "@react-email/render";
+import { render } from "react-email";
 import CustomerMealPlanMail from "@/emails/customer-meal-plan-mail";
 
-const s3 = new S3Client({
-  region: process.env.AWS_REGION as string,
-  credentials: {
-    accessKeyId: process.env.AWS_ACCESS_KEY_ID as string,
-    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY as string,
-  },
-});
+const getS3Client = () => {
+  const region = process.env.AWS_REGION;
+  const accessKeyId = process.env.AWS_ACCESS_KEY_ID;
+  const secretAccessKey = process.env.AWS_SECRET_ACCESS_KEY;
+  const bucket = process.env.AWS_PRIVATE_BUCKET_NAME;
+
+  if (!region || !accessKeyId || !secretAccessKey || !bucket) {
+    throw new Error("AWS private meal-plan storage is not configured.");
+  }
+
+  return new S3Client({
+    region,
+    credentials: { accessKeyId, secretAccessKey },
+  });
+};
 
 type MealPlanResult = {
   date: Date;
@@ -24,7 +32,7 @@ type MealPlanResult = {
 // Helper function to upload data to S3
 const uploadToS3 = async (fileName: string, fileContent: string) => {
   const params = {
-    Bucket: process.env.AWS_BUCKET_NAME as string,
+    Bucket: process.env.AWS_PRIVATE_BUCKET_NAME as string,
     Key: fileName,
     Body: fileContent,
     ContentType: "application/json",
@@ -32,7 +40,7 @@ const uploadToS3 = async (fileName: string, fileContent: string) => {
   const command = new PutObjectCommand(params);
 
   try {
-    const data = await s3.send(command);
+    const data = await getS3Client().send(command);
     return data;
   } catch (error) {
     console.error("Error uploading file to S3:", error);
@@ -123,7 +131,7 @@ export const generateMealPlan = async (
     await sendEmail({
       to: user?.email as string,
       subject: "Your Customized Meal Plan is Ready For You!",
-      html: render(
+      html: await render(
         CustomerMealPlanMail({
           subjectLine: "Exciting News! Your Personalized Meal Plan Awaits.",
           name: user?.name as string,

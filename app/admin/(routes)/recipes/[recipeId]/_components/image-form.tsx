@@ -3,7 +3,7 @@
 import Image from "next/image";
 import axios from "axios";
 import { useRouter } from "next/navigation";
-import { toast } from "react-toastify";
+import { toast } from "sonner";
 import { ImageIcon, Pencil, PlusCircleIcon } from "lucide-react";
 import { useState } from "react";
 
@@ -28,16 +28,16 @@ export const ImageForm = ({ initialData, recipeId }: ImageFormProps) => {
     try {
       await axios.patch(`/api/recipes/${recipeId}`, imageUrl);
       toast.success("Recipe image updated successfully", {
-        position: "top-center",
-        autoClose: 5000,
+        duration: 5000,
       });
       toggleEdit();
       router.refresh();
+      return true;
     } catch {
       toast.error("Something went wrong while updating recipe image", {
-        position: "top-center",
-        autoClose: 5000,
+        duration: 5000,
       });
+      return false;
     }
   };
 
@@ -85,9 +85,7 @@ export const ImageForm = ({ initialData, recipeId }: ImageFormProps) => {
             multiple={false}
             acceptedFileTypes={["image/*"]}
             recipeId={initialData.id}
-            onChange={(url) => {
-              if (url) onSubmit(url);
-            }}
+            onChange={onSubmit}
           />
           <div className="text-xs text-muted-foreground mt-2">
             16x9 aspect ratio recommended

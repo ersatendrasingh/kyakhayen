@@ -6,7 +6,7 @@ import { useForm } from "react-hook-form";
 import { useRouter } from "next/navigation";
 
 import axios from "axios";
-import { toast } from "react-toastify";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -40,14 +40,12 @@ const IngredientCategoryForm = () => {
 
         router.refresh();
         toast.success("Ingredient category created successfully", {
-          position: "top-center",
-          autoClose: 5000,
+          duration: 5000,
         });
       }
     } catch {
       toast.error("Something went wrong while creating ingredient category", {
-        position: "top-center",
-        autoClose: 5000,
+        duration: 5000,
       });
     }
   };

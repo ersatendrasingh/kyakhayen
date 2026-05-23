@@ -7,9 +7,9 @@ import { NoRecipesFound } from "@/components/recipes/no-recipe-found";
 import RecipeCard from "@/components/recipes/recipe-card";
 
 const meta = {
-  title: "Search healthy recipes | diet plans | weight loss diet",
+  title: "Search recipes | meal plans | Kya Khayen",
   description:
-    "Search for healthy recipes, diet plans, weight loss programs, healthy meal ideas, and more. Find the perfect keto nutrition plan for your health journey!",
+    "Search for recipes, meal plans and cooking ideas. Find dishes that fit your taste, cuisine preferences and available time.",
   image: `${process.env.NEXT_PUBLIC_APP_URL}/meta-images/recipe-page.jpg`,
 };
 
@@ -54,13 +54,13 @@ export const metadata: Metadata = {
   },
 };
 
-const SearchPage = async ({
-  params,
-  searchParams,
-}: {
-  params: { recipeSlug: string };
-  searchParams: { k?: string };
-}) => {
+const SearchPage = async (
+  props: {
+    params: Promise<{ recipeSlug: string }>;
+    searchParams: Promise<{ k?: string }>;
+  }
+) => {
+  const searchParams = await props.searchParams;
   const recipes = await GetSearchedRecipes({
     k: searchParams.k || undefined,
   });

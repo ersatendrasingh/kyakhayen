@@ -1,7 +1,7 @@
 import { db } from "@/lib/db";
 import { NextResponse } from "next/server";
 
-import { render } from "@react-email/render";
+import { render } from "react-email";
 import { sendEmail } from "@/lib/mail";
 import OrderConfirmationMail from "@/emails/customer-order-confirmation";
 import CustomerOrderAdminMail from "@/emails/customer-order-admin-mail";
@@ -49,7 +49,7 @@ export async function POST(req: Request) {
     await sendEmail({
       to: email as string,
       subject: "Order Attempt on Kya Khayen Unsuccessful - Action Required",
-      html: render(
+      html: await render(
         OrderConfirmationMail({
           subjectLine:
             "Order Placement Unsuccessful, Please try again or contact support for assistance.",
@@ -70,7 +70,7 @@ export async function POST(req: Request) {
               quantity: item.quantity,
               priceInr: item.plan.priceInr,
               priceUsd: item.plan.priceUsd,
-              durationMonths: item.plan.durationMonths,
+              durationDays: item.plan.durationDays,
             })),
           },
         })
@@ -80,7 +80,7 @@ export async function POST(req: Request) {
     await sendEmail({
       to: process.env.ADMIN_EMAIL as string,
       subject: "An order has been failed on Kya Khayen using Razorpay",
-      html: render(
+      html: await render(
         CustomerOrderAdminMail({
           subjectLine:
             "An attempt to place an order on your Kya Khayen Website was unsuccessful. Here are the details:",
@@ -106,7 +106,7 @@ export async function POST(req: Request) {
               quantity: item.quantity,
               priceInr: item.plan.priceInr,
               priceUsd: item.plan.priceUsd,
-              durationMonths: item.plan.durationMonths,
+              durationDays: item.plan.durationDays,
             })),
           },
         })

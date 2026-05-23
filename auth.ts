@@ -1,7 +1,7 @@
 import NextAuth from "next-auth";
 
 import { PrismaAdapter } from "@auth/prisma-adapter";
-import { render } from "@react-email/render";
+import { render } from "react-email";
 
 import { db } from "@/lib/db";
 
@@ -51,7 +51,7 @@ export const {
         await sendEmail({
           to: user.email as string,
           subject: "Welcome! Let's Get Started with Kya Khayen?",
-          html: render(
+          html: await render(
             WelcomeSocialLoginMail({
               name: user.name as string,
             })
@@ -109,16 +109,7 @@ export const {
         session.user.isOAuth = token.isOAuth as boolean;
         session.user.isPersonalised = token.isPersonalised as boolean;
         session.user.bio = token.bio as string;
-        session.user.age = token.age as number;
         session.user.gender = token.gender as string;
-        session.user.prakriti = token.prakriti as string;
-        session.user.dob = token.dob as Date;
-        session.user.heightFt = token.heightFt as number;
-        session.user.heightInch = token.heightInch as number;
-        session.user.heightCm = token.heightCm as number;
-        session.user.weightKg = token.weightKg as number;
-        session.user.weightLbs = token.weightLbs as number;
-        session.user.bmi = token.bmi as string;
         session.user.userPlan = token.userPlan as string[];
         session.user.userPlanStartDate = token.userPlanStartDate as Date[];
         session.user.userPlanEndDate = token.userPlanEndDate as Date[];
@@ -146,16 +137,7 @@ export const {
       token.phoneNumber = existingUser.phoneNumber;
       token.isPersonalised = existingUser.isPersonalised;
       token.bio = existingUser.bio;
-      token.age = existingUser.age;
-      token.dob = existingUser.dob;
       token.gender = existingUser.gender?.title;
-      token.prakriti = existingUser.userPrakriti?.title;
-      token.heightFt = existingUser.heightFt;
-      token.heightInch = existingUser.heightInch;
-      token.heightCm = existingUser.heightCm;
-      token.weightKg = existingUser.weightKg;
-      token.weightLbs = existingUser.weightLbs;
-      token.bmi = existingUser.bmi;
       token.userPlan = existingUser.UserPlan.map((plan) => plan.plan.name);
       token.userPlanStartDate = existingUser.UserPlan.map(
         (plan) => plan.startDate

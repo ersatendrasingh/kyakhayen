@@ -6,7 +6,7 @@ import { GrUpdate } from "react-icons/gr";
 import Image from "next/image";
 import axios from "axios";
 import { User } from "@prisma/client";
-import { toast } from "react-toastify";
+import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
 import PreferenceConfirmationModal from "@/components/modals/preference-confirmation-modal";
@@ -62,8 +62,7 @@ const UserCookingSkills = ({
 
         if (response.status === 200) {
           toast.success("Cooking skill updated successfully", {
-            position: "top-center",
-            autoClose: 5000,
+            duration: 5000,
           });
           router.refresh();
           setIsExpanded(false);

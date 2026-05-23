@@ -9,9 +9,9 @@ import { FAQ } from "@/components/contact/faqs";
 import { PageTitle } from "@/components/page-title";
 
 const meta = {
-  title: "Contact Us - Kya Khayen | weight loss diets for women",
+  title: "Contact Us - Kya Khayen | Recipe and Meal Planning Help",
   description:
-    "Have any questions about our personalized diet plan, weight loss programs or healthy recipes? Feel free to get in touch with us!",
+    "Have questions about personalized meal planning or recipes? Feel free to get in touch with us.",
   image: `${process.env.NEXT_PUBLIC_APP_URL}/meta-images/contact-us.png`,
 };
 
@@ -94,7 +94,7 @@ const ContactUsPage = () => {
               <p className="text-lg leading-loose tracking-wide mb-4">
                 Download our Kya Khayen? mobile app and unlock the power of our
                 personalized meal plans customized to your food preferences,
-                allergies, body type and health goals. You can explore a highly
+                allergies and favourite cuisines. You can explore a wide
                 variety of Indian and international recipes for cooking and meal
                 planning. Our PWA app is available on both Android and iOS
                 devices.
@@ -114,7 +114,7 @@ const ContactUsPage = () => {
                   You can save your favorite recipes for future reference.
                 </li>
                 <li className="text-lg leading-loose tracking-wide mb-2">
-                  You can track your progress and nutrition goals.
+                  You can compare recipe nutrition information while planning.
                 </li>
                 <li className="text-lg leading-loose tracking-wide mb-2">
                   You can share your recipes and meal plans with your friends.

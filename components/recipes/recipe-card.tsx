@@ -8,6 +8,7 @@ import { useEffect, useState } from "react";
 import { AlarmClock } from "lucide-react";
 
 import FavoriteButton from "@/components/favorite-button";
+import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { formatTime } from "@/lib/formatTime";
 import { RecipeWithCategory } from "@/types/recipe";
@@ -20,8 +21,7 @@ interface RecipeCardProps {
 
 const RecipeCard = ({ recipe }: RecipeCardProps) => {
   const user = useCurrentUser();
-
-  const [isInView, setIsInView] = useState(false);
+  const userId = user?.id;
 
   const [isFavorited, setIsFavorited] = useState<boolean>(false);
   const { ref, inView } = useInView({
@@ -31,28 +31,26 @@ const RecipeCard = ({ recipe }: RecipeCardProps) => {
   useEffect(() => {
     const fetchUserFavoriteRecipeIds = async () => {
       try {
-        const response = await axios.get(`/api/user/${user?.id}/favorites`);
+        const response = await axios.get<Array<{ recipe: { id: string } }>>(
+          `/api/user/${userId}/favorites`
+        );
 
         const favoriteRecipeIds = response.data.map(
-          (favorite: any) => favorite.recipe.id
+          (favorite) => favorite.recipe.id
         );
         setIsFavorited(favoriteRecipeIds.includes(recipe.id));
       } catch (error) {
         console.error("Error fetching user favorites:", error);
       }
     };
-    if (user) fetchUserFavoriteRecipeIds();
-  }, [recipe.id]);
-
-  useEffect(() => {
-    setIsInView(inView);
-  }, [inView]);
+    if (userId) fetchUserFavoriteRecipeIds();
+  }, [recipe.id, userId]);
 
   return (
-    <div
+    <Card
       ref={ref}
-      className={`max-w-sm min-h-[348px] bg-white rounded-md overflow-hidden shadow-lg transform transition-transform hover:shadow-xl hover:-translate-y-1 ${
-        isInView ? "animate-slide-up" : ""
+      className={`min-h-[348px] max-w-sm overflow-hidden border-border/60 bg-card text-card-foreground shadow-sm transition-transform hover:-translate-y-1 hover:shadow-lg ${
+        inView ? "animate-slide-up" : ""
       }`}
       onClick={() => handleRecipeClick(recipe.id, recipe.RecipeCategories!.id)}
     >
@@ -88,7 +86,7 @@ const RecipeCard = ({ recipe }: RecipeCardProps) => {
                 recipe.RecipeCategories.name === "Non Veg" && "bg-red-500",
                 recipe.RecipeCategories.name === "Veg" && "bg-green-500",
                 recipe.RecipeCategories.name === "Pescetarian" && "bg-blue-500",
-                recipe.RecipeCategories.name === "Egg" && "bg-yellow-500",
+                recipe.RecipeCategories.name === "Eggetarian" && "bg-yellow-500",
                 recipe.RecipeCategories.name === "Vegan" && "bg-pink-500"
               )}
             >
@@ -118,8 +116,6 @@ const RecipeCard = ({ recipe }: RecipeCardProps) => {
                   key={dietType.id}
                   className={cn(
                     "bg-webprimary text-white px-2 py-1 rounded-md text-xs font-semibold",
-                    dietType.dietType.title === "Gym" && "bg-red-500",
-                    dietType.dietType.title === "Detox" && "bg-green-500",
                     dietType.dietType.title === "Keto" && "bg-blue-500",
                     dietType.dietType.title === "Gluten Free" &&
                       "bg-yellow-500",
@@ -143,7 +139,7 @@ const RecipeCard = ({ recipe }: RecipeCardProps) => {
           >
             <div className="font-bold text-xl mb-2">{recipe.title}</div>
           </Link>
-          <p className="text-gray-700 text-base mb-2">
+          <p className="mb-2 text-base text-muted-foreground">
             {recipe.recipeNutrient && recipe.recipeNutrient.length > 0 && (
               <>
                 {recipe.recipeNutrient.map((nutrient, index) => (
@@ -172,7 +168,7 @@ const RecipeCard = ({ recipe }: RecipeCardProps) => {
           </div>
         </div>
       </div>
-    </div>
+    </Card>
   );
 };
 

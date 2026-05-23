@@ -16,7 +16,10 @@ export const getCuisines = async ({
 }: getCuisinesInput): Promise<Cuisine[]> => {
   try {
     // Fetch all cuisines from the database
-    const allCuisines = await db.cuisines.findMany();
+    const allCuisines = await db.cuisines.findMany({
+      where: { isPublished: true },
+      orderBy: [{ position: "asc" }, { title: "asc" }],
+    });
 
     // Fetch the user's cuisines
     const userCuisines = await db.userCuisines.findMany({

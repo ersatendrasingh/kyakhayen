@@ -5,7 +5,7 @@ import { useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { useRouter } from "next/navigation";
-import { toast } from "react-toastify";
+import { toast } from "sonner";
 import { Pencil, PlusCircleIcon } from "lucide-react";
 import axios from "axios";
 
@@ -51,15 +51,13 @@ export const DurationForm = ({ initialData, planId }: DurationFormProps) => {
     try {
       await axios.patch(`/api/subscription-plans/${planId}`, values);
       toast.success("Plan duration updated successfully", {
-        position: "top-center",
-        autoClose: 5000,
+        duration: 5000,
       });
       toggleEdit();
       router.refresh();
     } catch {
       toast.error("Something went wrong while updating plan duration", {
-        position: "top-center",
-        autoClose: 5000,
+        duration: 5000,
       });
     }
   };

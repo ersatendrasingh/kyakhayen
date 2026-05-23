@@ -26,14 +26,6 @@ export const userProfileSchema = z.object({
   bio: z.string().min(1, { message: "Your bio is required" }),
 });
 
-export const userHeightWeight = z.object({
-  heightFt: z.string().min(1).max(7),
-  heightInch: z.string().min(1).max(11),
-  heightCm: z.string().min(1).max(210),
-  weightKg: z.string().min(1).max(180),
-  weightLbs: z.string().min(1).max(397),
-});
-
 export const NewPasswordSchema = z.object({
   password: z.string().min(6, {
     message: "Minimum 6 characters required",

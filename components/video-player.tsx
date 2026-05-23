@@ -1,12 +1,13 @@
 import dynamic from "next/dynamic";
+import type { MouseEvent } from "react";
 
 interface VideoPlayerProps {
   videoUrl: string;
 }
 
-const VideoPlayer = ({ videoUrl }: VideoPlayerProps) => {
-  const ReactPlayer = dynamic(() => import("react-player"), { ssr: false });
+const ReactPlayer = dynamic(() => import("react-player"), { ssr: false });
 
+const VideoPlayer = ({ videoUrl }: VideoPlayerProps) => {
   return (
     <div className="w-full h-full rounded-md">
       <ReactPlayer
@@ -15,7 +16,7 @@ const VideoPlayer = ({ videoUrl }: VideoPlayerProps) => {
           file: {
             attributes: {
               controlsList: "nodownload",
-              onContextMenu: (e: any) => e.preventDefault(),
+              onContextMenu: (event: MouseEvent) => event.preventDefault(),
             },
           },
         }}

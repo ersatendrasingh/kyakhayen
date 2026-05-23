@@ -4,9 +4,9 @@ import Container from "@/components/container";
 import { PageTitle } from "@/components/page-title";
 
 const meta = {
-  title: "Privacy Policy - Kya Khayen | free dietary plans for weight loss",
+  title: "Privacy Policy - Kya Khayen",
   description:
-    "Discover low-carb meal plans, intermittent fasting diets, and 7-day weight loss plans. Explore healthy recipes, breakfast ideas, and easy dinner recipes.",
+    "Read how Kya Khayen handles information while you explore recipes, breakfast ideas and easy dinner plans.",
   image: `${process.env.NEXT_PUBLIC_APP_URL}/meta-images/privacy-policy.png`,
 };
 

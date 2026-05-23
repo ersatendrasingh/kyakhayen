@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
-import dynamic from "next/dynamic";
-import { toast } from "react-toastify";
+import { toast } from "sonner";
 import { FaSave, FaTimes } from "react-icons/fa";
 import {
   AlarmClock,
@@ -9,7 +8,6 @@ import {
   Trash,
   Loader2,
 } from "lucide-react";
-import Linkify from "react-linkify";
 import axios from "axios";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
@@ -25,16 +23,14 @@ import { CommentDeleteConfirmModal } from "@/components/modals/comment-delete-co
 import { useCurrentUser } from "@/hooks/use-current-user";
 
 import StarRatingSkeleton from "@/components/reviews/star-rating-skelton";
+import StarRating from "@/components/reviews/star-rating";
+import LinkedText from "@/components/linked-text";
 
 interface ReviewsRatingListProps {
   recipeId: string;
   reviews: ReviewWithRelations[];
   onReviewAdded: () => void;
 }
-
-const DynamicStarRatings = dynamic(() => import("react-star-ratings"), {
-  ssr: false,
-});
 
 const ReviewsRatingList = ({
   recipeId,
@@ -53,15 +49,7 @@ const ReviewsRatingList = ({
 
   const [isClient, setIsClient] = useState(false);
 
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
-
-  useEffect(() => {
-    fetchUserAvatars(reviews);
-  }, [reviews]);
-
-  const fetchUserAvatars = async (reviews: ReviewWithRelations[]) => {
+  async function fetchUserAvatars(reviews: ReviewWithRelations[]) {
     const userIds: string[] = reviews
       .filter((review) => review.userId)
       .map((review) => review.userId!);
@@ -79,7 +67,16 @@ const ReviewsRatingList = ({
     } catch (error) {
       console.error("Failed to fetch user avatars:", error);
     }
-  };
+  }
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  useEffect(() => {
+    fetchUserAvatars(reviews);
+  }, [reviews]);
+
   if (!isClient) {
     return <StarRatingSkeleton />;
   }
@@ -118,23 +115,17 @@ const ReviewsRatingList = ({
                 </div>
                 <div className="mt-1">
                   {editingReviewId === review.id ? (
-                    <DynamicStarRatings
-                      rating={editRating}
-                      starRatedColor="red"
-                      starEmptyColor="gray"
-                      changeRating={(newRating) => setEditRating(newRating)}
-                      numberOfStars={5}
-                      starDimension="20px"
-                      starSpacing="1px"
+                    <StarRating
+                      value={editRating}
+                      onChange={setEditRating}
+                      size={20}
+                      activeClassName="fill-red-600 text-red-600"
                     />
                   ) : (
-                    <DynamicStarRatings
-                      rating={review.rating}
-                      starRatedColor="red"
-                      starEmptyColor="gray"
-                      numberOfStars={5}
-                      starDimension="20px"
-                      starSpacing="1px"
+                    <StarRating
+                      value={review.rating}
+                      size={20}
+                      activeClassName="fill-red-600 text-red-600"
                     />
                   )}
                 </div>
@@ -169,19 +160,7 @@ const ReviewsRatingList = ({
                 </div>
               </div>
             ) : (
-              <Linkify
-                componentDecorator={(decoratedHref, decoratedText, key) => (
-                  <a
-                    href={decoratedHref}
-                    key={key}
-                    className="text-red-600 hover:text-webprimary underline"
-                  >
-                    {decoratedText}
-                  </a>
-                )}
-              >
-                <div>{review.comment}</div>
-              </Linkify>
+              <LinkedText text={review.comment} />
             )}
 
             {review.isPublished ? null : (
@@ -236,21 +215,18 @@ const ReviewsRatingList = ({
       );
       if (response.status === 200) {
         toast.success("Review deleted successfully!", {
-          position: "top-center",
-          autoClose: 2000,
+          duration: 2000,
         });
         onReviewAdded();
       } else {
         toast.error("Failed to delete review.", {
-          position: "top-center",
-          autoClose: 2000,
+          duration: 2000,
         });
       }
     } catch (error) {
       console.error("Error deleting review:", error);
       toast.error("Internal server error. Please try again later.", {
-        position: "top-center",
-        autoClose: 2000,
+        duration: 2000,
       });
     } finally {
       setDeletingId(null);
@@ -279,8 +255,7 @@ const ReviewsRatingList = ({
       });
       if (response.status === 200) {
         toast.success("Review updated successfully!", {
-          position: "top-center",
-          autoClose: 2000,
+          duration: 2000,
         });
         // Refresh reviews list or update locally
         setEditingReviewId(null);
@@ -289,15 +264,13 @@ const ReviewsRatingList = ({
         onReviewAdded();
       } else {
         toast.error("Failed to update review.", {
-          position: "top-center",
-          autoClose: 2000,
+          duration: 2000,
         });
       }
     } catch (error) {
       console.error("Error updating review:", error);
       toast.error("Internal server error. Please try again later.", {
-        position: "top-center",
-        autoClose: 2000,
+        duration: 2000,
       });
     }
   };

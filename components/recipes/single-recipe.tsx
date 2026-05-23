@@ -1,4 +1,5 @@
 import { getRecipeBySlug } from "@/actions/get-recipe";
+import { calculateRecipeNutrition } from "@/lib/calculate-recipe-nutrition";
 
 import BannerCard from "@/components/recipes/banner-card";
 import RecipeDetails from "@/components/recipes/recipe-details";
@@ -30,11 +31,11 @@ const SingleRecipe = async ({
   }
 
   const recipeCategories = await db.recipeCategories.findMany({
-    orderBy: {
-      name: "asc",
-    },
+    where: { isPublished: true },
+    orderBy: [{ position: "asc" }, { name: "asc" }],
   });
   const recipeMealTimes = await db.mealTimes.findMany({
+    where: { isPublished: true },
     orderBy: {
       title: "asc",
     },
@@ -62,10 +63,13 @@ const SingleRecipe = async ({
     name: method.title,
   }));
 
-  const totalCalories = recipe.recipeIngredients.reduce(
-    (acc, ingredient) => acc + (ingredient.ingredient.calories || 0),
-    0
+  const { totals: nutritionTotals, missingConversions } = calculateRecipeNutrition(
+    recipe.recipeIngredients
   );
+  const hasVerifiedNutrition =
+    recipe.recipeIngredients.length > 0 &&
+    recipe.recipeIngredients.every((item) => item.ingredient.isPublished) &&
+    missingConversions.length === 0;
 
   const jsonLdData = {
     "@context": "https://schema.org",
@@ -88,14 +92,18 @@ const SingleRecipe = async ({
     recipeCuisine: recipeCuisine || ["Global"],
     recipeIngredient: recipeIngredients || [],
     recipeInstructions: recipeMethods || [],
-    nutrition: {
-      "@type": "NutritionInformation",
-      calories: totalCalories,
-    },
+    ...(hasVerifiedNutrition
+      ? {
+          nutrition: {
+            "@type": "NutritionInformation",
+            calories: `${nutritionTotals.calories.toFixed(2)} kcal`,
+          },
+        }
+      : {}),
   };
 
   return (
-    <div className="w-full bg-slate-100 pb-8">
+    <div className="w-full bg-muted/35 pb-8">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdData) }}

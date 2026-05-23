@@ -20,16 +20,6 @@ const SettingsPage = async () => {
     userId: user?.id,
   });
 
-  const prakritiQuestions = await db.prakritiQuestion.findMany({
-    include: {
-      options: {
-        orderBy: {
-          position: "asc",
-        },
-      },
-    },
-  });
-
   const tabs = [
     {
       label: "User Profile",
@@ -37,7 +27,6 @@ const SettingsPage = async () => {
         <UserProfile
           userData={userDetails}
           genders={genders}
-          prakritiQuestions={prakritiQuestions}
         />
       ),
     },

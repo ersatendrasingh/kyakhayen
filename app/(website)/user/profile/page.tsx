@@ -58,52 +58,6 @@ const UserProfilePage = () => {
             />
           )}
 
-          {user.dob && (
-            <ProfileItem
-              label="Date of Birth"
-              value={
-                user && user.dob
-                  ? new Date(user.dob)
-                  : undefined || "Date of Birth not set yet"
-              }
-            />
-          )}
-          {user.prakriti && (
-            <ProfileItem
-              label="Prakriti (Body Type)"
-              value={user?.prakriti || "Prakriti not set yet"}
-            />
-          )}
-          {user.heightFt && user.heightInch && user.heightCm && (
-            <ProfileItem
-              label="Height"
-              value={
-                `${user?.heightFt || 0} ft. ${user?.heightInch || 0} in. / ${
-                  user?.heightCm
-                } cm ` || "Height not set yet"
-              }
-            />
-          )}
-          {user.weightKg && user.weightLbs && (
-            <ProfileItem
-              label="Weight"
-              value={
-                `${user?.weightKg || 0} Kg / ${user?.weightLbs} Pounds ` ||
-                "Height not set yet"
-              }
-            />
-          )}
-          {user.heightFt &&
-            user.heightInch &&
-            user.heightCm &&
-            user.weightKg &&
-            user.weightLbs && (
-              <ProfileItem
-                label="BMI"
-                value={`${user?.bmi}` || "BMI not set yet"}
-              />
-            )}
-
           <ProfileItem
             label="Registration Date"
             value={

@@ -7,9 +7,9 @@ import { Button } from "@/components/ui/button";
 import { PageTitle } from "@/components/page-title";
 
 const meta = {
-  title: "Download Kya Khayen App | free diet plan for weight loss",
+  title: "Download Kya Khayen App | Recipe and Meal Planner",
   description:
-    "Try our 7-day weight loss diet plans, low-carb meal ideas, and detox diet programs. Enjoy healthy breakfasts, dinners, and snacks for kids that fit your lifestyle.",
+    "Find breakfast, dinner and snack recipes, save favourites, and plan meals around your taste and schedule.",
   image: `${process.env.NEXT_PUBLIC_APP_URL}/meta-images/download-app.png`,
 };
 
@@ -68,9 +68,8 @@ const DownloadApp = () => {
               <p className="text-lg text-center leading-loose tracking-wide mb-4">
                 Experience the comfort of Kya Khayen? anytime, anywhere with our
                 cutting-edge Progressive Web App (PWA). Designed and developed
-                to bring the best of personalized meal planning and healthy
-                eating at your fingertips, our mobile app makes it easier than
-                ever to stay on track with your culinary and health goals.
+                to bring personalized meal planning and recipe discovery to
+                your fingertips, our mobile app makes everyday cooking easier.
               </p>
               <Link href="#how-to-download">
                 <Button
@@ -85,14 +84,14 @@ const DownloadApp = () => {
             <div className="flex md:flex-row items-center justify-center mt-10">
               <Image
                 src="/assets/images/macbook-mealplan.webp"
-                alt="weight loss programs"
+                alt="weekly meal plans"
                 width={400}
                 height={400}
                 className="w-72 h-52 md:w-96 md:h-96 mb-4 md:mb-0"
               />
               <Image
                 src="/assets/images/mobile-app-download.webp"
-                alt="meal plan for weight loss"
+                alt="meal planner app"
                 width={200}
                 height={300}
                 className="w-32 h-40 md:w-48 md:h-80  "
@@ -138,7 +137,7 @@ const DownloadApp = () => {
             <div className="items-center">
               <Image
                 src="/assets/images/home-banner-app-download.webp"
-                alt="healthy meals for weight loss"
+                alt="recipe discovery app"
                 width={600}
                 height={600}
               />

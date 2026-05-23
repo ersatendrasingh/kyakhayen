@@ -15,13 +15,21 @@ type MealPlanResult = {
   mealsByTime: { [key: string]: RecipeWithCategory[] };
 };
 
-const s3 = new S3Client({
-  region: process.env.AWS_REGION as string,
-  credentials: {
-    accessKeyId: process.env.AWS_ACCESS_KEY_ID as string,
-    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY as string,
-  },
-});
+const getS3Client = () => {
+  const region = process.env.AWS_REGION;
+  const accessKeyId = process.env.AWS_ACCESS_KEY_ID;
+  const secretAccessKey = process.env.AWS_SECRET_ACCESS_KEY;
+  const bucket = process.env.AWS_PRIVATE_BUCKET_NAME;
+
+  if (!region || !accessKeyId || !secretAccessKey || !bucket) {
+    throw new Error("AWS private meal-plan storage is not configured.");
+  }
+
+  return new S3Client({
+    region,
+    credentials: { accessKeyId, secretAccessKey },
+  });
+};
 
 export const getMealPlanFromS3 = async ({
   date,
@@ -30,7 +38,9 @@ export const getMealPlanFromS3 = async ({
 
   try {
     // Get all meal times
-    const mealTimes = await db.mealTimes.findMany();
+    const mealTimes = await db.mealTimes.findMany({
+      where: { isPublished: true },
+    });
     // Sort meal times according to the specified order
     const order = ["Breakfast", "Mid Morning", "Lunch", "Evening", "Dinner"];
     mealTimes.sort((a, b) => order.indexOf(a.title) - order.indexOf(b.title));
@@ -43,11 +53,11 @@ export const getMealPlanFromS3 = async ({
 
     // Retrieve meal plan from S3
     const params = {
-      Bucket: process.env.AWS_BUCKET_NAME as string,
+      Bucket: process.env.AWS_PRIVATE_BUCKET_NAME as string,
       Key: s3Key,
     };
     const command = new GetObjectCommand(params);
-    const response = await s3.send(command);
+    const response = await getS3Client().send(command);
 
     // Read the content of the object from S3
     const stream = response.Body as Readable;

@@ -3,7 +3,7 @@ import { useCurrentUser } from "@/hooks/use-current-user";
 import { useRouter } from "next/navigation";
 
 import { useEffect } from "react";
-import { toast } from "react-toastify";
+import { toast } from "sonner";
 const DashboardPage = () => {
   const user = useCurrentUser();
   const router = useRouter();

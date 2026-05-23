@@ -1,11 +1,10 @@
 import qs from "query-string";
 import { useEffect, useState, useRef } from "react";
-import { useRouter, usePathname } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { useDebounce } from "@/hooks/use-debounce";
 import { GetRecipes } from "@/actions/get-recipes";
 import { Search } from "lucide-react";
-import { db } from "@/lib/db";
 
 export const SearchInput = ({ onClose }: { onClose: () => void }) => {
   const [value, setValue] = useState("");
@@ -16,7 +15,6 @@ export const SearchInput = ({ onClose }: { onClose: () => void }) => {
 
   const debouncedValue = useDebounce(value);
   const router = useRouter();
-  const pathname = usePathname();
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -106,24 +104,24 @@ export const SearchInput = ({ onClose }: { onClose: () => void }) => {
   return (
     <div className="flex w-full md:w-[600px] items-start justify-start">
       <div className="relative mt-3 w-full items-start justify-start">
-        <Search className="h-6 w-6 absolute top-3 left-3 text-slate-600" />
+        <Search className="absolute left-3 top-3 size-6 text-muted-foreground" />
 
         <Input
           ref={inputRef}
           onChange={(e) => setValue(e.target.value)}
           onKeyDown={handleKeyPress}
           value={value}
-          className="w-full md:w-[600px] h-12 pl-16 rounded-full bg-white"
+          className="h-12 w-full rounded-full bg-card pl-16 md:w-[600px]"
           placeholder="Search for recipes..."
         />
 
         {showSuggestions && (
-          <div className="absolute top-full bg-white rounded-md w-full max-h-72 overflow-y-auto">
+          <div className="absolute top-full max-h-72 w-full overflow-y-auto rounded-md border bg-popover text-popover-foreground shadow-md">
             {searchResults.map((result, index) => (
               <div
                 key={index}
-                className={`items-start justify-start p-2 cursor-pointer hover:bg-gray-100 ${
-                  selectedResultIndex === index ? "bg-gray-100" : ""
+                className={`cursor-pointer items-start justify-start p-2 hover:bg-accent ${
+                  selectedResultIndex === index ? "bg-accent" : ""
                 }`}
                 onClick={() => handleSuggestionClick(result)}
               >

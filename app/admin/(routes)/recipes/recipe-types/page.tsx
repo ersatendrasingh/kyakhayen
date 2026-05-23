@@ -1,24 +1,33 @@
-import { DataTable } from "./_components/data-table";
-import { columns } from "./_components/columns";
+import { RecipeTypesDashboard } from "@/components/admin/recipe-recipe-types/recipe-types-dashboard";
 import { db } from "@/lib/db";
 
-import RecipeTypeForm from "./_components/recipe-type-form";
 const RecipeTypePage = async () => {
-  const recipeTypes = await db.recipeTypes.findMany({
-    orderBy: {
-      title: "asc",
-    },
-  });
+  const [recipeTypes, recipesTagged, totalRecipes] = await Promise.all([
+    db.recipeTypes.findMany({
+      orderBy: [{ position: "asc" }, { title: "asc" }],
+      include: {
+        _count: {
+          select: { recipeRecipeType: true },
+        },
+      },
+    }),
+    db.recipes.count({
+      where: {
+        recipeRecipeType: {
+          some: {},
+        },
+      },
+    }),
+    db.recipes.count(),
+  ]);
+
   return (
-    <div className="p-6">
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <RecipeTypeForm />
-        </div>
-        <div>
-          <DataTable columns={columns} data={recipeTypes} />
-        </div>
-      </div>
+    <div className="p-4 sm:p-6 lg:p-8">
+      <RecipeTypesDashboard
+        recipeTypes={recipeTypes}
+        recipesTagged={recipesTagged}
+        untaggedRecipes={totalRecipes - recipesTagged}
+      />
     </div>
   );
 };

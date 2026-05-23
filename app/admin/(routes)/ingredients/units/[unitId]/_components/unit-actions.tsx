@@ -3,7 +3,7 @@
 import axios from "axios";
 import { Trash } from "lucide-react";
 import { useState } from "react";
-import { toast } from "react-toastify";
+import { toast } from "sonner";
 
 import { ConfirmModal } from "@/components/modals/confirm-modal";
 import { Button } from "@/components/ui/button";
@@ -22,16 +22,14 @@ export const UnitActions = ({ unitId }: UnitActionsProps) => {
       setIsLoading(true);
       await axios.delete(`/api/ingredients/units/${unitId}`);
       toast.success("Unit deleted successfully", {
-        position: "top-center",
-        autoClose: 5000,
+        duration: 5000,
       });
 
       router.push(`/admin/ingredients/units`);
       router.refresh();
     } catch (error) {
       toast.error("Something went wrong while deleting unit", {
-        position: "top-center",
-        autoClose: 5000,
+        duration: 5000,
       });
     } finally {
       setIsLoading(false);

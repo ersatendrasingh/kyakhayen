@@ -16,7 +16,10 @@ export const getFoodPreferences = async ({
   userId,
 }: getFoodPreferencesInput): Promise<FoodPreference[]> => {
   try {
-    const allFoodPreferences = await db.recipeCategories.findMany();
+    const allFoodPreferences = await db.recipeCategories.findMany({
+      where: { isPublished: true },
+      orderBy: [{ position: "asc" }, { name: "asc" }],
+    });
 
     const userFoodPreference = await db.user.findFirst({
       where: {

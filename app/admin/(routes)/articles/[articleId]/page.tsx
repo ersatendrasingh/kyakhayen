@@ -13,7 +13,8 @@ import { Banner } from "@/components/banner";
 import { ArticleActions } from "./_components/article-actions";
 import { ArticleMetaDataForm } from "./_components/article-meta-data-form";
 
-const ArticleIdPage = async ({ params }: { params: { articleId: string } }) => {
+const ArticleIdPage = async (props: { params: Promise<{ articleId: string }> }) => {
+  const params = await props.params;
   const post = await db.post.findUnique({
     where: {
       id: params.articleId,

@@ -1,24 +1,35 @@
-import { DataTable } from "./_components/data-table";
-import { columns } from "./_components/columns";
+import { NutrientsDashboard } from "@/components/admin/recipe-nutrients/nutrients-dashboard";
 import { db } from "@/lib/db";
 
-import NutrientForm from "./_components/nutrient-form";
 const NutrientsPage = async () => {
-  const nutrient = await db.nutrient.findMany({
-    orderBy: {
-      title: "asc",
-    },
-  });
+  const [nutrients, recipesTagged, totalRecipes] = await Promise.all([
+    db.nutrient.findMany({
+      orderBy: [{ position: "asc" }, { title: "asc" }],
+      include: {
+        _count: {
+          select: {
+            recipeNutrient: true,
+          },
+        },
+      },
+    }),
+    db.recipes.count({
+      where: {
+        recipeNutrient: {
+          some: {},
+        },
+      },
+    }),
+    db.recipes.count(),
+  ]);
+
   return (
-    <div className="p-6">
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <NutrientForm />
-        </div>
-        <div>
-          <DataTable columns={columns} data={nutrient} />
-        </div>
-      </div>
+    <div className="p-4 sm:p-6 lg:p-8">
+      <NutrientsDashboard
+        nutrients={nutrients}
+        recipesTagged={recipesTagged}
+        untaggedRecipes={totalRecipes - recipesTagged}
+      />
     </div>
   );
 };

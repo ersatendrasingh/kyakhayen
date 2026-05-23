@@ -1,5 +1,7 @@
 "use server";
 
+import type { Prisma } from "@prisma/client";
+
 import { db } from "@/lib/db";
 import { RecipeWithCategory } from "@/types/recipe";
 
@@ -24,7 +26,7 @@ export const getPopularRecipes = async ({
   hasMore: boolean;
 }> => {
   try {
-    let whereClause: any = { isPublished: true };
+    const whereClause: Prisma.RecipesWhereInput = { isPublished: true };
 
     if (title) {
       whereClause.title = {
@@ -35,22 +37,26 @@ export const getPopularRecipes = async ({
     if (searchType && searchSlug) {
       if (searchType === "category") {
         const category = await db.recipeCategories.findFirst({
-          where: { slug: searchSlug },
+          where: { slug: searchSlug, isPublished: true },
         });
 
-        if (category?.id) {
-          whereClause.recipeCategoriesId = category.id;
+        if (!category) {
+          return { recipes: [], hasMore: false };
         }
+
+        whereClause.recipeCategoriesId = category.id;
       } else if (searchType === "mealTime") {
         const mealTime = await db.mealTimes.findFirst({
-          where: { slug: searchSlug },
+          where: { slug: searchSlug, isPublished: true },
         });
 
-        if (mealTime?.id) {
-          whereClause.recipeMealTime = {
-            some: { mealTimeId: mealTime.id },
-          };
+        if (!mealTime) {
+          return { recipes: [], hasMore: false };
         }
+
+        whereClause.recipeMealTime = {
+          some: { mealTimeId: mealTime.id },
+        };
       }
     }
 
@@ -69,6 +75,7 @@ export const getPopularRecipes = async ({
             name: true,
             slug: true,
             imageUrl: true,
+            isPublished: true,
             position: true,
           },
         },
@@ -91,11 +98,6 @@ export const getPopularRecipes = async ({
             position: "asc",
           },
         },
-        recipeHealthBenefits: {
-          orderBy: {
-            position: "asc",
-          },
-        },
         recipeCookingMethods: {
           include: {
             cookingMethod: true,
@@ -107,16 +109,31 @@ export const getPopularRecipes = async ({
           },
         },
         recipeDietType: {
+          where: {
+            dietType: {
+              isPublished: true,
+            },
+          },
           include: {
             dietType: true,
           },
         },
         recipeRecipeType: {
+          where: {
+            recipeType: {
+              isPublished: true,
+            },
+          },
           include: {
             recipeType: true,
           },
         },
         recipeNutrient: {
+          where: {
+            nutrient: {
+              isPublished: true,
+            },
+          },
           include: {
             nutrient: true,
           },

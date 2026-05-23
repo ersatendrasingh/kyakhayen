@@ -2,10 +2,8 @@ import { currentUser } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { NextResponse } from "next/server";
 
-export async function PATCH(
-  req: Request,
-  { params }: { params: { couponId: string } }
-) {
+export async function PATCH(req: Request, props: { params: Promise<{ couponId: string }> }) {
+  const params = await props.params;
   try {
     const user = await currentUser();
     if (!user || user.role !== "ADMIN") {

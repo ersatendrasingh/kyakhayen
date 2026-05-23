@@ -14,7 +14,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { toast } from "react-toastify";
+import { toast } from "sonner";
 import { Pencil } from "lucide-react";
 import { useState } from "react";
 import axios from "axios";
@@ -73,15 +73,13 @@ export const CouponExpiryForm = ({
     try {
       await axios.patch(`/api/coupons/${couponId}`, values);
       toast.success("Coupon code updated successfully", {
-        position: "top-center",
-        autoClose: 5000,
+        duration: 5000,
       });
       toggleEdit();
       router.refresh();
     } catch {
       toast.error("Something went wrong while updating coupon code", {
-        position: "top-center",
-        autoClose: 5000,
+        duration: 5000,
       });
     }
   };
@@ -139,7 +137,7 @@ export const CouponExpiryForm = ({
                           selected={field.value}
                           onSelect={(date) => field.onChange(date)}
                           disabled={(date) => date < new Date()}
-                          initialFocus
+                          autoFocus
                         />
                       </PopoverContent>
                     </Popover>
@@ -163,5 +161,3 @@ export const CouponExpiryForm = ({
     </div>
   );
 };
-
-export default CouponExpiryForm;

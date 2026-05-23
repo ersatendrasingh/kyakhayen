@@ -7,11 +7,12 @@ import { db } from "@/lib/db";
 import { FormNameFormForm } from "./_components/form-name-form";
 import { FormActions } from "./_components/form-actions";
 
-const IngredientFormIdPage = async ({
-  params,
-}: {
-  params: { formId: string };
-}) => {
+const IngredientFormIdPage = async (
+  props: {
+    params: Promise<{ formId: string }>;
+  }
+) => {
+  const params = await props.params;
   const ingredientsForm = await db.ingredientsForm.findUnique({
     where: {
       id: params.formId,

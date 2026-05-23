@@ -19,16 +19,6 @@ const RecipesPage = async () => {
       position: "asc",
     },
   });
-  const healthGoals = await db.healthGoals.findMany({
-    where: {
-      recipeHealthGoals: {
-        some: {},
-      },
-    },
-    orderBy: {
-      position: "asc",
-    },
-  });
   const mealTimes = await db.mealTimes.findMany({
     where: {
       recipeMealTime: {
@@ -45,7 +35,6 @@ const RecipesPage = async () => {
         initialRecipes={recipes}
         categories={recipeCategories}
         cuisines={cuisines}
-        healthGoals={healthGoals}
         mealTimes={mealTimes}
       />
     </div>

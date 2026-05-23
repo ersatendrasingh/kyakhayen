@@ -8,7 +8,8 @@ import { UnitNameForm } from "./_components/unit-name-form";
 import { UnitActions } from "./_components/unit-actions";
 import { UnitShortNameForm } from "./_components/unit-short-name-form";
 
-const UnitIdPage = async ({ params }: { params: { unitId: string } }) => {
+const UnitIdPage = async (props: { params: Promise<{ unitId: string }> }) => {
+  const params = await props.params;
   const unit = await db.units.findUnique({
     where: {
       id: params.unitId,

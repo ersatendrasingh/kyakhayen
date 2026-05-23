@@ -19,18 +19,18 @@ const PersonalizationPrompt = () => {
             </p>
             <p className="text-md mb-6">
               Personalization helps us create a meal plan tailored to your
-              unique dietary preferences and nutritional needs. By completing
+              food preferences and kitchen routine. By completing
               your personalization, you will get:
             </p>
             <ul className="list-disc text-sm mb-6 text-left px-6">
               <li className="mb-2">
-                Custom meal plans that suit your taste and health goals.
+                Custom meal plans that suit your taste and schedule.
               </li>
               <li className="mb-2">
                 Recommendations for new recipes that you&apos;ll love.
               </li>
               <li className="mb-2">
-                Improved tracking of your dietary intake and progress.
+                Clear ingredient and recipe details while planning.
               </li>
               <li className="mb-2">
                 Enhanced user experience with content relevant to you.

@@ -2,7 +2,7 @@
 
 import axios from "axios";
 import { useRouter } from "next/navigation";
-import { toast } from "react-toastify";
+import { toast } from "sonner";
 import { Pencil, PlusCircleIcon, Video } from "lucide-react";
 import { useState } from "react";
 
@@ -36,16 +36,16 @@ export const MethodVideoForm = ({
         videoUrl
       );
       toast.success("Method video updated successfully", {
-        position: "top-center",
-        autoClose: 5000,
+        duration: 5000,
       });
       toggleEdit();
       router.refresh();
+      return true;
     } catch {
       toast.error("Something went wrong while updating method video", {
-        position: "top-center",
-        autoClose: 5000,
+        duration: 5000,
       });
+      return false;
     }
   };
 
@@ -92,9 +92,7 @@ export const MethodVideoForm = ({
             recipeId={recipeId}
             methodId={methodId}
             acceptedFileTypes={["video/mp4"]}
-            onChange={(url) => {
-              if (url) onSubmit(url);
-            }}
+            onChange={onSubmit}
           />
           <div className="text-xs text-muted-foreground mt-2">
             Upload this method&apos;s video

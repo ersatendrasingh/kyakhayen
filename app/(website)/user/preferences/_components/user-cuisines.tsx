@@ -5,7 +5,7 @@ import { FaPlus, FaTrashAlt } from "react-icons/fa";
 import Image from "next/image";
 import axios from "axios";
 import { User } from "@prisma/client";
-import { toast } from "react-toastify";
+import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
 import PreferenceConfirmationModal from "@/components/modals/preference-confirmation-modal";
@@ -67,8 +67,7 @@ const UserCuisines = ({ userData, cuisines }: UserCuisinesProps) => {
           ];
 
           toast.success("Cuisine added successfully", {
-            position: "top-center",
-            autoClose: 5000,
+            duration: 5000,
           });
           router.refresh();
           setIsExpanded(false);
@@ -97,8 +96,7 @@ const UserCuisines = ({ userData, cuisines }: UserCuisinesProps) => {
 
       if (response.status === 200) {
         toast.success("Cuisine removed successfully", {
-          position: "top-center",
-          autoClose: 5000,
+          duration: 5000,
         });
         router.refresh();
       } else {

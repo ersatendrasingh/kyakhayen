@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import axios from "axios";
-import { toast } from "react-toastify";
+import { toast } from "sonner";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
@@ -67,15 +67,13 @@ export const CommentsForm = ({
         form.reset();
         onCommentAdded();
         toast.success("Comment added successfully!", {
-          position: "top-center",
-          autoClose: 5000,
+          duration: 5000,
         });
       }
     } catch (error: any) {
       console.error("Error:", error.message);
       toast.error(error.message, {
-        position: "top-center",
-        autoClose: 5000,
+        duration: 5000,
       });
     }
   };

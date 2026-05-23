@@ -2,7 +2,7 @@
 
 import * as z from "zod";
 import bcrypt from "bcryptjs";
-import { render } from "@react-email/render";
+import { render } from "react-email";
 
 import { db } from "@/lib/db";
 import { RegisterSchema } from "@/schemas";
@@ -48,7 +48,7 @@ export const register = async (values: z.infer<typeof RegisterSchema>) => {
       "Welcome to Kya Khayen?, " +
       registeredUser.name +
       "! Please Activate Your Account",
-    html: render(
+    html: await render(
       RegisterThankyouMail({
         name: registeredUser.name as string,
         token: verificationToken.token,

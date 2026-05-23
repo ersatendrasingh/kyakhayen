@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { toast } from "react-toastify";
+import { toast } from "sonner";
 import axios, { AxiosProgressEvent } from "axios";
 
 import { Progress } from "@/components/ui/progress";
@@ -18,16 +18,13 @@ interface FileUploadProps {
   cookingMethodId?: string | null;
   cuisineId?: string | null;
   allergyId?: string | null;
-  prakritiId?: string | null;
-  healthGoalId?: string | null;
   mealTimeId?: string | null;
   nutrientId?: string | null;
-  diseaseId?: string | null;
   dietTypeId?: string | null;
   recipeTypeId?: string | null;
   acceptedFileTypes: string[];
   multiple?: boolean;
-  onChange: (fileUrl: string) => void;
+  onChange: (fileUrl: string) => Promise<boolean>;
 }
 
 const FileUpload = ({
@@ -40,11 +37,8 @@ const FileUpload = ({
   cookingMethodId,
   cuisineId,
   allergyId,
-  prakritiId,
-  healthGoalId,
   mealTimeId,
   nutrientId,
-  diseaseId,
   dietTypeId,
   recipeTypeId,
   acceptedFileTypes,
@@ -71,59 +65,64 @@ const FileUpload = ({
     e.preventDefault();
     setIsUploading(true);
 
-    if (!files) {
+    if (!files || files.length === 0) {
+      setIsUploading(false);
       return;
     }
     try {
-      let formData = new FormData();
-      for (let i = 0; i < files.length; i++) {
-        formData.append(`file${i + 1}`, files[i]);
-      }
-      formData.append("previousImageUrl", previousImageUrl || "");
-      formData.append("categoryId", categoryId || "");
-      formData.append("postCategoryId", postCategoryId || "");
-      formData.append("recipeId", recipeId || "");
-      formData.append("postId", postId || "");
-      formData.append("methodId", methodId || "");
-      formData.append("cookingMethodId", cookingMethodId || "");
-      formData.append("cuisineId", cuisineId || "");
-      formData.append("allergyId", allergyId || "");
-      formData.append("prakritiId", prakritiId || "");
-      formData.append("healthGoalId", healthGoalId || "");
-      formData.append("mealTimeId", mealTimeId || "");
-      formData.append("nutrientId", nutrientId || "");
-      formData.append("diseaseId", diseaseId || "");
-      formData.append("dietTypeId", dietTypeId || "");
-      formData.append("recipeTypeId", recipeTypeId || "");
-
-      const response = await axios.post("/api/s3upload", formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-        onUploadProgress: (progressEvent: AxiosProgressEvent) => {
-          const { loaded, total } = progressEvent;
-          if (total !== null && total !== undefined) {
-            const percent = Math.floor((loaded * 100) / total);
-            updateProgressBar(percent);
-          } else {
-            setProgress(0);
-          }
-        },
-      });
-      if (response.status !== 200) {
-        toast.error("Something went wrong while uploading file", {
-          position: "top-center",
-          autoClose: 5000,
+      for (const file of files) {
+        const { data } = await axios.post<{
+          uploadUrl: string;
+          publicUrl: string;
+        }>("/api/media/presign", {
+          fileName: file.name,
+          fileSize: file.size,
+          fileType: file.type,
+          categoryId,
+          postCategoryId,
+          recipeId,
+          postId,
+          methodId,
+          cookingMethodId,
+          cuisineId,
+          allergyId,
+          mealTimeId,
+          nutrientId,
+          dietTypeId,
+          recipeTypeId,
         });
-        return;
-      } else if (response.status === 200) {
-        onChange(response.data);
-        setIsUploading(false);
+
+        await axios.put(data.uploadUrl, file, {
+          headers: {
+            "Cache-Control": "public, max-age=31536000, immutable",
+            "Content-Type": file.type,
+          },
+          onUploadProgress: (progressEvent: AxiosProgressEvent) => {
+            const { loaded, total } = progressEvent;
+            if (total !== null && total !== undefined) {
+              updateProgressBar(Math.floor((loaded * 100) / total));
+            }
+          },
+        });
+
+        const isSaved = await onChange(data.publicUrl);
+        if (isSaved && previousImageUrl) {
+          try {
+            await axios.delete("/api/media", {
+              data: { url: previousImageUrl },
+            });
+          } catch {
+            toast.warning("New media saved, but old file cleanup failed.", {
+              duration: 5000,
+            });
+          }
+        }
       }
+      setIsUploading(false);
     } catch (error) {
+      setIsUploading(false);
       toast.error("Something went wrong while uploading file", {
-        position: "top-center",
-        autoClose: 5000,
+        duration: 5000,
       });
     }
   };

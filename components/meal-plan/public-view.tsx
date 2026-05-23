@@ -12,11 +12,9 @@ const PublicView = () => {
             Welcome to Our Meal Planning Service
           </h2>
           <p className="text-lg text-center leading-loose tracking-wide mb-4">
-            At Kya Khayen?, we understand the importance of healthy living.
-            Whether you're aiming to lose weight, gain muscle, or maintain your
-            healthy lifestyle with a healthy and balanced diet, our main aim is
-            to transform your eating habits and improve your overall well-being
-            with our personalized healthy meal plans.
+            At Kya Khayen?, we understand the daily question of what to cook.
+            Choose the cuisines and ingredients you enjoy, and discover
+            personalized meal ideas that are practical for your routine.
           </p>
 
           <Link href="/auth/register">
@@ -30,7 +28,7 @@ const PublicView = () => {
           </Link>
           <Image
             src="/assets/images/meal-plan.webp"
-            alt="best diet plan for weight loss for female"
+            alt="personalized meal plan ideas"
             width={500}
             height={300}
             className="mb-6 rounded"
@@ -45,17 +43,16 @@ const PublicView = () => {
                   Personalized Meal Plans
                 </h4>
                 <p className="text-lg tracking-wide text-justify leading-loose mb-4">
-                  Say goodbye to generic diets! We create a meal plan based on
-                  your food preferences, health goals, nutrition needs and your
-                  body type.
+                  We create meal ideas based on your food preferences,
+                  favourite cuisines and ingredients you want to avoid.
                 </p>
                 <h4 className="text-xl font-medium text-websecondary mb-2">
                   Nutritional Insights
                 </h4>
                 <p className="text-lg tracking-wide text-justify leading-loose mb-4">
                   Each recipe comes with a detailed breakdown of total calories,
-                  carbohydrates, total fat, dietary fiber, protein and health
-                  benefits to keep you informed and motivated.
+                  carbohydrates, total fat, dietary fiber and protein to keep
+                  recipe information clear.
                 </p>
 
                 <h4 className="text-xl font-medium text-websecondary mb-2">
@@ -63,8 +60,8 @@ const PublicView = () => {
                 </h4>
                 <p className="text-lg tracking-wide text-justify leading-loose mb-4">
                   Know exactly what you're eating with our advanced calorie and
-                  nutrition tracking features. You can monitor your daily intake
-                  and progress towards your goals.
+                  nutrition information. You can compare recipes while planning
+                  your meals.
                 </p>
               </div>
               <div className="md:w-1/2 md:pl-4">
@@ -73,8 +70,8 @@ const PublicView = () => {
                 </h4>
                 <p className="text-lg tracking-wide text-justify leading-loose mb-4">
                   Explore a wide range of varieties of recipes to meet your
-                  specific nutritional needs while keeping your healthy meals
-                  exciting and flavorful.
+                  your tastes while keeping everyday cooking exciting and
+                  flavorful.
                 </p>
 
                 <h4 className="text-xl font-medium text-websecondary mb-2">
@@ -90,7 +87,7 @@ const PublicView = () => {
                 <p className="text-lg tracking-wide text-justify leading-loose mb-4">
                   Join our vibrant community of lively meal enthusiasts and
                   share your culinary adventures with like-minded individuals
-                  who are also passionate about healthy living.
+                  who are also passionate about cooking.
                 </p>
               </div>
             </div>
@@ -119,16 +116,16 @@ const PublicView = () => {
                   Step 3 : Complete Personalization
                 </h4>
                 <p className="text-lg tracking-wide text-justify leading-loose mb-4">
-                  Share your dietary preferences, health goals and some basic
-                  information about your body. This helps us create a
-                  personalized meal plan just for you.
+                  Share your food preferences, favourite cuisines and
+                  ingredient exclusions. This helps us create a personalized
+                  meal plan just for you.
                 </p>
                 <h4 className="text-xl font-medium text-websecondary mb-2">
                   Step 4: Access Your Meal Plan and Enjoy
                 </h4>
                 <p className="text-lg tracking-wide text-justify leading-loose mb-4">
                   Once you done personalization, Access your personalized meal
-                  plan and start your journey to a healthy lifestyle today!
+                  plan and start exploring new meal ideas today!
                 </p>
               </div>
             </div>

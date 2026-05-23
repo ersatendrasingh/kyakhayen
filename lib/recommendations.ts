@@ -16,9 +16,6 @@ const createTFIDFVectors = (recipes: RecipeWithCategory[]): number[][] => {
     const methods = recipe.recipeMethods
       .map((method) => method.title)
       .join(" ");
-    const benefits = recipe.recipeHealthBenefits
-      .map((benefit) => benefit.title)
-      .join(" ");
     const dietTypes =
       recipe.recipeDietType?.map((diet) => diet.dietType.title) || [];
     const recipeTypes =
@@ -37,7 +34,6 @@ const createTFIDFVectors = (recipes: RecipeWithCategory[]): number[][] => {
     return [
       ingredients,
       methods,
-      benefits,
       cookingTimes,
       ...dietTypes,
       ...recipeTypes,

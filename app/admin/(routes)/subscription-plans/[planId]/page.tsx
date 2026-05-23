@@ -13,11 +13,12 @@ import { DurationForm } from "./_components/duration-form";
 import { FeaturesForm } from "./_components/features-form";
 import { RegularPriceForm } from "./_components/regular-price-form";
 
-const SubscriptionPlanIdPage = async ({
-  params,
-}: {
-  params: { planId: string };
-}) => {
+const SubscriptionPlanIdPage = async (
+  props: {
+    params: Promise<{ planId: string }>;
+  }
+) => {
+  const params = await props.params;
   const plan = await db.plan.findUnique({
     where: {
       id: params.planId,
@@ -39,7 +40,7 @@ const SubscriptionPlanIdPage = async ({
     plan.name,
     plan.priceInr,
     plan.priceUsd,
-    plan.durationMonths,
+    plan.durationDays,
   ];
 
   const totalFields = requiredFields.length;

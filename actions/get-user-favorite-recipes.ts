@@ -44,22 +44,32 @@ export const getUserFavoriteRecipes = async (): Promise<
                 position: "asc",
               },
             },
-            recipeHealthBenefits: {
-              orderBy: {
-                position: "asc",
-              },
-            },
             recipeRecipeType: {
+              where: {
+                recipeType: {
+                  isPublished: true,
+                },
+              },
               include: {
                 recipeType: true,
               },
             },
             recipeDietType: {
+              where: {
+                dietType: {
+                  isPublished: true,
+                },
+              },
               include: {
                 dietType: true,
               },
             },
             recipeNutrient: {
+              where: {
+                nutrient: {
+                  isPublished: true,
+                },
+              },
               include: {
                 nutrient: true,
               },

@@ -23,16 +23,10 @@ export async function GET(req: Request) {
             cuisine: true,
           },
         },
-        userPrakriti: true,
         cookingSkill: true,
         UserAllrgies: {
           include: {
             allergy: true,
-          },
-        },
-        UserHealthGoals: {
-          include: {
-            healthGoal: true,
           },
         },
         UserPlan: {

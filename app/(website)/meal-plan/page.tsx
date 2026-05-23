@@ -3,9 +3,9 @@ import MealPlan from "@/components/meal-plan/meal-plan";
 
 import { PageTitle } from "@/components/page-title";
 const meta = {
-  title: "Personalized Meal Plans | Diet chart for weight loss",
+  title: "Personalized Meal Plans | Kya Khayen",
   description:
-    "Explore the best diet chart for weight loss, diet charts with 7-day detox plans, weight loss diets for women, and food plans for pregnant women.",
+    "Explore weekly meal ideas based on your food preferences, favourite cuisines and ingredients you want to avoid.",
   image: `${process.env.NEXT_PUBLIC_APP_URL}/meta-images/meal-plan.png`,
 };
 

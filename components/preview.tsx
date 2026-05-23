@@ -1,14 +1,11 @@
 "use client";
 
-import { cn } from "@/lib/utils";
-import dynamic from "next/dynamic";
-import { useEffect, useState } from "react";
-import "react-quill/dist/quill.bubble.css";
-import Loader from "@/components/loader";
+import { EditorContent, useEditor } from "@tiptap/react";
+import StarterKit from "@tiptap/starter-kit";
+import { useEffect } from "react";
 
-const ReactQuill = dynamic(() => import("react-quill"), {
-  ssr: false,
-});
+import Loader from "@/components/loader";
+import { cn } from "@/lib/utils";
 
 interface PreviewProps {
   value: string;
@@ -16,22 +13,27 @@ interface PreviewProps {
 }
 
 export const Preview = ({ value, className }: PreviewProps) => {
-  const [isClient, setIsClient] = useState(false);
+  const editor = useEditor({
+    extensions: [StarterKit],
+    content: value,
+    editable: false,
+    immediatelyRender: false,
+  });
 
   useEffect(() => {
-    setIsClient(true);
-  }, []);
+    if (editor && editor.getHTML() !== value) {
+      editor.commands.setContent(value, { emitUpdate: false });
+    }
+  }, [editor, value]);
 
-  if (!isClient) {
+  if (!editor) {
     return <Loader />;
   }
 
   return (
-    <ReactQuill
-      theme="bubble"
-      value={value}
-      className={cn("", className)}
-      readOnly
+    <EditorContent
+      editor={editor}
+      className={cn("rich-content text-base leading-7 text-gray-700", className)}
     />
   );
 };

@@ -5,8 +5,6 @@ import { db } from "@/lib/db";
 import { getCuisines } from "@/actions/get-cuisines";
 import UserAllergies from "./_components/user-allergies";
 import { getAllergies } from "@/actions/get-allergies";
-import UserHealthGoals from "./_components/user-health-goal";
-import { getHealthGoals } from "@/actions/get-health-goals";
 import { getFoodPreferences } from "@/actions/get-food-preferences";
 import UserFoodPreferences from "./_components/user-food-preference";
 import { getCookingSkills } from "@/actions/get-cooking-skills";
@@ -30,11 +28,6 @@ const UserPreferencesPage = async () => {
           allergy: true,
         },
       },
-      UserHealthGoals: {
-        include: {
-          healthGoal: true,
-        },
-      },
       foodPreference: true,
       cookingSkill: true,
     },
@@ -45,10 +38,6 @@ const UserPreferencesPage = async () => {
   });
 
   const allergies = await getAllergies({
-    userId: user?.id,
-  });
-
-  const healthGoals = await getHealthGoals({
     userId: user?.id,
   });
 
@@ -97,7 +86,6 @@ const UserPreferencesPage = async () => {
           />
           <UserCuisines userData={userDetails} cuisines={cuisines} />
           <UserAllergies userData={userDetails} allergies={allergies} />
-          <UserHealthGoals userData={userDetails} healthGoals={healthGoals} />
         </div>
       )}
     </div>

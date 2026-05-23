@@ -1,24 +1,22 @@
-import { DataTable } from "./_components/data-table";
-import { columns } from "./_components/columns";
 import { db } from "@/lib/db";
 
-import CookingMethodForm from "./_components/cooking-method-form";
+import { CookingMethodsDashboard } from "@/components/admin/recipe-cooking-methods/cooking-methods-dashboard";
+
 const CookingMethodsPage = async () => {
-  const cookingMethod = await db.cookingMethods.findMany({
-    orderBy: {
-      title: "asc",
+  const cookingMethods = await db.cookingMethods.findMany({
+    orderBy: [{ position: "asc" }, { title: "asc" }],
+    include: {
+      _count: {
+        select: {
+          recipeCookingMethod: true,
+        },
+      },
     },
   });
+
   return (
-    <div className="p-6">
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <CookingMethodForm />
-        </div>
-        <div>
-          <DataTable columns={columns} data={cookingMethod} />
-        </div>
-      </div>
+    <div className="p-4 sm:p-6 lg:p-8">
+      <CookingMethodsDashboard cookingMethods={cookingMethods} />
     </div>
   );
 };

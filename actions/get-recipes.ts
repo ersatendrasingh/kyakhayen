@@ -20,9 +20,17 @@ export const GetRecipes = async ({
     if (searchType && searchType === "category") {
       const recipeCategories = await db.recipeCategories.findFirst({
         where: {
-          slug: searchSlug,
+          isPublished: true,
+          slug:
+            searchSlug === "egg"
+              ? { in: ["eggetarian", "egg"] }
+              : searchSlug,
         },
       });
+
+      if (!recipeCategories) {
+        return [];
+      }
 
       recipes = await db.recipes.findMany({
         where: {
@@ -30,7 +38,7 @@ export const GetRecipes = async ({
           title: {
             contains: title,
           },
-          recipeCategoriesId: recipeCategories?.id,
+          recipeCategoriesId: recipeCategories.id,
         },
         include: {
           RecipeCategories: true,
@@ -53,11 +61,6 @@ export const GetRecipes = async ({
               position: "asc",
             },
           },
-          recipeHealthBenefits: {
-            orderBy: {
-              position: "asc",
-            },
-          },
           recipeCookingMethods: {
             include: {
               cookingMethod: true,
@@ -69,28 +72,33 @@ export const GetRecipes = async ({
             },
           },
           recipeDietType: {
+            where: {
+              dietType: {
+                isPublished: true,
+              },
+            },
             include: {
               dietType: true,
             },
           },
           recipeRecipeType: {
+            where: {
+              recipeType: {
+                isPublished: true,
+              },
+            },
             include: {
               recipeType: true,
             },
           },
           recipeNutrient: {
+            where: {
+              nutrient: {
+                isPublished: true,
+              },
+            },
             include: {
               nutrient: true,
-            },
-          },
-          recipePrakriti: {
-            include: {
-              prakriti: true,
-            },
-          },
-          recipeHealthGoals: {
-            include: {
-              healthGoals: true,
             },
           },
           recipeCookingTime: true,
@@ -115,9 +123,14 @@ export const GetRecipes = async ({
     } else if (searchType && searchType === "mealTime") {
       const recipeMealTime = await db.mealTimes.findFirst({
         where: {
+          isPublished: true,
           slug: searchSlug,
         },
       });
+
+      if (!recipeMealTime) {
+        return [];
+      }
 
       recipes = await db.recipes.findMany({
         where: {
@@ -126,7 +139,7 @@ export const GetRecipes = async ({
             contains: title,
           },
           recipeMealTime: {
-            some: { mealTimeId: recipeMealTime?.id },
+            some: { mealTimeId: recipeMealTime.id },
           },
         },
         include: {
@@ -150,19 +163,9 @@ export const GetRecipes = async ({
               position: "asc",
             },
           },
-          recipeHealthBenefits: {
-            orderBy: {
-              position: "asc",
-            },
-          },
           recipeCookingMethods: {
             include: {
               cookingMethod: true,
-            },
-          },
-          recipeHealthGoals: {
-            include: {
-              healthGoals: true,
             },
           },
           recipeCuisine: {
@@ -171,23 +174,33 @@ export const GetRecipes = async ({
             },
           },
           recipeDietType: {
+            where: {
+              dietType: {
+                isPublished: true,
+              },
+            },
             include: {
               dietType: true,
             },
           },
           recipeRecipeType: {
+            where: {
+              recipeType: {
+                isPublished: true,
+              },
+            },
             include: {
               recipeType: true,
             },
           },
           recipeNutrient: {
+            where: {
+              nutrient: {
+                isPublished: true,
+              },
+            },
             include: {
               nutrient: true,
-            },
-          },
-          recipePrakriti: {
-            include: {
-              prakriti: true,
             },
           },
           recipeCookingTime: true,
@@ -240,16 +253,6 @@ export const GetRecipes = async ({
             },
           },
           recipeMealTime: true,
-          recipeHealthBenefits: {
-            orderBy: {
-              position: "asc",
-            },
-          },
-          recipeHealthGoals: {
-            include: {
-              healthGoals: true,
-            },
-          },
           recipeCookingMethods: {
             include: {
               cookingMethod: true,
@@ -261,23 +264,33 @@ export const GetRecipes = async ({
             },
           },
           recipeDietType: {
+            where: {
+              dietType: {
+                isPublished: true,
+              },
+            },
             include: {
               dietType: true,
             },
           },
           recipeRecipeType: {
+            where: {
+              recipeType: {
+                isPublished: true,
+              },
+            },
             include: {
               recipeType: true,
             },
           },
           recipeNutrient: {
+            where: {
+              nutrient: {
+                isPublished: true,
+              },
+            },
             include: {
               nutrient: true,
-            },
-          },
-          recipePrakriti: {
-            include: {
-              prakriti: true,
             },
           },
           recipeCookingTime: true,

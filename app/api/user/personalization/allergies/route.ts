@@ -47,9 +47,7 @@ export async function PUT(req: Request) {
         },
         include: {
           userCuisines: true,
-          UserHealthGoals: true,
           UserAllrgies: true,
-          userPrakriti: true,
         },
       });
 
@@ -112,9 +110,7 @@ export async function PUT(req: Request) {
         },
         include: {
           userCuisines: true,
-          UserHealthGoals: true,
           UserAllrgies: true,
-          userPrakriti: true,
         },
       });
 
@@ -160,9 +156,7 @@ export async function DELETE(req: Request) {
       },
       include: {
         userCuisines: true,
-        UserHealthGoals: true,
         UserAllrgies: true,
-        userPrakriti: true,
       },
     });
 

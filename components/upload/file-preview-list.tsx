@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { toast } from "react-toastify";
+import { toast } from "sonner";
 
 import ImagePreview from "@/components/upload/image-preview";
 import VideoPreview from "@/components/upload/video-preview";
@@ -23,8 +23,7 @@ const getFileTypeFromUrl = async (previewUrl: string) => {
     }
   } catch (error) {
     toast.error(`Error getting file type: ${error}`, {
-      position: "top-center",
-      autoClose: 5000,
+      duration: 5000,
     });
     return null;
   }

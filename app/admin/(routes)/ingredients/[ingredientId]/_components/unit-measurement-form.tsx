@@ -4,7 +4,7 @@ import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { useRouter } from "next/navigation";
-import { toast } from "react-toastify";
+import { toast } from "sonner";
 import Select from "react-select";
 
 import { Loader2, Pencil, PlusCircleIcon } from "lucide-react";
@@ -64,8 +64,7 @@ export const UnitMeasurementForm = ({
         values
       );
       toast.success("Ingredient unit measurement created successfully", {
-        position: "top-center",
-        autoClose: 5000,
+        duration: 5000,
       });
       form.reset();
       toggleCreate();
@@ -74,8 +73,7 @@ export const UnitMeasurementForm = ({
       toast.error(
         "Something went wrong while creating ingredient unit measurement",
         {
-          position: "top-center",
-          autoClose: 5000,
+          duration: 5000,
         }
       );
     }

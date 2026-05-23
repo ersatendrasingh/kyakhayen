@@ -2,10 +2,8 @@ import { currentUser } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { NextResponse } from "next/server";
 
-export async function DELETE(
-  req: Request,
-  { params }: { params: { recipeId: string } }
-) {
+export async function DELETE(req: Request, props: { params: Promise<{ recipeId: string }> }) {
+  const params = await props.params;
   try {
     const user = await currentUser();
 

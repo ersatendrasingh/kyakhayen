@@ -27,11 +27,6 @@ export const getRecipes = async (): Promise<RecipeWithCategory[]> => {
             position: "asc",
           },
         },
-        recipeHealthBenefits: {
-          orderBy: {
-            position: "asc",
-          },
-        },
         recipeCookingMethods: {
           include: {
             cookingMethod: true,
@@ -43,28 +38,33 @@ export const getRecipes = async (): Promise<RecipeWithCategory[]> => {
           },
         },
         recipeDietType: {
+          where: {
+            dietType: {
+              isPublished: true,
+            },
+          },
           include: {
             dietType: true,
           },
         },
         recipeRecipeType: {
+          where: {
+            recipeType: {
+              isPublished: true,
+            },
+          },
           include: {
             recipeType: true,
           },
         },
         recipeNutrient: {
+          where: {
+            nutrient: {
+              isPublished: true,
+            },
+          },
           include: {
             nutrient: true,
-          },
-        },
-        recipePrakriti: {
-          include: {
-            prakriti: true,
-          },
-        },
-        recipeHealthGoals: {
-          include: {
-            healthGoals: true,
           },
         },
         recipeCookingTime: true,

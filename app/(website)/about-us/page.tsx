@@ -7,9 +7,9 @@ import { Button } from "@/components/ui/button";
 import { PageTitle } from "@/components/page-title";
 
 const meta = {
-  title: "About Us - Kya Khayen | Weight loss meal plan for women",
+  title: "About Us - Kya Khayen | Recipe and Meal Planning",
   description:
-    "Find easy dinner recipes, healthy snack ideas, and weight loss meal plans for women. Explore everything you need for a healthier lifestyle.",
+    "Find easy dinner recipes, snack ideas and practical meal planning inspiration for your kitchen.",
   image: `${process.env.NEXT_PUBLIC_APP_URL}/meta-images/about-us.png`,
 };
 
@@ -64,11 +64,9 @@ const AboutUsPage = () => {
             <div className="text-center">
               <p className="text-lg leading-loose tracking-wide mb-8">
                 Welcome to Kya Khayen?, your personalized meal planning partner
-                in transforming the way of your eating habits and improve your
-                overall well-being. Our mission is to help you to achieve your
-                health goals whether you’re looking for a diet plan for weight
-                loss, a 7-days meal plan or simply healthy recipes, we have got
-                you covered.
+                for discovering everyday recipes and organizing your cooking
+                routine. Whether you want a 7-day meal plan or simply a new
+                dinner idea, we have got you covered.
               </p>
             </div>
           </div>
@@ -81,7 +79,7 @@ const AboutUsPage = () => {
               <div className="flex mb-4 md:mb-0 md:mr-4">
                 <Image
                   src="/assets/images/about-us.webp"
-                  alt="7 day diet plan for weight loss"
+                  alt="weekly meal ideas"
                   width={600}
                   height={400}
                   className="rounded-lg"
@@ -91,11 +89,10 @@ const AboutUsPage = () => {
             <div className="md:w-1/2 text-center md:text-left">
               <h2 className="text-4xl text-websecondary mb-8">Who We Are</h2>
               <p className="text-lg text-justify leading-loose tracking-wide mb-4 mr-4">
-                We believe that healthy eating does not have to be boring or
-                complicated. Here we combine the power of AI-driven
-                recommendations, nutritional science, and expert support to
-                create a personalized meal plans that align with your food
-                preferences, health goals, allergies and body type.
+                We believe home cooking does not have to be boring or
+                complicated. Here we use recipe recommendations and practical
+                planning tools to create meal ideas that align with your food
+                preferences, cuisines and ingredient exclusions.
               </p>
             </div>
           </div>
@@ -109,10 +106,9 @@ const AboutUsPage = () => {
               <p className="text-lg text-justify leading-loose tracking-wide mb-4 mr-4">
                 Our mission is to help you to transform your home cooking
                 experience by providing personalized recipe recommendations and
-                healthy meal plans according to your food preferences, health
-                goals, allergies and body type. we believe that everyone
-                deserves a healthy and delicious meals that are unique as their
-                lifestyle. That's why we are committed to providing you with a
+                meal plans according to your food preferences, cuisines and
+                ingredient exclusions. We believe that everyone deserves meals
+                that suit their kitchen and routine. That is why we provide a
                 variety of recipes that are both easy to prepare and delicious.
               </p>
             </div>
@@ -120,7 +116,7 @@ const AboutUsPage = () => {
               <div className="flex mb-4 md:mb-0 md:mr-4">
                 <Image
                   src="/assets/images/our-mission.webp"
-                  alt="best meal plan for weight loss"
+                  alt="personalized meal planning"
                   width={800}
                   height={600}
                   className="rounded-lg"

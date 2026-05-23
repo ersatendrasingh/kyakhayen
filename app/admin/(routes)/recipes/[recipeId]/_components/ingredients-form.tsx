@@ -4,7 +4,7 @@ import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { useRouter } from "next/navigation";
-import { toast } from "react-toastify";
+import { toast } from "sonner";
 import Select from "react-select";
 
 import { Loader2, PlusCircleIcon } from "lucide-react";
@@ -82,16 +82,14 @@ export const IngredientsForm = ({
     try {
       await axios.post(`/api/recipes/${recipeId}/ingredients`, values);
       toast.success("Recipe ingredient created successfully", {
-        position: "top-center",
-        autoClose: 5000,
+        duration: 5000,
       });
       form.reset();
       toggleCreate();
       router.refresh();
     } catch {
       toast.error("Something went wrong while creating recipe ingredient", {
-        position: "top-center",
-        autoClose: 5000,
+        duration: 5000,
       });
     }
   };
@@ -104,14 +102,12 @@ export const IngredientsForm = ({
         list: updateData,
       });
       toast.success("Recipe ingredients reordered successfully", {
-        position: "top-center",
-        autoClose: 5000,
+        duration: 5000,
       });
       router.refresh();
     } catch {
       toast.error("Something went wrong while reordering recipe ingredients", {
-        position: "top-center",
-        autoClose: 5000,
+        duration: 5000,
       });
     } finally {
       setIsUpdating(false);

@@ -2,7 +2,7 @@
 
 import axios from "axios";
 import { useRouter } from "next/navigation";
-import { toast } from "react-toastify";
+import { toast } from "sonner";
 import { Pencil, PlusCircleIcon, ImageIcon } from "lucide-react";
 import { useState } from "react";
 import Image from "next/image";
@@ -35,16 +35,16 @@ export const MethodImageForm = ({
         imageUrl
       );
       toast.success("Method image updated successfully", {
-        position: "top-center",
-        autoClose: 5000,
+        duration: 5000,
       });
       toggleEdit();
       router.refresh();
+      return true;
     } catch {
       toast.error("Something went wrong while updating method image", {
-        position: "top-center",
-        autoClose: 5000,
+        duration: 5000,
       });
+      return false;
     }
   };
 
@@ -97,9 +97,7 @@ export const MethodImageForm = ({
             recipeId={recipeId}
             methodId={methodId}
             acceptedFileTypes={["image/*"]}
-            onChange={(url) => {
-              if (url) onSubmit(url);
-            }}
+            onChange={onSubmit}
           />
           <div className="text-xs text-muted-foreground mt-2">
             Upload this method&apos;s image

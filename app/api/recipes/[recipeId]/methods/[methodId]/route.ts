@@ -1,12 +1,17 @@
 import { currentUser } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { deleteFolderFromS3, deleteImageFromS3 } from "@/lib/s3utils";
+import {
+  deleteFolderFromS3,
+  deleteImageFromS3,
+  getStorageKeyFromUrl,
+} from "@/lib/s3utils";
 import { NextResponse } from "next/server";
 
 export async function DELETE(
   req: Request,
-  { params }: { params: { recipeId: string; methodId: string } }
+  props: { params: Promise<{ recipeId: string; methodId: string }> }
 ) {
+  const params = await props.params;
   try {
     const user = await currentUser();
     if (!user || user.role !== "ADMIN") {
@@ -23,24 +28,12 @@ export async function DELETE(
       return NextResponse.json("Method not found", { status: 404 });
     }
     if (method.imageUrl) {
-      // delete image
-      const key = method.imageUrl.split(
-        `${process.env.AWS_BUCKET_NAME as string}.s3.${
-          process.env.AWS_REGION as string
-        }.amazonaws.com/`
-      )[1];
-      await deleteImageFromS3(key);
+      await deleteImageFromS3(getStorageKeyFromUrl(method.imageUrl));
     }
     if (method.videoUrl) {
-      // delete video
-      const key = method.videoUrl.split(
-        `${process.env.AWS_BUCKET_NAME as string}.s3.${
-          process.env.AWS_REGION as string
-        }.amazonaws.com/`
-      )[1];
-      await deleteImageFromS3(key);
+      await deleteImageFromS3(getStorageKeyFromUrl(method.videoUrl));
     }
-    await deleteFolderFromS3(methodId);
+    await deleteFolderFromS3(`recipes/${recipeId}/methods/${methodId}`);
     // delete method
     const deletedMethod = await db.recipeMethods.delete({
       where: {
@@ -58,8 +51,9 @@ export async function DELETE(
 }
 export async function PATCH(
   req: Request,
-  { params }: { params: { recipeId: string; methodId: string } }
+  props: { params: Promise<{ recipeId: string; methodId: string }> }
 ) {
+  const params = await props.params;
   try {
     const user = await currentUser();
     if (!user || user.role !== "ADMIN") {

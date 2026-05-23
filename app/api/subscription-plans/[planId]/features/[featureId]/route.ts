@@ -4,8 +4,9 @@ import { NextResponse } from "next/server";
 
 export async function DELETE(
   req: Request,
-  { params }: { params: { planId: string; featureId: string } }
+  props: { params: Promise<{ planId: string; featureId: string }> }
 ) {
+  const params = await props.params;
   try {
     const user = await currentUser();
     if (!user || user.role !== "ADMIN") {
@@ -39,8 +40,9 @@ export async function DELETE(
 }
 export async function PATCH(
   req: Request,
-  { params }: { params: { planId: string; featureId: string } }
+  props: { params: Promise<{ planId: string; featureId: string }> }
 ) {
+  const params = await props.params;
   try {
     const user = await currentUser();
     if (!user || user.role !== "ADMIN") {

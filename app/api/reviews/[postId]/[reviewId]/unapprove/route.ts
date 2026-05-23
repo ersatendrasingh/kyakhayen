@@ -4,10 +4,15 @@ import { NextResponse } from "next/server";
 
 export async function POST(
   req: Request,
-  {
-    params: { postId, reviewId },
-  }: { params: { postId: string; reviewId: string } }
+  props: { params: Promise<{ postId: string; reviewId: string }> }
 ) {
+  const params = await props.params;
+
+  const {
+    postId,
+    reviewId
+  } = params;
+
   try {
     const user = await currentUser();
     if (!user || user.role !== "ADMIN") {

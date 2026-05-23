@@ -4,8 +4,9 @@ import { NextResponse } from "next/server";
 
 export async function PUT(
   req: Request,
-  { params }: { params: { recipeId: string } }
+  props: { params: Promise<{ recipeId: string }> }
 ) {
+  const params = await props.params;
   try {
     const user = await currentUser();
     if (!user || user.role !== "ADMIN") {

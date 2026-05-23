@@ -19,18 +19,15 @@ import { SeasonsForm } from "./_components/seasons-form";
 import { CuisinesForm } from "./_components/cuisines-form";
 import { RecipeCookingMethodForm } from "./_components/recipe-cooking-method-form";
 import { RecipeAllergyForm } from "./_components/recipe-allergy-form";
-import { RecipePrakritiForm } from "./_components/recipe-prakriti-form";
-import { RecipeHealthGoalForm } from "./_components/recipe-health-goal-form";
-import { RecipeDiseaseForm } from "./_components/recipe-disease-form";
 import { RecipeMealTimeForm } from "./_components/recipe-meal-time-form";
 import { RecipeNutrientForm } from "./_components/recipe-nutrient-form";
 import { RecipeDietTypeForm } from "./_components/recipe-diet-type-form";
 import { RecipeNutritionValuesForm } from "./_components/recipe-nutrition-values-form";
 import { RecipeRecipeTypeForm } from "./_components/recipe-recipe-type-form";
-import { HealthBenefitsForm } from "./_components/health-benefits-form";
 import { RecipeMetaDataForm } from "./_components/recipe-meta-data-form";
 
-const RecipeIdPage = async ({ params }: { params: { recipeId: string } }) => {
+const RecipeIdPage = async (props: { params: Promise<{ recipeId: string }> }) => {
+  const params = await props.params;
   const recipe = await db.recipes.findUnique({
     where: {
       id: params.recipeId,
@@ -56,11 +53,6 @@ const RecipeIdPage = async ({ params }: { params: { recipeId: string } }) => {
           position: "asc",
         },
       },
-      recipeHealthBenefits: {
-        orderBy: {
-          position: "asc",
-        },
-      },
       recipeCookingTime: true,
       recipeCuisine: {
         include: {
@@ -75,21 +67,6 @@ const RecipeIdPage = async ({ params }: { params: { recipeId: string } }) => {
       recipeAllergies: {
         include: {
           allergies: true,
-        },
-      },
-      recipePrakriti: {
-        include: {
-          prakriti: true,
-        },
-      },
-      recipeHealthGoals: {
-        include: {
-          healthGoals: true,
-        },
-      },
-      recipeDisease: {
-        include: {
-          disease: true,
         },
       },
       recipeMealTime: {
@@ -120,9 +97,7 @@ const RecipeIdPage = async ({ params }: { params: { recipeId: string } }) => {
   }
 
   const categories = await db.recipeCategories.findMany({
-    orderBy: {
-      name: "asc",
-    },
+    orderBy: [{ position: "asc" }, { name: "asc" }],
   });
 
   const ingredients = await db.ingredients.findMany({
@@ -145,11 +120,10 @@ const RecipeIdPage = async ({ params }: { params: { recipeId: string } }) => {
   const difficultyLavels = await db.recipeDifficulty.findMany();
   const seasons = await db.recipeSeasons.findMany();
   const cuisines = await db.cuisines.findMany();
-  const cookingMethods = await db.cookingMethods.findMany();
+  const cookingMethods = await db.cookingMethods.findMany({
+    orderBy: [{ position: "asc" }, { title: "asc" }],
+  });
   const allergies = await db.allergies.findMany();
-  const prakritis = await db.prakriti.findMany();
-  const healthGoals = await db.healthGoals.findMany();
-  const diseases = await db.disease.findMany();
   const mealTimes = await db.mealTimes.findMany();
   const nutrients = await db.nutrient.findMany();
   const dietTypes = await db.dietTypes.findMany();
@@ -188,39 +162,6 @@ const RecipeIdPage = async ({ params }: { params: { recipeId: string } }) => {
       title: allergy.allergies.title,
       slug: allergy.allergies.slug,
       imageUrl: allergy.allergies.imageUrl,
-    },
-  }));
-  const prakritiData = recipe.recipePrakriti.map((prakriti) => ({
-    id: prakriti.id,
-    recipeId: recipe.id,
-    prakritiId: prakriti.prakritiId,
-    prakriti: {
-      id: prakriti.prakriti.id,
-      title: prakriti.prakriti.title,
-      slug: prakriti.prakriti.slug,
-      imageUrl: prakriti.prakriti.imageUrl,
-    },
-  }));
-  const healthGoalData = recipe.recipeHealthGoals.map((healthGoal) => ({
-    id: healthGoal.id,
-    recipeId: recipe.id,
-    healthGoalId: healthGoal.healthGoalId,
-    healthGoal: {
-      id: healthGoal.healthGoals.id,
-      title: healthGoal.healthGoals.title,
-      slug: healthGoal.healthGoals.slug,
-      imageUrl: healthGoal.healthGoals.imageUrl,
-    },
-  }));
-  const diseaseData = recipe.recipeDisease.map((disease) => ({
-    id: disease.id,
-    recipeId: recipe.id,
-    diseaseId: disease.diseaseId,
-    disease: {
-      id: disease.disease.id,
-      title: disease.disease.title,
-      slug: disease.disease.slug,
-      imageUrl: disease.disease.imageUrl,
     },
   }));
   const mealTimeData = recipe.recipeMealTime.map((mealTime) => ({
@@ -362,15 +303,6 @@ const RecipeIdPage = async ({ params }: { params: { recipeId: string } }) => {
                 value: cuisine.id,
               }))}
             />
-            <RecipePrakritiForm
-              initialData={prakritiData}
-              recipeId={recipe.id}
-              options={prakritis.map((prakriti) => ({
-                label: prakriti.title,
-                value: prakriti.id,
-              }))}
-            />
-
             <RecipeCookingMethodForm
               initialData={cookingMethodsData}
               recipeId={recipe.id}
@@ -388,22 +320,6 @@ const RecipeIdPage = async ({ params }: { params: { recipeId: string } }) => {
               }))}
             />
 
-            <RecipeHealthGoalForm
-              initialData={healthGoalData}
-              recipeId={recipe.id}
-              options={healthGoals.map((healthGoal) => ({
-                label: healthGoal.title,
-                value: healthGoal.id,
-              }))}
-            />
-            <RecipeDiseaseForm
-              initialData={diseaseData}
-              recipeId={recipe.id}
-              options={diseases.map((disease) => ({
-                label: disease.title,
-                value: disease.id,
-              }))}
-            />
             <RecipeMealTimeForm
               initialData={mealTimeData}
               recipeId={recipe.id}
@@ -455,11 +371,6 @@ const RecipeIdPage = async ({ params }: { params: { recipeId: string } }) => {
                 <h2 className="text-md">Recipe Methods</h2>
               </div>
               <MethodsForm initialData={recipe} recipeId={recipe.id} />
-              <div className="flex items-center mt-4 gap-x-2">
-                <IconBadge icon={ListChecks} />
-                <h2 className="text-md">Recipe Health Benefits</h2>
-              </div>
-              <HealthBenefitsForm initialData={recipe} recipeId={recipe.id} />
               <div className="flex items-center mt-4 gap-x-2">
                 <IconBadge icon={ListChecks} />
                 <h2 className="text-md">Recipe Meta Data For SEO</h2>

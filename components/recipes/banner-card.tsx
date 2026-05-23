@@ -25,19 +25,16 @@ interface BannerCardProps {
 }
 const BannerCard = ({ recipe, className }: BannerCardProps) => {
   const user = useCurrentUser();
-  const [averageRating, setAverageRating] = useState<number>(0);
-  const [reviewsCount, setReviewsCount] = useState<number>(0);
+  const userId = user?.id;
   const [isFavorited, setIsFavorited] = useState<boolean>(false);
+  const reviewsCount = recipe.Review?.length ?? 0;
+  const averageRating =
+    reviewsCount > 0
+      ? recipe.Review!.reduce((total, review) => total + review.rating, 0) /
+        reviewsCount
+      : 0;
 
   useEffect(() => {
-    if (recipe.Review && recipe.Review.length > 0) {
-      const totalRating = recipe.Review.reduce(
-        (acc, review) => acc + review.rating,
-        0
-      );
-      setAverageRating(totalRating / recipe.Review.length);
-      setReviewsCount(recipe.Review.length);
-    }
     const userView = async () => {
       try {
         await axios.post("/api/add-view", { recipeId: recipe.id });
@@ -46,31 +43,31 @@ const BannerCard = ({ recipe, className }: BannerCardProps) => {
       }
     };
     userView();
-  }, [recipe.Review, recipe.id]);
+  }, [recipe.id]);
   useEffect(() => {
     const fetchUserFavoriteRecipeIds = async () => {
       try {
-        const response = await axios.get(`/api/user/${user?.id}/favorites`);
+        const response = await axios.get<Array<{ recipe: { id: string } }>>(
+          `/api/user/${userId}/favorites`
+        );
 
         const favoriteRecipeIds = response.data.map(
-          (favorite: any) => favorite.recipe.id
+          (favorite) => favorite.recipe.id
         );
         setIsFavorited(favoriteRecipeIds.includes(recipe.id));
       } catch (error) {
         console.error("Error fetching user favorites:", error);
       }
     };
-    if (user) fetchUserFavoriteRecipeIds();
-  }, [recipe.id]); // Only re-run the effect if recipe.id changes
-
-  // Assuming setUserFavoriteRecipeIds and setIsFavorited are set up with useState elsewhere
+    if (userId) fetchUserFavoriteRecipeIds();
+  }, [recipe.id, userId]);
 
   const recipeUrl = `${process.env.NEXT_PUBLIC_APP_URL}/recipes/${recipe.slug}`;
 
   return (
     <div className={cn("w-full flex items-center", className)}>
       <div className="flex justify-between items-start flex-col lg:flex-row rounded-md">
-        <div className="w-full text-start items-start bg-white rounded-md shadow-sm p-4">
+        <div className="w-full items-start rounded-xl border border-border/60 bg-card p-4 text-start text-card-foreground shadow-sm">
           <div className="relative w-full h-full">
             <Image
               src={recipe.imageUrl || "/placeholder.jpg"}
@@ -103,7 +100,7 @@ const BannerCard = ({ recipe, className }: BannerCardProps) => {
                   "text-white rounded-full p-1 px-2 font-normal text-sm",
                   recipe.RecipeCategories.name === "Non Veg" && "bg-red-500",
                   recipe.RecipeCategories.name === "Veg" && "bg-green-500",
-                  recipe.RecipeCategories.name === "Egg" && "bg-yellow-500",
+                  recipe.RecipeCategories.name === "Eggetarian" && "bg-yellow-500",
                   recipe.RecipeCategories.name === "Vegan" && "bg-pink-500",
                   recipe.RecipeCategories.name === "Pescetarian" &&
                     "bg-purple-500"

@@ -42,16 +42,6 @@ export const getRecipeBySlug = async ({
             position: "asc",
           },
         },
-        recipeHealthGoals: {
-          include: {
-            healthGoals: true,
-          },
-        },
-        recipePrakriti: {
-          include: {
-            prakriti: true,
-          },
-        },
         recipeMethods: {
           where: {
             isPublished: true,
@@ -60,22 +50,32 @@ export const getRecipeBySlug = async ({
             position: "asc",
           },
         },
-        recipeHealthBenefits: {
-          orderBy: {
-            position: "asc",
-          },
-        },
         recipeRecipeType: {
+          where: {
+            recipeType: {
+              isPublished: true,
+            },
+          },
           include: {
             recipeType: true,
           },
         },
         recipeDietType: {
+          where: {
+            dietType: {
+              isPublished: true,
+            },
+          },
           include: {
             dietType: true,
           },
         },
         recipeNutrient: {
+          where: {
+            nutrient: {
+              isPublished: true,
+            },
+          },
           include: {
             nutrient: true,
           },

@@ -4,7 +4,7 @@ import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { useRouter } from "next/navigation";
-import { toast } from "react-toastify";
+import { toast } from "sonner";
 import { AlarmClock, Pencil, PlusCircleIcon } from "lucide-react";
 import { useState } from "react";
 import axios from "axios";
@@ -40,7 +40,7 @@ const formSchema = z.object({
   folates: z.coerce.number(),
   calcium: z.coerce.number(),
   iron: z.coerce.number(),
-  phophorus: z.coerce.number(),
+  phosphorus: z.coerce.number(),
   potassium: z.coerce.number(),
   sodium: z.coerce.number(),
   zinc: z.coerce.number(),
@@ -83,9 +83,9 @@ export const MicrosForm = ({ initialData, ingredientId }: MicrosFormProps) => {
       calcium:
         initialData?.calcium !== null ? initialData?.calcium : 0 || undefined,
       iron: initialData?.iron !== null ? initialData?.iron : 0 || undefined,
-      phophorus:
-        initialData?.phophorus !== null
-          ? initialData?.phophorus
+      phosphorus:
+        initialData?.phosphorus !== null
+          ? initialData?.phosphorus
           : 0 || undefined,
       potassium:
         initialData?.potassium !== null
@@ -103,8 +103,7 @@ export const MicrosForm = ({ initialData, ingredientId }: MicrosFormProps) => {
     try {
       await axios.patch(`/api/ingredients/${ingredientId}`, values);
       toast.success("Ingredient micros values updated successfully", {
-        position: "top-center",
-        autoClose: 5000,
+        duration: 5000,
       });
       toggleEdit();
       router.refresh();
@@ -112,8 +111,7 @@ export const MicrosForm = ({ initialData, ingredientId }: MicrosFormProps) => {
       toast.error(
         "Something went wrong while updating ingredient micros values",
         {
-          position: "top-center",
-          autoClose: 5000,
+          duration: 5000,
         }
       );
     }
@@ -141,7 +139,7 @@ export const MicrosForm = ({ initialData, ingredientId }: MicrosFormProps) => {
               initialData.folates ||
               initialData.calcium ||
               initialData.iron ||
-              initialData.phophorus ||
+              initialData.phosphorus ||
               initialData.potassium ||
               initialData.sodium ||
               initialData.zinc ||
@@ -339,18 +337,18 @@ export const MicrosForm = ({ initialData, ingredientId }: MicrosFormProps) => {
                 </span>
               </p>
             )}
-            {initialData?.phophorus !== null ? (
+            {initialData?.phosphorus !== null ? (
               <p className="text-sm text-center">
-                <span className="font-bold">Phophorus (P) - mg</span>
+                <span className="font-bold">Phosphorus (P) - mg</span>
                 <span className="flex items-center justify-center">
-                  {initialData?.phophorus}
+                  {initialData?.phosphorus}
                 </span>
               </p>
             ) : (
               <p className="text-sm italic text-slate-500 text-center">
-                <span className="font-bold">Phophorus (P) - mg</span>
+                <span className="font-bold">Phosphorus (P) - mg</span>
                 <span className="flex items-center justify-center">
-                  No Phophorus (P) - mg value set yet
+                  No Phosphorus (P) - mg value set yet
                 </span>
               </p>
             )}
@@ -639,12 +637,12 @@ export const MicrosForm = ({ initialData, ingredientId }: MicrosFormProps) => {
               />
               <FormField
                 control={form.control}
-                name="phophorus"
+                name="phosphorus"
                 render={({ field }) => (
                   <FormItem>
                     <FormControl>
                       <>
-                        <FormLabel>Phophorus (P) - mg</FormLabel>
+                        <FormLabel>Phosphorus (P) - mg</FormLabel>
                         <Input
                           type="number"
                           step={0.001}

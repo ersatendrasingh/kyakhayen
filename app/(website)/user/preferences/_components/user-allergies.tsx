@@ -5,7 +5,7 @@ import { FaPlus, FaTrashAlt } from "react-icons/fa";
 import Image from "next/image";
 import axios from "axios";
 import { User } from "@prisma/client";
-import { toast } from "react-toastify";
+import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
 import PreferenceConfirmationModal from "@/components/modals/preference-confirmation-modal";
@@ -85,8 +85,7 @@ const UserAllergies = ({ userData, allergies }: UserAllergiesProps) => {
               ? "Allergy set to None, all other allergies removed successfully"
               : "Allergy added successfully",
             {
-              position: "top-center",
-              autoClose: 5000,
+              duration: 5000,
             }
           );
           router.refresh();
@@ -116,8 +115,7 @@ const UserAllergies = ({ userData, allergies }: UserAllergiesProps) => {
 
       if (response.status === 200) {
         toast.success("Allergy removed successfully", {
-          position: "top-center",
-          autoClose: 5000,
+          duration: 5000,
         });
         router.refresh();
       } else {

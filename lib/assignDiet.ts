@@ -16,7 +16,6 @@ export const generateRecipesForDate = async (
       include: {
         userCuisines: true,
         UserAllrgies: true,
-        UserHealthGoals: true,
       },
     });
 
@@ -25,7 +24,10 @@ export const generateRecipesForDate = async (
     }
 
     // Fetch meal times (assuming predefined meal times in the database)
-    const mealTimes = await db.mealTimes.findMany();
+    const mealTimes = await db.mealTimes.findMany({
+      where: { isPublished: true },
+      orderBy: { position: "asc" },
+    });
 
     // Fetch recently used recipes
     const recentRecipeIds = new Set<string>(getRecentRecipes(userId, 6)); // Fetch recipes used in the last 6 days
@@ -47,7 +49,7 @@ export const generateRecipesForDate = async (
     });
 
     // Shuffle arrays to ensure randomness
-    const shuffleArray = (array: any[]) => {
+    const shuffleArray = <T,>(array: T[]) => {
       for (let i = array.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
         [array[i], array[j]] = [array[j], array[i]];

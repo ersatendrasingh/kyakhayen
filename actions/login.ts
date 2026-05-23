@@ -2,7 +2,7 @@
 
 import * as z from "zod";
 import { AuthError } from "next-auth";
-import { render } from "@react-email/render";
+import { render } from "react-email";
 
 import { LoginSchema } from "@/schemas";
 import { signIn } from "@/auth";
@@ -44,7 +44,7 @@ export const login = async (
     await sendEmail({
       to: verificationToken.email,
       subject: "Verify Your Email to Activate Your Account",
-      html: render(
+      html: await render(
         EmailVerificationMail({
           name: existingUser.name as string,
           token: verificationToken.token,
@@ -95,7 +95,7 @@ export const login = async (
       await sendEmail({
         to: twoFactorToken.email,
         subject: "Two-Factor Authentication: Confirm Your Code",
-        html: render(
+        html: await render(
           TwoFAMail({
             name: existingUser.name as string,
             code: twoFactorToken.token,

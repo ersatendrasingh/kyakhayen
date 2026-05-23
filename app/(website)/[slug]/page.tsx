@@ -5,10 +5,8 @@ import { GetRecipes } from "@/actions/get-recipes";
 import SingleRecipe from "@/components/recipes/single-recipe";
 import SingleArticle from "@/components/blogs/single-article";
 
-export async function generateMetadata(
-  { params }: { params: { slug: string } },
-  parent: ResolvingMetadata
-): Promise<Metadata> {
+export async function generateMetadata(props: { params: Promise<{ slug: string }> }, parent: ResolvingMetadata): Promise<Metadata> {
+  const params = await props.params;
   const { slug } = params;
 
   const recipes = await GetRecipes({});
@@ -124,11 +122,12 @@ export async function generateMetadata(
   };
 }
 
-export default async function SlugPage({
-  params,
-}: {
-  params: { slug: string };
-}) {
+export default async function SlugPage(
+  props: {
+    params: Promise<{ slug: string }>;
+  }
+) {
+  const params = await props.params;
   const { slug } = params;
 
   const recipes = await GetRecipes({});

@@ -16,7 +16,7 @@ import { useForm } from "react-hook-form";
 import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import axios, { AxiosError } from "axios";
-import { toast } from "react-toastify";
+import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 const ChangePassword = () => {
@@ -35,21 +35,18 @@ const ChangePassword = () => {
       const response = await axios.post("/api/user/change-password", values);
       router.push(`/user/profile/`);
       toast.success(response.data, {
-        position: "top-center",
-        autoClose: 5000,
+        duration: 5000,
       });
     } catch (error: any) {
       if (axios.isAxiosError(error)) {
         console.error("Axios Error:", error.response?.data || error.message);
         toast.error(error.response?.data || error.message, {
-          position: "top-center",
-          autoClose: 5000,
+          duration: 5000,
         });
       } else {
         console.error("Error:", error.message);
         toast.error(error.message, {
-          position: "top-center",
-          autoClose: 5000,
+          duration: 5000,
         });
       }
     }

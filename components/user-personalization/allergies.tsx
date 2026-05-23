@@ -84,7 +84,6 @@ const Allergies = ({ allergies, title, setIsFormValid }: AllergiesProps) => {
       >
         <Swiper
           className="w-full"
-          cssMode={true}
           spaceBetween={isMobile ? 0 : 20}
           slidesPerView={isMobile ? 3 : 9}
           navigation={true}

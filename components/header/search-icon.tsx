@@ -13,7 +13,7 @@ const SearchIcon = () => {
     <div className="relative">
       <Sheet open={open} onOpenChange={setOpen}>
         <SheetTrigger className="flex-col items-center justify-center hidden md:flex">
-          <FaSearch className="w-5 h-5 text-gray-600" />
+          <FaSearch className="size-5 text-muted-foreground transition-colors hover:text-foreground" />
         </SheetTrigger>
         <SheetContent
           side="top"

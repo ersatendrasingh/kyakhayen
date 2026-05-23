@@ -7,11 +7,12 @@ import { db } from "@/lib/db";
 import { CategoryNameForm } from "./_components/category-name-form";
 import { CategoryActions } from "./_components/category-actions";
 
-const IngredientCategoryIdPage = async ({
-  params,
-}: {
-  params: { categoryId: string };
-}) => {
+const IngredientCategoryIdPage = async (
+  props: {
+    params: Promise<{ categoryId: string }>;
+  }
+) => {
+  const params = await props.params;
   const ingredientCategory = await db.ingredientCategories.findUnique({
     where: {
       id: params.categoryId,

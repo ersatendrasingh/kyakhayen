@@ -6,7 +6,7 @@ import { useForm } from "react-hook-form";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import axios from "axios";
-import { toast } from "react-toastify";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -21,6 +21,7 @@ import { Input } from "@/components/ui/input";
 
 import UploadDropZone from "@/components/imageUpload/upload-dropzone";
 import { useState } from "react";
+import { uploadMediaDirect } from "@/lib/upload-media-client";
 
 const formSchema = z.object({
   title: z.string().min(1, { message: "Category Name is required" }),
@@ -43,28 +44,29 @@ const CategoryForm = () => {
   const { isSubmitting, isValid } = form.formState;
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
-      const formData = new FormData();
-      formData.append("title", values.title);
-      formData.append("imageUrl", image as Blob);
-      const response = await axios.post("/api/articles/categories", formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
+      const response = await axios.post("/api/articles/categories", {
+        title: values.title,
       });
+      if (image) {
+        const imageUrl = await uploadMediaDirect(image, {
+          postCategoryId: response.data.id,
+        });
+        await axios.patch(`/api/articles/categories/${response.data.id}`, {
+          imageUrl,
+        });
+      }
       if (response.status === 200) {
         form.reset();
         setImage(null); // Reset image state
         setKey((prevKey) => prevKey + 1);
         router.refresh();
         toast.success("Article category created successfully", {
-          position: "top-center",
-          autoClose: 5000,
+          duration: 5000,
         });
       }
     } catch {
       toast.error("Something went wrong while creating article category", {
-        position: "top-center",
-        autoClose: 5000,
+        duration: 5000,
       });
     }
   };

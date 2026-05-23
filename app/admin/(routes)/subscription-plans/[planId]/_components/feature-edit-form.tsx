@@ -8,7 +8,7 @@ import { Form, FormControl, FormField, FormItem } from "@/components/ui/form";
 
 import { Input } from "@/components/ui/input";
 import axios from "axios";
-import { toast } from "react-toastify";
+import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 interface FeatureEditFormProps {
   feature: Feature;
@@ -44,8 +44,7 @@ const FeatureEditForm = ({
         values
       );
       toast.success("Plan feature updated successfully", {
-        position: "top-center",
-        autoClose: 5000,
+        duration: 5000,
       });
 
       onSave({ ...feature, ...values });
@@ -53,8 +52,7 @@ const FeatureEditForm = ({
       router.refresh();
     } catch {
       toast.error("Something went wrong while updating plan feature", {
-        position: "top-center",
-        autoClose: 5000,
+        duration: 5000,
       });
     }
   };

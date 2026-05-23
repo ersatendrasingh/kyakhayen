@@ -1,4 +1,5 @@
-import { Img } from "@react-email/components";
+import { Img } from "react-email";
+import { getPublicMediaUrl } from "@/lib/s3utils";
 interface ContactAdminMailProps {
   name: string;
   email: string;
@@ -46,7 +47,7 @@ const ContactAdminMail = ({
           style={{ color: "#fff", textDecoration: "none" }}
         >
           <Img
-            src="https://kyakhayen-prod.s3.ap-south-1.amazonaws.com/others/kyakhayen-white-logo.png"
+            src={getPublicMediaUrl("others/kyakhayen-white-logo.png")}
             alt="Kya Khayen Logo"
             width={260}
             height={80}

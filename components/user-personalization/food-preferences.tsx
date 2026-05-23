@@ -93,7 +93,6 @@ const FoodPreferences = ({
       >
         <Swiper
           className="w-full"
-          cssMode={true}
           spaceBetween={isMobile ? 0 : 20}
           slidesPerView={isMobile ? 3 : 5}
           navigation={true}

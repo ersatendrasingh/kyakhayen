@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { toast } from "react-toastify";
+import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import FilePreviewList from "@/components/upload/file-preview-list";
@@ -24,16 +24,14 @@ const UploadDropZone = ({
 
     if (!fileInput.files) {
       toast.error("No file was chosen", {
-        position: "top-center",
-        autoClose: 5000,
+        duration: 5000,
       });
       return;
     }
 
     if (!fileInput.files || fileInput.files.length === 0) {
       toast.error("Files list is empty", {
-        position: "top-center",
-        autoClose: 5000,
+        duration: 5000,
       });
       return;
     }
@@ -47,8 +45,7 @@ const UploadDropZone = ({
         file.type !== "application/pdf"
       ) {
         toast.error(`File with idx: ${i} is invalid`, {
-          position: "top-center",
-          autoClose: 5000,
+          duration: 5000,
         });
         continue;
       }
@@ -57,8 +54,7 @@ const UploadDropZone = ({
 
     if (!validFiles.length) {
       toast.error("No valid files were chosen", {
-        position: "top-center",
-        autoClose: 5000,
+        duration: 5000,
       });
       return;
     }

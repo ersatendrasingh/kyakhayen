@@ -3,7 +3,7 @@
 import axios from "axios";
 import { Trash } from "lucide-react";
 import { useState } from "react";
-import { toast } from "react-toastify";
+import { toast } from "sonner";
 
 import { ConfirmModal } from "@/components/modals/confirm-modal";
 import { Button } from "@/components/ui/button";
@@ -33,14 +33,12 @@ export const RecipeActions = ({
       if (isPublished) {
         await axios.patch(`/api/recipes/${recipeId}/unpublish`);
         toast.success("Recipe unpublished successfully", {
-          position: "top-center",
-          autoClose: 5000,
+          duration: 5000,
         });
       } else {
         await axios.patch(`/api/recipes/${recipeId}/publish`);
         toast.success("Recipe published successfully", {
-          position: "top-center",
-          autoClose: 5000,
+          duration: 5000,
         });
         confetti.onOpen();
       }
@@ -48,8 +46,7 @@ export const RecipeActions = ({
       router.refresh();
     } catch {
       toast.error("Something went wrong while unpublishing recipe", {
-        position: "top-center",
-        autoClose: 5000,
+        duration: 5000,
       });
     } finally {
       setIsLoading(false);
@@ -60,16 +57,14 @@ export const RecipeActions = ({
       setIsLoading(true);
       await axios.delete(`/api/recipes/${recipeId}`);
       toast.success("Recipe deleted successfully", {
-        position: "top-center",
-        autoClose: 5000,
+        duration: 5000,
       });
 
       router.push(`/admin/recipes`);
       router.refresh();
     } catch (error) {
       toast.error("Something went wrong while deleting recipe", {
-        position: "top-center",
-        autoClose: 5000,
+        duration: 5000,
       });
     } finally {
       setIsLoading(false);

@@ -1,15 +1,11 @@
 import { useEffect, useState } from "react";
 import { useCurrentUser } from "@/hooks/use-current-user";
-import dynamic from "next/dynamic";
 import LoginPopup from "@/components/modals/login-popup";
 import axios from "axios";
-import { toast } from "react-toastify";
+import { toast } from "sonner";
 import { FaSpinner } from "react-icons/fa";
 import StarRatingSkeleton from "@/components/reviews/star-rating-skelton";
-
-const DynamicStarRatings = dynamic(() => import("react-star-ratings"), {
-  ssr: false,
-});
+import StarRating from "@/components/reviews/star-rating";
 
 interface ReviewsRatingFormProps {
   recipeId: string;
@@ -69,8 +65,7 @@ export const ReviewsRatingForm = ({
 
       if (response.status === 200) {
         toast.success("Review submitted successfully", {
-          position: "top-center",
-          autoClose: 5000,
+          duration: 5000,
         });
         onReviewAdded();
         setRating(0);
@@ -79,21 +74,18 @@ export const ReviewsRatingForm = ({
         // Handle error
         if (response.status === 400) {
           toast.error("You have already reviewed on this recipe.", {
-            position: "top-center",
-            autoClose: 5000,
+            duration: 5000,
           });
         } else {
           toast.error("Failed to submit review.", {
-            position: "top-center",
-            autoClose: 5000,
+            duration: 5000,
           });
         }
       }
     } catch (error) {
       console.error("Error submitting review:", error);
       toast.error("Internal Server Error", {
-        position: "top-center",
-        autoClose: 5000,
+        duration: 5000,
       });
     } finally {
       setIsSubmitting(false); // Set submission status to false
@@ -105,15 +97,7 @@ export const ReviewsRatingForm = ({
       <h1 className="text-2xl font-bold">Reviews & Ratings</h1>
       {user ? (
         <div className="space-y-8 mt-2 w-full">
-          <DynamicStarRatings
-            rating={rating}
-            starRatedColor="websecondary"
-            starEmptyColor="gray"
-            changeRating={(newRating: number) => setRating(newRating)}
-            numberOfStars={5}
-            starDimension="30px" // Increase star size
-            starSpacing="2px"
-          />
+          <StarRating value={rating} onChange={setRating} size={30} />
           {ratingError && <p className="text-red-500">{ratingError}</p>}
           <textarea
             className="w-full p-2 border border-gray-300 rounded-md mt-2"

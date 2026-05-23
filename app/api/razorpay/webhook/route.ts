@@ -1,7 +1,7 @@
 import { db } from "@/lib/db";
 import { NextResponse } from "next/server";
 import { validateWebhookSignature } from "razorpay/dist/utils/razorpay-utils";
-import { render } from "@react-email/render";
+import { render } from "react-email";
 import { sendEmail } from "@/lib/mail";
 import OrderConfirmationMail from "@/emails/customer-order-confirmation";
 import CustomerOrderAdminMail from "@/emails/customer-order-admin-mail";
@@ -157,7 +157,7 @@ const handlePaymentCaptured = async (payload: any) => {
     await sendEmail({
       to: order.user.email as string,
       subject: "Your Kya Khayen order has been successfully placed!",
-      html: render(
+      html: await render(
         OrderConfirmationMail({
           subjectLine: "Your Order Has Been Placed Successfully!",
           name: order.user.name as string,
@@ -177,7 +177,7 @@ const handlePaymentCaptured = async (payload: any) => {
               quantity: item.quantity,
               priceInr: item.plan.priceInr,
               priceUsd: item.plan.priceUsd,
-              durationMonths: item.plan.durationMonths,
+              durationDays: item.plan.durationDays,
             })),
           },
         })
@@ -187,7 +187,7 @@ const handlePaymentCaptured = async (payload: any) => {
     await sendEmail({
       to: process.env.ADMIN_EMAIL as string,
       subject: "New order placed on Kya Khayen using Razorpay",
-      html: render(
+      html: await render(
         CustomerOrderAdminMail({
           subjectLine:
             "Someone has placed an order on your Kya Khayen Website. Here are the details:",
@@ -213,7 +213,7 @@ const handlePaymentCaptured = async (payload: any) => {
               quantity: item.quantity,
               priceInr: item.plan.priceInr,
               priceUsd: item.plan.priceUsd,
-              durationMonths: item.plan.durationMonths,
+              durationDays: item.plan.durationDays,
             })),
           },
         })
@@ -275,7 +275,7 @@ const handlePaymentFailed = async (payload: any) => {
     await sendEmail({
       to: order.user.email as string,
       subject: "Order Attempt on Kya Khayen Unsuccessful - Action Required",
-      html: render(
+      html: await render(
         OrderConfirmationMail({
           subjectLine:
             "Order Placement Unsuccessful, Please try again or contact support for assistance.",
@@ -296,7 +296,7 @@ const handlePaymentFailed = async (payload: any) => {
               quantity: item.quantity,
               priceInr: item.plan.priceInr,
               priceUsd: item.plan.priceUsd,
-              durationMonths: item.plan.durationMonths,
+              durationDays: item.plan.durationDays,
             })),
           },
         })
@@ -306,7 +306,7 @@ const handlePaymentFailed = async (payload: any) => {
     await sendEmail({
       to: process.env.ADMIN_EMAIL as string,
       subject: "An order has been failed on Kya Khayen using Razorpay",
-      html: render(
+      html: await render(
         CustomerOrderAdminMail({
           subjectLine:
             "An attempt to place an order on your Vedique Website was unsuccessful. Here are the details:",
@@ -332,7 +332,7 @@ const handlePaymentFailed = async (payload: any) => {
               quantity: item.quantity,
               priceInr: item.plan.priceInr,
               priceUsd: item.plan.priceUsd,
-              durationMonths: item.plan.durationMonths,
+              durationDays: item.plan.durationDays,
             })),
           },
         })

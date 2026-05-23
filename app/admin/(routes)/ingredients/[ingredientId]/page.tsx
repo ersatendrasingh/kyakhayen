@@ -12,11 +12,12 @@ import { MacrosForm } from "./_components/macros-form";
 import { MicrosForm } from "./_components/micros-form";
 import { UnitMeasurementForm } from "./_components/unit-measurement-form";
 
-const IngredientIdPage = async ({
-  params,
-}: {
-  params: { ingredientId: string };
-}) => {
+const IngredientIdPage = async (
+  props: {
+    params: Promise<{ ingredientId: string }>;
+  }
+) => {
+  const params = await props.params;
   const ingredient = await db.ingredients.findUnique({
     where: {
       id: params.ingredientId,

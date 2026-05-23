@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation";
 import axios from "axios";
 import { useState } from "react";
 import { Pencil } from "lucide-react";
-import { toast } from "react-toastify";
+import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem } from "@/components/ui/form";
@@ -44,15 +44,13 @@ export const MethodTitleForm = ({
     try {
       await axios.patch(`/api/recipes/${recipeId}/methods/${methodId}`, values);
       toast.success("Method title updated successfully", {
-        position: "top-center",
-        autoClose: 5000,
+        duration: 5000,
       });
       toggleEdit();
       router.refresh();
     } catch {
       toast.error("Something went wrong while updating method title", {
-        position: "top-center",
-        autoClose: 5000,
+        duration: 5000,
       });
     }
   };
