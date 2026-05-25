@@ -62,7 +62,7 @@ export const MethodActions = ({
 
       router.push(`/admin/recipes/${recipeId}`);
       router.refresh();
-    } catch (error) {
+    } catch {
       toast.error("Something went wrong while deleting method", {
         duration: 5000,
       });

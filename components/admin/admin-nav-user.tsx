@@ -76,7 +76,7 @@ export function AdminNavUser({
       <button
         type="button"
         aria-label="Open admin user menu"
-        className="admin-header-control flex cursor-pointer items-center gap-2 rounded-full border p-1 pr-2 transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        className="admin-header-control flex size-9 shrink-0 cursor-pointer items-center justify-center rounded-full border p-0 transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:h-10 sm:w-auto sm:gap-2 sm:p-1 sm:pr-2"
       >
         <Avatar className="size-8 shrink-0 rounded-full ring-1 ring-border/70">
           <AvatarImage src={user?.image ?? undefined} alt={name} />

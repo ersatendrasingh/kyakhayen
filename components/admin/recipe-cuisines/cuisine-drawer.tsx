@@ -1,10 +1,10 @@
 "use client";
 
-import Image from "next/image";
-import { useEffect, useState } from "react";
-import { ImageIcon, LoaderCircle, UploadCloud } from "lucide-react";
+import { useState } from "react";
+import { LoaderCircle } from "lucide-react";
 import { toast } from "sonner";
 
+import { MediaField } from "@/components/admin/media/media-field";
 import type { CuisineRecord } from "@/components/admin/recipe-cuisines/cuisine-types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,7 +17,6 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
-import { uploadMediaDirect } from "@/lib/upload-media-client";
 
 type CuisineDrawerProps = {
   open: boolean;
@@ -33,28 +32,8 @@ export function CuisineDrawer({
   onSaved,
 }: CuisineDrawerProps) {
   const [title, setTitle] = useState(cuisine?.title ?? "");
-  const [image, setImage] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(cuisine?.imageUrl ?? null);
   const [submitting, setSubmitting] = useState(false);
-
-  useEffect(() => {
-    return () => {
-      if (preview?.startsWith("blob:")) {
-        URL.revokeObjectURL(preview);
-      }
-    };
-  }, [preview]);
-
-  const onImageChange = (file: File | undefined) => {
-    if (!file) return;
-
-    if (preview?.startsWith("blob:")) {
-      URL.revokeObjectURL(preview);
-    }
-
-    setImage(file);
-    setPreview(URL.createObjectURL(file));
-  };
 
   const onSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -73,7 +52,7 @@ export function CuisineDrawer({
         const response = await fetch(`/api/recipes/cuisines/${cuisineId}`, {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ title: trimmedTitle }),
+          body: JSON.stringify({ title: trimmedTitle, imageUrl: preview }),
         });
 
         if (!response.ok) throw new Error("Unable to update cuisine.");
@@ -81,23 +60,12 @@ export function CuisineDrawer({
         const response = await fetch("/api/recipes/cuisines", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ title: trimmedTitle }),
+          body: JSON.stringify({ title: trimmedTitle, imageUrl: preview }),
         });
 
         if (!response.ok) throw new Error("Unable to create cuisine.");
         const created = (await response.json()) as { id: string };
         cuisineId = created.id;
-      }
-
-      if (image && cuisineId) {
-        const imageUrl = await uploadMediaDirect(image, { cuisineId });
-        const response = await fetch(`/api/recipes/cuisines/${cuisineId}`, {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ imageUrl }),
-        });
-
-        if (!response.ok) throw new Error("Unable to save cuisine image.");
       }
 
       toast.success(cuisine ? "Cuisine updated successfully" : "Cuisine created successfully");
@@ -148,44 +116,7 @@ export function CuisineDrawer({
               />
             </div>
 
-            <div className="space-y-2">
-              <Label>Featured image</Label>
-              <label className="relative flex min-h-64 cursor-pointer flex-col items-center justify-center overflow-hidden rounded-3xl border border-dashed border-border bg-muted/30 transition hover:border-primary/40 hover:bg-primary/[0.03]">
-                {preview ? (
-                  <Image
-                    src={preview}
-                    alt={title || "Cuisine preview"}
-                    fill
-                    sizes="(max-width: 640px) 100vw, 520px"
-                    className="object-cover"
-                    unoptimized={preview.startsWith("blob:")}
-                  />
-                ) : (
-                  <>
-                    <div className="rounded-2xl bg-background p-3 shadow-sm">
-                      <ImageIcon className="size-8 text-muted-foreground" />
-                    </div>
-                    <span className="mt-4 text-sm font-medium">Click to upload</span>
-                    <span className="mt-1 text-xs text-muted-foreground">
-                      JPG, PNG or WebP
-                    </span>
-                  </>
-                )}
-                {preview && (
-                  <span className="absolute bottom-4 inline-flex items-center gap-2 rounded-full bg-background/90 px-4 py-2 text-xs font-medium shadow-sm">
-                    <UploadCloud className="size-4" />
-                    Replace image
-                  </span>
-                )}
-                <input
-                  className="sr-only"
-                  type="file"
-                  accept="image/*"
-                  onChange={(event) => onImageChange(event.target.files?.[0])}
-                  disabled={submitting}
-                />
-              </label>
-            </div>
+            <MediaField label="Featured image" value={preview} onChange={setPreview} disabled={submitting} />
           </div>
 
           <SheetFooter className="border-t bg-background px-6 py-5 sm:flex-row sm:justify-end">

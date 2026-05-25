@@ -14,6 +14,11 @@ import { formatTime } from "@/lib/formatTime";
 import { RecipeWithCategory } from "@/types/recipe";
 import { useCurrentUser } from "@/hooks/use-current-user";
 import { handleRecipeClick } from "@/lib/handle-recipe-click";
+import { FoodPreferenceMarker } from "@/components/recipes/food-preference-marker";
+import {
+  RecipeSteam,
+  shouldShowRecipeSteam,
+} from "@/components/recipes/recipe-steam";
 
 interface RecipeCardProps {
   recipe: RecipeWithCategory;
@@ -49,7 +54,7 @@ const RecipeCard = ({ recipe }: RecipeCardProps) => {
   return (
     <Card
       ref={ref}
-      className={`min-h-[348px] max-w-sm overflow-hidden border-border/60 bg-card text-card-foreground shadow-sm transition-transform hover:-translate-y-1 hover:shadow-lg ${
+      className={`group min-h-[348px] max-w-sm overflow-hidden border-border/60 bg-card text-card-foreground shadow-sm transition-transform hover:-translate-y-1 hover:shadow-lg ${
         inView ? "animate-slide-up" : ""
       }`}
       onClick={() => handleRecipeClick(recipe.id, recipe.RecipeCategories!.id)}
@@ -78,20 +83,15 @@ const RecipeCard = ({ recipe }: RecipeCardProps) => {
               width={300}
               height={200}
             />
+            {shouldShowRecipeSteam(recipe.title) && (
+              <RecipeSteam className="bottom-[14%] left-1/2" />
+            )}
           </Link>
           {recipe.RecipeCategories && (
-            <div
-              className={cn(
-                "absolute top-0 left-0 bg-webprimary text-white px-2 py-1 rounded-tl-md rounded-br-md text-xs font-semibold",
-                recipe.RecipeCategories.name === "Non Veg" && "bg-red-500",
-                recipe.RecipeCategories.name === "Veg" && "bg-green-500",
-                recipe.RecipeCategories.name === "Pescetarian" && "bg-blue-500",
-                recipe.RecipeCategories.name === "Eggetarian" && "bg-yellow-500",
-                recipe.RecipeCategories.name === "Vegan" && "bg-pink-500"
-              )}
-            >
-              {recipe.RecipeCategories.name}
-            </div>
+            <FoodPreferenceMarker
+              name={recipe.RecipeCategories.name}
+              className="absolute left-3 top-3 shadow-sm"
+            />
           )}
         </div>
         <div className="px-3 py-4">

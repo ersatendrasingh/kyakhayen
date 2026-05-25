@@ -17,10 +17,21 @@ export async function DELETE(req: Request, props: { params: Promise<{ formId: st
       where: {
         id: formId,
       },
+      include: {
+        _count: {
+          select: { RecipeIngredients: true },
+        },
+      },
     });
 
     if (!form) {
       return NextResponse.json("Form not found", { status: 404 });
+    }
+
+    if (form._count.RecipeIngredients) {
+      return NextResponse.json("Preparation forms used by recipes cannot be deleted", {
+        status: 409,
+      });
     }
 
     const deletedForm = await db.ingredientsForm.delete({
@@ -42,7 +53,11 @@ export async function PATCH(req: Request, props: { params: Promise<{ formId: str
       return NextResponse.json("Unauthorized", { status: 401 });
     }
     const { formId } = params;
-    const { name } = await req.json();
+    const values = (await req.json()) as { name?: string };
+    const name = values.name?.trim();
+    if (!name) {
+      return NextResponse.json("Preparation form name is required", { status: 400 });
+    }
 
     const form = await db.ingredientsForm.update({
       where: {

@@ -4,8 +4,6 @@ import { currentUser } from "@/lib/auth";
 import { db } from "@/lib/db";
 import {
   deleteFolderFromS3,
-  deleteImageFromS3,
-  getStorageKeyFromUrl,
   getVerifiedPublicMediaKey,
 } from "@/lib/s3utils";
 import { slugify } from "@/lib/slugify";
@@ -118,18 +116,6 @@ export async function PATCH(
         ...(isPublished !== undefined && { isPublished }),
       },
     });
-
-    if (
-      normalizedImageUrl !== undefined &&
-      currentBodyType.imageUrl &&
-      currentBodyType.imageUrl !== normalizedImageUrl
-    ) {
-      try {
-        await deleteImageFromS3(getStorageKeyFromUrl(currentBodyType.imageUrl));
-      } catch (error) {
-        console.error("[BODY_TYPE_IMAGE_REPLACEMENT_CLEANUP]", error);
-      }
-    }
 
     return NextResponse.json(bodyType, { status: 200 });
   } catch (error) {

@@ -52,6 +52,21 @@ model Recipes {
   @@unique([sourceSystem, sourceId])
 }
 
+model MediaAsset {
+  id         String   @id @default(uuid())
+  name       String
+  url        String   @unique
+  storageKey String   @unique
+  mimeType   String
+  mediaType  String
+  fileSize   BigInt
+  altText    String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([mediaType, createdAt])
+}
+
 model RecipeViews {
   id        String  @id @default(uuid())
   ipAddress String
@@ -88,6 +103,7 @@ model Units {
   id                         String                       @id @default(uuid())
   title                      String                       @unique
   shortName                  String                       @unique
+  position                   Int?
   RecipeIngredients          RecipeIngredients[]
   IngredientUnitMeasurements IngredientUnitMeasurements[]
 }
@@ -326,6 +342,7 @@ model Ingredients {
   id                   String  @id @default(uuid())
   name                 String
   slug                 String? @unique
+  imageUrl             String?
   sourceSystem         String?
   sourceId             Int?
   nutritionSource      String?
@@ -376,15 +393,19 @@ model IngredientUnitMeasurements {
 }
 
 model IngredientCategories {
-  id         String        @id @default(uuid())
-  name       String        @unique
-  slug       String        @unique
-  ingredient Ingredients[]
+  id          String        @id @default(uuid())
+  name        String        @unique
+  slug        String        @unique
+  imageUrl    String?
+  position    Int?
+  isPublished Boolean       @default(false)
+  ingredient  Ingredients[]
 }
 
 model IngredientsForm {
   id                String              @id @default(uuid())
   name              String              @unique
+  position          Int?
   RecipeIngredients RecipeIngredients[]
 }
 

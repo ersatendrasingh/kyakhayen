@@ -1,9 +1,13 @@
 import {
+  AbortMultipartUploadCommand,
+  CompleteMultipartUploadCommand,
+  CreateMultipartUploadCommand,
   DeleteObjectCommand,
   DeleteObjectsCommand,
   ListObjectsV2Command,
   PutObjectCommand,
   S3Client,
+  UploadPartCommand,
 } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
@@ -94,6 +98,78 @@ export const createPresignedMediaUpload = async (
     uploadUrl: await getSignedUrl(getS3Client(), command, { expiresIn: 300 }),
   };
 };
+
+export const createMultipartMediaUpload = async (
+  key: string,
+  contentType: string
+) => {
+  const upload = await getS3Client().send(
+    new CreateMultipartUploadCommand({
+      Bucket: getMediaBucket(),
+      Key: key,
+      ContentType: contentType,
+      CacheControl: "public, max-age=31536000, immutable",
+    })
+  );
+
+  if (!upload.UploadId) {
+    throw new Error("S3 did not return a multipart upload id.");
+  }
+
+  return {
+    key,
+    publicUrl: getPublicMediaUrl(key),
+    uploadId: upload.UploadId,
+  };
+};
+
+export const createPresignedMediaPartUpload = async (
+  key: string,
+  uploadId: string,
+  partNumber: number
+) =>
+  getSignedUrl(
+    getS3Client(),
+    new UploadPartCommand({
+      Bucket: getMediaBucket(),
+      Key: key,
+      UploadId: uploadId,
+      PartNumber: partNumber,
+    }),
+    { expiresIn: 900 }
+  );
+
+export const completeMultipartMediaUpload = async (
+  key: string,
+  uploadId: string,
+  parts: Array<{ ETag: string; PartNumber: number }>
+) => {
+  await getS3Client().send(
+    new CompleteMultipartUploadCommand({
+      Bucket: getMediaBucket(),
+      Key: key,
+      UploadId: uploadId,
+      MultipartUpload: { Parts: parts },
+    })
+  );
+
+  return {
+    key,
+    publicUrl: getPublicMediaUrl(key),
+  };
+};
+
+export const abortMultipartMediaUpload = async (
+  key: string,
+  uploadId: string
+) =>
+  getS3Client().send(
+    new AbortMultipartUploadCommand({
+      Bucket: getMediaBucket(),
+      Key: key,
+      UploadId: uploadId,
+    })
+  );
 
 export const deleteImageFromS3 = async (key: string) => {
   try {

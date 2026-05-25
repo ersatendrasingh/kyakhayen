@@ -3,7 +3,7 @@ import { db } from "@/lib/db";
 import { NextResponse } from "next/server";
 
 export async function DELETE(
-  req: Request,
+  _req: Request,
   props: { params: Promise<{ ingredientId: string; measurementId: string }> }
 ) {
   const params = await props.params;

@@ -3,8 +3,6 @@ import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import {
   deleteFolderFromS3,
-  deleteImageFromS3,
-  getStorageKeyFromUrl,
 } from "@/lib/s3utils";
 import { currentUser } from "@/lib/auth";
 import { slugify } from "@/lib/slugify";
@@ -26,9 +24,6 @@ export async function DELETE(req: Request, props: { params: Promise<{ recipeId: 
 
     if (!recipe) {
       return NextResponse.json("Recipe not found", { status: 404 });
-    }
-    if (recipe.imageUrl) {
-      await deleteImageFromS3(getStorageKeyFromUrl(recipe.imageUrl));
     }
     await deleteFolderFromS3(`recipes/${recipeId}`);
 

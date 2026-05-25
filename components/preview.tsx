@@ -1,10 +1,10 @@
 "use client";
 
 import { EditorContent, useEditor } from "@tiptap/react";
-import StarterKit from "@tiptap/starter-kit";
 import { useEffect } from "react";
 
 import Loader from "@/components/loader";
+import { richContentExtensions } from "@/components/rich-content-extensions";
 import { cn } from "@/lib/utils";
 
 interface PreviewProps {
@@ -14,7 +14,7 @@ interface PreviewProps {
 
 export const Preview = ({ value, className }: PreviewProps) => {
   const editor = useEditor({
-    extensions: [StarterKit],
+    extensions: richContentExtensions,
     content: value,
     editable: false,
     immediatelyRender: false,

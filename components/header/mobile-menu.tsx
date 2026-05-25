@@ -1,82 +1,63 @@
 "use client";
 
-import { FaHome, FaSearch, FaRegCalendarAlt } from "react-icons/fa";
-import { MdFoodBank } from "react-icons/md";
-
-import { RiAccountCircleLine } from "react-icons/ri";
+import { CalendarHeart, CookingPot, Menu, Soup } from "lucide-react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { LoginButton } from "@/components/auth/login-button";
-import { useCurrentUser } from "@/hooks/use-current-user";
-import { SearchInput } from "@/components/header/search-input";
-import { useState } from "react";
+import Usermenu from "@/components/header/user-menu";
+import { cn } from "@/lib/utils";
+
+const destinations = [
+  { label: "Recipes", href: "/recipes", icon: CookingPot },
+  {
+    label: "Cuisines",
+    href: "/recipes?k=north-indian&type=cuisine",
+    icon: Soup,
+  },
+  { label: "Plan", href: "/meal-plan", icon: CalendarHeart },
+];
 
 const MobileMenu = () => {
-  const [open, setOpen] = useState(false);
-  const user = useCurrentUser();
+  const pathname = usePathname();
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-50 border-t border-border bg-background/95 px-4 py-2 text-muted-foreground backdrop-blur md:hidden">
-      <div className="flex flex-row items-center justify-between">
-        <div>
-          <Link href="/" className="flex flex-col items-center justify-center">
-            <button className="flex flex-col items-center justify-center">
-              <FaHome size={24} className="mb-1" />
-            </button>
-          </Link>
-        </div>
-        <div>
-          <Sheet open={open} onOpenChange={setOpen}>
-            <SheetTrigger className="flex flex-col items-center justify-center">
-              <FaSearch size={24} className="mb-1" />
-            </SheetTrigger>
-            <SheetContent
-              side="top"
-              className="flex flex-row items-center justify-center w-full"
-            >
-              <SearchInput onClose={() => setOpen(false)} />
-            </SheetContent>
-          </Sheet>
-        </div>
-        <div>
-          <Link
-            href="/meal-plan"
-            className="flex flex-col items-center justify-center"
-          >
-            <button className="flex flex-col items-center justify-center">
-              <FaRegCalendarAlt size={24} className="mb-1" />
-            </button>
-          </Link>
-        </div>
-        <div>
-          <Link
-            href="/recipes"
-            className="flex flex-col items-center justify-center"
-          >
-            <button className="flex flex-col items-center justify-center">
-              <MdFoodBank size={24} className="mb-1" />
-            </button>
-          </Link>
-        </div>
+    <nav
+      aria-label="Quick discovery"
+      className="mobile-quick-dock fixed bottom-3 left-1/2 z-50 -translate-x-1/2 rounded-full border border-[#ebdcc8] bg-[#fffdf8]/96 p-1.5 shadow-[0_18px_42px_-20px_rgba(49,31,20,0.5)] backdrop-blur-xl md:hidden"
+    >
+      <div className="flex items-center gap-1">
+        <button
+          type="button"
+          aria-label="Open discovery menu"
+          onClick={() => window.dispatchEvent(new Event("kyakhayen:open-mobile-menu"))}
+          className="flex size-11 cursor-pointer items-center justify-center rounded-full text-[#756456] transition hover:bg-[#fbf1e4] hover:text-primary"
+        >
+          <Menu className="size-5" />
+        </button>
+        {destinations.map(({ label, href, icon: Icon }) => {
+          const active = pathname === href || (href === "/recipes" && pathname === "/recipes");
 
-        <div>
-          {user ? (
-            <Link href="/user/dashboard">
-              <div className="flex flex-col items-center justify-center">
-                <RiAccountCircleLine size={24} className="mb-1" />
-              </div>
+          return (
+            <Link
+              key={label}
+              href={href}
+              className={cn(
+                "flex size-11 cursor-pointer items-center justify-center rounded-full transition",
+                active
+                  ? "bg-[#fff0da] text-primary"
+                  : "text-[#756456] hover:bg-[#fbf1e4] hover:text-primary",
+              )}
+            >
+              <Icon className="size-5" />
+              <span className="sr-only">{label}</span>
             </Link>
-          ) : (
-            <LoginButton>
-              <div className="flex flex-col items-center justify-center">
-                <RiAccountCircleLine size={24} className="mb-1" />
-              </div>
-            </LoginButton>
-          )}
+          );
+        })}
+        <div className="flex size-11 items-center justify-center text-[#756456]">
+          <Usermenu variant="dock" />
         </div>
       </div>
-    </div>
+    </nav>
   );
 };
 
