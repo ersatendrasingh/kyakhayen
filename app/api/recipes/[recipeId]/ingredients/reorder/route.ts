@@ -12,17 +12,34 @@ export async function PUT(
     if (!user || user.role !== "ADMIN") {
       return NextResponse.json("Unauthorized", { status: 401 });
     }
-    const { list } = await req.json();
-    for (let item of list) {
-      await db.recipeIngredients.update({
-        where: {
-          id: item.id,
-        },
-        data: {
-          position: item.position,
-        },
-      });
+    const { list } = (await req.json()) as {
+      list?: { id: string; position: number }[];
+    };
+    if (
+      !Array.isArray(list) ||
+      !list.every(
+        (item) =>
+          typeof item.id === "string" &&
+          Number.isInteger(item.position) &&
+          item.position > 0
+      )
+    ) {
+      return NextResponse.json("Invalid ingredient position list", { status: 400 });
     }
+
+    await db.$transaction(
+      list.map((item) =>
+        db.recipeIngredients.update({
+          where: {
+            id: item.id,
+            recipeId: params.recipeId,
+          },
+          data: {
+            position: item.position,
+          },
+        })
+      )
+    );
     return NextResponse.json("Recipe ingredients reordered successfully", {
       status: 200,
     });

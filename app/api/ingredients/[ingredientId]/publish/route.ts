@@ -15,14 +15,48 @@ export async function PATCH(req: Request, props: { params: Promise<{ ingredientI
       where: {
         id: ingredientId,
       },
+      include: {
+        _count: { select: { IngredientUnitMeasurements: true } },
+      },
     });
 
     if (!ingredient) {
       return NextResponse.json("Ingredient not found", { status: 404 });
     }
 
-    if (!ingredient.name || !ingredient.ingredientCategoriesId) {
-      return NextResponse.json("Missing required fields", { status: 400 });
+    const nutritionFields = [
+      ingredient.calories,
+      ingredient.carbohydrate,
+      ingredient.totalFat,
+      ingredient.dietaryFiber,
+      ingredient.protein,
+      ingredient.vitaminA,
+      ingredient.ascorbicAcids,
+      ingredient.vitaminD,
+      ingredient.tocopherolEquivalent,
+      ingredient.vitaminK,
+      ingredient.thiamine,
+      ingredient.riboflavin,
+      ingredient.totalB6,
+      ingredient.folates,
+      ingredient.calcium,
+      ingredient.iron,
+      ingredient.phosphorus,
+      ingredient.potassium,
+      ingredient.sodium,
+      ingredient.zinc,
+    ];
+
+    if (
+      !ingredient.name ||
+      !ingredient.ingredientCategoriesId ||
+      nutritionFields.some((value) => value === null) ||
+      ingredient._count.IngredientUnitMeasurements === 0
+    ) {
+      return NextResponse.json(
+        "Complete identity, nutrition and measurement mappings before publishing",
+        { status: 400 }
+      );
     }
 
     const publishedIngredient = await db.ingredients.update({

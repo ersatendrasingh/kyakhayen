@@ -241,7 +241,6 @@ async function readSource(sourceDb: PrismaClient) {
     FROM ingredients i
     LEFT JOIN ingredientscategory c ON c.id = i.category_id
     LEFT JOIN food_groups fg ON fg.id = i.food_group_id
-    WHERE i.is_active = 1
     ORDER BY i.id
   `);
   const units = await sourceDb.$queryRawUnsafe<SourceUnit[]>(
@@ -320,7 +319,7 @@ async function main() {
     ).length;
     const categoryNames = [...new Set(preparedRows.map((row) => row.categoryName))];
 
-    console.log(`Active source ingredients: ${sourceRows.length}`);
+    console.log(`Source ingredients: ${sourceRows.length}`);
     console.log(`Excluded obvious test rows: ${excludedRows.length}`);
     console.log(`Prepared ingredient rows: ${preparedRows.length}`);
     console.log(`Publishable NIN/USDA rows: ${publishedCount}`);

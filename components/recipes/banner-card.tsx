@@ -13,6 +13,11 @@ import { cn } from "@/lib/utils";
 import { RecipeCategories, Recipes, Review } from "@prisma/client";
 import FavoriteButton from "../favorite-button";
 import { useCurrentUser } from "@/hooks/use-current-user";
+import { FoodPreferenceMarker } from "@/components/recipes/food-preference-marker";
+import {
+  RecipeSteam,
+  shouldShowRecipeSteam,
+} from "@/components/recipes/recipe-steam";
 //import { Queue } from "bullmq";
 
 type RecipeWithCategory = Recipes & {
@@ -76,6 +81,9 @@ const BannerCard = ({ recipe, className }: BannerCardProps) => {
               height={600}
               className="rounded-md"
             />
+            {shouldShowRecipeSteam(recipe.title) && (
+              <RecipeSteam ambient className="bottom-[46%] left-1/2" />
+            )}
             <FavoriteButton
               recipeId={recipe.id}
               classNames="absolute top-0 right-4 z-10"
@@ -95,19 +103,7 @@ const BannerCard = ({ recipe, className }: BannerCardProps) => {
 
           <div className="mb-4 lg:mb-0 text-center lg:text-left">
             {recipe.RecipeCategories && (
-              <span
-                className={cn(
-                  "text-white rounded-full p-1 px-2 font-normal text-sm",
-                  recipe.RecipeCategories.name === "Non Veg" && "bg-red-500",
-                  recipe.RecipeCategories.name === "Veg" && "bg-green-500",
-                  recipe.RecipeCategories.name === "Eggetarian" && "bg-yellow-500",
-                  recipe.RecipeCategories.name === "Vegan" && "bg-pink-500",
-                  recipe.RecipeCategories.name === "Pescetarian" &&
-                    "bg-purple-500"
-                )}
-              >
-                {recipe.RecipeCategories?.name}
-              </span>
+              <FoodPreferenceMarker name={recipe.RecipeCategories.name} />
             )}
           </div>
           <RecipeRatingDetails

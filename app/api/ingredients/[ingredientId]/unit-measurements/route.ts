@@ -1,6 +1,12 @@
 import { currentUser } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { NextResponse } from "next/server";
+import { z } from "zod";
+
+const measurementSchema = z.object({
+  unitId: z.string().uuid(),
+  values: z.number().finite().positive(),
+});
 
 export async function POST(req: Request, props: { params: Promise<{ ingredientId: string }> }) {
   const params = await props.params;
@@ -20,7 +26,14 @@ export async function POST(req: Request, props: { params: Promise<{ ingredientId
       return NextResponse.json("Ingredient not found", { status: 404 });
     }
 
-    const { unitId, values } = await req.json();
+    const parsedMeasurement = measurementSchema.safeParse(await req.json());
+    if (!parsedMeasurement.success) {
+      return NextResponse.json("A valid unit and gram value are required", {
+        status: 400,
+      });
+    }
+
+    const { unitId, values } = parsedMeasurement.data;
 
     const unitMeasurements = await db.ingredientUnitMeasurements.findFirst({
       where: {
@@ -51,8 +64,6 @@ export async function POST(req: Request, props: { params: Promise<{ ingredientId
       });
     }
     return NextResponse.json(updatedUnitMeasurements, { status: 200 });
-
-    return NextResponse.json(unitMeasurements, { status: 200 });
   } catch (error) {
     console.log("UNIT_MEASUREMENT", error);
     return NextResponse.json("Internal Server Error", { status: 500 });

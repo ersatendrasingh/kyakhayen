@@ -14,9 +14,6 @@ const allowedContentTypes = new Set([
   "video/webm",
 ]);
 
-const maxImageSize = 10 * 1024 * 1024;
-const maxVideoSize = 250 * 1024 * 1024;
-
 type PresignRequest = {
   fileName?: string;
   fileSize?: number;
@@ -35,6 +32,9 @@ type PresignRequest = {
   nutrientId?: string | null;
   dietTypeId?: string | null;
   recipeTypeId?: string | null;
+  ingredientId?: string | null;
+  ingredientCategoryId?: string | null;
+  library?: boolean;
 };
 
 const sanitizeFileName = (fileName: string) =>
@@ -65,14 +65,6 @@ export async function POST(req: Request) {
       return NextResponse.json("Unsupported media file.", { status: 400 });
     }
 
-    const sizeLimit = fileType.startsWith("video/")
-      ? maxVideoSize
-      : maxImageSize;
-
-    if (fileSize > sizeLimit) {
-      return NextResponse.json("Media file is too large.", { status: 400 });
-    }
-
     let prefix: string | null = null;
 
     if (values.profile) {
@@ -87,7 +79,9 @@ export async function POST(req: Request) {
         return NextResponse.json("Unauthorized", { status: 401 });
       }
 
-      prefix = values.categoryId
+      prefix = values.library
+        ? "media"
+        : values.categoryId
         ? `categories/${values.categoryId}`
         : values.cookingMethodId
         ? `cookingMethods/${values.cookingMethodId}`
@@ -105,6 +99,10 @@ export async function POST(req: Request) {
         ? `dietTypes/${values.dietTypeId}`
         : values.recipeTypeId
         ? `recipeTypes/${values.recipeTypeId}`
+        : values.ingredientId
+        ? `ingredients/${values.ingredientId}`
+        : values.ingredientCategoryId
+        ? `ingredientCategories/${values.ingredientCategoryId}`
         : values.methodId && values.recipeId
         ? `recipes/${values.recipeId}/methods/${values.methodId}`
         : values.postId

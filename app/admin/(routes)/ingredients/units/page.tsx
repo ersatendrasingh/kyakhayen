@@ -1,24 +1,47 @@
-import { DataTable } from "./_components/data-table";
-import { columns } from "./_components/columns";
+import { MeasurementUnitsDashboard } from "@/components/admin/measurement-units/measurement-units-dashboard";
 import { db } from "@/lib/db";
-import UnitsForm from "./_components/units-form";
+
 const UnitsPage = async () => {
-  const units = await db.units.findMany({
-    orderBy: {
-      title: "asc",
-    },
-  });
+  const [units, recipeIngredients, conversionMappings] = await Promise.all([
+    db.units.findMany({
+      orderBy: [{ position: "asc" }, { title: "asc" }],
+      include: {
+        _count: {
+          select: {
+            RecipeIngredients: true,
+            IngredientUnitMeasurements: true,
+          },
+        },
+      },
+    }),
+    db.recipeIngredients.findMany({
+      select: {
+        unitId: true,
+        unit: { select: { shortName: true } },
+        ingredient: {
+          select: {
+            IngredientUnitMeasurements: { select: { unitId: true } },
+          },
+        },
+      },
+    }),
+    db.ingredientUnitMeasurements.count(),
+  ]);
+
+  const missingConversionRows = recipeIngredients.filter((row) => {
+    if (["g", "gm"].includes(row.unit.shortName.toLowerCase())) return false;
+    return !row.ingredient.IngredientUnitMeasurements.some(
+      (measurement) => measurement.unitId === row.unitId
+    );
+  }).length;
+
   return (
-    <div className="p-6">
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <UnitsForm />
-        </div>
-        <div>
-          <DataTable columns={columns} data={units} />
-        </div>
-      </div>
-    </div>
+    <MeasurementUnitsDashboard
+      units={units}
+      recipeUses={recipeIngredients.length}
+      conversionMappings={conversionMappings}
+      missingConversionRows={missingConversionRows}
+    />
   );
 };
 

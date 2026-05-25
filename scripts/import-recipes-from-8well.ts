@@ -475,15 +475,7 @@ async function main() {
       const ingredientsTrusted =
         ingredientsComplete &&
         mappedIngredients.every((entry) => entry.ingredient.isPublished);
-      const isPublished =
-        recipe.is_verified === 1 &&
-        steps.length > 0 &&
-        ingredientsComplete &&
-        allergyIds.length === sourceAllergyIds.length &&
-        mealTimeIds.length > 0 &&
-        cuisineIds.length > 0 &&
-        Boolean(recipeTypeId) &&
-        Boolean(categoryId);
+      const isPublished = Boolean(image);
 
       unresolved.category += Number(!categoryId);
       unresolved.recipeTypes += Number(!recipeTypeId);
@@ -535,9 +527,9 @@ async function main() {
     console.log(`Recipes receiving local images: ${actualImages}`);
     console.log(`Unique local image files used: ${usedImageKeys.size}/${imageData.files.length}`);
     console.log(`Default-image drafts required: ${prepared.length - actualImages}`);
-    console.log(`Auto-publishable complete recipes: ${safelyPublishable}`);
-    console.log(`Published recipes with verified nutrition: ${publishedWithVerifiedNutrition}`);
-    console.log(`Published recipes pending nutrition display: ${publishedPendingNutritionReview}`);
+    console.log(`Recipes published with matched images: ${safelyPublishable}`);
+    console.log(`Image-published recipes with verified nutrition: ${publishedWithVerifiedNutrition}`);
+    console.log(`Image-published recipes pending nutrition display: ${publishedPendingNutritionReview}`);
     console.log(`Duplicate source slugs stabilized with source id: ${duplicateSlugRecipes}`);
     console.log(`Multi-season relations preserved: ${multiSeasonRecipes}`);
     console.log(`Multi-difficulty relations preserved: ${multiDifficultyRecipes}`);

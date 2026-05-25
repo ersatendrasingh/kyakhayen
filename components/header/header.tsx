@@ -1,34 +1,93 @@
-"use client";
+import MobileHeader from "@/components/header/mobile-header";
+import DesktopHeader from "@/components/header/desktop-header";
+import { db } from "@/lib/db";
 
-import Logo from "@/components/logo";
-import Container from "@/components/container";
-import { Navbar } from "@/components/header/navbar";
-import Usermenu from "@/components/header/user-menu";
+export const Header = async () => {
+  const [mealTimes, cuisines, categories, recipeTypes] = await Promise.all([
+    db.mealTimes.findMany({
+      where: {
+        isPublished: true,
+        recipeMealTime: {
+          some: { recipe: { isPublished: true, imageUrl: { not: null } } },
+        },
+      },
+      select: { title: true, slug: true, imageUrl: true },
+      orderBy: { position: "asc" },
+    }),
+    db.cuisines.findMany({
+      where: {
+        isPublished: true,
+        recipeCuisine: {
+          some: { recipe: { isPublished: true, imageUrl: { not: null } } },
+        },
+      },
+      select: {
+        title: true,
+        slug: true,
+        imageUrl: true,
+        _count: { select: { recipeCuisine: true } },
+      },
+      orderBy: { title: "asc" },
+    }),
+    db.recipeCategories.findMany({
+      where: {
+        isPublished: true,
+        recipe: { some: { isPublished: true, imageUrl: { not: null } } },
+      },
+      select: { name: true, slug: true, imageUrl: true },
+      orderBy: { position: "asc" },
+    }),
+    db.recipeTypes.findMany({
+      where: {
+        isPublished: true,
+        recipeRecipeType: {
+          some: { recipe: { isPublished: true, imageUrl: { not: null } } },
+        },
+      },
+      select: {
+        title: true,
+        slug: true,
+        imageUrl: true,
+        recipeRecipeType: {
+          where: { recipe: { isPublished: true, imageUrl: { not: null } } },
+          select: { recipe: { select: { imageUrl: true } } },
+          take: 1,
+        },
+      },
+      orderBy: { position: "asc" },
+      take: 8,
+    }),
+  ]);
+  const orderedCuisines = [...cuisines].sort((left, right) => {
+    if (left.slug === "north-indian") return -1;
+    if (right.slug === "north-indian") return 1;
 
-import SearchIcon from "@/components/header/search-icon";
-import MobileMenuIcon from "@/components/header/mobile-menu-icon";
-import { ModeToggle } from "@/components/mode-toggle";
+    return (
+      right._count.recipeCuisine - left._count.recipeCuisine ||
+      left.title.localeCompare(right.title)
+    );
+  });
+  const mappedRecipeTypes = recipeTypes.map((type) => ({
+    title: type.title,
+    slug: type.slug,
+    imageUrl:
+      type.imageUrl || type.recipeRecipeType[0]?.recipe.imageUrl || null,
+  }));
 
-export const Header = () => {
   return (
-    <header className="fixed z-20 w-full border-b border-border/60 bg-background/90 shadow-sm backdrop-blur supports-[backdrop-filter]:bg-background/80">
-      <div className="py-2">
-        <Container>
-          <div className="flex flex-row items-center justify-between gap-3 md:gap-0 mx-auto">
-            <MobileMenuIcon />
-            <Logo />
-            <div className="hidden md:block">
-              <Navbar />
-            </div>
-
-            <div className="flex items-center gap-4">
-              <SearchIcon />
-              <ModeToggle />
-              <Usermenu />
-            </div>
-          </div>
-        </Container>
-      </div>
-    </header>
+    <>
+      <DesktopHeader
+        mealTimes={mealTimes}
+        cuisines={orderedCuisines}
+        categories={categories}
+        recipeTypes={mappedRecipeTypes}
+      />
+      <MobileHeader
+        mealTimes={mealTimes}
+        cuisines={orderedCuisines}
+        categories={categories}
+        recipeTypes={mappedRecipeTypes}
+      />
+    </>
   );
 };

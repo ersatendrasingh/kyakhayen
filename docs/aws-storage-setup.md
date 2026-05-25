@@ -26,9 +26,9 @@ Media uploads use short-lived presigned URLs so the browser uploads directly to 
 ```json
 [
   {
-    "AllowedHeaders": ["Content-Type", "Cache-Control"],
-    "AllowedMethods": ["PUT"],
-    "AllowedOrigins": ["http://localhost:3001"],
+    "AllowedHeaders": ["*"],
+    "AllowedMethods": ["GET", "HEAD", "PUT"],
+    "AllowedOrigins": ["http://localhost:3000"],
     "ExposeHeaders": ["ETag"],
     "MaxAgeSeconds": 3600
   }
@@ -37,13 +37,25 @@ Media uploads use short-lived presigned URLs so the browser uploads directly to 
 
 Before production launch, add the exact production website origin to `AllowedOrigins`, for example `https://www.kyakhayen.com`. Do not use `*` for production origins.
 
+The repository can save this configuration from the app environment. Add production
+origins when deploying:
+
+```bash
+npm run storage:cors -- --apply
+npm run storage:cors -- --apply --origin=https://www.kyakhayen.com
+```
+
+Images use direct presigned uploads. Videos use presigned multipart uploads so large
+files are uploaded in resumable-sized S3 parts instead of passing through Next.js.
+`ExposeHeaders: ["ETag"]` is required to complete multipart uploads in the browser.
+
 ## Application Credentials
 
 Create a server-only IAM user or deployment role with permissions scoped to these two buckets. Do not expose the keys to browser code.
 
 The application needs:
 
-- Media bucket: `s3:PutObject`, `s3:DeleteObject`, and `s3:ListBucket`.
+- Media bucket: `s3:PutObject`, `s3:AbortMultipartUpload`, `s3:DeleteObject`, and `s3:ListBucket`.
 - Private bucket application data: `s3:PutObject` and `s3:GetObject` under `usersMealPlans/`.
 - Private bucket verification: `s3:PutObject` and `s3:DeleteObject` only under `_healthchecks/`.
 
@@ -56,7 +68,7 @@ Use an IAM policy shaped like this after replacing the bucket names:
     {
       "Sid": "MediaObjectWrites",
       "Effect": "Allow",
-      "Action": ["s3:PutObject", "s3:DeleteObject"],
+      "Action": ["s3:PutObject", "s3:AbortMultipartUpload", "s3:DeleteObject"],
       "Resource": "arn:aws:s3:::kyakhayen-media-prod/*"
     },
     {

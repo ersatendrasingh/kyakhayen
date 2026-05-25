@@ -3,8 +3,6 @@ import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import {
   deleteFolderFromS3,
-  deleteImageFromS3,
-  getStorageKeyFromUrl,
   getVerifiedPublicMediaKey,
 } from "@/lib/s3utils";
 import { currentUser } from "@/lib/auth";
@@ -108,18 +106,6 @@ export async function PATCH(req: Request, props: { params: Promise<{ nutrientId:
         ...(isPublished !== undefined && { isPublished }),
       },
     });
-
-    if (
-      normalizedImageUrl !== undefined &&
-      currentNutrient.imageUrl &&
-      currentNutrient.imageUrl !== normalizedImageUrl
-    ) {
-      try {
-        await deleteImageFromS3(getStorageKeyFromUrl(currentNutrient.imageUrl));
-      } catch (error) {
-        console.error("[NUTRIENT_IMAGE_REPLACEMENT_CLEANUP]", error);
-      }
-    }
 
     return NextResponse.json(nutrient, { status: 200 });
   } catch (error) {

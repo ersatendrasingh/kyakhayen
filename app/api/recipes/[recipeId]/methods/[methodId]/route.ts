@@ -2,8 +2,6 @@ import { currentUser } from "@/lib/auth";
 import { db } from "@/lib/db";
 import {
   deleteFolderFromS3,
-  deleteImageFromS3,
-  getStorageKeyFromUrl,
 } from "@/lib/s3utils";
 import { NextResponse } from "next/server";
 
@@ -26,12 +24,6 @@ export async function DELETE(
     });
     if (!method) {
       return NextResponse.json("Method not found", { status: 404 });
-    }
-    if (method.imageUrl) {
-      await deleteImageFromS3(getStorageKeyFromUrl(method.imageUrl));
-    }
-    if (method.videoUrl) {
-      await deleteImageFromS3(getStorageKeyFromUrl(method.videoUrl));
     }
     await deleteFolderFromS3(`recipes/${recipeId}/methods/${methodId}`);
     // delete method
