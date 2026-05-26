@@ -1,7 +1,6 @@
 import { Metadata } from "next";
 import MealPlan from "@/components/meal-plan/meal-plan";
 
-import { PageTitle } from "@/components/page-title";
 const meta = {
   title: "Personalized Meal Plans | Kya Khayen",
   description:
@@ -52,7 +51,6 @@ export const metadata: Metadata = {
 const MealPlanPage = async () => {
   return (
     <div>
-      <PageTitle title="Meal Plan" className="py-6" />
       <MealPlan />
     </div>
   );

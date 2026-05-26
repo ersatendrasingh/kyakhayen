@@ -1,0 +1,638 @@
+"use client";
+
+import axios from "axios";
+import {
+  ArrowLeft,
+  ArrowRight,
+  ChevronLeft,
+  ChevronRight,
+  Loader2,
+  Search,
+  Sparkles,
+  X,
+} from "lucide-react";
+import Image from "next/image";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
+
+import Container from "@/components/container";
+import MealPlanProgressModal from "@/components/meal-plan/meal-plan-progress-modal";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+
+type Option = {
+  id: string;
+  title: string;
+  imageUrl: string | null;
+};
+
+type MealPlanBuilderProps = {
+  foodPreferences: Option[];
+  cuisines: Option[];
+  exclusions: Option[];
+  cookingSkills: Option[];
+  initialDraft: Draft;
+};
+
+type Draft = {
+  foodPreference: string | null;
+  cuisines: string[];
+  exclusions: string[];
+  cookingSkill: string | null;
+};
+
+const emptyDraft: Draft = {
+  foodPreference: null,
+  cuisines: [],
+  exclusions: [],
+  cookingSkill: null,
+};
+const storageKey = "mealPlanBuilderDraft";
+const storageVersion = 2;
+
+type SavedWizard = {
+  version: number;
+  step: number;
+  draft: Draft;
+};
+
+const stepDetails = [
+  {
+    label: "Food style",
+    title: "What kind of food fits your table?",
+    detail: "Choose one everyday eating preference for your plan.",
+  },
+  {
+    label: "Cuisines",
+    title: "Which cuisines do you look forward to?",
+    detail: "Select one or more. We will use these for variety through the week.",
+  },
+  {
+    label: "Exclusions",
+    title: "Anything you want left out?",
+    detail:
+      "Optional. Select ingredients you do not want included in your planned dishes.",
+  },
+  {
+    label: "Cooking",
+    title: "How comfortable are you in the kitchen?",
+    detail: "This helps keep the recipes practical for your routine.",
+  },
+  {
+    label: "Review",
+    title: "Ready to build your week?",
+    detail: "Check your choices before we prepare your free seven-day plan.",
+  },
+];
+
+function readWizardState(initialDraft: Draft): { draft: Draft; step: number } {
+  if (typeof window === "undefined") return { draft: initialDraft, step: 0 };
+  try {
+    const value = window.localStorage.getItem(storageKey);
+    if (!value) return { draft: initialDraft, step: 0 };
+    const saved = JSON.parse(value) as Partial<SavedWizard>;
+    if (
+      saved.version !== storageVersion ||
+      !saved.draft ||
+      typeof saved.step !== "number"
+    ) {
+      return { draft: initialDraft, step: 0 };
+    }
+    return {
+      draft: { ...emptyDraft, ...saved.draft },
+      step: Math.min(Math.max(saved.step, 0), stepDetails.length - 1),
+    };
+  } catch {
+    return { draft: initialDraft, step: 0 };
+  }
+}
+
+export default function MealPlanBuilder({
+  foodPreferences,
+  cuisines,
+  exclusions,
+  cookingSkills,
+  initialDraft,
+}: MealPlanBuilderProps) {
+  const [draft, setDraft] = useState<Draft>(initialDraft);
+  const [hydrated, setHydrated] = useState(false);
+  const [step, setStep] = useState(0);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [generationModalOpen, setGenerationModalOpen] = useState(false);
+  const [generationJobId, setGenerationJobId] = useState<string | null>(null);
+  const [generationProgress, setGenerationProgress] = useState(0);
+  const [generationMessage, setGenerationMessage] = useState(
+    "Starting your personalized meal plan",
+  );
+  const [generationFailed, setGenerationFailed] = useState(false);
+  const choiceRailRef = useRef<HTMLDivElement>(null);
+  const router = useRouter();
+  const { data: session, update } = useSession();
+
+  useEffect(() => {
+    const savedWizard = readWizardState(initialDraft);
+    setDraft(savedWizard.draft);
+    setStep(savedWizard.step);
+    setHydrated(true);
+  }, [initialDraft]);
+
+  useEffect(() => {
+    if (hydrated) {
+      window.localStorage.setItem(
+        storageKey,
+        JSON.stringify({ version: storageVersion, draft, step }),
+      );
+    }
+  }, [draft, hydrated, step]);
+
+  useEffect(() => {
+    setSearchQuery("");
+  }, [step]);
+
+  useEffect(() => {
+    choiceRailRef.current?.scrollTo({ left: 0, behavior: "smooth" });
+  }, [searchQuery, step]);
+
+  useEffect(() => {
+    if (!generationJobId || generationFailed) return;
+
+    let cancelled = false;
+    const pollStatus = async () => {
+      try {
+        const response = await axios.get(
+          `/api/meal-plan/generation/${generationJobId}`,
+        );
+        if (cancelled) return;
+        setGenerationProgress(response.data.percentage);
+        setGenerationMessage(response.data.message);
+        if (response.data.state === "completed") {
+          window.localStorage.removeItem(storageKey);
+          await update();
+          window.setTimeout(() => {
+            router.push("/meal-plan");
+            router.refresh();
+          }, 550);
+          return;
+        }
+        if (response.data.state === "failed") {
+          setGenerationMessage(
+            "We could not finish preparing your plan. Please try again.",
+          );
+          setGenerationFailed(true);
+          return;
+        }
+        window.setTimeout(pollStatus, 700);
+      } catch {
+        if (!cancelled) {
+          setGenerationMessage(
+            "We lost contact while preparing your plan. Please try again.",
+          );
+          setGenerationFailed(true);
+        }
+      }
+    };
+
+    void pollStatus();
+    return () => {
+      cancelled = true;
+    };
+  }, [generationFailed, generationJobId, router, update]);
+
+  const isValid =
+    step === 0
+      ? Boolean(draft.foodPreference)
+      : step === 1
+        ? draft.cuisines.length > 0
+        : step === 3
+          ? Boolean(draft.cookingSkill)
+          : true;
+
+  const toggleMany = (key: "cuisines" | "exclusions", id: string) => {
+    setDraft((current) => ({
+      ...current,
+      [key]: current[key].includes(id)
+        ? current[key].filter((value) => value !== id)
+        : [...current[key], id],
+    }));
+  };
+
+  const submit = async () => {
+    if (!session?.user) {
+      router.push("/auth/login?callbackUrl=%2Fmeal-plan%2Fcreate");
+      return;
+    }
+    setGenerationModalOpen(true);
+    setGenerationJobId(null);
+    setSaving(true);
+    setGenerationFailed(false);
+    setGenerationProgress(2);
+    setGenerationMessage("Saving your preferences");
+    try {
+      const response = await axios.patch("/api/user/personalization", {
+        foodPreferences: draft.foodPreference,
+        cuisines: draft.cuisines,
+        allergies: draft.exclusions,
+        cookingSkill: draft.cookingSkill,
+      });
+      if (response.status === 200 && response.data.generationJobId) {
+        setGenerationJobId(response.data.generationJobId);
+        setGenerationProgress(4);
+        setGenerationMessage("Starting your personalized meal plan");
+      } else {
+        throw new Error("Meal plan job was not created.");
+      }
+    } catch {
+      setGenerationMessage(
+        "We could not start preparing your plan. Please try again.",
+      );
+      setGenerationFailed(true);
+      toast.error("We could not start your meal plan. Please try again.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const options =
+    step === 0
+      ? foodPreferences
+      : step === 1
+        ? cuisines
+        : step === 2
+          ? exclusions
+          : cookingSkills;
+  const selected =
+    step === 0
+      ? draft.foodPreference
+      : step === 1
+        ? draft.cuisines
+        : step === 2
+          ? draft.exclusions
+          : draft.cookingSkill;
+  const browseStep = step === 1 || step === 2;
+  const filteredOptions = browseStep
+    ? options.filter((option) =>
+        option.title.toLowerCase().includes(searchQuery.trim().toLowerCase()),
+      )
+    : options;
+  const selectedBrowseOptions =
+    step === 1
+      ? cuisines.filter((option) => draft.cuisines.includes(option.id))
+      : step === 2
+        ? exclusions.filter((option) => draft.exclusions.includes(option.id))
+        : [];
+  const foodStyleOption = foodPreferences.find(
+    (option) => option.id === draft.foodPreference,
+  );
+  const cookingSkillOption = cookingSkills.find(
+    (option) => option.id === draft.cookingSkill,
+  );
+  const cuisineOptions = cuisines.filter((option) =>
+    draft.cuisines.includes(option.id),
+  );
+  const exclusionOptions = exclusions.filter((option) =>
+    draft.exclusions.includes(option.id),
+  );
+  const centerChoices = filteredOptions.length <= 7;
+  const scrollChoices = (direction: "left" | "right") => {
+    choiceRailRef.current?.scrollBy({
+      left: direction === "left" ? -460 : 460,
+      behavior: "smooth",
+    });
+  };
+
+  return (
+    <main className="min-h-screen bg-[#fffaf2] py-10 sm:py-14">
+      <MealPlanProgressModal
+        open={generationModalOpen}
+        percentage={generationProgress}
+        message={generationMessage}
+        failed={generationFailed}
+        onRetry={() => {
+          setGenerationJobId(null);
+          setGenerationFailed(false);
+          void submit();
+        }}
+      />
+      <Container>
+        <div className="mx-auto max-w-5xl">
+          <div className="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
+            <div>
+              <Badge className="mb-4 bg-[#f7e7c5] px-4 py-2 text-[#7d4d1c] hover:bg-[#f7e7c5]">
+                <Sparkles className="size-3.5" /> Free during launch
+              </Badge>
+              <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
+                Create your meal plan
+              </h1>
+              <p className="mt-3 text-sm text-[#695b4e]">
+                Everyday food preferences only. No health or medical profiling.
+              </p>
+            </div>
+            <p className="text-sm font-medium text-[#8b5530]">
+              Step {step + 1} of {stepDetails.length}
+            </p>
+          </div>
+
+          <div className="mb-8 flex gap-2">
+            {stepDetails.map((item, index) => (
+              <div key={item.label} className="flex-1">
+                <div
+                  className={cn(
+                    "h-1.5 rounded-full bg-[#eadcc8]",
+                    index <= step && "bg-primary",
+                  )}
+                />
+                <p className="mt-2 hidden text-xs font-medium text-[#695b4e] sm:block">
+                  {item.label}
+                </p>
+              </div>
+            ))}
+          </div>
+
+          <section className="rounded-[2rem] border border-[#eadcc8] bg-white p-6 shadow-sm sm:p-10">
+            <h2 className="text-2xl font-semibold">{stepDetails[step].title}</h2>
+            <p className="mt-3 max-w-2xl text-sm leading-6 text-[#695b4e]">
+              {stepDetails[step].detail}
+            </p>
+
+            {step < 4 ? (
+              <div className="mt-7">
+                {browseStep && (
+                  <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                    <label className="relative block sm:w-80">
+                      <span className="sr-only">
+                        {step === 1
+                          ? "Search cuisines"
+                          : "Search ingredients to leave out"}
+                      </span>
+                      <Search className="absolute left-4 top-1/2 size-4 -translate-y-1/2 text-[#8b7a69]" />
+                      <input
+                        type="search"
+                        aria-label={
+                          step === 1
+                            ? "Search cuisines"
+                            : "Search ingredients to leave out"
+                        }
+                        value={searchQuery}
+                        onChange={(event) => setSearchQuery(event.target.value)}
+                        placeholder={
+                          step === 1
+                            ? "Search cuisines"
+                            : "Search ingredients to leave out"
+                        }
+                        className="h-12 w-full rounded-full border border-[#eadcc8] bg-[#fffaf2] pl-11 pr-4 text-sm outline-none transition placeholder:text-[#988a7c] focus:border-primary"
+                      />
+                    </label>
+                    <div className="flex items-center justify-between gap-4">
+                      <p className="text-xs font-medium text-[#8b7a69]">
+                        {filteredOptions.length} of {options.length} choices
+                      </p>
+                      <div className="hidden gap-2 sm:flex">
+                        <button
+                          type="button"
+                          aria-label="Previous choices"
+                          className="flex size-9 cursor-pointer items-center justify-center rounded-full border border-[#eadcc8] text-[#695b4e] transition hover:border-primary hover:bg-[#fff2ec] hover:text-primary"
+                          onClick={() => scrollChoices("left")}
+                        >
+                          <ChevronLeft className="size-4" />
+                        </button>
+                        <button
+                          type="button"
+                          aria-label="Next choices"
+                          className="flex size-9 cursor-pointer items-center justify-center rounded-full border border-[#eadcc8] text-[#695b4e] transition hover:border-primary hover:bg-[#fff2ec] hover:text-primary"
+                          onClick={() => scrollChoices("right")}
+                        >
+                          <ChevronRight className="size-4" />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+                <div
+                  ref={choiceRailRef}
+                  className={cn(
+                    "flex snap-x gap-5 overflow-x-auto rounded-[1.5rem] bg-[#fffdf9] px-5 py-4 [scrollbar-width:thin]",
+                    centerChoices && "sm:justify-center",
+                  )}
+                >
+                  {filteredOptions.map((option) => {
+                    const active = Array.isArray(selected)
+                      ? selected.includes(option.id)
+                      : selected === option.id;
+                    return (
+                      <button
+                        key={option.id}
+                        type="button"
+                        aria-pressed={active}
+                        className="group relative flex w-24 shrink-0 snap-start cursor-pointer flex-col items-center text-center focus-visible:outline-none"
+                        onClick={() => {
+                          if (step === 0) {
+                            setDraft((value) => ({
+                              ...value,
+                              foodPreference: option.id,
+                            }));
+                          } else if (step === 1) {
+                            toggleMany("cuisines", option.id);
+                          } else if (step === 2) {
+                            toggleMany("exclusions", option.id);
+                          } else {
+                            setDraft((value) => ({
+                              ...value,
+                              cookingSkill: option.id,
+                            }));
+                          }
+                        }}
+                      >
+                        <span
+                          className={cn(
+                            "relative block size-20 overflow-hidden rounded-full border-2 border-transparent bg-[#f6eadb] shadow-sm transition group-hover:-translate-y-0.5 group-hover:shadow-md sm:size-24",
+                            active &&
+                              "border-primary shadow-[0_0_0_3px_#fff2ec]",
+                          )}
+                        >
+                          <Image
+                            src={
+                              option.imageUrl ||
+                              "/assets/images/default-category.jpg"
+                            }
+                            alt=""
+                            fill
+                            sizes="(max-width: 640px) 80px, 96px"
+                            className="object-cover"
+                          />
+                        </span>
+                        <span
+                          className={cn(
+                            "mt-3 text-sm font-medium text-[#514136]",
+                            active && "font-semibold text-primary",
+                          )}
+                        >
+                          {option.title}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+                {filteredOptions.length === 0 && options.length > 0 && (
+                  <p className="-mt-[9rem] flex h-[9rem] items-center justify-center text-sm text-[#695b4e]">
+                    No matching choices found. Try another search.
+                  </p>
+                )}
+                {browseStep && selectedBrowseOptions.length > 0 && (
+                  <div className="mt-5 flex items-center gap-2 overflow-x-auto pb-1">
+                    <span className="shrink-0 text-xs font-medium text-[#8b7a69]">
+                      Selected:
+                    </span>
+                    {selectedBrowseOptions.map((option) => (
+                      <button
+                        key={option.id}
+                        type="button"
+                        className="flex shrink-0 cursor-pointer items-center gap-1.5 rounded-full bg-[#fff2ec] px-3 py-2 text-xs font-semibold text-[#73422c] transition hover:bg-[#ffe7de]"
+                        onClick={() =>
+                          toggleMany(
+                            step === 1 ? "cuisines" : "exclusions",
+                            option.id,
+                          )
+                        }
+                      >
+                        {option.title}
+                        <X className="size-3.5" />
+                      </button>
+                    ))}
+                  </div>
+                )}
+                {step === 2 && exclusions.length === 0 && (
+                  <p className="text-sm text-[#695b4e]">
+                    No exclusions available. You can continue.
+                  </p>
+                )}
+              </div>
+            ) : (
+              <div className="mt-7">
+                <div className="rounded-[1.6rem] bg-[#2c2118] px-5 py-5 text-white sm:px-7">
+                  <div className="flex items-start justify-between gap-4">
+                    <div>
+                      <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#f7cf8a]">
+                        Your weekly palette
+                      </p>
+                      <h3 className="mt-2 text-xl font-semibold">
+                        Seven days shaped around your table
+                      </h3>
+                    </div>
+                    <span className="shrink-0 rounded-full bg-white/10 px-3 py-2 text-xs font-semibold text-[#f7cf8a]">
+                      Free launch plan
+                    </span>
+                  </div>
+                </div>
+                <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
+                  {[
+                    {
+                      label: "Food style",
+                      items: foodStyleOption ? [foodStyleOption] : [],
+                      empty: "Not selected",
+                    },
+                    {
+                      label: "Cuisines",
+                      items: cuisineOptions,
+                      empty: "Not selected",
+                    },
+                    {
+                      label: "Leave out",
+                      items: exclusionOptions,
+                      empty: "Nothing selected",
+                    },
+                    {
+                      label: "Cooking",
+                      items: cookingSkillOption ? [cookingSkillOption] : [],
+                      empty: "Not selected",
+                    },
+                  ].map((summary) => (
+                    <div
+                      key={summary.label}
+                      className="min-h-32 rounded-2xl border border-[#f0e5d6] bg-[#fffaf2] p-3"
+                    >
+                      <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[#9a6b42]">
+                        {summary.label}
+                      </p>
+                      {summary.items.length > 0 ? (
+                        <>
+                          <div className="mt-3 flex -space-x-3">
+                            {summary.items.slice(0, 3).map((option) => (
+                              <span
+                                key={option.id}
+                                className="relative block size-10 overflow-hidden rounded-full border-2 border-white bg-[#f6eadb]"
+                              >
+                                <Image
+                                  src={
+                                    option.imageUrl ||
+                                    "/assets/images/default-category.jpg"
+                                  }
+                                  alt=""
+                                  fill
+                                  sizes="40px"
+                                  className="object-cover"
+                                />
+                              </span>
+                            ))}
+                            {summary.items.length > 3 && (
+                              <span className="flex size-10 items-center justify-center rounded-full border-2 border-white bg-[#f1dfc7] text-[11px] font-semibold text-[#73422c]">
+                                +{summary.items.length - 3}
+                              </span>
+                            )}
+                          </div>
+                          <p className="mt-3 line-clamp-2 text-xs font-medium text-[#44372d]">
+                            {summary.items.map((item) => item.title).join(", ")}
+                          </p>
+                        </>
+                      ) : (
+                        <p className="mt-7 text-xs text-[#8b7a69]">
+                          {summary.empty}
+                        </p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <div className="mt-8 flex items-center justify-between border-t border-[#f0e5d6] pt-6">
+              <Button
+                type="button"
+                variant="ghost"
+                className={cn(step === 0 && "invisible")}
+                onClick={() => setStep((current) => current - 1)}
+              >
+                <ArrowLeft className="size-4" /> Back
+              </Button>
+              {step < 4 ? (
+                <Button
+                  type="button"
+                  size="lg"
+                  className="rounded-full px-7"
+                  disabled={!isValid}
+                  onClick={() => setStep((current) => current + 1)}
+                >
+                  Continue <ArrowRight className="size-4" />
+                </Button>
+              ) : (
+                <Button
+                  type="button"
+                  size="lg"
+                  className="rounded-full px-7"
+                  disabled={saving}
+                  onClick={submit}
+                >
+                  {saving && <Loader2 className="size-4 animate-spin" />}
+                  {session?.user ? "Generate my free plan" : "Sign in to generate"}
+                </Button>
+              )}
+            </div>
+          </section>
+        </div>
+      </Container>
+    </main>
+  );
+}

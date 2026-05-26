@@ -9,10 +9,10 @@ export async function PUT(req: Request) {
     if (!user) {
       return NextResponse.json("Unauthorized", { status: 401 });
     }
-    const { userId, newGender } = await req.json();
+    const { newGender } = await req.json();
 
     const userRecord = await db.user.findUnique({
-      where: { id: userId },
+      where: { id: user.id },
       include: { gender: true },
     });
 
@@ -22,12 +22,12 @@ export async function PUT(req: Request) {
 
     if (userRecord.gender && userRecord.gender.id !== newGender.id) {
       await db.user.update({
-        where: { id: userId },
+        where: { id: user.id },
         data: { genderId: newGender.id },
       });
     } else if (!userRecord.gender) {
       await db.user.update({
-        where: { id: userId },
+        where: { id: user.id },
         data: { genderId: newGender.id },
       });
     }

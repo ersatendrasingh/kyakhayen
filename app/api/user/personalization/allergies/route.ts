@@ -1,187 +1,76 @@
+import { NextResponse } from "next/server";
+
 import { currentUser } from "@/lib/auth";
 import { db } from "@/lib/db";
+import { getMealPlanQueue } from "@/lib/meal-plan-queue";
 import { isPersonalizationComplete } from "@/lib/personalization";
-import { Queue } from "bullmq";
-import { NextResponse } from "next/server";
+
+async function regenerateIfReady(userId: string) {
+  const updatedUser = await db.user.findUnique({
+    where: { id: userId },
+    include: { userCuisines: true, UserAllrgies: true },
+  });
+  const isPersonalised = isPersonalizationComplete(updatedUser);
+  await db.user.update({ where: { id: userId }, data: { isPersonalised } });
+  if (isPersonalised) {
+    const mealPlanQueue = getMealPlanQueue();
+    await mealPlanQueue.add("generateMealPlan", { userId });
+    await mealPlanQueue.close();
+  }
+}
 
 export async function PUT(req: Request) {
   try {
     const user = await currentUser();
-    if (!user) {
-      return NextResponse.json("Unauthorized", { status: 401 });
+    if (!user) return NextResponse.json("Unauthorized", { status: 401 });
+
+    const { newAllergy, removeAllOthers } = await req.json();
+    const exclusion = await db.allergies.findFirst({
+      where: { id: newAllergy?.id, isPublished: true },
+    });
+    if (!exclusion) {
+      return NextResponse.json("Exclusion not found", { status: 404 });
     }
 
-    const { userId, newAllergy, removeAllOthers } = await req.json();
-
-    // If the new allergy is "None", remove all other allergies
     if (removeAllOthers) {
-      await db.userAllrgies.deleteMany({
-        where: {
-          userId: userId,
-          allergyId: {
-            not: newAllergy.id,
-          },
-        },
-      });
-
-      const existingNoneAllergy = await db.userAllrgies.findUnique({
-        where: {
-          userId_allergyId: {
-            userId: userId,
-            allergyId: newAllergy.id,
-          },
-        },
-      });
-
-      if (!existingNoneAllergy) {
-        await db.userAllrgies.create({
-          data: {
-            userId: userId,
-            allergyId: newAllergy.id,
-          },
-        });
-      }
-      const updatedUser = await db.user.findFirst({
-        where: {
-          id: user.id,
-        },
-        include: {
-          userCuisines: true,
-          UserAllrgies: true,
-        },
-      });
-
-      // Check if personalization is complete
-      const isPersonalised = isPersonalizationComplete(updatedUser);
-
-      if (isPersonalised) {
-        await db.user.update({
-          where: {
-            id: user.id,
-          },
-          data: {
-            isPersonalised,
-          },
-        });
-
-        //Call the generate meal plan queue
-        const mealPlanQueue = new Queue("generateMealPlan");
-        await mealPlanQueue.add("generateMealPlan", { userId: user.id });
-      }
-
-      return NextResponse.json(user, { status: 200 });
+      await db.userAllrgies.deleteMany({ where: { userId: user.id } });
     } else {
-      // If another allergy is selected, remove "None" if it's currently selected
-      const noneAllergy = await db.allergies.findFirst({
-        where: {
-          title: "None",
-        },
-      });
-
-      if (noneAllergy) {
+      const none = await db.allergies.findFirst({ where: { title: "None" } });
+      if (none) {
         await db.userAllrgies.deleteMany({
-          where: {
-            userId: userId,
-            allergyId: noneAllergy.id,
-          },
+          where: { userId: user.id, allergyId: none.id },
         });
       }
-
-      const existingUserAllergy = await db.userAllrgies.findUnique({
-        where: {
-          userId_allergyId: {
-            userId: userId,
-            allergyId: newAllergy.id,
-          },
-        },
-      });
-
-      if (!existingUserAllergy) {
-        await db.userAllrgies.create({
-          data: {
-            userId: userId,
-            allergyId: newAllergy.id,
-          },
-        });
-      }
-      const updatedUser = await db.user.findFirst({
-        where: {
-          id: user.id,
-        },
-        include: {
-          userCuisines: true,
-          UserAllrgies: true,
-        },
-      });
-
-      // Check if personalization is complete
-      const isPersonalised = isPersonalizationComplete(updatedUser);
-
-      if (isPersonalised) {
-        await db.user.update({
-          where: {
-            id: user.id,
-          },
-          data: {
-            isPersonalised,
-          },
-        });
-
-        //Call the generate meal plan queue
-        const mealPlanQueue = new Queue("generateMealPlan");
-        await mealPlanQueue.add("generateMealPlan", { userId: user.id });
-      }
-      return NextResponse.json(user, { status: 200 });
     }
+
+    await db.userAllrgies.upsert({
+      where: {
+        userId_allergyId: { userId: user.id, allergyId: exclusion.id },
+      },
+      update: {},
+      create: { userId: user.id, allergyId: exclusion.id },
+    });
+    await regenerateIfReady(user.id);
+    return NextResponse.json("Exclusion saved", { status: 200 });
   } catch (error) {
-    console.error("[ADD_ALLERGY]", error);
+    console.error("[ADD_EXCLUSION]", error);
     return NextResponse.json("Internal Server Error", { status: 500 });
   }
 }
+
 export async function DELETE(req: Request) {
   try {
-    const { userId, allergyId } = await req.json();
+    const user = await currentUser();
+    if (!user) return NextResponse.json("Unauthorized", { status: 401 });
 
-    await db.userAllrgies.delete({
-      where: {
-        userId_allergyId: {
-          userId: userId,
-          allergyId: allergyId,
-        },
-      },
+    const { allergyId } = await req.json();
+    await db.userAllrgies.deleteMany({
+      where: { userId: user.id, allergyId },
     });
-    const updatedUser = await db.user.findFirst({
-      where: {
-        id: userId,
-      },
-      include: {
-        userCuisines: true,
-        UserAllrgies: true,
-      },
-    });
-
-    // Check if personalization is complete
-    const isPersonalised = isPersonalizationComplete(updatedUser);
-
-    if (isPersonalised) {
-      await db.user.update({
-        where: {
-          id: userId,
-        },
-        data: {
-          isPersonalised,
-        },
-      });
-
-      //Call the generate meal plan queue
-      const mealPlanQueue = new Queue("generateMealPlan");
-      await mealPlanQueue.add("generateMealPlan", { userId: userId });
-    }
-    return NextResponse.json("Allergy deleted successfully", {
-      status: 200,
-    });
+    await regenerateIfReady(user.id);
+    return NextResponse.json("Exclusion removed", { status: 200 });
   } catch (error) {
-    console.log("[DELETE_ALLERGY]", error);
+    console.error("[DELETE_EXCLUSION]", error);
     return NextResponse.json("Internal Server Error", { status: 500 });
   }
 }

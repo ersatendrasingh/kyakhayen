@@ -1,0 +1,71 @@
+import type { Metadata } from "next";
+
+import MealPlanBuilder from "@/components/meal-plan/meal-plan-builder";
+import { currentUser } from "@/lib/auth";
+import { db } from "@/lib/db";
+
+export const metadata: Metadata = {
+  title: "Create Your Free Meal Plan | Kya Khayen",
+  description:
+    "Create a seven-day meal plan based on your food style, cuisines, ingredient exclusions and cooking comfort.",
+};
+
+export default async function CreateMealPlanPage() {
+  const user = await currentUser();
+  const [foodPreferences, cuisines, exclusions, cookingSkills, savedPreferences] =
+    await Promise.all([
+      db.recipeCategories.findMany({
+        where: { isPublished: true },
+        select: { id: true, name: true, imageUrl: true },
+        orderBy: [{ position: "asc" }, { name: "asc" }],
+      }),
+      db.cuisines.findMany({
+        where: { isPublished: true },
+        select: { id: true, title: true, imageUrl: true },
+        orderBy: [{ position: "asc" }, { title: "asc" }],
+      }),
+      db.allergies.findMany({
+        where: { isPublished: true, title: { not: "None" } },
+        select: { id: true, title: true, imageUrl: true },
+        orderBy: [{ position: "asc" }, { title: "asc" }],
+      }),
+      db.recipeDifficulty.findMany({
+        select: { id: true, title: true, imageUrl: true },
+        orderBy: [{ position: "asc" }, { title: "asc" }],
+      }),
+      user
+        ? db.user.findUnique({
+            where: { id: user.id },
+            select: {
+              foodPreferenceId: true,
+              cookingSkillId: true,
+              userCuisines: { select: { cuisineId: true } },
+              UserAllrgies: { select: { allergyId: true } },
+            },
+          })
+        : Promise.resolve(null),
+    ]);
+
+  return (
+    <MealPlanBuilder
+      foodPreferences={foodPreferences.map((preference) => ({
+        id: preference.id,
+        title: preference.name,
+        imageUrl: preference.imageUrl,
+      }))}
+      cuisines={cuisines}
+      exclusions={exclusions}
+      cookingSkills={cookingSkills}
+      initialDraft={{
+        foodPreference: savedPreferences?.foodPreferenceId ?? null,
+        cuisines:
+          savedPreferences?.userCuisines.map((selection) => selection.cuisineId) ??
+          [],
+        exclusions:
+          savedPreferences?.UserAllrgies.map((selection) => selection.allergyId) ??
+          [],
+        cookingSkill: savedPreferences?.cookingSkillId ?? null,
+      }}
+    />
+  );
+}

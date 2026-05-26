@@ -6,8 +6,7 @@ import { sendEmail } from "@/lib/mail";
 import OrderConfirmationMail from "@/emails/customer-order-confirmation";
 import CustomerOrderAdminMail from "@/emails/customer-order-admin-mail";
 import { formatDate } from "@/lib/formatDate";
-
-import { Queue } from "bullmq";
+import { getMealPlanQueue } from "@/lib/meal-plan-queue";
 
 export async function POST(req: Request) {
   try {
@@ -146,8 +145,9 @@ const handlePaymentCaptured = async (payload: any) => {
       },
     });
     //Call the generate meal plan queue
-    const mealPlanQueue = new Queue("generateMealPlan");
+    const mealPlanQueue = getMealPlanQueue();
     await mealPlanQueue.add("generateMealPlan", { userId: order.user.id });
+    await mealPlanQueue.close();
 
     const customerEmail = order.user.email;
     const customerName = order.user.name;

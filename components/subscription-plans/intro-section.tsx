@@ -10,21 +10,21 @@ const IntroSection = () => {
       <Container>
         <div className="flex flex-col items-center justify-center ">
           <h2 className="text-4xl text-center text-websecondary mb-8">
-            Why Subscribe to Kya Khayen?
+            Personalized Meal Planning, Free During Launch
           </h2>
           <p className="text-lg text-center leading-loose tracking-wide mb-4">
             Plan everyday cooking with personalized meal ideas based on your
             tastes, favourite cuisines, ingredient exclusions and cooking
-            skills. Become a member to discover recipes that are practical,
-            delicious and easy to organize through the week.
+            skills. Your seven-day personalized plan is included during our
+            launch, while advanced membership tools are being prepared.
           </p>
-          <Link href="#pricing">
+          <Link href="/meal-plan/create">
             <Button
               variant="secondary"
               size="lg"
               className="bg-[#1e1a16] hover:bg-webprimary text-white rounded-full"
             >
-              Join Now Today
+              Create My Free Plan
             </Button>
           </Link>
           <Image
@@ -99,47 +99,45 @@ const IntroSection = () => {
             <div className="flex flex-col md:flex-row">
               <div className="md:w-1/2 md:pr-4">
                 <h6 className="text-xl font-medium text-websecondary mb-2">
-                  Step 1: Register With Us
+                  Step 1: Choose Your Preferences
                 </h6>
                 <p className="text-lg text-justify tracking-wide leading-loose mb-4">
-                  Just Start your journey by creating an account on Kya Khayen.
-                  It&apos;s quick and very easy!
+                  Share your food style, cuisines, ingredient exclusions and
+                  cooking comfort. We never ask medical questions.
                 </p>
                 <h6 className="text-xl font-medium text-websecondary mb-2">
-                  Step 2: Buy a Subscription Plan
+                  Step 2: Sign In to Save Your Plan
                 </h6>
                 <p className="text-lg text-justify tracking-wide leading-loose mb-4">
-                  Choose a subscription plan that fits your needs to unlock your
-                  customized meal plan and exclusive features.
+                  Create an account once your choices are ready so your weekly
+                  table can be saved and refreshed.
                 </p>
               </div>
               <div className="md:w-1/2 md:pl-4">
                 <h6 className="text-xl font-medium text-websecondary mb-2">
-                  Step 3: Complete Your Personalization Questions
+                  Step 3: Receive Your Free 7-Day Plan
                 </h6>
                 <p className="text-lg text-justify tracking-wide leading-loose mb-4">
-                  Let us know your food preferences, ingredient exclusions,
-                  favourite cuisines and cooking skill. This helps us create
-                  meal ideas for you.
+                  We prepare practical meals around the preferences you chose,
+                  with exclusions respected in recipe selection.
                 </p>
                 <h6 className="text-xl font-medium text-websecondary mb-2">
-                  Step 4: Access your Personalized Meal Plan and Enjoy
+                  Step 4: Future Membership Features
                 </h6>
                 <p className="text-lg text-justify tracking-wide leading-loose mb-4">
-                  Once your personalization is complete, you can access your
-                  personal meal plan, which is customized to your needs. Enjoy
-                  delicious meals chosen around your preferences.
+                  Subscription options will later unlock additional planning
+                  tools. The personalized weekly plan remains free at launch.
                 </p>
               </div>
             </div>
             <div className="flex justify-center">
-              <Link href="#pricing">
+              <Link href="/meal-plan/create">
                 <Button
                   variant="secondary"
                   size="lg"
                   className="bg-[#1e1a16] hover:bg-webprimary text-white rounded-full"
                 >
-                  Join Now Today
+                  Create My Free Plan
                 </Button>
               </Link>
             </div>
