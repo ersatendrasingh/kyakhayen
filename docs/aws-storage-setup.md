@@ -56,7 +56,7 @@ Create a server-only IAM user or deployment role with permissions scoped to thes
 The application needs:
 
 - Media bucket: `s3:PutObject`, `s3:AbortMultipartUpload`, `s3:DeleteObject`, and `s3:ListBucket`.
-- Private bucket application data: `s3:PutObject` and `s3:GetObject` under `usersMealPlans/`.
+- Private bucket application data: `s3:PutObject` and `s3:GetObject` under `usersMealPlans/`, plus prefix-scoped `s3:ListBucket` so absent plan dates can be distinguished from denied access.
 - Private bucket verification: `s3:PutObject` and `s3:DeleteObject` only under `_healthchecks/`.
 
 Use an IAM policy shaped like this after replacing the bucket names:
@@ -82,6 +82,17 @@ Use an IAM policy shaped like this after replacing the bucket names:
       "Effect": "Allow",
       "Action": ["s3:PutObject", "s3:GetObject"],
       "Resource": "arn:aws:s3:::kyakhayen-private-prod/usersMealPlans/*"
+    },
+    {
+      "Sid": "PrivateMealPlanLookup",
+      "Effect": "Allow",
+      "Action": "s3:ListBucket",
+      "Resource": "arn:aws:s3:::kyakhayen-private-prod",
+      "Condition": {
+        "StringLike": {
+          "s3:prefix": ["usersMealPlans/*"]
+        }
+      }
     },
     {
       "Sid": "PrivateStorageVerification",

@@ -12,8 +12,9 @@ import Container from "@/components/container";
 
 import RecipeCommentSection from "@/components/recipes/recipe-comments-section";
 import RecipeReviewsSection from "@/components/recipes/recipe-reviews-section";
-import RecipeShareSection from "@/components/recipes/recipe-share-section";
 import RecipeNotFound from "@/components/recipes/recipe-not-found";
+import RecipeReactions from "@/components/recipes/recipe-reactions";
+import RecipeCookingDock from "@/components/recipes/recipe-cooking-dock";
 
 interface SingleRecipeProps {
   recipeSlug: string;
@@ -39,6 +40,10 @@ const SingleRecipe = async ({
     orderBy: {
       title: "asc",
     },
+  });
+  const recipeTypes = await db.recipeTypes.findMany({
+    where: { isPublished: true },
+    orderBy: [{ position: "asc" }, { title: "asc" }],
   });
 
   const totalMinutes =
@@ -103,20 +108,17 @@ const SingleRecipe = async ({
   };
 
   return (
-    <div className="w-full bg-muted/35 pb-8">
+    <div className="recipe-page-body relative w-full overflow-x-clip pb-28 pt-5 sm:pt-8">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdData) }}
       />
       <Container>
-        <div className="flex flex-col md:flex-row">
-          <div className="w-full lg:w-4/6 mr-0 lg:mr-8">
-            <BannerCard
-              recipe={recipe}
-              className="py-10 lg:py-8 mb-7 md:mb-2 xl:mb-2"
-            />
+        <BannerCard recipe={recipe} className="mb-8" />
+        <div className="grid items-start gap-7 lg:grid-cols-[minmax(0,1fr)_320px]">
+          <div className="min-w-0 space-y-8">
             <RecipeDetails recipe={recipe} />
-            <RecipeShareSection recipe={recipe} />
+            <RecipeReactions recipeId={recipe.id} />
             <RecipeReviewsSection
               recipeId={recipe.id}
               reviews={recipe?.Review || []}
@@ -127,16 +129,23 @@ const SingleRecipe = async ({
             />
           </div>
 
-          <div className="w-full lg:w-2/6">
-            <RecipeSidebar
-              recipeCategories={recipeCategories}
-              recipeMealTimes={recipeMealTimes}
-            />
-          </div>
+          <RecipeSidebar
+            recipeCategories={recipeCategories}
+            recipeMealTimes={recipeMealTimes}
+            recipeTypes={recipeTypes}
+          />
         </div>
 
-        <RelatedRecipeSlider recipeId={recipe.id} />
+        <div id="recipe-related-recipes" className="mt-12">
+          <RelatedRecipeSlider recipeId={recipe.id} />
+        </div>
       </Container>
+      <RecipeCookingDock
+        title={recipe.title}
+        defaultTimerMinutes={
+          recipe.recipeCookingTime?.cookTime || totalMinutes || 10
+        }
+      />
     </div>
   );
 };

@@ -1,11 +1,11 @@
 "use client";
 import axios from "axios";
-import { useRouter } from "next/navigation";
+import { Heart } from "lucide-react";
 import { useEffect, useState } from "react";
-import { FaHeart } from "react-icons/fa";
 
 import { useCurrentUser } from "@/hooks/use-current-user";
 import LoginPopup from "@/components/modals/login-popup";
+import { cn } from "@/lib/utils";
 
 interface LikeButtonProps {
   commentId: string;
@@ -19,7 +19,6 @@ const LikeButton = ({ commentId, postId, initialLikes }: LikeButtonProps) => {
   const [showPopup, setShowPopup] = useState(false);
 
   const user = useCurrentUser();
-  const router = useRouter();
 
   useEffect(() => {
     const fetchLikeStatus = async () => {
@@ -74,11 +73,22 @@ const LikeButton = ({ commentId, postId, initialLikes }: LikeButtonProps) => {
   };
 
   return (
-    <div>
-      <button onClick={handleLike} disabled={false}>
-        <FaHeart className="w-4 h-4 mr-2" color={isLiked ? "red" : "gray"} />
+    <div className="flex items-center">
+      <button
+        type="button"
+        onClick={handleLike}
+        className={cn(
+          "inline-flex cursor-pointer items-center gap-1.5 rounded-full px-3 py-2 text-xs font-medium transition-colors",
+          isLiked
+            ? "bg-[#f9e5e1] text-[#b83324] hover:bg-[#f5d7d1] dark:bg-[#b83324]/16 dark:text-[#ec796d]"
+            : "text-[#817061] hover:bg-[#f4e7d4] hover:text-[#b83324] dark:text-[#a5b4ad] dark:hover:bg-white/7 dark:hover:text-[#ec796d]"
+        )}
+        aria-label={isLiked ? "Unlike comment" : "Like comment"}
+      >
+        <Heart className={cn("size-4", isLiked && "fill-current")} />
+        <span>{isLiked ? "Liked" : "Like"}</span>
+        <span className="tabular-nums">{likes}</span>
       </button>
-      <span className="text-md font-bold">{likes}</span>
       {showPopup && <LoginPopup onClose={() => setShowPopup(false)} />}
     </div>
   );

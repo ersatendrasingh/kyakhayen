@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowRight, Leaf, Sparkles, SunMedium } from "lucide-react";
+import { ArrowRight, Flame, HeartPulse, Leaf, Sparkles, SunMedium } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -33,6 +33,8 @@ type NavbarProps = {
   cuisines: CuisineNavItem[];
   categories: CategoryNavItem[];
   recipeTypes: NavItem[];
+  cookingMethods: NavItem[];
+  dietTypes: NavItem[];
 };
 
 export const Navbar = ({
@@ -40,6 +42,8 @@ export const Navbar = ({
   cuisines,
   categories,
   recipeTypes,
+  cookingMethods,
+  dietTypes,
 }: NavbarProps) => {
   const navControlClass =
     "site-nav-control inline-flex h-9 w-max cursor-pointer items-center justify-center rounded-full !bg-transparent px-3.5 py-1.5 text-[13px] font-semibold text-[#493b31] transition-colors hover:!bg-transparent hover:!text-primary focus:!bg-transparent focus:!text-primary data-[state=open]:!bg-transparent data-[state=open]:!text-primary";
@@ -47,7 +51,7 @@ export const Navbar = ({
   return (
     <nav className="site-navigation">
       <NavigationMenu viewport={false}>
-        <NavigationMenuList className="gap-0">
+        <NavigationMenuList className="gap-0 xl:gap-1">
           <NavigationMenuItem>
             <Link href="/recipes?k=summer&type=season" className={navControlClass}>
               Summer
@@ -295,8 +299,143 @@ export const Navbar = ({
             </NavigationMenuContent>
           </NavigationMenuItem>
           <NavigationMenuItem>
+            <NavigationMenuTrigger className={navControlClass}>
+              Cooking Methods
+            </NavigationMenuTrigger>
+            <NavigationMenuContent
+              className="mega-menu"
+              style={{
+                left: "-566px",
+                width: "min(780px, calc(100vw - 48px))",
+              }}
+            >
+              <div className="grid grid-cols-[245px_minmax(0,1fr)] gap-5 p-6">
+                <Link
+                  href={`/recipes?k=${cookingMethods[0]?.slug || "roasting"}&type=cookingMethod`}
+                  className="group relative min-h-[270px] overflow-hidden rounded-[1.35rem] bg-[#1c352b]"
+                >
+                  <Image
+                    src={cookingMethods[0]?.imageUrl || "/meta-images/recipe-page.jpg"}
+                    alt=""
+                    fill
+                    sizes="245px"
+                    className="object-cover transition duration-500 group-hover:scale-105"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#15271f]/94 via-transparent to-transparent" />
+                  <div className="absolute inset-x-0 bottom-0 p-4 text-white">
+                    <p className="inline-flex items-center gap-1.5 text-xs uppercase tracking-[0.18em] text-[#f0cd87]">
+                      <Flame className="size-3.5" /> Kitchen craft
+                    </p>
+                    <p className="mt-2 text-xl font-semibold">
+                      {cookingMethods[0]?.title || "Cook with care"}
+                    </p>
+                  </div>
+                </Link>
+                <div>
+                  <p className="mb-4 text-xs font-semibold uppercase tracking-[0.2em] text-[#9a6a33]">
+                    Choose a cooking style
+                  </p>
+                  <div className="grid grid-cols-2 gap-3">
+                    {cookingMethods.slice(1).map((method) => (
+                      <Link
+                        key={method.slug}
+                        href={`/recipes?k=${method.slug}&type=cookingMethod`}
+                        className="group flex items-center gap-3 rounded-2xl border border-[#f0e2cf] bg-[#fffdf8] p-2.5 transition hover:border-[#dfb36a]"
+                      >
+                        <span className="relative size-12 shrink-0 overflow-hidden rounded-xl bg-[#efe4d5]">
+                          <Image
+                            src={method.imageUrl || "/meta-images/recipe-page.jpg"}
+                            alt=""
+                            fill
+                            sizes="48px"
+                            className="object-cover"
+                          />
+                        </span>
+                        <span className="text-sm font-semibold text-[#45352a] group-hover:text-primary">
+                          {method.title}
+                        </span>
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </NavigationMenuContent>
+          </NavigationMenuItem>
+          <NavigationMenuItem>
+            <NavigationMenuTrigger className={navControlClass}>
+              Wellness Goals
+            </NavigationMenuTrigger>
+            <NavigationMenuContent
+              className="mega-menu"
+              style={{
+                left: "-684px",
+                width: "min(790px, calc(100vw - 48px))",
+              }}
+            >
+              <div className="p-6">
+                <div className="mb-5 flex items-end justify-between gap-5">
+                  <div>
+                    <p className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.2em] text-[#9a6a33]">
+                      <HeartPulse className="size-4" /> Eat for your lifestyle
+                    </p>
+                    <p className="mt-2 text-lg font-semibold text-[#2c211a]">
+                      Meals matched to your goals
+                    </p>
+                  </div>
+                  <Link
+                    href={`/recipes?k=${dietTypes[0]?.slug || "high-protein"}&type=dietType`}
+                    className="mega-chip whitespace-nowrap"
+                  >
+                    Explore wellness
+                  </Link>
+                </div>
+                <div className="grid grid-cols-4 gap-4">
+                  {dietTypes.map((dietType) => (
+                    <Link
+                      key={dietType.slug}
+                      href={`/recipes?k=${dietType.slug}&type=dietType`}
+                      className="group relative h-[126px] overflow-hidden rounded-2xl bg-[#f1e6d6]"
+                    >
+                      <Image
+                        src={dietType.imageUrl || "/meta-images/recipe-page.jpg"}
+                        alt=""
+                        fill
+                        sizes="155px"
+                        className="object-cover transition duration-500 group-hover:scale-105"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-[#172b22]/88 via-transparent to-transparent" />
+                      <span className="absolute inset-x-3 bottom-3 text-sm font-semibold text-white">
+                        {dietType.title}
+                      </span>
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            </NavigationMenuContent>
+          </NavigationMenuItem>
+          <NavigationMenuItem>
             <Link href="/recipes?k=snacks&type=recipeType" className={navControlClass}>
               Quick Bites
+            </Link>
+          </NavigationMenuItem>
+          <NavigationMenuItem>
+            <Link href="/search?k=healthy%20everyday%20meals" className={navControlClass}>
+              Healthy
+            </Link>
+          </NavigationMenuItem>
+          <NavigationMenuItem>
+            <Link href="/search?k=protein%20rich%20meals" className={navControlClass}>
+              Protein Rich
+            </Link>
+          </NavigationMenuItem>
+          <NavigationMenuItem>
+            <Link href="/recipes?k=beveragesmoothie&type=recipeType" className={navControlClass}>
+              Drinks
+            </Link>
+          </NavigationMenuItem>
+          <NavigationMenuItem>
+            <Link href="/search?k=desserts%20and%20sweets" className={navControlClass}>
+              Desserts
             </Link>
           </NavigationMenuItem>
         </NavigationMenuList>

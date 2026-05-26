@@ -1,157 +1,23 @@
-"use client";
-
-import {
-  CookingMethods,
-  Cuisines,
-  RecipeCategories,
-  RecipeCookingTime,
-  RecipeDifficulty,
-  RecipeMethods as RecipeMethodType,
-  RecipeSeasons,
-  Recipes,
-  RecipeIngredients as RecipeIngredientsType,
-  IngredientsForm as IngredientsFormType,
-  Ingredients,
-  Units,
-} from "@prisma/client";
-import { Preview } from "../preview";
-import { AlarmClock } from "lucide-react";
-import { FaSignal } from "react-icons/fa";
-import { MdFoodBank } from "react-icons/md";
-import { FaCloudSunRain } from "react-icons/fa";
-import { formatTime } from "@/lib/formatTime";
-import { GiCampCookingPot } from "react-icons/gi";
-import { PiBowlFoodFill } from "react-icons/pi";
-import RecipeFeatureItems from "./recipe-feature-items";
-import RecipeFeatureItem from "./recipe-feature-item";
-
-type RecipeIngredientType = RecipeIngredientsType & {
-  unit?: Units;
-  ingredientForm?: IngredientsFormType;
-  ingredient?: Ingredients;
-};
-type RecipeCookingMethod = {
-  id: string;
-  cookingMethodId: string;
-  recipeId: string;
-  cookingMethod: CookingMethods;
-};
-type RecipeCuisines = {
-  id: string;
-  cuisineId: string;
-  recipeId: string;
-  cuisine: Cuisines;
-};
-type RecipeWithCategory = Recipes & {
-  RecipeCategories: RecipeCategories | null;
-  recipeIngredients: RecipeIngredientType[];
-  recipeMethods: RecipeMethodType[];
-  recipeCookingTime: RecipeCookingTime | null;
-  recipeDifficulty: RecipeDifficulty | null;
-  recipeSeasons: RecipeSeasons | null;
-  recipeCookingMethods: RecipeCookingMethod[] | null;
-  recipeCuisine: RecipeCuisines[] | null;
-};
+import { Preview } from "@/components/preview";
+import type { RecipeWithCategory } from "@/types/recipe";
 
 interface RecipeOverviewProps {
-  recipe: RecipeWithCategory;
-  quantity: number;
+  recipe: Pick<RecipeWithCategory, "description" | "title">;
 }
 
-const RecipeOverview = ({ recipe, quantity }: RecipeOverviewProps) => {
-  return (
-    <div className="w-full items-start justify-start ">
-      {recipe.recipeCookingTime && (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-2 border-b-2 border-gray-200 pb-4">
-          {recipe.recipeCookingTime?.prepTime && (
-            <p className="text-sm text-center">
-              <span className="font-bold">Preparation time</span>
-              <span className="flex items-center justify-center">
-                <AlarmClock className="w-6 h-6 pr-2" />
-                {formatTime(recipe.recipeCookingTime.prepTime)}
-              </span>
-            </p>
-          )}
-
-          {recipe.recipeCookingTime?.cookTime && (
-            <p className="text-sm text-center">
-              <span className="font-bold ">Cooking time</span>
-              <span className="flex items-center justify-center">
-                <AlarmClock className="w-6 h-6 pr-2" />
-                {formatTime(recipe.recipeCookingTime.cookTime)}
-              </span>
-            </p>
-          )}
-
-          {recipe.recipeCookingTime?.restTime && (
-            <p className="text-sm text-center">
-              <span className="font-bold ">Rest time</span>
-              <span className="flex items-center justify-center">
-                <AlarmClock className="w-6 h-6 pr-2" />
-                {formatTime(recipe.recipeCookingTime.restTime)}
-              </span>
-            </p>
-          )}
-          {recipe.recipeCookingTime && (
-            <p className="text-sm text-center">
-              <span className="font-bold ">Total time</span>
-              <span className="flex items-center justify-center ">
-                <AlarmClock className="w-6 h-6 pr-2" />
-                {recipe.recipeCookingTime &&
-                  formatTime(
-                    recipe.recipeCookingTime.prepTime +
-                      recipe.recipeCookingTime.cookTime +
-                      recipe.recipeCookingTime.restTime
-                  )}
-              </span>
-            </p>
-          )}
-        </div>
-      )}
-
-      <div>
-        <RecipeFeatureItem
-          title="Serving size"
-          icon={<MdFoodBank className="w-6 h-6 pr-2" />}
-          values={quantity + " " + (quantity > 1 ? "People" : "Person")}
-        />
-        {recipe.recipeDifficulty && (
-          <RecipeFeatureItem
-            title="Difficulty level"
-            icon={<FaSignal className="w-6 h-6 pr-2" />}
-            values={recipe.recipeDifficulty?.title}
-          />
-        )}
-        {recipe.recipeSeasons && (
-          <RecipeFeatureItem
-            title="Best Season"
-            icon={<FaCloudSunRain className="w-6 h-6 pr-2" />}
-            values={recipe.recipeSeasons?.title}
-          />
-        )}
-
-        {recipe.recipeCookingMethods &&
-          recipe.recipeCookingMethods?.length > 0 && (
-            <RecipeFeatureItems
-              title="Cooking method"
-              icon={<GiCampCookingPot className="w-6 h-6 pr-2" />}
-              values={recipe.recipeCookingMethods.map(
-                (method) => method.cookingMethod.title
-              )}
-            />
-          )}
-        {recipe.recipeCuisine && recipe.recipeCuisine?.length > 0 && (
-          <RecipeFeatureItems
-            title="Cuisines"
-            icon={<PiBowlFoodFill className="w-6 h-6 pr-2" />}
-            values={recipe.recipeCuisine.map((method) => method.cuisine.title)}
-          />
-        )}
-      </div>
-
-      {recipe.description && <Preview value={recipe.description} />}
+const RecipeOverview = ({ recipe }: RecipeOverviewProps) =>
+  recipe.description ? (
+    <div className="recipe-rich-content recipe-overview-copy rounded-2xl border border-[#eee2d1] bg-[#fbf5ea] p-5 sm:p-7 dark:border-white/8 dark:bg-[#162e27]">
+      <Preview
+        value={recipe.description}
+        className="text-[15px] leading-8 text-[#5e5146] dark:text-[#b3c0b9]"
+      />
     </div>
+  ) : (
+    <p className="rounded-2xl border border-dashed border-[#dfccb0] bg-[#fbf5ea] p-6 text-sm leading-7 text-[#75685c] dark:border-white/10 dark:bg-[#162e27] dark:text-[#b1bdb7]">
+      This recipe story is being prepared. Ingredients and steps below are
+      ready to help you cook.
+    </p>
   );
-};
 
 export default RecipeOverview;

@@ -1,11 +1,5 @@
-import React, { useEffect, useState } from "react";
-import { format, startOfWeek, addDays } from "date-fns";
-
-import { LiaChevronLeftSolid } from "react-icons/lia";
-import { LiaChevronRightSolid } from "react-icons/lia";
-import useWindowSize from "@/hooks/use-window-size";
-import { Skeleton } from "../ui/skeleton";
-import Container from "../container";
+import { addDays, format, isSameDay, startOfWeek } from "date-fns";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 interface CalendarHeaderProps {
   selectedDate: Date | null;
@@ -14,74 +8,113 @@ interface CalendarHeaderProps {
   onNextDay: () => void;
 }
 
-const CalendarHeader: React.FC<CalendarHeaderProps> = ({
+const CalendarHeader = ({
   selectedDate,
   onDayClick,
   onPrevDay,
   onNextDay,
-}) => {
-  const [loading, setLoading] = useState(true);
-  const { width } = useWindowSize();
-  const isMobile = width !== undefined && width <= 767;
+}: CalendarHeaderProps) => {
   const currentDate = selectedDate || new Date();
-  const desktopStartOfWeek = startOfWeek(currentDate, {
-    weekStartsOn: 1,
-  });
-  const mobileStartOfWeek = startOfWeek(currentDate, {
-    weekStartsOn: currentDate.getDay() as 1 | 0 | 2 | 3 | 4 | 5 | 6,
-  });
-  const start = isMobile ? mobileStartOfWeek : desktopStartOfWeek;
+  const start = startOfWeek(currentDate, { weekStartsOn: 1 });
+  const days = Array.from({ length: 7 }, (_, index) => addDays(start, index));
 
-  const numDaysToShow = isMobile ? 3 : 7;
-
-  const days = Array.from({ length: numDaysToShow }, (_, index) =>
-    addDays(start, index)
-  );
-  useEffect(() => {
-    width ? setLoading(false) : setLoading(true);
-  }, [width]);
   return (
-    <>
-      {loading ? (
-        <Skeleton className="w-full h-16 rounded-full" />
-      ) : (
-        <div className="flex justify-between items-center mx-2 md:mx-0 mb-4 px-4 bg-gray-100 rounded-full">
+    <section className="-mx-4 border-y border-[#eadcc8] bg-white px-4 py-3 sm:mx-0 sm:rounded-2xl sm:border sm:p-4 sm:shadow-sm">
+      <div className="mb-3 flex items-center justify-between gap-3 sm:mb-3">
+        <div>
+          <p className="hidden text-[11px] font-semibold uppercase tracking-[0.16em] text-[#9a6b42] sm:block">
+            Week of {format(start, "d MMM")}
+          </p>
+          <p className="text-base font-semibold text-[#2c2118] sm:hidden">
+            {format(currentDate, "MMMM yyyy")}
+          </p>
+          <p className="text-[11px] font-medium text-[#8b7a69] sm:hidden">
+            Weekly planner
+          </p>
+          <p className="hidden text-xs text-[#695b4e] sm:block">
+            {format(start, "d MMM")} - {format(addDays(start, 6), "d MMM yyyy")}
+          </p>
+        </div>
+        <div className="flex gap-2">
           <button
+            type="button"
             onClick={onPrevDay}
-            className="p-2 bg-gray-300 rounded-full shadow hover:bg-gray-400"
+            aria-label="Previous week"
+            className="flex size-8 cursor-pointer items-center justify-center rounded-full border border-[#eadcc8] bg-[#fffaf2] text-[#4c3c2f] transition hover:border-primary hover:text-primary"
           >
-            <LiaChevronLeftSolid className="h-5 w-5 text-gray-700" />
+            <ChevronLeft className="size-4" />
           </button>
-          <div className="flex space-x-4">
-            {days.map((day, index) => (
-              <div
-                key={index}
-                onClick={() => onDayClick(day)}
-                className={`cursor-pointer p-2 md:p-3 md:px-10 ${
-                  format(day, "yyyy-MM-dd") ===
-                  format(currentDate, "yyyy-MM-dd")
-                    ? "bg-websecondary text-white shadow-md rounded-xl"
-                    : " text-gray-900"
-                }  hover:bg-websecondary-200`}
-              >
-                <div className="text-center text-sm font-medium">
-                  {format(day, "EEE")}
-                </div>
-                <div className="text-center text-sm">
-                  {format(day, "dd MMM")}
-                </div>
-              </div>
-            ))}
-          </div>
           <button
+            type="button"
             onClick={onNextDay}
-            className="p-2 bg-gray-300 rounded-full shadow hover:bg-gray-400"
+            aria-label="Next week"
+            className="flex size-8 cursor-pointer items-center justify-center rounded-full border border-[#eadcc8] bg-[#fffaf2] text-[#4c3c2f] transition hover:border-primary hover:text-primary"
           >
-            <LiaChevronRightSolid className="h-5 w-5 text-gray-700" />
+            <ChevronRight className="size-4" />
           </button>
         </div>
-      )}
-    </>
+      </div>
+      <div className="grid grid-cols-7 gap-1.5 sm:hidden">
+        {days.map((day) => {
+          const active = isSameDay(day, currentDate);
+          const today = isSameDay(day, new Date());
+          return (
+            <button
+              type="button"
+              key={day.toISOString()}
+              onClick={() => onDayClick(day)}
+              aria-pressed={active}
+              className={`flex min-w-0 cursor-pointer flex-col items-center rounded-full border py-2 text-center transition ${
+                active
+                  ? "border-primary bg-primary text-white shadow-md shadow-primary/20"
+                  : "border-transparent bg-[#fffaf2] text-[#4c3c2f] hover:border-[#dec8ad]"
+              }`}
+            >
+              <span className="block text-[9px] font-semibold uppercase tracking-[0.1em] opacity-70">
+                {format(day, "EEEEE")}
+              </span>
+              <span className="mt-1 block text-sm font-semibold leading-5">
+                {format(day, "d")}
+              </span>
+              <span
+                className={`mt-1 size-1 rounded-full ${
+                  today ? (active ? "bg-white" : "bg-primary") : "bg-transparent"
+                }`}
+              />
+            </button>
+          );
+        })}
+      </div>
+      <div className="hidden gap-1.5 sm:flex">
+        {days.map((day) => {
+          const active = isSameDay(day, currentDate);
+          const today = isSameDay(day, new Date());
+          return (
+            <button
+              type="button"
+              key={day.toISOString()}
+              onClick={() => onDayClick(day)}
+              aria-pressed={active}
+              className={`min-w-0 flex-1 cursor-pointer rounded-xl border px-2 py-2 text-center transition ${
+                active
+                  ? "border-primary bg-primary text-white shadow-lg shadow-primary/20"
+                  : "border-transparent bg-[#fffaf2] text-[#4c3c2f] hover:border-[#dec8ad]"
+              }`}
+            >
+              <span className="block text-[10px] font-semibold uppercase tracking-[0.13em] opacity-75">
+                {format(day, "EEE")}
+              </span>
+              <span className="mt-1 block text-base font-semibold leading-5">
+                {format(day, "d")}
+              </span>
+              <span className="block text-[10px] opacity-75">
+                {today ? "Today" : format(day, "MMM")}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+    </section>
   );
 };
 

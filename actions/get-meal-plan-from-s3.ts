@@ -15,6 +15,10 @@ type MealPlanResult = {
   mealsByTime: { [key: string]: RecipeWithCategory[] };
 };
 
+type S3LookupError = Error & {
+  $metadata?: { httpStatusCode?: number };
+};
+
 const getS3Client = () => {
   const region = process.env.AWS_REGION;
   const accessKeyId = process.env.AWS_ACCESS_KEY_ID;
@@ -75,7 +79,15 @@ export const getMealPlanFromS3 = async ({
     // Return the parsed meal plan
     return { mealTimes, mealsByTime };
   } catch (error) {
+    const s3Error = error as S3LookupError;
+    if (
+      s3Error.name === "NoSuchKey" ||
+      s3Error.$metadata?.httpStatusCode === 404
+    ) {
+      return null;
+    }
+
     console.error("[GET_MEAL_PLAN_FROM_S3]", error);
-    return null;
+    throw new Error("Your saved meal plan could not be opened right now.");
   }
 };

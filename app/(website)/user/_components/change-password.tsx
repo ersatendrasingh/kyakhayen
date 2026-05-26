@@ -55,20 +55,21 @@ const ChangePassword = () => {
     <div>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)}>
-          <div className="space-y-8 mt-8 w-full">
-            <div className="grid grid-cols-1 gap-4">
+          <div className="w-full space-y-5">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
               <FormField
                 control={form.control}
                 name="currentPassword"
                 render={({ field }) => (
                   <FormItem>
+                    <label className="text-sm font-medium text-[#554338] dark:text-[#e4ddd4]">Current password</label>
                     <FormControl>
                       <Input
                         type="password"
                         disabled={isSubmitting}
-                        placeholder="Current Password"
+                        placeholder="Current password"
                         {...field}
-                        className="w-full h-12 rounded-md"
+                        className="h-12 w-full rounded-xl border-[#e6d7c4] bg-[#fffdfa] dark:border-white/10 dark:bg-[#152a23]"
                       />
                     </FormControl>
                     <FormMessage />
@@ -80,13 +81,14 @@ const ChangePassword = () => {
                 name="password"
                 render={({ field }) => (
                   <FormItem>
+                    <label className="text-sm font-medium text-[#554338] dark:text-[#e4ddd4]">New password</label>
                     <FormControl>
                       <Input
                         type="password"
                         disabled={isSubmitting}
-                        placeholder="New Password"
+                        placeholder="New password"
                         {...field}
-                        className="w-full h-12 rounded-md"
+                        className="h-12 w-full rounded-xl border-[#e6d7c4] bg-[#fffdfa] dark:border-white/10 dark:bg-[#152a23]"
                       />
                     </FormControl>
                     <FormMessage />
@@ -99,13 +101,14 @@ const ChangePassword = () => {
                 name="confirmPassword"
                 render={({ field }) => (
                   <FormItem>
+                    <label className="text-sm font-medium text-[#554338] dark:text-[#e4ddd4]">Confirm password</label>
                     <FormControl>
                       <Input
                         type="password"
                         disabled={isSubmitting}
-                        placeholder="Confirm Password"
+                        placeholder="Confirm password"
                         {...field}
-                        className="w-full h-12 rounded-md"
+                        className="h-12 w-full rounded-xl border-[#e6d7c4] bg-[#fffdfa] dark:border-white/10 dark:bg-[#152a23]"
                       />
                     </FormControl>
                     <FormMessage />
@@ -114,11 +117,11 @@ const ChangePassword = () => {
               />
             </div>
 
-            <div className="flex items-center justify-end gap-x-2">
+            <div className="flex items-center justify-end pt-1">
               <Button
                 type="submit"
                 disabled={isSubmitting || !isValid}
-                className="pt-2 bg-gradient-to-r from-red-500 to-orange-500 cursor-pointer"
+                className="h-12 rounded-full bg-[#bd382a] px-7 font-semibold text-white hover:bg-[#aa3024]"
               >
                 Update Password
               </Button>

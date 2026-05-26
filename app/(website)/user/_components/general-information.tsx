@@ -1,3 +1,5 @@
+"use client";
+
 import * as z from "zod";
 import {
   Form,
@@ -89,7 +91,7 @@ const GeneralInformation = () => {
 
   const onSubmit = async (values: z.infer<typeof userProfileSchema>) => {
     try {
-      const response = await axios.patch("/api/user", values);
+      await axios.patch("/api/user", values);
       update();
       router.push(`/user/profile/`);
 
@@ -128,24 +130,22 @@ const GeneralInformation = () => {
 
   return (
     <div>
-      <h2 className="text-xl font-bold border-b-2 border-slate-200 pb-2 text-gray-700">
-        General Information
-      </h2>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)}>
-          <div className="space-y-8 mt-8 w-full">
+          <div className="w-full space-y-5">
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <FormField
                 control={form.control}
                 name="firstName"
                 render={({ field }) => (
                   <FormItem>
+                    <label className="text-sm font-medium text-[#554338] dark:text-[#e4ddd4]">First name</label>
                     <FormControl>
                       <Input
                         disabled={isSubmitting}
-                        placeholder="First Name"
+                        placeholder="First name"
                         {...field}
-                        className="w-full h-12 rounded-md"
+                        className="h-12 w-full rounded-xl border-[#e6d7c4] bg-[#fffdfa] dark:border-white/10 dark:bg-[#152a23]"
                       />
                     </FormControl>
                     <FormMessage />
@@ -157,12 +157,13 @@ const GeneralInformation = () => {
                 name="lastName"
                 render={({ field }) => (
                   <FormItem>
+                    <label className="text-sm font-medium text-[#554338] dark:text-[#e4ddd4]">Last name</label>
                     <FormControl>
                       <Input
                         disabled={isSubmitting}
-                        placeholder="Last Name"
+                        placeholder="Last name"
                         {...field}
-                        className="w-full h-12 rounded-md"
+                        className="h-12 w-full rounded-xl border-[#e6d7c4] bg-[#fffdfa] dark:border-white/10 dark:bg-[#152a23]"
                       />
                     </FormControl>
                     <FormMessage />
@@ -176,12 +177,13 @@ const GeneralInformation = () => {
                 name="email"
                 render={({ field }) => (
                   <FormItem>
+                    <label className="text-sm font-medium text-[#554338] dark:text-[#e4ddd4]">Email address</label>
                     <FormControl>
                       <Input
                         disabled={true}
-                        placeholder="Email"
+                        placeholder="Email address"
                         {...field}
-                        className="w-full h-12 rounded-md"
+                        className="h-12 w-full rounded-xl border-[#e6d7c4] bg-[#f7f0e6] dark:border-white/10 dark:bg-[#152a23]"
                       />
                     </FormControl>
                     <FormMessage />
@@ -193,19 +195,20 @@ const GeneralInformation = () => {
                 name="phoneNumber"
                 render={({ field }) => (
                   <FormItem>
-                    <FormControl className="relative">
-                      <>
+                    <label className="text-sm font-medium text-[#554338] dark:text-[#e4ddd4]">Phone number</label>
+                    <div className="relative">
+                      <FormControl>
                         <Input
-                          placeholder="Phone Number"
+                          placeholder="Phone number"
                           {...field}
-                          className="w-full h-12 rounded-md pr-10"
+                          className="h-12 w-full rounded-xl border-[#e6d7c4] bg-[#fffdfa] pr-10 dark:border-white/10 dark:bg-[#152a23]"
                           onChange={handlePhoneNumberChange}
                         />
-                        {isChecking && (
-                          <Loader2 className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 animate-spin" />
-                        )}
-                      </>
-                    </FormControl>
+                      </FormControl>
+                      {isChecking && (
+                        <Loader2 className="absolute right-3 top-1/2 size-4 -translate-y-1/2 animate-spin" />
+                      )}
+                    </div>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -217,12 +220,13 @@ const GeneralInformation = () => {
                 name="bio"
                 render={({ field }) => (
                   <FormItem>
+                    <label className="text-sm font-medium text-[#554338] dark:text-[#e4ddd4]">About you</label>
                     <FormControl>
                       <Textarea
                         disabled={isSubmitting}
                         {...field}
-                        placeholder="e.g. 'I am a user of kyakhayen'"
-                        className="w-full h-32 rounded-md"
+                        placeholder="A short introduction for your account"
+                        className="h-28 w-full rounded-xl border-[#e6d7c4] bg-[#fffdfa] dark:border-white/10 dark:bg-[#152a23]"
                       />
                     </FormControl>
                     <FormMessage />
@@ -230,11 +234,11 @@ const GeneralInformation = () => {
                 )}
               />
             </div>
-            <div className="flex items-center justify-end gap-x-2">
+            <div className="flex items-center justify-end pt-1">
               <Button
                 type="submit"
                 disabled={isSubmitting || !isValid}
-                className="pt-2 bg-websecondary text-white cursor-pointer"
+                className="h-12 rounded-full bg-[#bd382a] px-7 font-semibold text-white hover:bg-[#aa3024]"
               >
                 Update Profile
               </Button>

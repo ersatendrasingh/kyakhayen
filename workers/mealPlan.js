@@ -8,6 +8,9 @@ const connection = {
 };
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+const MEAL_PLAN_WORKER_SECRET =
+  process.env.MEAL_PLAN_WORKER_SECRET ||
+  (process.env.NODE_ENV !== "production" ? "local-meal-plan-worker" : "");
 
 // Create a new queue
 const mealPlanQueue = new Queue("generateMealPlan", { connection });
@@ -22,30 +25,24 @@ const worker = new Worker(
       );
 
       // Update progress to 10%
-      await job.updateProgress(10);
-      console.log(`Job ${job.id}: Progress 10% - Meal plan generation started`);
-
-      // Simulate some intermediate steps
-      // For example, preparing data before sending the request
-      await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulated delay
-      await job.updateProgress(30);
-      console.log(`Job ${job.id}: Progress 30% - Data preparation done`);
+      await job.updateProgress({
+        percentage: 5,
+        message: "Starting your personalized meal plan",
+      });
 
       const response = await axios.post(`${APP_URL}/api/generate-meal-plan`, {
         userId: job.data.userId,
+        jobId: job.id,
+      }, {
+        headers: {
+          "x-meal-plan-worker-secret": MEAL_PLAN_WORKER_SECRET,
+        },
       });
 
-      // Update progress to 70% after receiving the response
-      await job.updateProgress(70);
-      console.log(`Job ${job.id}: Progress 70% - Meal plan received from API`);
-
-      // Simulate further processing if needed
-      await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulated delay
-      await job.updateProgress(90);
-      console.log(`Job ${job.id}: Progress 90% - Finalizing meal plan`);
-
-      // Final progress update before completion
-      await job.updateProgress(100);
+      await job.updateProgress({
+        percentage: 100,
+        message: "Your meal plan is ready",
+      });
       console.log(
         `Job ${job.id}: Progress 100% - Meal plan generation complete`
       );

@@ -1,101 +1,126 @@
-import { RecipeMethods as RecipeMethodsType } from "@prisma/client";
-import { useState } from "react";
-import { cn } from "@/lib/utils";
-import { Checkbox } from "@/components/ui/checkbox";
-import Image from "next/image";
+"use client";
 
-import { Preview } from "../preview";
+import { Check, CheckCircle2 } from "lucide-react";
+import Image from "next/image";
+import { useState } from "react";
+
+import { Preview } from "@/components/preview";
+import { cn } from "@/lib/utils";
+import type { RecipeMethods as RecipeMethodType } from "@prisma/client";
 
 interface RecipeMethodsProps {
-  recipeMethods: RecipeMethodsType[];
+  recipeMethods: RecipeMethodType[];
 }
 
 const RecipeMethods = ({ recipeMethods }: RecipeMethodsProps) => {
-  const [checkedMethod, setCheckedMethod] = useState<string[]>([]);
+  const [checkedMethods, setCheckedMethods] = useState<string[]>([]);
 
-  const handleCheckboxChange = (methodId: string) => {
-    setCheckedMethod((prevChecked) =>
-      prevChecked.includes(methodId)
-        ? prevChecked.filter((id) => id !== methodId)
-        : [...prevChecked, methodId]
+  const toggleMethod = (methodId: string) => {
+    setCheckedMethods((current) =>
+      current.includes(methodId)
+        ? current.filter((id) => id !== methodId)
+        : [...current, methodId],
     );
   };
 
+  if (recipeMethods.length === 0) {
+    return (
+      <p className="rounded-2xl bg-[#fbf5ea] p-6 text-center text-sm text-[#75685c] dark:bg-[#162e27] dark:text-[#b1bdb7]">
+        Cooking instructions will be added shortly.
+      </p>
+    );
+  }
+
   return (
-    <div className="w-full">
-      {recipeMethods.length === 0 ? (
-        <p className="text-sm font-medium text-center text-websecondary-500">
-          No methods available for this recipe.
-        </p>
-      ) : (
-        <ul>
-          {recipeMethods.map((method, index) => (
-            <li key={method.id} className="flex flex-col py-2">
-              <div className="flex items-center">
-                <div className="flex items-center mb-3">
-                  <span className="text-lg font-semibold bg-websecondary-500 text-white rounded-full w-8 h-8 flex items-center justify-center mr-2">
-                    {index + 1}
-                  </span>
-                </div>
-                <div className="flex items-center mb-3">
-                  <p
-                    className={cn(
-                      "text-lg font-semibold",
-                      checkedMethod.includes(method.id)
-                        ? "text-websecondary-500 line-through opacity-75"
-                        : "text-foreground"
-                    )}
-                  >
-                    {method.title}
-                  </p>
-                </div>
+    <ol className="space-y-4">
+      {recipeMethods.map((method, index) => {
+        const done = checkedMethods.includes(method.id);
+        return (
+          <li
+            key={method.id}
+            className={cn(
+              "relative flex gap-4 rounded-[1.4rem] border p-4 transition sm:p-5",
+              done
+                ? "border-[#c9dbc5] bg-[#eff5ea] dark:border-[#34594b] dark:bg-[#153229]"
+                : "border-[#eee2d1] bg-[#fffdf9] dark:border-white/8 dark:bg-[#132a23]",
+            )}
+          >
+            <button
+              type="button"
+              aria-label={done ? "Mark step incomplete" : "Mark step complete"}
+              onClick={() => toggleMethod(method.id)}
+              className={cn(
+                "flex size-10 shrink-0 cursor-pointer items-center justify-center rounded-full text-sm font-semibold transition",
+                done
+                  ? "bg-[#388552] text-white"
+                  : "bg-[#f3e4cc] text-[#90632d] dark:bg-[#1b3b31] dark:text-[#dfb76c]",
+              )}
+            >
+              {done ? <Check className="size-5" /> : index + 1}
+            </button>
+            <div className="min-w-0 flex-1">
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <h3
+                  className={cn(
+                    "text-base font-semibold text-[#30261e] sm:text-lg dark:text-[#eef2ec]",
+                    done && "line-through opacity-65",
+                  )}
+                >
+                  {method.title}
+                </h3>
+                <button
+                  type="button"
+                  onClick={() => toggleMethod(method.id)}
+                  className="flex cursor-pointer items-center gap-1.5 text-xs font-medium text-[#877362] transition hover:text-[#388552] dark:text-[#9fb0a8]"
+                >
+                  <CheckCircle2 className="size-4" />
+                  {done ? "Completed" : "Mark done"}
+                </button>
               </div>
               {method.description && (
                 <Preview
                   value={method.description}
                   className={cn(
-                    "text-md font-lg ml-10 pb-5",
-                    checkedMethod.includes(method.id)
-                      ? "text-gray-500 line-through opacity-75"
-                      : "text-foreground"
+                    "mt-3 text-sm leading-7 text-[#63564b] dark:text-[#b2c0b9]",
+                    done && "line-through opacity-60",
                   )}
                 />
               )}
-              {method.imageUrl && (
-                <div className="relative aspect-[16/9]">
-                  <Image
-                    src={method.imageUrl}
-                    alt={method.title}
-                    width={950}
-                    height={600}
-                    className="rounded-md"
-                  />
-                </div>
-              )}
-              <div className="flex items-center my-4">
-                <Checkbox
-                  id={method.id}
-                  className="mr-3 text-white border-websecondary-500 data-[state=checked]:bg-websecondary-500 data-[state=checked]:text-rose-foreground"
-                  checked={checkedMethod.includes(method.id)}
-                  onCheckedChange={() => handleCheckboxChange(method.id)}
-                />
-                <label
-                  htmlFor={method.id}
+              {(method.imageUrl || method.videoUrl) && (
+                <div
                   className={cn(
-                    "truncate",
-                    checkedMethod.includes(method.id)
-                      ? "text-websecondary-500 line-through opacity-75"
-                      : "text-foreground"
+                    "mt-4 grid gap-3",
+                    method.imageUrl && method.videoUrl && "sm:grid-cols-2",
                   )}
                 >
-                  <h5 className="text-md font-medium">Mark as completed</h5>
-                </label>
-              </div>
-            </li>
-          ))}
-        </ul>
-      )}
-    </div>
+                  {method.imageUrl && (
+                    <div className="relative aspect-video overflow-hidden rounded-xl border border-[#eadbc7] dark:border-white/10">
+                      <Image
+                        src={method.imageUrl}
+                        alt={method.title}
+                        fill
+                        sizes="(max-width: 1024px) 100vw, 50vw"
+                        className="object-cover"
+                      />
+                    </div>
+                  )}
+                  {method.videoUrl && (
+                    <video
+                      className="aspect-video w-full rounded-xl border border-[#eadbc7] bg-[#17130f] object-cover dark:border-white/10"
+                      controls
+                      playsInline
+                      preload="metadata"
+                    >
+                      <source src={method.videoUrl} />
+                    </video>
+                  )}
+                </div>
+              )}
+            </div>
+          </li>
+        );
+      })}
+    </ol>
   );
 };
 

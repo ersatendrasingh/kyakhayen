@@ -1,8 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
-import { AlarmClock } from "lucide-react";
+import { AlarmClock, ArrowUpRight } from "lucide-react";
 import { RecipeWithCategory } from "@/types/recipe";
-import { cn } from "@/lib/utils";
 import { formatTime } from "@/lib/formatTime";
 
 interface MealPlanCardProps {
@@ -10,59 +9,54 @@ interface MealPlanCardProps {
 }
 
 const MealPlanCard = ({ recipe }: MealPlanCardProps) => {
+  const recipeHref = recipe.metaSlug
+    ? `/${recipe.slug}-${recipe.metaSlug}`
+    : `/${recipe.slug}`;
+  const totalTime = recipe.recipeCookingTime
+    ? recipe.recipeCookingTime.prepTime +
+      recipe.recipeCookingTime.cookTime +
+      recipe.recipeCookingTime.restTime
+    : null;
+
   return (
-    <div className="w-full flex flex-row items-center justify-between p-4 bg-white border border-gray-200 rounded-md shadow-md transition-transform hover:shadow-lg hover:-translate-y-1">
-      <div className="flex flex-col flex-grow">
-        <Link
-          href={
-            recipe.metaSlug
-              ? `/${recipe.slug}-${recipe.metaSlug}`
-              : `/${recipe.slug}`
-          }
-        >
-          <div className="flex flex-col h-full">
-            <div className="flex items-center mb-2">
-              <div className="text-lg font-bold">{recipe.title}</div>
-            </div>
-            <div className="flex items-center mb-2"></div>
-            <div className="text-sm text-gray-700 mb-2">
-              {recipe.recipeNutrient && recipe.recipeNutrient.length > 0 && (
-                <>
-                  {recipe.recipeNutrient.map((nutrient, index) => (
-                    <span key={nutrient.nutrient.id} className="text-sm">
-                      {nutrient.nutrient.title}
-                      {index < recipe.recipeNutrient!.length - 1 && ", "}
-                    </span>
-                  ))}
-                </>
-              )}
-            </div>
-            <div className="flex items-center">
-              {recipe.recipeCookingTime && (
-                <>
-                  <AlarmClock className="w-5 h-5 pr-1 text-websecondary" />
-                  {formatTime(
-                    recipe.recipeCookingTime.prepTime +
-                      recipe.recipeCookingTime.cookTime +
-                      recipe.recipeCookingTime.restTime
-                  )}
-                </>
-              )}
-            </div>
-          </div>
-        </Link>
+    <Link
+      href={recipeHref}
+      className="group flex min-h-[78px] overflow-hidden rounded-xl border border-[#eee3d5] bg-[#fffdf9] transition hover:border-[#ddc3a7] hover:bg-white hover:shadow-sm"
+    >
+      <div className="relative w-[76px] shrink-0 overflow-hidden sm:w-[88px]">
+        <Image
+          className="object-cover transition duration-300 group-hover:scale-105"
+          src={recipe.imageUrl || "/assets/images/default-recipe.png"}
+          alt={recipe.title || "Recipe"}
+          fill
+          sizes="(max-width: 640px) 76px, 88px"
+        />
       </div>
-      <div className="mt-4 md:mt-0 md:ml-4 flex-shrink-0">
-        <div className="relative w-24 h-24 md:w-36 md:h-36">
-          <Image
-            className="rounded-md object-cover"
-            src={recipe.imageUrl || "/assets/images/default-recipe.jpg"}
-            alt={recipe.title || "Recipe Image"}
-            fill
-          />
+      <div className="flex min-w-0 flex-1 flex-col justify-center px-3 py-2.5">
+        <div className="flex items-start justify-between gap-3">
+          <h3 className="line-clamp-2 text-sm font-semibold leading-5 text-[#2c2118]">
+            {recipe.title}
+          </h3>
+          <ArrowUpRight className="mt-0.5 size-3.5 shrink-0 text-[#9a6b42] transition group-hover:text-primary" />
+        </div>
+        <div className="mt-1.5 flex min-w-0 items-center gap-2 text-[11px] font-medium text-[#806c5d]">
+          {totalTime !== null && (
+            <span className="flex shrink-0 items-center gap-1">
+              <AlarmClock className="size-3 text-primary" />
+              {formatTime(totalTime)}
+            </span>
+          )}
+          {recipe.recipeNutrient?.slice(0, 1).map((nutrient) => (
+              <span
+                key={nutrient.nutrient.id}
+                className="truncate rounded-full bg-[#fff2ec] px-2 py-0.5 text-[#7c4b2b]"
+              >
+                {nutrient.nutrient.title}
+              </span>
+          ))}
         </div>
       </div>
-    </div>
+    </Link>
   );
 };
 

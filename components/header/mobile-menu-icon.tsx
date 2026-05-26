@@ -22,6 +22,8 @@ type MobileMenuIconProps = {
   cuisines: CuisineNavItem[];
   categories: CategoryNavItem[];
   recipeTypes: NavItem[];
+  cookingMethods: NavItem[];
+  dietTypes: NavItem[];
 };
 
 const MobileMenuIcon = ({
@@ -29,6 +31,8 @@ const MobileMenuIcon = ({
   cuisines,
   categories,
   recipeTypes,
+  cookingMethods,
+  dietTypes,
 }: MobileMenuIconProps) => {
   const [open, setOpen] = useState(false);
 
@@ -62,6 +66,8 @@ const MobileMenuIcon = ({
             cuisines={cuisines}
             categories={categories}
             recipeTypes={recipeTypes}
+            cookingMethods={cookingMethods}
+            dietTypes={dietTypes}
           />
         </SheetContent>
       </Sheet>

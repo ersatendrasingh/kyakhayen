@@ -29,6 +29,11 @@ type MealPlanResult = {
   s3Url: string;
 };
 
+type MealPlanProgressReporter = (
+  percentage: number,
+  message: string,
+) => Promise<void> | void;
+
 // Helper function to upload data to S3
 const uploadToS3 = async (fileName: string, fileContent: string) => {
   const params = {
@@ -49,15 +54,21 @@ const uploadToS3 = async (fileName: string, fileContent: string) => {
 };
 
 export const generateMealPlan = async (
-  userId: string
+  userId: string,
+  reportProgress?: MealPlanProgressReporter,
 ): Promise<MealPlanResult[]> => {
   try {
     const now = new Date();
+    await reportProgress?.(10, "Understanding your food preferences");
 
     // Fetch user's details
     const user = await db.user.findUnique({
       where: { id: userId },
     });
+    if (!user) {
+      throw new Error(`User with ID ${userId} not found.`);
+    }
+    await reportProgress?.(16, "Preparing your seven-day canvas");
 
     // Fetch user's current active plan
     const userPlan = await db.userPlan.findFirst({
@@ -69,10 +80,6 @@ export const generateMealPlan = async (
       },
     });
 
-    if (!userPlan) {
-      throw new Error(`Meal plan not found for user with ID ${userId}.`);
-    }
-
     // Fetch the existing meal plan entry
     let userMealPlan = await db.userMealPlan.findFirst({
       where: {
@@ -83,8 +90,13 @@ export const generateMealPlan = async (
       },
     });
 
+    const launchEndDate = new Date(now);
+    launchEndDate.setDate(launchEndDate.getDate() + 6);
     let startDate: Date;
-    let endDate: Date = userPlan.endDate!;
+    const endDate =
+      userPlan?.endDate && userPlan.endDate > launchEndDate
+        ? userPlan.endDate
+        : launchEndDate;
 
     if (userMealPlan) {
       // If an active meal plan exists, start from today to regenerate
@@ -98,8 +110,8 @@ export const generateMealPlan = async (
         },
       });
     } else {
-      // If no active meal plan, create a new entry with the original start date
-      startDate = userPlan.startDate;
+      // Launch access always provides a fresh seven-day plan without purchase.
+      startDate = now;
       userMealPlan = await db.userMealPlan.create({
         data: {
           userId,
@@ -113,8 +125,11 @@ export const generateMealPlan = async (
     const dates = getDatesBetween(startDate, endDate);
     const mealPlanResults: MealPlanResult[] = [];
 
-    for (const date of dates) {
+    for (const [index, date] of dates.entries()) {
       const mealsByTime = await generateRecipesForDate(userId, date);
+      if (!mealsByTime) {
+        throw new Error(`Unable to generate meals for ${date.toISOString()}.`);
+      }
       const mealPlanJson = JSON.stringify({ mealsByTime });
       const formattedDate = formatISO(date, { representation: "date" });
 
@@ -124,20 +139,29 @@ export const generateMealPlan = async (
       await uploadToS3(s3Key, mealPlanJson);
 
       mealPlanResults.push({ date, s3Url: s3Key });
+      const percentage = Math.round(18 + ((index + 1) / dates.length) * 66);
+      await reportProgress?.(
+        percentage,
+        `Curating day ${index + 1} of ${dates.length}`,
+      );
     }
 
-    // Send notification to user
-
-    await sendEmail({
-      to: user?.email as string,
-      subject: "Your Customized Meal Plan is Ready For You!",
-      html: await render(
-        CustomerMealPlanMail({
-          subjectLine: "Exciting News! Your Personalized Meal Plan Awaits.",
-          name: user?.name as string,
-        })
-      ),
-    });
+    await reportProgress?.(91, "Saving your weekly plan");
+    try {
+      await sendEmail({
+        to: user.email as string,
+        subject: "Your Customized Meal Plan is Ready For You!",
+        html: await render(
+          CustomerMealPlanMail({
+            subjectLine: "Exciting News! Your Personalized Meal Plan Awaits.",
+            name: user.name as string,
+          })
+        ),
+      });
+    } catch (emailError) {
+      console.error("Meal plan created, but ready email could not be sent:", emailError);
+    }
+    await reportProgress?.(97, "Your meal plan is ready");
 
     return mealPlanResults;
   } catch (error) {

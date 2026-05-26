@@ -6,6 +6,8 @@ import {
   LayoutGrid,
   MapPinned,
   Sparkles,
+  Flame,
+  HeartPulse,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -32,15 +34,25 @@ type DesktopHeaderProps = {
   cuisines: CuisineNavItem[];
   categories: CategoryNavItem[];
   recipeTypes: NavItem[];
+  cookingMethods: NavItem[];
+  dietTypes: NavItem[];
 };
 
-type PanelId = "recipes" | "mealtimes" | "cuisines" | "collections";
+type PanelId =
+  | "recipes"
+  | "mealtimes"
+  | "cuisines"
+  | "collections"
+  | "methods"
+  | "wellness";
 
 function CatalogueMenu({
   mealTimes,
   cuisines,
   categories,
   recipeTypes,
+  cookingMethods,
+  dietTypes,
   collapsed,
 }: DesktopHeaderProps & { collapsed: boolean }) {
   const [activePanel, setActivePanel] = useState<PanelId>("recipes");
@@ -49,6 +61,8 @@ function CatalogueMenu({
     { id: "mealtimes" as const, label: "Mealtimes", kicker: "Cook by moment", icon: CalendarDays },
     { id: "cuisines" as const, label: "Cuisines", kicker: "Explore regions", icon: MapPinned },
     { id: "collections" as const, label: "Collections", kicker: "Browse cravings", icon: Sparkles },
+    { id: "methods" as const, label: "Cooking Methods", kicker: "Choose technique", icon: Flame },
+    { id: "wellness" as const, label: "Wellness Goals", kicker: "Eat your way", icon: HeartPulse },
   ];
 
   return (
@@ -72,9 +86,9 @@ function CatalogueMenu({
         <DropdownMenuContent
           align="start"
           sideOffset={10}
-          className="website-catalogue-menu grid w-[760px] grid-cols-[208px_minmax(0,1fr)] gap-4 rounded-[1.5rem] border-[#eadbc8] bg-[#fffaf2] p-4 shadow-[0_30px_76px_-32px_rgba(48,30,18,0.52)]"
+          className="website-catalogue-menu grid w-[874px] grid-cols-[218px_minmax(0,1fr)] gap-5 rounded-[1.65rem] border-[#eadbc8] bg-[#fffaf2] p-5 shadow-[0_30px_76px_-32px_rgba(48,30,18,0.52)]"
         >
-          <div className="border-r border-[#eee0cc] pr-3">
+          <div className="flex min-h-[344px] flex-col border-r border-[#eee0cc] pr-4">
             <p className="flex items-center gap-2 px-3 pb-3 pt-1 text-[10px] font-semibold uppercase tracking-[0.22em] text-[#a2773d]">
               <Sparkles className="size-3" /> Catalogue
             </p>
@@ -84,7 +98,7 @@ function CatalogueMenu({
                 type="button"
                 onMouseEnter={() => setActivePanel(id)}
                 onFocus={() => setActivePanel(id)}
-                className={`mb-1 flex w-full cursor-pointer items-center gap-3 rounded-xl px-3 py-2.5 text-left transition ${
+                className={`mb-1 flex w-full cursor-pointer items-center gap-3 rounded-xl px-3 py-2 text-left transition ${
                   activePanel === id
                     ? "bg-[#f3e5d1] text-primary dark:bg-[#19342b] dark:text-[#e3ba69]"
                     : "text-[#554438] hover:bg-[#f8eddd] dark:text-[#e1e9e3] dark:hover:bg-[#162f27]"
@@ -100,10 +114,10 @@ function CatalogueMenu({
           </div>
 
           {activePanel === "recipes" && (
-            <div className="grid grid-cols-[1.08fr_1fr] gap-3">
+            <div className="grid min-h-[344px] grid-cols-[1.08fr_1fr] gap-3">
               <Link
                 href="/recipes"
-                className="group relative min-h-[236px] overflow-hidden rounded-2xl"
+                className="group relative overflow-hidden rounded-2xl"
               >
                 <Image
                   src="/assets/images/smoothie.png"
@@ -141,74 +155,143 @@ function CatalogueMenu({
             </div>
           )}
           {activePanel === "mealtimes" && (
-            <div className="grid grid-cols-3 gap-3">
-              {mealTimes.slice(0, 6).map((item) => (
-                <Link
-                  key={item.slug}
-                  href={`/recipes?k=${item.slug}&type=mealTime`}
-                  className="group"
-                >
-                  <span className="relative block h-[84px] overflow-hidden rounded-xl bg-[#ede1d2]">
+            <div className="flex min-h-[344px] flex-col">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[#a2773d]">
+                Find food for every hour
+              </p>
+              <div className="mt-4 grid flex-1 grid-cols-3 gap-3">
+                {mealTimes.slice(0, 6).map((item) => (
+                  <Link
+                    key={item.slug}
+                    href={`/recipes?k=${item.slug}&type=mealTime`}
+                    className="group relative min-h-[143px] overflow-hidden rounded-2xl bg-[#ede1d2]"
+                  >
                     <Image
                       src={item.imageUrl || "/meta-images/recipe-page.jpg"}
                       alt=""
                       fill
-                      sizes="170px"
+                      sizes="200px"
                       className="object-cover transition duration-500 group-hover:scale-105"
                     />
-                  </span>
-                  <span className="mt-2 block text-xs font-semibold text-[#43342b] group-hover:text-primary">
-                    {item.title}
-                  </span>
-                </Link>
-              ))}
+                    <div className="absolute inset-0 bg-gradient-to-t from-[#17110c]/78 via-transparent to-transparent" />
+                    <span className="absolute inset-x-3 bottom-3 text-sm font-semibold text-white">
+                      {item.title}
+                    </span>
+                  </Link>
+                ))}
+              </div>
             </div>
           )}
           {activePanel === "cuisines" && (
-            <div className="grid grid-cols-3 gap-2.5">
-              {cuisines.slice(0, 9).map((item) => (
-                <Link
-                  key={item.slug}
-                  href={`/recipes?k=${item.slug}&type=cuisine`}
-                  className="flex items-center gap-2.5 rounded-xl border border-[#eddfcd] bg-white p-2.5 hover:border-[#d9ab61]"
-                >
-                  <span className="relative size-10 shrink-0 overflow-hidden rounded-full bg-[#eee2d5]">
+            <div className="flex min-h-[344px] flex-col">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[#a2773d]">
+                Taste across regions
+              </p>
+              <div className="mt-4 grid flex-1 grid-cols-3 gap-3">
+                {cuisines.slice(0, 6).map((item) => (
+                  <Link
+                    key={item.slug}
+                    href={`/recipes?k=${item.slug}&type=cuisine`}
+                    className="group relative min-h-[143px] overflow-hidden rounded-2xl bg-[#eee2d5]"
+                  >
                     <Image
                       src={item.imageUrl || "/meta-images/recipe-page.jpg"}
                       alt=""
                       fill
-                      sizes="40px"
-                      className="object-cover"
+                      sizes="200px"
+                      className="object-cover transition duration-500 group-hover:scale-105"
                     />
-                  </span>
-                  <span className="truncate text-xs font-semibold text-[#493a30]">
-                    {item.title}
-                  </span>
-                </Link>
-              ))}
+                    <div className="absolute inset-0 bg-gradient-to-t from-[#17110c]/84 via-transparent to-transparent" />
+                    <span className="absolute inset-x-3 bottom-3 text-sm font-semibold text-white">
+                      {item.title}
+                    </span>
+                  </Link>
+                ))}
+              </div>
             </div>
           )}
           {activePanel === "collections" && (
-            <div className="grid grid-cols-3 gap-3">
-              {recipeTypes.slice(0, 6).map((item) => (
-                <Link
-                  key={item.slug}
-                  href={`/recipes?k=${item.slug}&type=recipeType`}
-                  className="group relative h-[108px] overflow-hidden rounded-xl"
-                >
-                  <Image
-                    src={item.imageUrl || "/meta-images/recipe-page.jpg"}
-                    alt=""
-                    fill
-                    sizes="170px"
-                    className="object-cover transition duration-500 group-hover:scale-105"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#21170f]/88 to-transparent" />
-                  <span className="absolute inset-x-3 bottom-3 text-xs font-semibold text-white">
-                    {item.title}
-                  </span>
-                </Link>
-              ))}
+            <div className="flex min-h-[344px] flex-col">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[#a2773d]">
+                Browse by craving
+              </p>
+              <div className="mt-4 grid flex-1 grid-cols-3 gap-3">
+                {recipeTypes.slice(0, 6).map((item) => (
+                  <Link
+                    key={item.slug}
+                    href={`/recipes?k=${item.slug}&type=recipeType`}
+                    className="group relative min-h-[143px] overflow-hidden rounded-2xl"
+                  >
+                    <Image
+                      src={item.imageUrl || "/meta-images/recipe-page.jpg"}
+                      alt=""
+                      fill
+                      sizes="200px"
+                      className="object-cover transition duration-500 group-hover:scale-105"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-[#21170f]/88 to-transparent" />
+                    <span className="absolute inset-x-3 bottom-3 text-sm font-semibold text-white">
+                      {item.title}
+                    </span>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
+          {activePanel === "methods" && (
+            <div className="flex min-h-[344px] flex-col">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[#a2773d]">
+                Cook your way
+              </p>
+              <div className="mt-4 grid flex-1 grid-cols-3 gap-3">
+                {cookingMethods.slice(0, 6).map((method) => (
+                  <Link
+                    key={method.slug}
+                    href={`/recipes?k=${method.slug}&type=cookingMethod`}
+                    className="group relative min-h-[143px] overflow-hidden rounded-2xl"
+                  >
+                    <Image
+                      src={method.imageUrl || "/meta-images/recipe-page.jpg"}
+                      alt=""
+                      fill
+                      sizes="200px"
+                      className="object-cover transition duration-500 group-hover:scale-105"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-[#21170f]/88 to-transparent" />
+                    <span className="absolute inset-x-3 bottom-3 text-sm font-semibold text-white">
+                      {method.title}
+                    </span>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
+          {activePanel === "wellness" && (
+            <div className="flex min-h-[344px] flex-col">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[#a2773d]">
+                Eat around your goals
+              </p>
+              <div className="mt-4 grid flex-1 grid-cols-3 gap-3">
+                {dietTypes.slice(0, 6).map((dietType) => (
+                  <Link
+                    key={dietType.slug}
+                    href={`/recipes?k=${dietType.slug}&type=dietType`}
+                    className="group relative min-h-[143px] overflow-hidden rounded-2xl"
+                  >
+                    <Image
+                      src={dietType.imageUrl || "/meta-images/recipe-page.jpg"}
+                      alt=""
+                      fill
+                      sizes="200px"
+                      className="object-cover transition duration-500 group-hover:scale-105"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-[#172b22]/88 to-transparent" />
+                    <span className="absolute inset-x-3 bottom-3 text-sm font-semibold text-white">
+                      {dietType.title}
+                    </span>
+                  </Link>
+                ))}
+              </div>
             </div>
           )}
         </DropdownMenuContent>
@@ -222,6 +305,8 @@ export default function DesktopHeader({
   cuisines,
   categories,
   recipeTypes,
+  cookingMethods,
+  dietTypes,
 }: DesktopHeaderProps) {
   const [collapsed, setCollapsed] = useState(false);
 
@@ -249,6 +334,8 @@ export default function DesktopHeader({
             cuisines={cuisines}
             categories={categories}
             recipeTypes={recipeTypes}
+            cookingMethods={cookingMethods}
+            dietTypes={dietTypes}
           />
           <SearchInput
             dense
@@ -272,6 +359,8 @@ export default function DesktopHeader({
               cuisines={cuisines}
               categories={categories}
               recipeTypes={recipeTypes}
+              cookingMethods={cookingMethods}
+              dietTypes={dietTypes}
             />
           </div>
         </Container>

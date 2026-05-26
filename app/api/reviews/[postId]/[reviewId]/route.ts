@@ -30,8 +30,8 @@ export async function DELETE(
       return NextResponse.json({ error: "Review not found" }, { status: 404 });
     }
 
-    if (review.userId !== user.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    if (review.userId !== user.id && user.role !== "ADMIN") {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
     const deletedReview = await db.review.delete({
       where: {
@@ -93,8 +93,8 @@ export async function PUT(
       return NextResponse.json({ error: "Review not found" }, { status: 404 });
     }
 
-    if (review.userId !== user.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    if (review.userId !== user.id && user.role !== "ADMIN") {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
     const updatedReview = await db.review.update({

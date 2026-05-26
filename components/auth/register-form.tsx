@@ -53,9 +53,15 @@ export const RegisterForm = () => {
 
   return (
     <CardWrapper
-      headerLabel="Craete an account"
-      backButtonLabel="Already have an account?"
+      headerLabel="Create your account"
+      description="Save recipes and create a weekly menu made around your food choices."
+      backButtonLabel="Already have an account? Sign in"
       backButtonHref="/auth/login"
+      showSocial
+      visualImage="/assets/images/auth-fruit-prep-hero.webp"
+      visualAlt="Woman preparing fresh fruit in a bright kitchen"
+      visualPosition="object-[60%_center]"
+      visualHeadline="Make everyday meals feel effortless."
     >
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
@@ -136,7 +142,7 @@ export const RegisterForm = () => {
           </div>
           <FormError message={error} />
           <FormSuccess message={success} />
-          <SubmitButton isPending={isPending} submitText="Create an account" />
+          <SubmitButton isPending={isPending} submitText="Create account" />
         </form>
       </Form>
     </CardWrapper>

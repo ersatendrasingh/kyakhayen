@@ -18,53 +18,37 @@ export const getRelatedRecipes = async ({
   categoryData,
 }: GetRecipesParams): Promise<RecipeWithCategory[]> => {
   try {
-    let relatedRecommendedRecipes: RecipeWithCategory[] = [];
+    const allRecipes = await GetRecipes({});
+    let candidateRecipes = allRecipes;
 
-    // Case 1: User is logged in but has no behavior data or category data
-    if (
-      userId &&
-      Object.keys(behaviorData).length === 0 &&
-      Object.keys(categoryData).length === 0
-    ) {
-      const filteredRecipes = await filterRecipesByUserPreferences(userId);
-      relatedRecommendedRecipes =
-        filteredRecipes.length > 0 ? filteredRecipes : await GetRecipes({});
-    }
-
-    // Case 2: User is logged in and has both behavior data and category data
-    else if (
-      userId &&
-      Object.keys(behaviorData).length > 0 &&
-      Object.keys(categoryData).length > 0
-    ) {
-      const filteredRecipes = await filterRecipesByUserPreferences(userId);
-      relatedRecommendedRecipes = getRecommendationsBasedOnBehavior(
-        filteredRecipes,
-        behaviorData,
-        categoryData
+    if (userId) {
+      const filteredRecipes = await filterRecipesByUserPreferences(userId).catch(
+        () => [],
       );
+      if (filteredRecipes.length > 0) {
+        candidateRecipes = filteredRecipes;
+      }
     }
 
-    // Case 3: Visitor with behavior data
-    else if (
-      !userId &&
-      (Object.keys(behaviorData).length > 0 ||
-        Object.keys(categoryData).length > 0)
-    ) {
-      const allRecipes = await GetRecipes({});
-      relatedRecommendedRecipes = getRecommendationsBasedOnBehavior(
-        allRecipes,
-        behaviorData,
-        categoryData
-      );
+    const hasBehaviorData =
+      Object.keys(behaviorData).length > 0 ||
+      Object.keys(categoryData).length > 0;
+    const recommendations = hasBehaviorData
+      ? getRecommendationsBasedOnBehavior(
+          candidateRecipes,
+          behaviorData,
+          categoryData,
+        )
+      : candidateRecipes;
+    const withoutCurrent = recommendations.filter(
+      (recipe) => recipe.id !== recipeId,
+    );
+
+    if (withoutCurrent.length > 0) {
+      return withoutCurrent;
     }
 
-    // Case 4: Visitor without any data
-    else {
-      relatedRecommendedRecipes = await GetRecipes({});
-    }
-
-    return relatedRecommendedRecipes.filter((recipe) => recipe.id !== recipeId);
+    return allRecipes.filter((recipe) => recipe.id !== recipeId);
   } catch (error) {
     console.error("[GET_RELATED_RECIPES]", error);
     return [];

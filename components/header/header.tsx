@@ -3,7 +3,7 @@ import DesktopHeader from "@/components/header/desktop-header";
 import { db } from "@/lib/db";
 
 export const Header = async () => {
-  const [mealTimes, cuisines, categories, recipeTypes] = await Promise.all([
+  const [mealTimes, cuisines, categories, recipeTypes, cookingMethods, dietTypes] = await Promise.all([
     db.mealTimes.findMany({
       where: {
         isPublished: true,
@@ -57,6 +57,28 @@ export const Header = async () => {
       orderBy: { position: "asc" },
       take: 8,
     }),
+    db.cookingMethods.findMany({
+      where: {
+        isPublished: true,
+        recipeCookingMethod: {
+          some: { recipe: { isPublished: true, imageUrl: { not: null } } },
+        },
+      },
+      select: { title: true, slug: true, imageUrl: true },
+      orderBy: { position: "asc" },
+      take: 8,
+    }),
+    db.dietTypes.findMany({
+      where: {
+        isPublished: true,
+        recipeDietType: {
+          some: { recipe: { isPublished: true, imageUrl: { not: null } } },
+        },
+      },
+      select: { title: true, slug: true, imageUrl: true },
+      orderBy: { position: "asc" },
+      take: 8,
+    }),
   ]);
   const orderedCuisines = [...cuisines].sort((left, right) => {
     if (left.slug === "north-indian") return -1;
@@ -81,12 +103,16 @@ export const Header = async () => {
         cuisines={orderedCuisines}
         categories={categories}
         recipeTypes={mappedRecipeTypes}
+        cookingMethods={cookingMethods}
+        dietTypes={dietTypes}
       />
       <MobileHeader
         mealTimes={mealTimes}
         cuisines={orderedCuisines}
         categories={categories}
         recipeTypes={mappedRecipeTypes}
+        cookingMethods={cookingMethods}
+        dietTypes={dietTypes}
       />
     </>
   );

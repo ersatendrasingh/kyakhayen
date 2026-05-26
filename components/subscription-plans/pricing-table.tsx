@@ -1,13 +1,9 @@
 "use client";
 
 import { getSubscriptionPlans } from "@/actions/get-subscription-plans";
-import { useCart } from "@/context/cart-context";
 import { useUserCountry } from "@/context/user-country-context";
-import { useCurrentUser } from "@/hooks/use-current-user";
 import { Feature, Plan } from "@prisma/client";
 import { motion } from "framer-motion";
-import { Loader2 } from "lucide-react";
-import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { IoIosArrowDroprightCircle } from "react-icons/io";
 import { Button } from "../ui/button";
@@ -18,15 +14,10 @@ type SubscriptionPlan = Plan & {
 
 const PricingTable = () => {
   const { userCurrency, userCountry } = useUserCountry();
-  const user = useCurrentUser();
   const [subscriptionPlans, setSubscriptionPlans] = useState<
     SubscriptionPlan[]
   >([]);
   const [loadingPlans, setLoadingPlans] = useState(true); // New loading state for plans
-  const { addToCart } = useCart();
-  const router = useRouter();
-  const pathname = usePathname();
-  const [loadingCheckout, setLoadingCheckout] = useState(false);
 
   useEffect(() => {
     const fetchPlans = async () => {
@@ -38,42 +29,6 @@ const PricingTable = () => {
 
     fetchPlans();
   }, [userCurrency]);
-
-  const handleAddToCartAndCheckout = (plan: Plan & { features: Feature[] }) => {
-    if (!user) {
-      const encodedCallback = encodeURIComponent(pathname + "#pricing" || "");
-      const encodedCallbackUrl = "/auth/login?callbackUrl=" + encodedCallback;
-      return router.push(encodedCallbackUrl);
-    }
-
-    setLoadingCheckout(true); // Start showing loader
-
-    try {
-      const cartItem = {
-        id: plan.id,
-        name: plan.name,
-        quantity: 1,
-        priceInr: plan.priceInr,
-        priceUsd: plan.priceUsd,
-      };
-
-      // Add to cart (assuming this function is async)
-      addToCart(cartItem);
-
-      // Redirect to checkout after adding to cart
-      router.push("/checkout");
-    } catch (error) {
-      console.error("Error adding to cart or navigating to checkout", error);
-      // Optionally handle error if needed
-    } finally {
-      setLoadingCheckout(false); // Stop showing loader after the process completes
-    }
-  };
-
-  const getDurationInMonths = (days: number) => {
-    const months = Math.floor(days / 30); // Simplified conversion
-    return months === 1 ? "1 Month" : `${months} Months`;
-  };
 
   // Skeleton Loader Component
   const SkeletonCard = () => (
@@ -97,10 +52,11 @@ const PricingTable = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center">
           <h2 className="text-4xl text-websecondary mb-4">
-            Subscription Plans
+            Future Membership Plans
           </h2>
           <p className="leading-loose tracking-wide text-lg">
-            Choose a plan that fits your needs.
+            Coming later for advanced tools. Personalized weekly plans are
+            currently free during launch.
           </p>
         </div>
 
@@ -177,13 +133,9 @@ const PricingTable = () => {
                     </ul>
                     <Button
                       className="mt-8 w-full bg-websecondary hover:bg-black text-white py-3 rounded-lg transition-colors duration-300"
-                      onClick={() => handleAddToCartAndCheckout(plan)}
+                      disabled
                     >
-                      {loadingCheckout ? (
-                        <Loader2 className="animate-spin w-5 h-5 mr-2 inline-block" />
-                      ) : (
-                        "Get Started"
-                      )}
+                      Coming Soon
                     </Button>
                   </div>
                 </motion.div>

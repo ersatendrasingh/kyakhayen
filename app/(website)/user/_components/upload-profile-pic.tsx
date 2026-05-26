@@ -124,21 +124,20 @@ const UploadProfilePic = ({
     }
   };
   return (
-    <div className="absolute bottom-4 right-4">
-      <button className="flex items-center justify-center bg-gray-800 text-white p-2 rounded-full">
-        <label htmlFor="image-upload" title="Upload Image">
+    <div className="absolute -bottom-2 -right-2">
+      <label
+        htmlFor="image-upload"
+        title="Change profile photo"
+        className="flex size-9 cursor-pointer items-center justify-center rounded-full border-2 border-[#fffdf8] bg-[#bd382a] text-white shadow-md transition hover:bg-[#a92f23] dark:border-[#10231c]"
+      >
           <input
             id="image-upload"
             type="file"
-            className="hidden cursor-pointer"
+            className="hidden"
             onChange={handleImageChange}
           />
-          <CameraIcon
-            className="w-4 h-4 cursor-pointer"
-            style={{ transform: "translateY(-2px)" }}
-          />
-        </label>
-      </button>
+          <CameraIcon className="size-4" />
+      </label>
     </div>
   );
 };

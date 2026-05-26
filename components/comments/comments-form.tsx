@@ -70,21 +70,28 @@ export const CommentsForm = ({
           duration: 5000,
         });
       }
-    } catch (error: any) {
-      console.error("Error:", error.message);
-      toast.error(error.message, {
+    } catch (error: unknown) {
+      const message =
+        error instanceof Error ? error.message : "Could not add your message.";
+      console.error("Error:", message);
+      toast.error(message, {
         duration: 5000,
       });
     }
   };
 
   return (
-    <div className="w-full flex flex-col items-start justify-start bg-white rounded-md p-4 shadow-sm transition mb-10">
-      <h3 className="text-2xl font-bold">
-        {title ? title : "Leave a Comment"}
+    <div className="flex w-full flex-col items-start justify-start rounded-[1.35rem] border border-[#eee1cf] bg-[#fcf7ed] p-5 dark:border-white/8 dark:bg-[#162e27]">
+      <h3 className="text-base font-semibold text-[#322820] dark:text-[#eef2ed]">
+        {title ? title : "Start a conversation"}
       </h3>
+      {!title && (
+        <p className="mt-1 text-sm text-[#75665a] dark:text-[#a7b5af]">
+          Have a cooking question or a tip worth sharing?
+        </p>
+      )}
       {user ? (
-        <div className="space-y-8 mt-2 w-full">
+        <div className="mt-4 w-full">
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)}>
               <div className="grid grid-cols-1 gap-4">
@@ -97,10 +104,10 @@ export const CommentsForm = ({
                         <Textarea
                           disabled={isSubmitting}
                           {...field}
-                          placeholder="Write your comment..."
+                          placeholder={title ? "Write your reply..." : "Ask a question or share your kitchen tip..."}
                           className={cn(
-                            "w-full h-32 rounded-md",
-                            title && "h-12"
+                            "h-28 w-full resize-none rounded-xl border-[#e3d2b7] bg-[#fffdf8] p-3 text-sm focus-visible:ring-[#c39043] dark:border-white/10 dark:bg-[#11251f]",
+                            title && "h-20"
                           )}
                         />
                       </FormControl>
@@ -110,31 +117,30 @@ export const CommentsForm = ({
                 />
               </div>
 
-              <div className="flex items-center justify-end mt-4">
+              <div className="mt-4 flex items-center justify-end">
                 <Button
                   type="submit"
                   disabled={isSubmitting || !isValid}
-                  className="pt-2 bg-websecondary cursor-pointer"
+                  className="h-11 cursor-pointer rounded-full bg-[#b83324] px-5 text-white hover:bg-[#9c2d21]"
                 >
                   {isSubmitting
                     ? "Submitting..."
                     : title
                     ? "Submit Reply"
-                    : "Submit Comment"}
+                    : "Post message"}
                 </Button>
               </div>
             </form>
           </Form>
         </div>
       ) : (
-        <div className="flex items-center justify-center text-center mt-4">
+        <div className="mt-5">
           <Button
-            variant="destructive"
-            size="default"
+            type="button"
             onClick={() => setShowPopup(true)}
-            className="pt-2 bg-websecondary cursor-pointer"
+            className="h-11 cursor-pointer rounded-full bg-[#b83324] px-5 text-white hover:bg-[#9c2d21]"
           >
-            Login to Comment
+            Log in to join the conversation
           </Button>
         </div>
       )}

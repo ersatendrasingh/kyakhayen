@@ -10,10 +10,7 @@ export function isPersonalizationComplete(user: any): boolean {
     }
   }
 
-  const requiredArrays = [
-    "userCuisines",
-    "UserAllrgies",
-  ];
+  const requiredArrays = ["userCuisines"];
   for (const arrayField of requiredArrays) {
     if (!user[arrayField] || user[arrayField].length === 0) {
       return false;

@@ -1,9 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { differenceInDays, isBefore, addDays } from "date-fns";
-import Link from "next/link";
-import { formatDateTime } from "@/lib/formateDateTime";
+import { CalendarDays, CheckCircle2, Sparkles } from "lucide-react";
 
 interface SubscriptionCardProps {
   subscription: string;
@@ -11,128 +8,45 @@ interface SubscriptionCardProps {
   planEndDate: Date;
 }
 
-const SubscriptionCard = ({
-  subscription,
-  planStartDate,
-  planEndDate,
-}: SubscriptionCardProps) => {
-  const [formattedStartDate, setFormattedStartDate] = useState<string>("");
-  const [formattedEndDate, setFormattedEndDate] = useState<string>("");
-  const [remainingDays, setRemainingDays] = useState<string>("");
-  const [loading, setLoading] = useState<boolean>(true);
-
-  useEffect(() => {
-    if (subscription) {
-      const userLocale = navigator.language; // Get user's locale
-      setFormattedStartDate(
-        formatDateTime(new Date(planStartDate), userLocale)
-      );
-      setFormattedEndDate(
-        planEndDate ? formatDateTime(new Date(planEndDate), userLocale) : "N/A"
-      );
-    }
-
-    if (subscription && planEndDate) {
-      const endDate = new Date(planEndDate);
-      const now = new Date();
-      const days = differenceInDays(endDate, now);
-
-      if (isBefore(now, addDays(endDate, 1))) {
-        setRemainingDays(
-          `Expires in ${days + 1} day${days + 1 > 1 ? "s" : ""}`
-        );
-      } else {
-        setRemainingDays(
-          `Expired ${Math.abs(days)} day${Math.abs(days) > 1 ? "s" : ""} ago`
-        );
-      }
-    } else {
-      setRemainingDays("N/A");
-    }
-
-    setLoading(false); // Set loading to false once the data is loaded
-  }, [subscription]);
-
-  if (!subscription) {
-    return (
-      <div className="bg-white rounded-lg shadow-lg sm:shadow-xl p-4 sm:p-6 mb-6">
-        <h2 className="text-lg font-bold text-gray-800">
-          No Active Subscription
-        </h2>
-        <p className="text-gray-600 mt-2">
-          You don't have an active subscription. Please choose a plan to
-          continue enjoying our services.
-        </p>
-        <Link href="/subscription-plans#pricing">
-          <button className="mt-4 bg-webprimary text-white py-2 px-4 rounded-md hover:bg-webprimary-dark">
-            View Subscription Plans
-          </button>
-        </Link>
-      </div>
-    );
-  }
-
-  const status =
-    planEndDate && new Date(planEndDate) > new Date() ? "Active" : "Expired";
+const SubscriptionCard = ({ subscription, planStartDate, planEndDate }: SubscriptionCardProps) => {
+  const endDate = planEndDate ? new Date(planEndDate) : null;
+  const active = endDate ? endDate >= new Date() : true;
+  const formatDate = (value: Date) =>
+    new Date(value).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" });
 
   return (
-    <div className="relative rounded-lg border border-gray-200 shadow-lg bg-amber-50 p-4 sm:p-6 mb-6">
-      {loading && (
-        <div className="absolute inset-0 bg-white bg-opacity-75 flex items-center justify-center z-10">
-          <div className="loader animate-spin border-t-4 border-webprimary rounded-full w-12 h-12"></div>
+    <section className="rounded-[1.8rem] border border-[#eadcc9] bg-[#fffdf8] p-5 dark:border-white/10 dark:bg-[#10231c] sm:p-7">
+      <div className="flex flex-col gap-5 border-b border-[#eee1d0] pb-6 dark:border-white/10 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#aa7951] dark:text-[#d2ae76]">Current access</p>
+          <h2 className="mt-2 text-2xl font-semibold text-[#31231b] dark:text-[#f2ede6]">{subscription}</h2>
         </div>
-      )}
-      <div
-        className={`flex flex-col sm:flex-row items-start sm:items-center justify-between border-b pb-4 ${
-          loading ? "opacity-0" : "opacity-100"
-        }`}
-      >
-        <h2 className="text-lg font-bold text-gray-800">
-          {subscription} Subscription
-        </h2>
-        <p className="text-gray-600 mt-2 sm:mt-0">
-          Status:{" "}
-          <span
-            className={`${
-              status === "Active"
-                ? "text-green-500"
-                : status === "Expired"
-                ? "text-red-500"
-                : "text-gray-500"
-            } font-bold`}
-          >
-            {status}
-          </span>
+        <span className="inline-flex items-center gap-2 rounded-full bg-[#ecf5ee] px-4 py-2 text-sm font-semibold text-[#276540] dark:bg-[#18362b] dark:text-[#a3dbb3]">
+          <CheckCircle2 className="size-4" /> {active ? "Active" : "Completed"}
+        </span>
+      </div>
+      <div className="grid gap-4 py-6 sm:grid-cols-2">
+        <PlanDate label="Started" date={formatDate(planStartDate)} />
+        <PlanDate label="Access through" date={endDate ? formatDate(endDate) : "Launch period"} />
+      </div>
+      <div className="flex items-start gap-3 rounded-2xl bg-[#faf1e5] p-4 dark:bg-[#172d25]">
+        <Sparkles className="mt-0.5 size-4 shrink-0 text-[#bd382a] dark:text-[#ddb271]" />
+        <p className="text-sm leading-6 text-[#6f5d50] dark:text-[#abbab2]">
+          Your account keeps launch access to personalized meal plans without an extra charge.
         </p>
       </div>
-
-      <div className={`mt-4 ${loading ? "opacity-0" : "opacity-100"}`}>
-        <p className="text-gray-700 text-sm">
-          <strong>Start Date:</strong> {formattedStartDate}
-        </p>
-        <p className="text-gray-700 text-sm">
-          <strong>End Date:</strong> {formattedEndDate}
-        </p>
-        <p className="text-gray-700 text-sm">
-          <strong>Remaining Days:</strong> {remainingDays}
-        </p>
-      </div>
-
-      {subscription !== "Platinum" && status === "Active" && (
-        <div
-          className={`flex justify-center md:justify-end mt-4 ${
-            loading ? "opacity-0" : "opacity-100"
-          }`}
-        >
-          <Link href="/subscription-plans#pricing">
-            <button className="bg-webprimary hover:bg-websecondary text-white py-2 px-4 rounded">
-              Upgrade Your Plan
-            </button>
-          </Link>
-        </div>
-      )}
-    </div>
+    </section>
   );
 };
+
+const PlanDate = ({ label, date }: { label: string; date: string }) => (
+  <div className="flex items-center gap-3 rounded-2xl border border-[#efe2d1] p-4 dark:border-white/[0.08]">
+    <CalendarDays className="size-5 text-[#bc392a] dark:text-[#dcb372]" />
+    <div>
+      <p className="text-xs text-[#877364] dark:text-[#a9b8af]">{label}</p>
+      <p className="mt-1 text-sm font-semibold text-[#36281f] dark:text-[#f1ece5]">{date}</p>
+    </div>
+  </div>
+);
 
 export default SubscriptionCard;

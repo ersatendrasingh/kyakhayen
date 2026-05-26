@@ -20,6 +20,8 @@ type MobileHeaderProps = {
   cuisines: CuisineNavItem[];
   categories: CategoryNavItem[];
   recipeTypes: NavItem[];
+  cookingMethods: NavItem[];
+  dietTypes: NavItem[];
 };
 
 function CompactBrandIcon() {
@@ -45,6 +47,8 @@ export default function MobileHeader({
   cuisines,
   categories,
   recipeTypes,
+  cookingMethods,
+  dietTypes,
 }: MobileHeaderProps) {
   const [compact, setCompact] = useState(false);
 
@@ -71,6 +75,8 @@ export default function MobileHeader({
               cuisines={cuisines}
               categories={categories}
               recipeTypes={recipeTypes}
+              cookingMethods={cookingMethods}
+              dietTypes={dietTypes}
             />
             <Logo />
             <Usermenu variant="mobile" />

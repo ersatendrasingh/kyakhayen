@@ -5,6 +5,10 @@ import { currentUser } from "@/lib/auth";
 export async function POST(req: Request) {
   try {
     const user = await currentUser();
+    if (!user) {
+      return NextResponse.json("Unauthorized", { status: 401 });
+    }
+
     const body = await req.json();
     const isPrimary = body.parentCommentId ? false : true;
     const savedComment = await db.comment.create({
@@ -13,7 +17,7 @@ export async function POST(req: Request) {
         parentCommentId: body.parentCommentId,
         recipeId: body.recipeId,
         postId: body.postId,
-        userId: user?.id,
+        userId: user.id,
         isPrimary: isPrimary,
       },
     });

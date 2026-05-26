@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { currentUser } from "@/lib/auth";
 import { isPersonalizationComplete } from "@/lib/personalization";
-import { Queue } from "bullmq";
+import { getMealPlanQueue } from "@/lib/meal-plan-queue";
 
 export async function PUT(req: Request) {
   try {
@@ -11,10 +11,10 @@ export async function PUT(req: Request) {
       return NextResponse.json("Unauthorized", { status: 401 });
     }
 
-    const { userId, newCookingSkill } = await req.json();
+    const { newCookingSkill } = await req.json();
 
     const userRecord = await db.user.findUnique({
-      where: { id: userId },
+      where: { id: user.id },
       include: { cookingSkill: true },
     });
 
@@ -29,7 +29,7 @@ export async function PUT(req: Request) {
 
     if (shouldUpdateCookingSkill) {
       const updatedUser = await db.user.update({
-        where: { id: userId },
+        where: { id: user.id },
         data: { cookingSkillId: newCookingSkill.id },
         include: {
           userCuisines: true,
@@ -49,8 +49,9 @@ export async function PUT(req: Request) {
         });
 
         //Call the generate meal plan queue
-        const mealPlanQueue = new Queue("generateMealPlan");
+        const mealPlanQueue = getMealPlanQueue();
         await mealPlanQueue.add("generateMealPlan", { userId: user.id });
+        await mealPlanQueue.close();
       }
     }
 

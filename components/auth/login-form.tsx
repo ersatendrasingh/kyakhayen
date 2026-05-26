@@ -86,9 +86,11 @@ export const LoginForm = ({ callBackUrl, mode }: LoginFormProps) => {
   return (
     <CardWrapper
       headerLabel="Welcome back"
-      backButtonLabel="Don't have an account?"
+      description="Sign in to continue your saved recipes and weekly meal plans."
+      backButtonLabel="Don't have an account? Create one"
       backButtonHref="/auth/register"
       showSocial
+      compact={mode === "modal"}
     >
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
@@ -137,7 +139,17 @@ export const LoginForm = ({ callBackUrl, mode }: LoginFormProps) => {
                   name="password"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Password</FormLabel>
+                      <div className="flex items-center justify-between gap-3">
+                        <FormLabel>Password</FormLabel>
+                        <Button
+                          size="sm"
+                          variant="link"
+                          asChild
+                          className="h-auto px-0 py-0 text-xs font-medium text-primary"
+                        >
+                          <Link href="/auth/reset">Forgot password?</Link>
+                        </Button>
+                      </div>
                       <FormControl>
                         <Input
                           type="password"
@@ -146,14 +158,6 @@ export const LoginForm = ({ callBackUrl, mode }: LoginFormProps) => {
                           {...field}
                         />
                       </FormControl>
-                      <Button
-                        size="sm"
-                        variant="link"
-                        asChild
-                        className="px-0 font-normal"
-                      >
-                        <Link href="/auth/reset">Forgot password?</Link>
-                      </Button>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -165,7 +169,7 @@ export const LoginForm = ({ callBackUrl, mode }: LoginFormProps) => {
           <FormSuccess message={isloading ? "" : success} />
           <SubmitButton
             isPending={isPending}
-            submitText={showTwoFactor ? "Confirm" : "Login"}
+            submitText={showTwoFactor ? "Confirm code" : "Sign in"}
           />
         </form>
       </Form>

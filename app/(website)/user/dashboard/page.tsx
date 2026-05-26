@@ -1,176 +1,240 @@
 "use client";
+
 import { useEffect, useState } from "react";
-import AnimatedNumber from "@/components/animated-number";
-import { CookingPot, Eye, Star } from "lucide-react";
+import Link from "next/link";
+import {
+  ArrowRight,
+  BookHeart,
+  CalendarDays,
+  ChefHat,
+  Coffee,
+  History,
+  MessageSquareMore,
+  SlidersHorizontal,
+  Sparkles,
+  Sun,
+  UtensilsCrossed,
+} from "lucide-react";
 import { getUserFavoriteRecipes } from "@/actions/get-user-favorite-recipes";
-import RecipeCard from "@/components/recipes/recipe-card";
-import { RecipeWithCategory } from "@/types/recipe";
-import { motion, AnimatePresence } from "framer-motion";
 import { getUserReviewedRecipes } from "@/actions/get-user-reviewed-recipes";
 import { getUserViewedRecipes } from "@/actions/get-user-viewed-recipes";
+import { getPopularRecipes } from "@/actions/get-popular-recipes";
+import RecipeCard from "@/components/recipes/recipe-card";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useCurrentUser } from "@/hooks/use-current-user";
+import { capitalizeName } from "@/lib/formateName";
+import { cn } from "@/lib/utils";
+import { RecipeWithCategory } from "@/types/recipe";
+import AccountPageHeading from "../_components/account-page-heading";
+
+type ActivityKey = "saved" | "recent" | "reviewed";
 
 const UserDashboard = () => {
-  const [favorites, setFavorites] = useState<RecipeWithCategory[]>([]);
-  const [showFavorites, setShowFavorites] = useState(false);
-  const [reviews, setReviews] = useState<RecipeWithCategory[]>([]);
-  const [showReviews, setShowReviews] = useState(false);
-  const [recipeViews, setRecipeViews] = useState<RecipeWithCategory[]>([]);
-  const [showViewsRecipes, setShowViewsRecipes] = useState(false);
+  const user = useCurrentUser();
+  const [activity, setActivity] = useState<Record<ActivityKey, RecipeWithCategory[]>>({
+    saved: [],
+    recent: [],
+    reviewed: [],
+  });
+  const [activeActivity, setActiveActivity] = useState<ActivityKey>("saved");
+  const [popularRecipes, setPopularRecipes] = useState<RecipeWithCategory[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchFavorites = async () => {
-      try {
-        const favorites = await getUserFavoriteRecipes();
-        setFavorites(favorites);
-      } catch (error) {
-        console.error("Error fetching favorite recipes:", error);
-      }
-    };
-    const fetchReviews = async () => {
-      try {
-        const reviews = await getUserReviewedRecipes();
-        setReviews(reviews);
-      } catch (error) {
-        console.error("Error fetching reviewed recipes:", error);
-      }
-    };
-    const fetchRecipeViews = async () => {
-      try {
-        const views = await getUserViewedRecipes();
-        setRecipeViews(views);
-      } catch (error) {
-        console.error("Error fetching viewed recipes:", error);
-      }
-    };
-
-    fetchFavorites();
-    fetchReviews();
-    fetchRecipeViews();
+    Promise.all([
+      getUserFavoriteRecipes(),
+      getUserViewedRecipes(),
+      getUserReviewedRecipes(),
+      getPopularRecipes({ pageSize: 4 }),
+    ])
+      .then(([saved, recent, reviewed, popular]) => {
+        setActivity({ saved, recent, reviewed });
+        setPopularRecipes(popular.recipes);
+      })
+      .catch(() => setActivity({ saved: [], recent: [], reviewed: [] }))
+      .finally(() => setLoading(false));
   }, []);
-  const handleFavoritesClick = () => {
-    setShowFavorites(true);
-    setShowReviews(false);
-    setShowViewsRecipes(false);
-  };
 
-  const handleReviewsClick = () => {
-    setShowFavorites(false);
-    setShowReviews(true);
-    setShowViewsRecipes(false);
-  };
-  const handleViewsClick = () => {
-    setShowFavorites(false);
-    setShowReviews(false);
-    setShowViewsRecipes(true);
-  };
+  const firstName = user?.name ? capitalizeName(user.name).split(" ")[0] : "there";
+  const activeRecipes = activity[activeActivity].slice(0, 3);
+  const activityTabs = [
+    { key: "saved" as const, label: "Saved", icon: BookHeart, count: activity.saved.length },
+    { key: "recent" as const, label: "Recently viewed", icon: History, count: activity.recent.length },
+    { key: "reviewed" as const, label: "Reviewed", icon: MessageSquareMore, count: activity.reviewed.length },
+  ];
+  const discoveryLinks = [
+    { label: "Breakfast", helper: "Start fresh", href: "/recipes?k=breakfast&type=mealTime", icon: Coffee },
+    { label: "Lunch", helper: "Midday ideas", href: "/recipes?k=lunch&type=mealTime", icon: Sun },
+    { label: "Dinner", helper: "Tonight's table", href: "/recipes?k=dinner&type=mealTime", icon: UtensilsCrossed },
+  ];
+
   return (
-    <div className="bg-white rounded-md shadow-sm transition p-4">
-      <h1 className="text-3xl font-bold border-b-2 border-slate-200 pb-2 text-gray-700">
-        Dashboard
-      </h1>
-      <div className="flex flex-col md:flex-row md:justify-between py-10">
-        <div className="w-full md:w-1/3 mx-2 mb-4 md:mb-0">
-          <div
-            className="bg-gradient-to-b from-rose-400 to-red-500 p-4 rounded-md shadow-md transition h-[300px] flex flex-col items-center justify-center cursor-pointer"
-            onClick={handleFavoritesClick}
-          >
-            <div className="bg-gray-200/20 w-24 h-24 rounded-full p-4 flex items-center justify-center mb-8">
-              <CookingPot className="text-3xl text-white w-10 h-10" />
+    <div>
+      <AccountPageHeading
+        eyebrow="Kitchen dashboard"
+        title={`Hello, ${firstName}`}
+        description="Your meal planning space, saved dishes and food choices together in one calm place."
+      />
+
+      <section className="relative mb-5 overflow-hidden rounded-[1.8rem] border border-[#e6d5be] bg-[#3c241a] p-6 text-white shadow-[0_24px_52px_-36px_rgba(47,27,16,0.62)] dark:border-white/10 dark:bg-[#142820] sm:p-8">
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_84%_18%,rgba(234,184,105,0.33),transparent_32%),linear-gradient(115deg,rgba(192,54,40,0.34),transparent_48%)]" />
+        <div className="relative grid gap-8 md:grid-cols-[1fr_auto] md:items-end">
+          <div>
+            <div className="mb-5 inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1.5 text-xs font-medium text-[#f7e6ca]">
+              <ChefHat className="size-3.5" />
+              {user?.isPersonalised ? "Your choices are ready" : "Set your everyday choices"}
             </div>
-            <AnimatedNumber value={favorites.length} />
-            <p className="text-sm text-white">Favorite Recipes</p>
+            <h2 className="max-w-lg text-2xl font-semibold leading-tight sm:text-3xl">
+              Plan seven days of meals made for your table.
+            </h2>
+            <p className="mt-3 max-w-lg text-sm leading-6 text-white/70">
+              Food style, cuisines, exclusions and cooking comfort only. No medical profiling.
+            </p>
+          </div>
+          <div className="flex flex-col gap-3 sm:flex-row md:flex-col">
+            <Link
+              href="/meal-plan"
+              className="inline-flex items-center justify-center gap-2 rounded-full bg-[#c33b2d] px-6 py-3.5 text-sm font-semibold text-white transition hover:bg-[#ae3023]"
+            >
+              <CalendarDays className="size-4" />
+              View meal plan
+            </Link>
+            <Link
+              href="/meal-plan/create"
+              className="inline-flex items-center justify-center gap-2 rounded-full border border-white/22 bg-white/8 px-6 py-3.5 text-sm font-semibold text-white transition hover:bg-white/14"
+            >
+              <SlidersHorizontal className="size-4" />
+              {user?.isPersonalised ? "Edit choices" : "Create choices"}
+            </Link>
           </div>
         </div>
-        <div className="w-full md:w-1/3 mx-2 mb-4 md:mb-0">
-          <div
-            className="h-[300px] bg-gradient-to-r from-green-400 to-blue-500 p-4 rounded-md shadow-md transition flex flex-col items-center justify-center cursor-pointer"
-            onClick={handleReviewsClick}
-          >
-            <div className="bg-gray-200/20 w-24 h-24 rounded-full p-4 flex items-center justify-center mb-8">
-              <Star className="text-3xl text-white w-10 h-10" />
+      </section>
+
+      <div className="mb-5 grid gap-5 xl:grid-cols-[1fr_1.35fr]">
+        <section className="rounded-[1.7rem] border border-[#eadcc9] bg-[#fffdf8] p-5 dark:border-white/10 dark:bg-[#10231c] sm:p-6">
+          <div className="mb-5 flex items-center justify-between gap-4">
+            <div>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#a67853] dark:text-[#d0ae76]">Your table</p>
+              <h2 className="mt-1 text-lg font-semibold text-[#33251d] dark:text-[#f1ede6]">Choice snapshot</h2>
             </div>
-            <AnimatedNumber value={reviews.length} />
-            <p className="text-sm text-white">Reviewed Recipes</p>
+            <Sparkles className="size-5 text-[#bd382a] dark:text-[#dcb270]" />
           </div>
-        </div>
-        <div className="w-full md:w-1/3 mx-2 text-center">
-          <div
-            className="h-[300px] bg-gradient-to-r from-yellow-400 to-orange-500 p-4 rounded-md shadow-md transition flex flex-col items-center justify-center cursor-pointer"
-            onClick={handleViewsClick}
-          >
-            <div className="bg-gray-200/20 w-24 h-24 rounded-full p-4 flex items-center justify-center mb-8">
-              <Eye className="text-3xl text-white w-10 h-10 " />
-            </div>
-            <AnimatedNumber value={recipeViews.length} />
-            <p className="text-sm text-white">Watched Recipes</p>
+          <div className="space-y-3">
+            <TasteRow label="Food style" value={user?.foodPreference || "Set your style"} />
+            <TasteRow label="Cooking comfort" value={user?.cookingSkill || "Set your comfort"} />
+            <TasteRow label="Plan status" value={user?.isPersonalised ? "Ready to generate" : "Complete choices"} />
           </div>
-        </div>
+          <Link href="/user/preferences" className="mt-5 inline-flex items-center gap-1.5 text-sm font-semibold text-[#b53527] dark:text-[#e3bb73]">
+            See all choices <ArrowRight className="size-4" />
+          </Link>
+        </section>
+
+        <section className="rounded-[1.7rem] border border-[#eadcc9] bg-[#fffdf8] p-5 dark:border-white/10 dark:bg-[#10231c] sm:p-6">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#a67853] dark:text-[#d0ae76]">Browse by moment</p>
+          <h2 className="mb-5 mt-1 text-lg font-semibold text-[#33251d] dark:text-[#f1ede6]">What are you cooking next?</h2>
+          <div className="grid gap-3 sm:grid-cols-3">
+            {discoveryLinks.map(({ label, helper, href, icon: Icon }) => (
+              <Link
+                key={label}
+                href={href}
+                className="group rounded-2xl border border-[#efe1d0] bg-[#fcf7ee] p-4 transition hover:border-[#e2c499] hover:bg-[#faf0e2] dark:border-white/[0.08] dark:bg-[#172d25] dark:hover:border-[#345347]"
+              >
+                <Icon className="mb-4 size-5 text-[#bd382a] dark:text-[#dfb371]" />
+                <p className="font-semibold text-[#35271f] dark:text-[#f1ece5]">{label}</p>
+                <p className="mt-1 text-xs text-[#817063] dark:text-[#a9b9af]">{helper}</p>
+              </Link>
+            ))}
+          </div>
+        </section>
       </div>
-      {showFavorites && (
-        <div className="mt-4">
-          <h2 className="text-2xl font-bold mb-4">Favorite Recipes</h2>
-          <AnimatePresence>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {favorites.map((favorite) => (
-                <motion.div
-                  key={favorite.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -20 }}
-                  transition={{ duration: 0.3 }}
-                  className="col-span-1"
-                >
-                  <RecipeCard recipe={favorite} />
-                </motion.div>
-              ))}
-            </div>
-          </AnimatePresence>
+
+      <section className="mb-5 grid gap-3 sm:grid-cols-3">
+        {activityTabs.map((tab) => {
+          const Icon = tab.icon;
+          return (
+            <button
+              key={tab.key}
+              type="button"
+              onClick={() => setActiveActivity(tab.key)}
+              className={cn(
+                "flex cursor-pointer items-center justify-between rounded-2xl border px-4 py-4 text-left transition",
+                activeActivity === tab.key
+                  ? "border-[#c43a2a] bg-[#fff2ec] text-[#3a291f] dark:border-[#b94a39] dark:bg-[#1b342c] dark:text-[#f5f0e7]"
+                  : "border-[#eadcc9] bg-[#fffdf8] text-[#655448] hover:border-[#dec8ac] dark:border-white/10 dark:bg-[#10231c] dark:text-[#c2cec8]",
+              )}
+            >
+              <span className="flex items-center gap-3">
+                <Icon className="size-4 text-[#bd382a] dark:text-[#dab16e]" />
+                <span className="text-sm font-medium">{tab.label}</span>
+              </span>
+              {loading ? <Skeleton className="h-5 w-7 rounded-full" /> : <span className="text-sm font-semibold">{tab.count}</span>}
+            </button>
+          );
+        })}
+      </section>
+
+      <section className="mb-5 rounded-[1.8rem] border border-[#eadcc9] bg-[#fffdf8] p-4 dark:border-white/10 dark:bg-[#10231c] sm:p-6">
+        <div className="mb-5 flex items-center justify-between gap-4">
+          <div>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#a67853] dark:text-[#d0ae76]">Recipe activity</p>
+            <h2 className="mt-1 text-xl font-semibold text-[#33251d] dark:text-[#f1ede6]">
+              {activityTabs.find((tab) => tab.key === activeActivity)?.label}
+            </h2>
+          </div>
+          <Link href="/recipes" className="inline-flex items-center gap-1.5 text-sm font-semibold text-[#b53527] dark:text-[#e4bb74]">
+            Explore recipes <ArrowRight className="size-4" />
+          </Link>
         </div>
-      )}
-      {showReviews && (
-        <div className="mt-4">
-          <h2 className="text-2xl font-bold mb-4">Reviewed Recipes</h2>
-          <AnimatePresence>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {reviews.map((review) => (
-                <motion.div
-                  key={review.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -20 }}
-                  transition={{ duration: 0.3 }}
-                  className="col-span-1"
-                >
-                  <RecipeCard recipe={review} />
-                </motion.div>
-              ))}
-            </div>
-          </AnimatePresence>
+        {loading ? (
+          <div className="grid gap-4 md:grid-cols-3">
+            {[1, 2, 3].map((item) => <Skeleton key={item} className="h-[286px] rounded-[1.4rem]" />)}
+          </div>
+        ) : activeRecipes.length > 0 ? (
+          <div className="grid gap-4 md:grid-cols-3">
+            {activeRecipes.map((recipe) => <RecipeCard key={recipe.id} recipe={recipe} />)}
+          </div>
+        ) : (
+          <div className="flex flex-col items-center rounded-[1.4rem] bg-[#faf3e9] px-5 py-11 text-center dark:bg-[#152a23]">
+            <BookHeart className="mb-4 size-8 text-[#c14a37] dark:text-[#d7ae70]" />
+            <p className="font-semibold text-[#36271e] dark:text-[#f1ede7]">Nothing here yet</p>
+            <p className="mt-1 max-w-sm text-sm text-[#78685d] dark:text-[#a9b9af]">
+              Discover dishes and save the ones you would enjoy seeing again.
+            </p>
+          </div>
+        )}
+      </section>
+
+      <section className="rounded-[1.8rem] border border-[#eadcc9] bg-[#fffdf8] p-4 dark:border-white/10 dark:bg-[#10231c] sm:p-6">
+        <div className="mb-5 flex items-center justify-between gap-4">
+          <div>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#a67853] dark:text-[#d0ae76]">Discover</p>
+            <h2 className="mt-1 text-xl font-semibold text-[#33251d] dark:text-[#f1ede6]">Trending in the kitchen</h2>
+          </div>
+          <Link href="/recipes" className="inline-flex items-center gap-1.5 text-sm font-semibold text-[#b53527] dark:text-[#e4bb74]">
+            View all <ArrowRight className="size-4" />
+          </Link>
         </div>
-      )}
-      {showViewsRecipes && (
-        <div className="mt-4">
-          <h2 className="text-2xl font-bold mb-4">Reviewed Recipes</h2>
-          <AnimatePresence>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {recipeViews.map((recipeView) => (
-                <motion.div
-                  key={recipeView.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -20 }}
-                  transition={{ duration: 0.3 }}
-                  className="col-span-1"
-                >
-                  <RecipeCard recipe={recipeView} />
-                </motion.div>
-              ))}
-            </div>
-          </AnimatePresence>
-        </div>
-      )}
+        {loading ? (
+          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+            {[1, 2, 3, 4].map((item) => <Skeleton key={item} className="h-[280px] rounded-[1.4rem]" />)}
+          </div>
+        ) : popularRecipes.length > 0 ? (
+          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+            {popularRecipes.map((recipe) => <RecipeCard key={recipe.id} recipe={recipe} />)}
+          </div>
+        ) : (
+          <p className="rounded-2xl bg-[#faf3e9] p-5 text-sm text-[#78685d] dark:bg-[#152a23] dark:text-[#a9b9af]">New recipe inspiration will appear here.</p>
+        )}
+      </section>
     </div>
   );
 };
+
+const TasteRow = ({ label, value }: { label: string; value: string }) => (
+  <div className="flex items-center justify-between gap-3 rounded-xl bg-[#faf3e9] px-4 py-3 text-sm dark:bg-[#172d25]">
+    <span className="text-[#7a695d] dark:text-[#aab9af]">{label}</span>
+    <span className="max-w-[55%] truncate font-semibold text-[#392a20] dark:text-[#f0eae3]">{value}</span>
+  </div>
+);
 
 export default UserDashboard;

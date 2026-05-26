@@ -289,6 +289,100 @@ body {
       linear-gradient(180deg, #f9f3e9 0%, #fffaf2 28%, #f8eee3 62%, #fff8ec 100%);
   }
 
+  .recipe-page-body {
+    --foreground: #30251d;
+    --muted-foreground: #76685d;
+    --card: #fffdf8;
+    --border: #eadbc9;
+    color: var(--foreground);
+    background:
+      radial-gradient(circle at 8% 6%, rgb(213 151 54 / 14%), transparent 29rem),
+      radial-gradient(circle at 93% 16%, rgb(89 131 74 / 12%), transparent 31rem),
+      radial-gradient(circle at 18% 78%, rgb(205 142 49 / 8%), transparent 33rem),
+      linear-gradient(180deg, #faf4ea 0%, #fffaf3 45%, #f8efe4 100%);
+  }
+
+  .recipe-page-body::before {
+    position: absolute;
+    left: -14rem;
+    top: 38rem;
+    z-index: 0;
+    width: 35rem;
+    height: 35rem;
+    content: "";
+    pointer-events: none;
+    border: 1px solid rgb(204 148 56 / 10%);
+    border-radius: 999px;
+    box-shadow: 0 0 0 58px rgb(204 148 56 / 3%);
+  }
+
+  .recipe-page-body > * {
+    position: relative;
+    z-index: 1;
+  }
+
+  .recipe-favorite button > div {
+    display: flex;
+    width: 2.8rem;
+    height: 2.8rem;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    background: rgb(255 253 248 / 94%);
+    box-shadow: 0 14px 28px -18px rgb(22 16 10 / 62%);
+  }
+
+  .recipe-rich-content .ProseMirror,
+  .recipe-rich-content .rich-content {
+    color: inherit;
+  }
+
+  .recipe-rich-content p {
+    color: inherit;
+    line-height: 1.85;
+  }
+
+  .recipe-overview-copy .rich-content h2 {
+    margin-bottom: 0.8rem;
+    color: #30251d;
+    font-size: clamp(1.2rem, 2vw, 1.45rem);
+    font-weight: 600;
+    line-height: 1.35;
+  }
+
+  .recipe-overview-copy .rich-content h3 {
+    margin-top: 1.65rem;
+    margin-bottom: 0.65rem;
+    color: #382d24;
+    font-size: 1.05rem;
+    font-weight: 600;
+  }
+
+  .recipe-overview-copy .rich-content ul {
+    margin: 0.85rem 0 0;
+    padding-left: 1.25rem;
+    color: #5e5146;
+    list-style: disc;
+  }
+
+  .recipe-overview-copy .rich-content li {
+    margin-bottom: 0.45rem;
+    line-height: 1.7;
+  }
+
+  .recipe-overview-copy .rich-content li::marker {
+    color: #ad7836;
+  }
+
+  .recipe-overview-copy .rich-content blockquote {
+    margin: 1.45rem 0;
+    border-left: 3px solid #cea45d;
+    border-radius: 0 0.9rem 0.9rem 0;
+    background: #f4e8d4;
+    padding: 0.9rem 1rem;
+    color: #514133;
+  }
+
   .site-header {
     box-shadow: 0 10px 34px -29px rgb(66 42 24 / 45%);
   }
@@ -788,6 +882,42 @@ body {
     animation: culinary-night-shift 18s ease-in-out infinite alternate;
   }
 
+  .dark .recipe-page-body {
+    --foreground: #f1f4ee;
+    --muted-foreground: #a1b0aa;
+    --card: #10221d;
+    --border: rgb(143 180 159 / 15%);
+    color: var(--foreground);
+    background:
+      radial-gradient(circle at 80% 5%, rgb(43 115 87 / 20%), transparent 31rem),
+      radial-gradient(circle at 10% 23%, rgb(191 150 68 / 9%), transparent 29rem),
+      linear-gradient(138deg, #07130f 0%, #0b1915 44%, #10251f 100%);
+  }
+
+  .dark .recipe-page-body::before {
+    border-color: rgb(93 151 121 / 12%);
+    box-shadow: 0 0 0 58px rgb(55 120 94 / 5%);
+  }
+
+  .dark .recipe-page-body [class*="bg-white"] {
+    color: #ecf2eb;
+  }
+
+  .dark .recipe-overview-copy .rich-content h2,
+  .dark .recipe-overview-copy .rich-content h3 {
+    color: #edf2ec;
+  }
+
+  .dark .recipe-overview-copy .rich-content ul,
+  .dark .recipe-overview-copy .rich-content blockquote {
+    color: #b4c1ba;
+  }
+
+  .dark .recipe-overview-copy .rich-content blockquote {
+    border-left-color: #d6ae64;
+    background: #1b382f;
+  }
+
   .dark .home-page-body::before {
     border-color: rgb(106 170 137 / 13%);
     box-shadow:
@@ -967,6 +1097,16 @@ body {
       radial-gradient(circle at 74% 0%, rgb(49 121 91 / 20%), transparent 30rem),
       radial-gradient(circle at 12% 8%, rgb(195 151 67 / 8%), transparent 28rem),
       linear-gradient(135deg, #07130f, #102720) !important;
+    background-size: 125% 125% !important;
+    animation: culinary-night-shift 18s ease-in-out infinite alternate;
+  }
+
+  .dark .recipe-listing-surface {
+    color: #edf2ec;
+    background:
+      radial-gradient(circle at 80% 2%, rgb(48 120 89 / 22%), transparent 30rem),
+      radial-gradient(circle at 12% 5%, rgb(191 149 67 / 8%), transparent 28rem),
+      linear-gradient(136deg, #07130f 0%, #0b1915 40%, #102720 100%) !important;
     background-size: 125% 125% !important;
     animation: culinary-night-shift 18s ease-in-out infinite alternate;
   }
