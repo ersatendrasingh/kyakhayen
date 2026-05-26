@@ -1,11 +1,13 @@
 "use client";
 
 import axios from "axios";
-import { useState, useEffect } from "react";
+import { Star } from "lucide-react";
+import { useState } from "react";
+
 import { ReviewsRatingForm } from "@/components/reviews/reviews-rating-form";
 import ReviewsRatingList from "@/components/reviews/reviews-rating-list";
-import { ReviewWithRelations } from "@/types/review";
 import { useCurrentUser } from "@/hooks/use-current-user";
+import type { ReviewWithRelations } from "@/types/review";
 
 interface RecipeReviewsSectionProps {
   recipeId: string;
@@ -17,57 +19,66 @@ const RecipeReviewsSection = ({
   reviews,
 }: RecipeReviewsSectionProps) => {
   const [reviewsList, setReviewsList] = useState<ReviewWithRelations[]>(
-    reviews || []
+    reviews || [],
   );
-  const [showReviewForm, setShowReviewForm] = useState(true);
   const user = useCurrentUser();
+  const userHasReviewed = Boolean(
+    user && reviewsList.some((review) => review.userId === user.id),
+  );
+  const averageRating = reviewsList.length
+    ? reviewsList.reduce((sum, review) => sum + review.rating, 0) /
+      reviewsList.length
+    : 0;
 
-  useEffect(() => {
-    if (user) {
-      const userHasReviewed = reviewsList.some(
-        (review) => review.userId === user.id
-      );
-      setShowReviewForm(!userHasReviewed);
-    }
-  }, [user, reviewsList]);
-
-  const handleReviewAdded = async () => {
+  const refreshReviews = async () => {
     try {
-      const response = await axios.get(`/api/reviews/${recipeId}`);
-      setReviewsList(response.data);
-      setShowReviewForm(false);
-    } catch (error) {
-      console.error("Failed to fetch reviews:", error);
-    }
-  };
-
-  const handleReviewDeleted = async () => {
-    try {
-      const response = await axios.get(`/api/reviews/${recipeId}`);
-      setReviewsList(response.data);
-      const userHasReviewed = response.data.some(
-        (review: ReviewWithRelations) => review.userId === user?.id
+      const response = await axios.get<ReviewWithRelations[]>(
+        `/api/reviews/${recipeId}`,
       );
-      setShowReviewForm(!userHasReviewed);
+      setReviewsList(response.data);
     } catch (error) {
       console.error("Failed to fetch reviews:", error);
     }
   };
 
   return (
-    <div>
-      {showReviewForm && (
-        <ReviewsRatingForm
+    <section className="recipe-support-panel overflow-hidden rounded-[1.75rem] border border-[#eadcc8] bg-[#fffdf8] p-5 shadow-sm dark:border-white/10 dark:bg-[#10221d] sm:p-7">
+      <div className="mb-7 flex flex-col justify-between gap-5 sm:flex-row sm:items-end">
+        <div>
+          <p className="mb-2 text-xs font-semibold uppercase tracking-[0.24em] text-[#a47a3f] dark:text-[#d6ad63]">
+            Cooked by the community
+          </p>
+          <h2 className="text-2xl font-semibold text-[#2e251f] dark:text-[#f2f3ed]">
+            Ratings & reviews
+          </h2>
+          <p className="mt-2 text-sm leading-6 text-[#75665a] dark:text-[#aab8b1]">
+            Share how this recipe tasted after you tried it.
+          </p>
+        </div>
+        <div className="flex items-center gap-3 rounded-2xl border border-[#ecdec9] bg-[#fbf4e8] px-4 py-3 dark:border-white/8 dark:bg-[#162e27]">
+          <Star className="size-5 fill-[#d7a343] text-[#d7a343]" />
+          <span className="text-2xl font-semibold text-[#332820] dark:text-[#eef2ec]">
+            {reviewsList.length ? averageRating.toFixed(1) : "-"}
+          </span>
+          <span className="text-xs text-[#806e60] dark:text-[#a6b5ae]">
+            {reviewsList.length} {reviewsList.length === 1 ? "review" : "reviews"}
+          </span>
+        </div>
+      </div>
+      <div className="grid items-start gap-5 xl:grid-cols-[0.9fr_1.1fr]">
+        {!userHasReviewed && (
+          <ReviewsRatingForm
+            recipeId={recipeId}
+            onReviewAdded={refreshReviews}
+          />
+        )}
+        <ReviewsRatingList
           recipeId={recipeId}
-          onReviewAdded={handleReviewAdded}
+          reviews={reviewsList}
+          onReviewAdded={refreshReviews}
         />
-      )}
-      <ReviewsRatingList
-        recipeId={recipeId}
-        reviews={reviewsList}
-        onReviewAdded={handleReviewDeleted}
-      />
-    </div>
+      </div>
+    </section>
   );
 };
 

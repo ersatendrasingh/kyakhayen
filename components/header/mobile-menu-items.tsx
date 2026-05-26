@@ -18,6 +18,8 @@ type MobileMenuItemsProps = {
   cuisines: CuisineNavItem[];
   categories: CategoryNavItem[];
   recipeTypes: NavItem[];
+  cookingMethods: NavItem[];
+  dietTypes: NavItem[];
 };
 
 type DrawerLink = {
@@ -66,6 +68,8 @@ export const MobileMenuItems = ({
   cuisines,
   categories,
   recipeTypes,
+  cookingMethods,
+  dietTypes,
 }: MobileMenuItemsProps) => {
   return (
     <nav className="mobile-discovery-drawer flex h-full flex-col overflow-y-auto">
@@ -135,6 +139,22 @@ export const MobileMenuItems = ({
             href: `/recipes?k=${type.slug}&type=recipeType`,
           })),
         ]}
+      />
+      <DrawerGroup
+        label="Cooking Methods"
+        kicker="Choose technique"
+        links={cookingMethods.slice(0, 6).map((method) => ({
+          label: method.title,
+          href: `/recipes?k=${method.slug}&type=cookingMethod`,
+        }))}
+      />
+      <DrawerGroup
+        label="Wellness Goals"
+        kicker="Eat your way"
+        links={dietTypes.slice(0, 6).map((dietType) => ({
+          label: dietType.title,
+          href: `/recipes?k=${dietType.slug}&type=dietType`,
+        }))}
       />
 
       <SheetClose asChild>

@@ -3,7 +3,8 @@ import Link from "next/link";
 
 interface RecipeSidebarWidgetProps {
   title: string;
-  type: string | "category";
+  eyebrow: string;
+  type: "category" | "mealTime" | "recipeType";
   widgetItems?: {
     id: string;
     name?: string;
@@ -15,32 +16,47 @@ interface RecipeSidebarWidgetProps {
 
 const RecipeSidebarWidget = ({
   title,
+  eyebrow,
   type,
   widgetItems,
 }: RecipeSidebarWidgetProps) => {
   return (
-    <div className="bg-white p-4 right-0 border-2 rounded-md transition shadow-md mb-6">
-      <h3 className="text-lg text-websecondary font-semibold mb-2">{title}</h3>
-      <div className="grid grid-cols-3 md:grid-cols-4 gap-4">
-        {widgetItems &&
-          widgetItems.map((widget) => (
-            <Link
-              key={widget.id}
-              href={`/recipes?k=${widget.slug}&type=${type}`}
-              className="rounded-full p-2  text-gray-700 text-center hover:text-websecondary hover:border-300 transition duration-300 text-sm font-semibold"
-            >
-              <div className="flex flex-col items-center justify-center">
+    <div className="recipe-sidebar-panel rounded-[1.75rem] border border-[#eadcc8] bg-[#fffdf8] p-5 shadow-sm dark:border-white/10 dark:bg-[#10221d]">
+      <p className="text-[11px] font-semibold uppercase tracking-[0.23em] text-[#ab7d40] dark:text-[#d2aa62]">
+        {eyebrow}
+      </p>
+      <h3 className="mb-5 mt-2 text-lg font-semibold text-[#30261f] dark:text-[#eef2ec]">
+        {title}
+      </h3>
+      <div className="grid grid-cols-2 gap-3">
+        {(widgetItems || []).slice(0, 8).map((widget) => (
+          <Link
+            key={widget.id}
+            href={`/recipes?k=${widget.slug}&type=${type}`}
+            className="group flex flex-col overflow-hidden rounded-2xl border border-[#ece0cf] bg-[#fcf7ee] transition hover:-translate-y-0.5 hover:border-[#dcc192] dark:border-white/8 dark:bg-[#142d25] dark:hover:border-[#537062]"
+          >
+            {widget.imageUrl ? (
+              <div className="relative aspect-[1.35/1] overflow-hidden">
                 <Image
-                  src={widget.imageUrl || "/assets/images/default-category.jpg"}
-                  alt={widget.name || widget.title || "Category Image"}
-                  width={50}
-                  height={50}
-                  className="rounded-full"
+                  src={widget.imageUrl}
+                  alt={widget.name || widget.title || "Category"}
+                  fill
+                  sizes="150px"
+                  className="object-cover transition duration-500 group-hover:scale-105"
                 />
-                <span>{widget.name || widget.title}</span>
               </div>
-            </Link>
-          ))}
+            ) : (
+              <div className="flex aspect-[1.35/1] items-end bg-gradient-to-br from-[#e8d0a0] via-[#f6e9d2] to-[#d6e2d5] p-3 dark:from-[#213d33] dark:via-[#193329] dark:to-[#1b2923]">
+                <span className="text-[10px] font-semibold uppercase tracking-[0.17em] text-[#8b6636] dark:text-[#d1aa64]">
+                  Discover
+                </span>
+              </div>
+            )}
+            <span className="line-clamp-2 px-3 py-2.5 text-xs font-medium text-[#4d4035] dark:text-[#dbe4de]">
+              {widget.name || widget.title}
+            </span>
+          </Link>
+        ))}
       </div>
     </div>
   );

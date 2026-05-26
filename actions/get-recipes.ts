@@ -116,6 +116,26 @@ export const GetRecipes = async ({
       where.recipeRecipeType = { some: { recipeTypeId: recipeType.id } };
     }
 
+    if (searchType === "cookingMethod" && searchSlug) {
+      const cookingMethod = await db.cookingMethods.findFirst({
+        where: { isPublished: true, slug: searchSlug },
+        select: { id: true },
+      });
+
+      if (!cookingMethod) return [];
+      where.recipeCookingMethods = { some: { cookingMethodId: cookingMethod.id } };
+    }
+
+    if (searchType === "dietType" && searchSlug) {
+      const dietType = await db.dietTypes.findFirst({
+        where: { isPublished: true, slug: searchSlug },
+        select: { id: true },
+      });
+
+      if (!dietType) return [];
+      where.recipeDietType = { some: { dietTypeId: dietType.id } };
+    }
+
     if (searchType === "season" && searchSlug) {
       const season = await db.recipeSeasons.findFirst({
         where: { title: { equals: searchSlug } },

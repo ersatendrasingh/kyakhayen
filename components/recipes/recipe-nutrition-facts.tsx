@@ -1,118 +1,188 @@
 "use client";
 
-import RecipeFeatureItem from "./recipe-feature-item";
-import { RecipeIngredientType } from "@/types/recipe";
+import { Droplets, Flame, Leaf, ShieldCheck, Wheat } from "lucide-react";
+
 import { calculateRecipeNutrition } from "@/lib/calculate-recipe-nutrition";
+import type { RecipeIngredientType } from "@/types/recipe";
 
 interface RecipeNutritionFactsProps {
   recipeIngredients: RecipeIngredientType[];
+  quantity: number;
 }
 
 const RecipeNutritionFacts = ({
   recipeIngredients,
+  quantity,
 }: RecipeNutritionFactsProps) => {
   const hasVerifiedNutrition =
     recipeIngredients.length > 0 &&
     recipeIngredients.every((item) => item.ingredient.isPublished);
-  const { totals, missingConversions } = calculateRecipeNutrition(recipeIngredients);
+  const { totals, missingConversions } =
+    calculateRecipeNutrition(recipeIngredients);
 
   if (!hasVerifiedNutrition || missingConversions.length > 0) {
     return (
-      <p className="rounded-md border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
-        Nutrition calculation is under verification for this recipe. Ingredients and
-        preparation steps are available now.
-      </p>
+      <div className="flex gap-3 rounded-2xl border border-[#ead8bc] bg-[#fbf4e7] p-5 dark:border-white/10 dark:bg-[#162e27]">
+        <ShieldCheck className="mt-0.5 size-5 shrink-0 text-[#a67a40] dark:text-[#d4ad67]" />
+        <div>
+          <p className="font-semibold text-[#352a22] dark:text-[#eff2eb]">
+            Nutrition details are being prepared
+          </p>
+          <p className="mt-1 text-sm leading-6 text-[#75665a] dark:text-[#aab8b1]">
+            Ingredient quantities and cooking steps are ready. Verified nutrient
+            values will appear here once every measure is confirmed.
+          </p>
+        </div>
+      </div>
     );
   }
 
+  const scaled = (value: number) => value * quantity;
+  const macros = [
+    { label: "Energy", value: scaled(totals.calories).toFixed(0), unit: "kcal", icon: Flame },
+    { label: "Protein", value: scaled(totals.protein).toFixed(1), unit: "g", icon: Leaf },
+    { label: "Carbs", value: scaled(totals.carbohydrate).toFixed(1), unit: "g", icon: Wheat },
+    { label: "Total fat", value: scaled(totals.totalFat).toFixed(1), unit: "g", icon: Droplets },
+    { label: "Fiber", value: scaled(totals.dietaryFiber).toFixed(1), unit: "g", icon: Leaf },
+  ];
+  const macroBars = [
+    { label: "Protein", value: scaled(totals.protein), target: 50, unit: "g" },
+    { label: "Carbohydrates", value: scaled(totals.carbohydrate), target: 275, unit: "g" },
+    { label: "Total fat", value: scaled(totals.totalFat), target: 78, unit: "g" },
+    { label: "Dietary fiber", value: scaled(totals.dietaryFiber), target: 28, unit: "g" },
+  ];
+  const vitamins = [
+    ["Vitamin A", scaled(totals.vitaminA), "mcg"],
+    ["Vitamin C", scaled(totals.ascorbicAcids), "mg"],
+    ["Vitamin D", scaled(totals.vitaminD), "mcg"],
+    ["Vitamin E", scaled(totals.tocopherolEquivalent), "mg"],
+    ["Vitamin K", scaled(totals.vitaminK), "mcg"],
+    ["Vitamin B1", scaled(totals.thiamine), "mg"],
+    ["Vitamin B2", scaled(totals.riboflavin), "mg"],
+    ["Vitamin B6", scaled(totals.totalB6), "mg"],
+    ["Folate B9", scaled(totals.folates), "mcg"],
+  ] as const;
+  const minerals = [
+    ["Calcium", scaled(totals.calcium), "mg"],
+    ["Iron", scaled(totals.iron), "mg"],
+    ["Phosphorus", scaled(totals.phosphorus), "mg"],
+    ["Potassium", scaled(totals.potassium), "mg"],
+    ["Sodium", scaled(totals.sodium), "mg"],
+    ["Zinc", scaled(totals.zinc), "mg"],
+  ] as const;
+
   return (
-    <>
-      <div className="w-full items-start justify-start ">
-        <div>
-          <RecipeFeatureItem
-            title="Calories"
-            imageUrl="/assets/images/calories-icon.png"
-            values={totals.calories.toFixed(2)}
-            unit="kcal"
-          />
-
-          <RecipeFeatureItem
-            title="Carbohydrate"
-            imageUrl="/assets/images/carbohydrate-icon.png"
-            values={totals.carbohydrate.toFixed(2)}
-            unit="g"
-          />
-
-          <RecipeFeatureItem
-            title="Total Fat"
-            imageUrl="/assets/images/fat-icon.png"
-            values={totals.totalFat.toFixed(2)}
-            unit="g"
-          />
-
-          <RecipeFeatureItem
-            title="Dietary Fiber"
-            imageUrl="/assets/images/fiber-icon.png"
-            values={totals.dietaryFiber.toFixed(2)}
-            unit="g"
-          />
-
-          <RecipeFeatureItem
-            title="Protein"
-            imageUrl="/assets/images/protein-icon.png"
-            values={totals.protein.toFixed(2)}
-            unit="g"
-          />
+    <div>
+      <div className="grid gap-4 lg:grid-cols-[0.82fr_1.18fr]">
+        <div className="relative overflow-hidden rounded-[1.55rem] bg-[#17382d] p-6 text-[#fff9ed] dark:bg-[#18372f]">
+          <div className="absolute -right-9 -top-12 size-40 rounded-full border border-[#e8c779]/18" />
+          <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[#e2bf73]">
+            Estimated energy
+          </p>
+          <div className="mt-4 flex items-baseline gap-2">
+            <span className="text-5xl font-semibold leading-none">
+              {scaled(totals.calories).toFixed(0)}
+            </span>
+            <span className="text-sm text-white/70">kcal</span>
+          </div>
+          <p className="mt-4 max-w-[14rem] text-sm leading-6 text-white/68">
+            For {quantity} {quantity === 1 ? "serving" : "servings"}, based
+            on measured ingredients.
+          </p>
+          <div className="mt-6 flex gap-3">
+            <div className="rounded-xl bg-white/8 px-3 py-2">
+              <p className="text-[11px] text-white/60">Protein</p>
+              <p className="font-semibold">{scaled(totals.protein).toFixed(1)} g</p>
+            </div>
+            <div className="rounded-xl bg-white/8 px-3 py-2">
+              <p className="text-[11px] text-white/60">Fiber</p>
+              <p className="font-semibold">{scaled(totals.dietaryFiber).toFixed(1)} g</p>
+            </div>
+          </div>
+        </div>
+        <div className="rounded-[1.55rem] border border-[#eee1cf] bg-[#fcf7ed] p-5 dark:border-white/8 dark:bg-[#162e27]">
+          <p className="mb-4 text-sm font-semibold text-[#342920] dark:text-[#eef2ed]">
+            Macro breakdown
+          </p>
+          <div className="space-y-4">
+            {macroBars.map(({ label, value, target, unit }) => (
+              <div key={label}>
+                <div className="mb-1.5 flex items-center justify-between text-sm">
+                  <span className="text-[#75665a] dark:text-[#a7b5af]">{label}</span>
+                  <span className="font-semibold text-[#342920] dark:text-[#e9eee9]">
+                    {value.toFixed(1)} {unit}
+                  </span>
+                </div>
+                <div className="h-2 overflow-hidden rounded-full bg-[#ece2d2] dark:bg-white/8">
+                  <div
+                    className="h-full rounded-full bg-gradient-to-r from-[#c9943d] to-[#3e8861]"
+                    style={{ width: `${Math.min((value / target) * 100, 100)}%` }}
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+          <p className="mt-4 text-[11px] leading-5 text-[#887566] dark:text-[#95a59e]">
+            Bars provide a simple visual reference against general daily values.
+          </p>
         </div>
       </div>
-      <div className="flex flex-wrap items-center justify-evenly text-justify gap-5 mt-2">
-        <div className="text-sm bg-green-500/20 border-green-500 border p-2 rounded-md">
-          Vitamin A : {totals.vitaminA.toFixed(1)} μg
-        </div>
-        <div className="text-sm bg-green-500/20 border-green-500 border p-2 rounded-md">
-          Ascorbic acids (C) : {totals.ascorbicAcids.toFixed(1)} mg
-        </div>
-        <div className="text-sm bg-green-500/20 border-green-500 border p-2 rounded-md">
-          Vitamin D : {totals.vitaminD.toFixed(1)} μg
-        </div>
-        <div className="text-sm bg-green-500/20 border-green-500 border p-2 rounded-md">
-          Tocopherol equivalent (E) : {totals.tocopherolEquivalent.toFixed(1)} mg
-        </div>
-        <div className="text-sm bg-green-500/20 border-green-500 border p-2 rounded-md">
-          Vitamin K : {totals.vitaminK.toFixed(1)} μg
-        </div>
-        <div className="text-sm bg-green-500/20 border-green-500 border p-2 rounded-md">
-          Thiamine (B1) : {totals.thiamine.toFixed(1)} mg
-        </div>
-        <div className="text-sm bg-green-500/20 border-green-500 border p-2 rounded-md">
-          Riboflavin (B2) : {totals.riboflavin.toFixed(1)} mg
-        </div>
-        <div className="text-sm bg-green-500/20 border-green-500 border p-2 rounded-md">
-          Total B6 : {totals.totalB6.toFixed(1)} mg
-        </div>
-        <div className="text-sm bg-green-500/20 border-green-500 border p-2 rounded-md">
-          Folates (B9) : {totals.folates.toFixed(1)} µg
-        </div>
-        <div className="text-sm bg-green-500/20 border-green-500 border p-2 rounded-md">
-          Calcium (Ca) : {totals.calcium.toFixed(1)} mg
-        </div>
-        <div className="text-sm bg-green-500/20 border-green-500 border p-2 rounded-md">
-          Iron (Fe) : {totals.iron.toFixed(1)} mg
-        </div>
-        <div className="text-sm bg-green-500/20 border-green-500 border p-2 rounded-md">
-          Phosphorus (P) : {totals.phosphorus.toFixed(1)} mg
-        </div>
-        <div className="text-sm bg-green-500/20 border-green-500 border p-2 rounded-md">
-          Potassium (K) : {totals.potassium.toFixed(1)} mg
-        </div>
-        <div className="text-sm bg-green-500/20 border-green-500 border p-2 rounded-md">
-          Sodium (Na) : {totals.sodium.toFixed(1)} mg
-        </div>
-        <div className="text-sm bg-green-500/20 border-green-500 border p-2 rounded-md">
-          Zinc (Zn) : {totals.zinc.toFixed(1)} mg
-        </div>
+
+      <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-5">
+        {macros.map(({ label, value, unit, icon: Icon }) => (
+          <div
+            key={label}
+            className="rounded-2xl border border-[#eee1cf] bg-[#faf3e6] p-3 text-center dark:border-white/8 dark:bg-[#162e27]"
+          >
+            <Icon className="mx-auto mb-2 size-4 text-[#ac7838] dark:text-[#d5ae66]" />
+            <p className="text-lg font-semibold text-[#30251d] dark:text-[#eef2ed]">
+              {value}
+              <span className="ml-1 text-[11px] font-normal text-[#826f61] dark:text-[#a7b5ae]">
+                {unit}
+              </span>
+            </p>
+            <p className="mt-1 text-xs text-[#78685b] dark:text-[#a8b6b0]">
+              {label}
+            </p>
+          </div>
+        ))}
       </div>
-    </>
+
+      <div className="mt-6 grid gap-5 md:grid-cols-2">
+        {[
+          { label: "Vitamins", values: vitamins },
+          { label: "Minerals", values: minerals },
+        ].map((group) => (
+          <div
+            key={group.label}
+            className="rounded-2xl border border-[#eee1cf] p-4 dark:border-white/8"
+          >
+            <h3 className="mb-3 text-sm font-semibold text-[#322820] dark:text-[#eef2ed]">
+              {group.label}
+            </h3>
+            <div className="space-y-2.5">
+              {group.values.map(([label, value, unit]) => (
+                <div
+                  key={label}
+                  className="flex items-center justify-between text-sm"
+                >
+                  <span className="text-[#75665a] dark:text-[#a7b5af]">{label}</span>
+                  <span className="font-medium text-[#342920] dark:text-[#e9eee9]">
+                    {value.toFixed(1)} {unit}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <p className="mt-5 flex items-center gap-2 text-xs text-[#807061] dark:text-[#a6b4ae]">
+        <ShieldCheck className="size-4 text-[#478561]" />
+        Calculated from measured ingredients for {quantity}{" "}
+        {quantity === 1 ? "serving" : "servings"}.
+      </p>
+    </div>
   );
 };
 

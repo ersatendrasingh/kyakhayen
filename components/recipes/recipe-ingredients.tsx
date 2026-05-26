@@ -1,35 +1,20 @@
 "use client";
 
-import {
-  RecipeIngredients as RecipeIngredientsType,
-  IngredientsForm as IngredientsFormType,
-  Ingredients,
-  Units,
-} from "@prisma/client";
-import { Checkbox } from "@/components/ui/checkbox";
+import { ShoppingBasket } from "lucide-react";
+import Image from "next/image";
 import { useState } from "react";
+
+import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
+import type { RecipeIngredientType } from "@/types/recipe";
 
-// type RecipeIngredients = {
-//   id: string;
-//   name: string;
-//   quantity: number;
-//   position: number;
-//   recipeId: string;
-//   unitId: string;
-//   notes?: string | null;
-//   unit: Units;
-// };
-
-type RecipeIngredientType = RecipeIngredientsType & {
-  unit?: Units;
-  ingredientForm?: IngredientsFormType;
-  ingredient?: Ingredients;
-};
 interface RecipeIngredientsProps {
   recipeIngredients: RecipeIngredientType[];
   quantity: number;
 }
+
+const displayQuantity = (quantity: number) =>
+  Number.isInteger(quantity) ? String(quantity) : quantity.toFixed(2).replace(/0+$/, "").replace(/\.$/, "");
 
 const RecipeIngredients = ({
   recipeIngredients,
@@ -38,55 +23,80 @@ const RecipeIngredients = ({
   const [checkedIngredients, setCheckedIngredients] = useState<string[]>([]);
 
   const handleCheckboxChange = (ingredientId: string) => {
-    if (checkedIngredients.includes(ingredientId)) {
-      // If already checked, remove from the list
-      setCheckedIngredients(
-        checkedIngredients.filter((id) => id !== ingredientId)
-      );
-    } else {
-      // If not checked, add to the list
-      setCheckedIngredients([...checkedIngredients, ingredientId]);
-    }
+    setCheckedIngredients((current) =>
+      current.includes(ingredientId)
+        ? current.filter((id) => id !== ingredientId)
+        : [...current, ingredientId],
+    );
   };
 
+  if (recipeIngredients.length === 0) {
+    return (
+      <div className="rounded-2xl bg-[#fbf5ea] p-6 text-center text-sm text-[#75685c] dark:bg-[#162e27] dark:text-[#b1bdb7]">
+        Ingredient details will be added shortly.
+      </div>
+    );
+  }
+
   return (
-    <div className="w-full">
-      {recipeIngredients.length === 0 ? (
-        <p className="text-sm font-medium text-center text-websecondary-500">
-          No ingredients available for this recipe.
-        </p>
-      ) : (
-        <ul>
-          {recipeIngredients.map((ingredient) => (
-            <li key={ingredient.id} className="flex items-center py-2">
-              <Checkbox
-                id={ingredient.id}
-                className="mr-3 text-white border-websecondary-500 data-[state=checked]:bg-websecondary-500 data-[state=checked]:text-rose-foreground"
-                checked={checkedIngredients.includes(ingredient.id)}
-                onCheckedChange={() => handleCheckboxChange(ingredient.id)}
-              />
+    <div>
+      <p className="mb-5 flex items-center gap-2 text-sm text-[#76675b] dark:text-[#aab8b1]">
+        <ShoppingBasket className="size-4 text-[#b47e3c]" />
+        Tick items as you prepare your counter.
+      </p>
+      <ul className="grid gap-3 sm:grid-cols-2">
+        {recipeIngredients.map((ingredient) => {
+          const checked = checkedIngredients.includes(ingredient.id);
+          const unit = ingredient.unit?.shortName || ingredient.unit?.title || "";
+          const form = ingredient.ingredientForm?.name;
+          return (
+            <li key={ingredient.id}>
               <label
                 htmlFor={ingredient.id}
                 className={cn(
-                  "truncate",
-                  checkedIngredients.includes(ingredient.id)
-                    ? "text-websecondary-500 line-through opacity-75"
-                    : "text-foreground"
+                  "flex min-h-[66px] cursor-pointer items-center gap-3 rounded-2xl border px-4 py-3 transition",
+                  checked
+                    ? "border-[#cadcc7] bg-[#eef5e9] dark:border-[#33594b] dark:bg-[#17372d]"
+                    : "border-[#eee2d1] bg-[#fffdf9] hover:border-[#dfc696] hover:bg-[#fcf5e8] dark:border-white/8 dark:bg-[#132a23] dark:hover:border-[#4c6b5d]",
                 )}
               >
-                <span className="mr-1">
-                  {Number(ingredient.quantity) * quantity}
-                </span>
-                <span className="mr-1">{ingredient.unit?.title}</span>
-                <span className="mr-1">{ingredient.ingredient?.name}</span>
-                <span className="mr-1">
-                  ({ingredient.ingredientForm?.name})
+                <Checkbox
+                  id={ingredient.id}
+                  className="shrink-0 border-[#b9904f] data-[state=checked]:border-[#388552] data-[state=checked]:bg-[#388552] data-[state=checked]:text-white"
+                  checked={checked}
+                  onCheckedChange={() => handleCheckboxChange(ingredient.id)}
+                />
+                {ingredient.ingredient.imageUrl && (
+                  <div className="relative size-12 shrink-0 overflow-hidden rounded-xl border border-[#eadbc6] dark:border-white/10">
+                    <Image
+                      src={ingredient.ingredient.imageUrl}
+                      alt={ingredient.ingredient.name}
+                      fill
+                      sizes="48px"
+                      className="object-cover"
+                    />
+                  </div>
+                )}
+                <span className={cn("min-w-0", checked && "opacity-65")}>
+                  <span
+                    className={cn(
+                      "block text-sm font-semibold text-[#322820] dark:text-[#edf1eb]",
+                      checked && "line-through",
+                    )}
+                  >
+                    {ingredient.ingredient.name}
+                  </span>
+                  <span className="mt-0.5 block text-xs text-[#806d5e] dark:text-[#a5b4ad]">
+                    {displayQuantity(Number(ingredient.quantity) * quantity)}{" "}
+                    {unit}
+                    {form ? ` - ${form}` : ""}
+                  </span>
                 </span>
               </label>
             </li>
-          ))}
-        </ul>
-      )}
+          );
+        })}
+      </ul>
     </div>
   );
 };

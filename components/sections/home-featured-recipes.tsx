@@ -3,6 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 
 import Container from "@/components/container";
+import HomeRecipeCard from "@/components/recipes/home-recipe-card";
 import { FoodPreferenceMarker } from "@/components/recipes/food-preference-marker";
 import {
   RecipeSteam,
@@ -117,41 +118,8 @@ export default function HomeFeaturedRecipes({
 
           <div className="grid gap-4 sm:grid-cols-2">
             {supportingRecipes.slice(0, 4).map((recipe) => {
-              const minutes = totalMinutes(recipe);
-
               return (
-                <Link
-                  href={recipeHref(recipe)}
-                  key={recipe.id}
-                  className="home-recipe-card group overflow-hidden rounded-3xl border bg-card shadow-sm transition hover:-translate-y-1 hover:shadow-lg"
-                >
-                  <div className="relative aspect-[1.45] overflow-hidden">
-                    <Image
-                      src={recipe.imageUrl || "/meta-images/recipe-page.jpg"}
-                      alt={recipe.title}
-                      fill
-                      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 24vw"
-                      className="object-cover transition duration-500 group-hover:scale-105"
-                    />
-                    {shouldShowRecipeSteam(recipe.title) && (
-                      <RecipeSteam className="bottom-[14%] left-1/2" />
-                    )}
-                  </div>
-                  <div className="p-4">
-                    <div className="mb-2 flex items-center justify-between gap-2 text-xs text-muted-foreground">
-                      <FoodPreferenceMarker name={recipe.RecipeCategories?.name || "Veg"} />
-                      {minutes !== null && (
-                        <span className="flex items-center gap-1">
-                          <Clock3 className="size-3.5" />
-                          {minutes} min
-                        </span>
-                      )}
-                    </div>
-                    <h3 className="line-clamp-2 text-base font-semibold leading-6 transition group-hover:text-primary">
-                      {recipe.title}
-                    </h3>
-                  </div>
-                </Link>
+                <HomeRecipeCard key={recipe.id} recipe={recipe} />
               );
             })}
           </div>

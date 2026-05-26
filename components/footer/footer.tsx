@@ -55,8 +55,8 @@ const Footer = async () => {
   return (
     <footer className="site-footer border-t border-border bg-[#18130f] pt-12 text-white sm:pt-16">
       <Container>
-        <div className="grid gap-8 pb-11 text-center sm:grid-cols-2 md:text-left lg:grid-cols-[1.7fr_.72fr_.82fr_.82fr_1fr_1fr]">
-          <div className="footer-story-card relative min-h-[342px] overflow-hidden rounded-[1.8rem] text-left sm:col-span-2 lg:col-span-1">
+        <div className="grid grid-cols-2 gap-x-5 gap-y-8 pb-9 text-left sm:gap-x-8 sm:pb-11 lg:grid-cols-[1.7fr_.72fr_.82fr_.82fr_1fr_1fr]">
+          <div className="footer-story-card relative col-span-2 min-h-[292px] overflow-hidden rounded-[1.8rem] text-left sm:min-h-[342px] lg:col-span-1">
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_74%_24%,rgba(236,191,94,0.23),transparent_42%),linear-gradient(145deg,#304d37,#12100e_72%)]" />
             <Image
               src="/assets/images/smoothie.png"

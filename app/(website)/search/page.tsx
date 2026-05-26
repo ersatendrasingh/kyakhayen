@@ -4,10 +4,10 @@ import Link from "next/link";
 
 import {
   GetRecipeSearchSuggestions,
-  GetSearchedRecipes,
+  GetSearchedRecipePage,
 } from "@/actions/get-searched-recipes";
 import Container from "@/components/container";
-import RecipeCard from "@/components/recipes/recipe-card";
+import RecipeResultsFeed from "@/components/recipes/recipe-results-feed";
 
 const siteUrl =
   process.env.NEXT_PUBLIC_APP_URL || "https://www.kyakhayen.com";
@@ -42,8 +42,8 @@ const SearchPage = async ({
 }) => {
   const { k = "" } = await searchParams;
   const query = k.trim();
-  const [recipes, relatedSuggestions] = await Promise.all([
-    GetSearchedRecipes({ k: query }),
+  const [initialPage, relatedSuggestions] = await Promise.all([
+    GetSearchedRecipePage({ k: query }),
     GetRecipeSearchSuggestions({ k: query }),
   ]);
 
@@ -79,17 +79,17 @@ const SearchPage = async ({
       <Container>
         <div className="py-9 sm:py-12">
           {query ? (
-            <div className="mb-7 flex flex-col justify-between gap-4 md:flex-row md:items-end">
+            <div className="mb-8 flex flex-col justify-between gap-4 md:flex-row md:items-end">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[#a67636]">
                   Search results
                 </p>
                 <h2 className="mt-2 text-2xl font-semibold text-[#30251d] sm:text-3xl">
-                  {recipes.length > 0
-                    ? `${recipes.length} dishes for "${query}"`
-                    : `Nothing found for "${query}"`}
+                  {initialPage.recipes.length > 0
+                    ? `Fresh matches for "${query}"`
+                    : `Explore another flavour`}
                 </h2>
-                {recipes.length > 0 && (
+                {initialPage.recipes.length > 0 && (
                   <p className="mt-2 text-sm text-[#75675b]">
                     Ranked from related names, ingredients, cuisines and meal moments.
                   </p>
@@ -119,7 +119,7 @@ const SearchPage = async ({
             </div>
           )}
 
-          {query && recipes.length === 0 && (
+          {query && initialPage.recipes.length === 0 && (
             <div className="rounded-[1.7rem] border border-[#ead9c3] bg-white p-8 text-center shadow-sm">
               <p className="text-lg font-semibold text-[#30251d]">
                 Try a simpler food word
@@ -137,12 +137,14 @@ const SearchPage = async ({
             </div>
           )}
 
-          {recipes.length > 0 && (
-            <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-              {recipes.map((recipe) => (
-                <RecipeCard key={recipe.id} recipe={recipe} />
-              ))}
-            </div>
+          {initialPage.recipes.length > 0 && (
+            <RecipeResultsFeed
+              initialRecipes={initialPage.recipes}
+              initialCursor={initialPage.nextCursor}
+              searchQuery={query}
+              eyebrow="Plates for your craving"
+              heading="Choose your next meal"
+            />
           )}
         </div>
       </Container>

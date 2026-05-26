@@ -30,8 +30,8 @@ export async function DELETE(
       return NextResponse.json({ error: "Comment not found" }, { status: 404 });
     }
 
-    if (comment.userId !== user.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    if (comment.userId !== user.id && user.role !== "ADMIN") {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
     const deletedComment = await db.comment.delete({
       where: {
@@ -87,8 +87,8 @@ export async function PUT(
       return NextResponse.json({ error: "Comment not found" }, { status: 404 });
     }
 
-    if (comment.userId !== user.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    if (comment.userId !== user.id && user.role !== "ADMIN") {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
     const updatedComment = await db.comment.update({

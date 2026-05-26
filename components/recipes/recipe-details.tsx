@@ -1,44 +1,51 @@
 "use client";
 
+import {
+  BookOpen,
+  CookingPot,
+  ListChecks,
+  Minus,
+  Plus,
+  Salad,
+} from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
-import MenuItem from "@/components/recipes/menu-item";
-import RecipeOverview from "@/components/recipes/recipe-overview";
 import RecipeIngredients from "@/components/recipes/recipe-ingredients";
-import RecipeMethods from "./recipe-methods";
-import RecipeNutritionFacts from "./recipe-nutrition-facts";
+import RecipeMethods from "@/components/recipes/recipe-methods";
+import RecipeNutritionFacts from "@/components/recipes/recipe-nutrition-facts";
+import RecipeOverview from "@/components/recipes/recipe-overview";
 import type { RecipeWithCategory } from "@/types/recipe";
 
-const menuItems = ["Overview", "Ingredients", "Methods", "Nutrition Facts"] as const;
+type DetailTab = "overview" | "ingredients" | "methods" | "nutrition";
+
+const tabs = [
+  { key: "overview" as DetailTab, label: "Overview", icon: BookOpen },
+  { key: "ingredients" as DetailTab, label: "Ingredients", icon: Salad },
+  { key: "methods" as DetailTab, label: "Steps", icon: ListChecks },
+  { key: "nutrition" as DetailTab, label: "Nutrition", icon: CookingPot },
+];
 
 interface RecipeDetailsProps {
   recipe: RecipeWithCategory;
 }
 
 const RecipeDetails = ({ recipe }: RecipeDetailsProps) => {
-  const [activeTab, setActiveTab] = useState<(typeof menuItems)[number]>("Overview");
+  const [activeTab, setActiveTab] = useState<DetailTab>("overview");
   const [quantity, setQuantity] = useState(1);
-  const overviewRef = useRef<HTMLDivElement>(null);
-  const ingredientsRef = useRef<HTMLDivElement>(null);
-  const methodsRef = useRef<HTMLDivElement>(null);
-  const nutritionRef = useRef<HTMLDivElement>(null);
-  const sectionRefs = {
-    Overview: overviewRef,
-    Ingredients: ingredientsRef,
-    Methods: methodsRef,
-    "Nutrition Facts": nutritionRef,
-  };
+  const overviewRef = useRef<HTMLElement>(null);
+  const ingredientsRef = useRef<HTMLElement>(null);
+  const methodsRef = useRef<HTMLElement>(null);
+  const nutritionRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            setActiveTab(entry.target.id as (typeof menuItems)[number]);
-          }
-        });
+        const visible = entries.find((entry) => entry.isIntersecting);
+        if (visible) {
+          setActiveTab(visible.target.getAttribute("data-tab") as DetailTab);
+        }
       },
-      { threshold: 0.5 }
+      { threshold: 0.28, rootMargin: "-100px 0px -34% 0px" },
     );
     [overviewRef, ingredientsRef, methodsRef, nutritionRef].forEach((ref) => {
       if (ref.current) observer.observe(ref.current);
@@ -46,73 +53,135 @@ const RecipeDetails = ({ recipe }: RecipeDetailsProps) => {
     return () => observer.disconnect();
   }, []);
 
-  const handleTabClick = (tabName: (typeof menuItems)[number]) => {
-    setActiveTab(tabName);
-    document.getElementById(tabName)?.scrollIntoView({
+  const goToSection = (key: DetailTab) => {
+    setActiveTab(key);
+    const sectionRef =
+      key === "overview"
+        ? overviewRef
+        : key === "ingredients"
+          ? ingredientsRef
+          : key === "methods"
+            ? methodsRef
+            : nutritionRef;
+    sectionRef.current?.scrollIntoView({
       behavior: "smooth",
       block: "start",
     });
   };
 
   return (
-    <div className="relative">
-      <div className="sticky top-[70px] z-10 my-4 flex w-full overflow-x-auto rounded-xl border border-border/60 bg-card py-4 shadow-sm transition">
-        {menuItems.map((item) => (
-          <MenuItem
-            key={item}
-            tabTitle={item}
-            isActive={activeTab === item}
-            onClick={() => handleTabClick(item)}
-            className="flex-shrink-0"
-          />
+    <div className="relative space-y-5">
+      <div className="home-hide-scrollbar sticky top-[64px] z-30 flex gap-2 overflow-x-auto rounded-2xl border border-[#eadcc8] bg-[#fffdf8]/94 p-2 shadow-[0_14px_36px_-30px_rgba(45,30,20,0.48)] backdrop-blur-lg lg:top-[66px] dark:border-white/10 dark:bg-[#10221d]/95">
+        {tabs.map(({ key, label, icon: Icon }) => (
+          <button
+            key={key}
+            type="button"
+            onClick={() => goToSection(key)}
+            className={`flex min-w-max flex-1 cursor-pointer items-center justify-center gap-2 rounded-xl px-3 py-3 text-sm font-medium transition ${
+              activeTab === key
+                ? "bg-[#18382d] text-white shadow-sm dark:bg-[#d5ad61] dark:text-[#102019]"
+                : "text-[#655549] hover:bg-[#f6eddf] dark:text-[#b4c1b9] dark:hover:bg-white/5"
+            }`}
+          >
+            <Icon className="size-4" />
+            {label}
+          </button>
         ))}
       </div>
 
-      {menuItems.map((item) => (
-        <div
-          key={item}
-          id={item}
-          ref={sectionRefs[item]}
-          className={`tab-content my-4 w-full rounded-xl border border-border/60 bg-card p-4 text-card-foreground shadow-sm transition ${
-            activeTab === item ? "active" : ""
-          }`}
-        >
-          {item === "Overview" && (
-            <>
-              <h2 className="mb-4 border-b-2 border-border pb-2 text-xl font-bold text-foreground">
-                About {recipe.title}
-              </h2>
-              <RecipeOverview recipe={recipe} quantity={quantity} />
-            </>
-          )}
-          {item === "Ingredients" && (
-            <>
-              <div className="mb-4 flex items-center justify-between border-b-2 border-border">
-                <h2 className="pb-2 text-xl font-bold text-foreground">Ingredients</h2>
-                <div className="flex items-center pb-2">
-                  <span className="text-md px-2">Serving size:</span>
-                  <button onClick={() => setQuantity(Math.max(quantity - 1, 1))} className="px-2 py-1 rounded-md bg-red-500 text-white text-sm mr-2">-</button>
-                  <span className="text-lg px-2">{quantity}</span>
-                  <button onClick={() => setQuantity(quantity + 1)} className="px-2 py-1 bg-emerald-500 text-white rounded-md text-sm ml-2">+</button>
-                </div>
-              </div>
-              <RecipeIngredients recipeIngredients={recipe.recipeIngredients} quantity={quantity} />
-            </>
-          )}
-          {item === "Methods" && (
-            <>
-              <h2 className="mb-4 border-b-2 border-border pb-2 text-xl font-bold text-foreground">Methods</h2>
-              <RecipeMethods recipeMethods={recipe.recipeMethods} />
-            </>
-          )}
-          {item === "Nutrition Facts" && (
-            <>
-              <h2 className="mb-4 border-b-2 border-border pb-2 text-xl font-bold text-foreground">Nutrition Facts</h2>
-              <RecipeNutritionFacts recipeIngredients={recipe.recipeIngredients} />
-            </>
-          )}
+      <section
+        id="recipe-overview"
+        ref={overviewRef}
+        data-tab="overview"
+        className="recipe-detail-panel scroll-mt-36 rounded-[1.75rem] border border-[#eadcc8] bg-[#fffdf8] p-5 shadow-sm sm:p-7 dark:border-white/10 dark:bg-[#10221d]"
+      >
+        <p className="mb-2 text-xs font-semibold uppercase tracking-[0.24em] text-[#a47a3f] dark:text-[#d6ad63]">
+          From the kitchen
+        </p>
+        <h2 className="mb-6 text-2xl font-semibold text-[#2e251f] dark:text-[#f2f3ed]">
+          About {recipe.title}
+        </h2>
+        <RecipeOverview recipe={recipe} />
+      </section>
+
+      <section
+        id="recipe-ingredients"
+        ref={ingredientsRef}
+        data-tab="ingredients"
+        className="recipe-detail-panel scroll-mt-36 rounded-[1.75rem] border border-[#eadcc8] bg-[#fffdf8] p-5 shadow-sm sm:p-7 dark:border-white/10 dark:bg-[#10221d]"
+      >
+        <div className="mb-6 flex items-end justify-between gap-3">
+          <div>
+            <p className="mb-2 text-xs font-semibold uppercase tracking-[0.24em] text-[#a47a3f] dark:text-[#d6ad63]">
+              Prep your counter
+            </p>
+            <h2 className="text-2xl font-semibold text-[#2e251f] dark:text-[#f2f3ed]">
+              Ingredients
+            </h2>
+          </div>
+          <div className="flex shrink-0 items-center gap-1.5 rounded-full border border-[#e8d8c1] bg-[#fbf4e8] px-2 py-1.5 sm:gap-3 sm:px-3 sm:py-2 dark:border-white/10 dark:bg-[#162e27]">
+            <span className="pl-0.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-[#7e6957] sm:pl-1 sm:text-xs sm:tracking-[0.15em] dark:text-[#aab9b2]">
+              Serves
+            </span>
+            <button
+              type="button"
+              aria-label="Decrease serving size"
+              onClick={() => setQuantity(Math.max(quantity - 1, 1))}
+              className="flex size-7 cursor-pointer items-center justify-center rounded-full bg-white text-[#47372b] shadow-sm sm:size-8 dark:bg-white/8 dark:text-white"
+            >
+              <Minus className="size-3.5 sm:size-4" />
+            </button>
+            <span className="min-w-4 text-center text-sm font-semibold text-[#30251d] sm:min-w-5 sm:text-base dark:text-white">
+              {quantity}
+            </span>
+            <button
+              type="button"
+              aria-label="Increase serving size"
+              onClick={() => setQuantity(quantity + 1)}
+              className="flex size-7 cursor-pointer items-center justify-center rounded-full bg-[#b83324] text-white shadow-sm sm:size-8"
+            >
+              <Plus className="size-3.5 sm:size-4" />
+            </button>
+          </div>
         </div>
-      ))}
+        <RecipeIngredients
+          recipeIngredients={recipe.recipeIngredients}
+          quantity={quantity}
+        />
+      </section>
+
+      <section
+        id="recipe-methods"
+        ref={methodsRef}
+        data-tab="methods"
+        className="recipe-detail-panel scroll-mt-36 rounded-[1.75rem] border border-[#eadcc8] bg-[#fffdf8] p-5 shadow-sm sm:p-7 dark:border-white/10 dark:bg-[#10221d]"
+      >
+        <p className="mb-2 text-xs font-semibold uppercase tracking-[0.24em] text-[#a47a3f] dark:text-[#d6ad63]">
+          Cook with confidence
+        </p>
+        <h2 className="mb-6 text-2xl font-semibold text-[#2e251f] dark:text-[#f2f3ed]">
+          Method
+        </h2>
+        <RecipeMethods recipeMethods={recipe.recipeMethods} />
+      </section>
+
+      <section
+        id="recipe-nutrition"
+        ref={nutritionRef}
+        data-tab="nutrition"
+        className="recipe-detail-panel scroll-mt-36 rounded-[1.75rem] border border-[#eadcc8] bg-[#fffdf8] p-5 shadow-sm sm:p-7 dark:border-white/10 dark:bg-[#10221d]"
+      >
+        <p className="mb-2 text-xs font-semibold uppercase tracking-[0.24em] text-[#a47a3f] dark:text-[#d6ad63]">
+          Know your plate
+        </p>
+        <h2 className="mb-6 text-2xl font-semibold text-[#2e251f] dark:text-[#f2f3ed]">
+          Nutrition values
+        </h2>
+        <RecipeNutritionFacts
+          recipeIngredients={recipe.recipeIngredients}
+          quantity={quantity}
+        />
+      </section>
     </div>
   );
 };

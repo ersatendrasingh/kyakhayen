@@ -4,9 +4,20 @@ import type { Prisma } from "@prisma/client";
 
 import { db } from "@/lib/db";
 import type { RecipeWithCategory } from "@/types/recipe";
+import type { RecipeCardRecipe } from "@/components/recipes/recipe-card";
 
 type SearchInput = {
   k?: string;
+};
+
+type SearchPageInput = SearchInput & {
+  cursor?: string | null;
+  limit?: number;
+};
+
+export type SearchedRecipePage = {
+  recipes: RecipeCardRecipe[];
+  nextCursor: string | null;
 };
 
 export type RecipeSearchSuggestion = {
@@ -96,6 +107,25 @@ const searchRecipeInclude = {
   recipeSeasons: true,
 } satisfies Prisma.RecipesInclude;
 
+const searchCardInclude = {
+  RecipeCategories: {
+    select: { id: true, name: true },
+  },
+  recipeCookingTime: true,
+  recipeCuisine: {
+    include: { cuisine: true },
+    take: 1,
+  },
+  recipeNutrient: {
+    where: { nutrient: { isPublished: true } },
+    include: { nutrient: true },
+    take: 1,
+  },
+  Review: {
+    select: { rating: true },
+  },
+} satisfies Prisma.RecipesInclude;
+
 function fieldMatches(tokens: string[]): Prisma.RecipesWhereInput[] {
   return tokens.flatMap((term) => [
     { title: { contains: term } },
@@ -165,6 +195,41 @@ export const GetSearchedRecipes = async ({
   } catch (error) {
     console.error("[SEARCH_RECIPES]", error);
     return [];
+  }
+};
+
+export const GetSearchedRecipePage = async ({
+  k,
+  cursor,
+  limit = 12,
+}: SearchPageInput): Promise<SearchedRecipePage> => {
+  const query = k?.trim();
+  if (!query) return { recipes: [], nextCursor: null };
+
+  try {
+    const tokens = searchTokens(query);
+    const recipes = await db.recipes.findMany({
+      where: {
+        isPublished: true,
+        imageUrl: { not: null },
+        OR: fieldMatches(tokens),
+      },
+      include: searchCardInclude,
+      orderBy: [{ views: "desc" }, { id: "desc" }],
+      cursor: cursor ? { id: cursor } : undefined,
+      skip: cursor ? 1 : undefined,
+      take: limit + 1,
+    });
+    const hasMore = recipes.length > limit;
+    const visibleRecipes = hasMore ? recipes.slice(0, limit) : recipes;
+
+    return {
+      recipes: visibleRecipes,
+      nextCursor: hasMore ? visibleRecipes.at(-1)?.id || null : null,
+    };
+  } catch (error) {
+    console.error("[SEARCH_RECIPE_PAGE]", error);
+    return { recipes: [], nextCursor: null };
   }
 };
 

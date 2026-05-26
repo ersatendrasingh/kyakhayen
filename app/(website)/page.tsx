@@ -81,6 +81,11 @@ export default async function Home() {
             select: { cuisine: { select: { title: true } } },
             take: 1,
           },
+          recipeNutrient: {
+            where: { nutrient: { isPublished: true } },
+            select: { nutrient: { select: { title: true } } },
+            take: 1,
+          },
         },
         orderBy: { updatedAt: "desc" },
         take: 5,

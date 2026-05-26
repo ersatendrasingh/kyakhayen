@@ -1,174 +1,141 @@
 "use client";
 
-import axios from "axios";
+import { Clock3, Star } from "lucide-react";
 import Image from "next/image";
-import { useInView } from "react-intersection-observer";
 import Link from "next/link";
-import { useEffect, useState } from "react";
-import { AlarmClock } from "lucide-react";
 
 import FavoriteButton from "@/components/favorite-button";
-import { Card } from "@/components/ui/card";
-import { cn } from "@/lib/utils";
-import { formatTime } from "@/lib/formatTime";
-import { RecipeWithCategory } from "@/types/recipe";
-import { useCurrentUser } from "@/hooks/use-current-user";
-import { handleRecipeClick } from "@/lib/handle-recipe-click";
 import { FoodPreferenceMarker } from "@/components/recipes/food-preference-marker";
 import {
   RecipeSteam,
   shouldShowRecipeSteam,
 } from "@/components/recipes/recipe-steam";
+import { handleRecipeClick } from "@/lib/handle-recipe-click";
+import { cn } from "@/lib/utils";
+
+export type RecipeCardRecipe = {
+  id: string;
+  title: string;
+  slug: string;
+  metaSlug: string | null;
+  imageUrl: string | null;
+  RecipeCategories: { id?: string; name: string } | null;
+  recipeCookingTime?: {
+    prepTime: number;
+    cookTime: number;
+    restTime: number;
+  } | null;
+  recipeNutrient?: Array<{ nutrient: { title: string } }> | null;
+  recipeCuisine?: Array<{ cuisine: { title: string } }> | null;
+  Review?: Array<{ rating: number }> | null;
+};
 
 interface RecipeCardProps {
-  recipe: RecipeWithCategory;
+  recipe: RecipeCardRecipe;
+  layout?: "grid" | "list";
 }
 
-const RecipeCard = ({ recipe }: RecipeCardProps) => {
-  const user = useCurrentUser();
-  const userId = user?.id;
+const RecipeCard = ({ recipe, layout = "grid" }: RecipeCardProps) => {
+  const href = recipe.metaSlug
+    ? `/${recipe.slug}-${recipe.metaSlug}`
+    : `/${recipe.slug}`;
+  const totalMinutes = recipe.recipeCookingTime
+    ? recipe.recipeCookingTime.prepTime +
+      recipe.recipeCookingTime.cookTime +
+      recipe.recipeCookingTime.restTime
+    : null;
+  const nutritionBenefit = recipe.recipeNutrient?.[0]?.nutrient.title;
+  const cuisine = recipe.recipeCuisine?.[0]?.cuisine.title;
+  const reviews = recipe.Review || [];
+  const averageRating =
+    reviews.length > 0
+      ? reviews.reduce((total, review) => total + review.rating, 0) /
+        reviews.length
+      : null;
 
-  const [isFavorited, setIsFavorited] = useState<boolean>(false);
-  const { ref, inView } = useInView({
-    triggerOnce: true,
-    threshold: 0.5,
-  });
-  useEffect(() => {
-    const fetchUserFavoriteRecipeIds = async () => {
-      try {
-        const response = await axios.get<Array<{ recipe: { id: string } }>>(
-          `/api/user/${userId}/favorites`
-        );
-
-        const favoriteRecipeIds = response.data.map(
-          (favorite) => favorite.recipe.id
-        );
-        setIsFavorited(favoriteRecipeIds.includes(recipe.id));
-      } catch (error) {
-        console.error("Error fetching user favorites:", error);
-      }
-    };
-    if (userId) fetchUserFavoriteRecipeIds();
-  }, [recipe.id, userId]);
+  const rememberDiscovery = () => {
+    if (!recipe.RecipeCategories?.id) return;
+    handleRecipeClick(recipe.id, recipe.RecipeCategories.id);
+  };
 
   return (
-    <Card
-      ref={ref}
-      className={`group min-h-[348px] max-w-sm overflow-hidden border-border/60 bg-card text-card-foreground shadow-sm transition-transform hover:-translate-y-1 hover:shadow-lg ${
-        inView ? "animate-slide-up" : ""
-      }`}
-      onClick={() => handleRecipeClick(recipe.id, recipe.RecipeCategories!.id)}
+    <article
+      className={cn(
+        "home-recipe-card group relative overflow-hidden rounded-[1.55rem] border border-[#eadcc8] bg-[#fffdf8] shadow-[0_18px_38px_-32px_rgba(51,31,18,0.56)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_25px_52px_-32px_rgba(51,31,18,0.68)] dark:border-white/10 dark:bg-[#142e27]",
+        layout === "list" ? "flex min-h-[180px]" : "flex h-full flex-col",
+      )}
     >
-      <div className="h-full flex flex-col relative">
-        {/* FavoriteButton component */}
-        <div className="absolute top-0 right-3 z-10">
-          <FavoriteButton
-            recipeId={recipe.id}
-            initialIsFavorited={isFavorited}
-            classNames="cursor-pointer"
+      <div className="absolute right-3 top-3 z-20">
+        <FavoriteButton
+          recipeId={recipe.id}
+          variant="card"
+        />
+      </div>
+
+      <Link
+        href={href}
+        onClick={rememberDiscovery}
+        className={cn("block", layout === "list" && "w-[38%] shrink-0 sm:w-[280px]")}
+      >
+        <div
+          className={cn(
+            "relative overflow-hidden",
+            layout === "grid" ? "aspect-[1.42]" : "h-full min-h-[180px]",
+          )}
+        >
+          <Image
+            src={recipe.imageUrl || "/meta-images/recipe-page.jpg"}
+            alt={recipe.title || "Recipe"}
+            fill
+            sizes="(max-width: 640px) 100vw, (max-width: 1100px) 50vw, 25vw"
+            className="object-cover transition duration-700 group-hover:scale-105"
           />
-        </div>
-        <div className="relative">
-          <Link
-            href={
-              recipe.metaSlug
-                ? `/${recipe.slug}-${recipe.metaSlug}`
-                : `/${recipe.slug}`
-            }
-          >
-            <Image
-              className="w-full"
-              src={recipe.imageUrl || "/meta-images/recipe-page.jpg"}
-              alt={recipe.title || "Recipe Image"}
-              width={300}
-              height={200}
-            />
-            {shouldShowRecipeSteam(recipe.title) && (
-              <RecipeSteam className="bottom-[14%] left-1/2" />
-            )}
-          </Link>
-          {recipe.RecipeCategories && (
-            <FoodPreferenceMarker
-              name={recipe.RecipeCategories.name}
-              className="absolute left-3 top-3 shadow-sm"
-            />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#11130f]/38 via-transparent to-transparent" />
+          {shouldShowRecipeSteam(recipe.title) && (
+            <RecipeSteam className="bottom-[14%] left-1/2" />
+          )}
+          {nutritionBenefit && (
+            <span className="absolute left-3 top-3 rounded-full bg-[#fffdf8]/95 px-3 py-1.5 text-[11px] font-semibold text-[#25483b] shadow-sm dark:bg-[#122921]/95 dark:text-[#e9f0ea]">
+              {nutritionBenefit}
+            </span>
           )}
         </div>
-        <div className="px-3 py-4">
-          <div className="flex items-start mb-2">
-            {recipe.recipeDifficultyId && (
-              <div
-                className={cn(
-                  "bg-blue-500 text-white px-2 py-1 rounded-md text-xs font-semibold mr-2",
-                  recipe.recipeDifficulty?.title === "Beginner" &&
-                    "bg-blue-500",
-                  recipe.recipeDifficulty?.title === "Intermediate" &&
-                    "bg-green-500",
-                  recipe.recipeDifficulty?.title === "Advanced" && "bg-red-500"
-                )}
-              >
-                {recipe.recipeDifficulty && recipe.recipeDifficulty.title}
-              </div>
-            )}
-            {recipe.recipeDietType &&
-              recipe.recipeDietType.map((dietType) => (
-                <div
-                  key={dietType.id}
-                  className={cn(
-                    "bg-webprimary text-white px-2 py-1 rounded-md text-xs font-semibold",
-                    dietType.dietType.title === "Keto" && "bg-blue-500",
-                    dietType.dietType.title === "Gluten Free" &&
-                      "bg-yellow-500",
-                    dietType.dietType.title === "Vegan" && "bg-pink-500",
-                    dietType.dietType.title === "Mediterranean" &&
-                      "bg-purple-500",
-                    dietType.dietType.title === "Lactose Free" &&
-                      "bg-orange-500"
-                  )}
-                >
-                  {dietType.dietType.title}
-                </div>
-              ))}
-          </div>
-          <Link
-            href={
-              recipe.metaSlug
-                ? `/${recipe.slug}-${recipe.metaSlug}`
-                : `/${recipe.slug}`
-            }
-          >
-            <div className="font-bold text-xl mb-2">{recipe.title}</div>
-          </Link>
-          <p className="mb-2 text-base text-muted-foreground">
-            {recipe.recipeNutrient && recipe.recipeNutrient.length > 0 && (
-              <>
-                {recipe.recipeNutrient.map((nutrient, index) => (
-                  <span
-                    key={nutrient.nutrient.id}
-                    className="text-sm text-foreground"
-                  >
-                    {nutrient.nutrient.title}
-                    {index < recipe.recipeNutrient!.length - 1 && ", "}
-                  </span>
-                ))}
-              </>
-            )}
-          </p>
-          <div className="flex items-center">
-            {recipe.recipeCookingTime && (
-              <>
-                <AlarmClock className="w-6 h-6 pr-2 text-websecondary" />
-                {formatTime(
-                  recipe.recipeCookingTime.prepTime +
-                    recipe.recipeCookingTime.cookTime +
-                    recipe.recipeCookingTime.restTime
-                )}
-              </>
-            )}
-          </div>
+      </Link>
+
+      <div className={cn("flex flex-1 flex-col p-4", layout === "list" && "justify-center pr-14 sm:p-6 sm:pr-16")}>
+        <div className="mb-3 flex items-center justify-between gap-3 text-xs text-[#847265] dark:text-[#a7b6ae]">
+          <FoodPreferenceMarker name={recipe.RecipeCategories?.name || "Veg"} />
+          {totalMinutes !== null && (
+            <span className="flex items-center gap-1.5 whitespace-nowrap">
+              <Clock3 className="size-3.5" />
+              {totalMinutes} min
+            </span>
+          )}
+        </div>
+
+        <Link href={href} onClick={rememberDiscovery} className="block">
+          <h3 className="line-clamp-2 text-[1.06rem] font-semibold leading-7 text-[#30251d] transition group-hover:text-[#b53325] dark:text-[#edf2ec] dark:group-hover:text-[#e0b66a]">
+            {recipe.title}
+          </h3>
+        </Link>
+
+        <div className="mt-auto flex items-center justify-between gap-3 pt-4 text-xs">
+          {cuisine ? (
+            <span className="line-clamp-1 rounded-full bg-[#f4eadb] px-3 py-1.5 font-medium text-[#72583d] dark:bg-[#19352c] dark:text-[#d9c090]">
+              Cuisine · {cuisine}
+            </span>
+          ) : (
+            <span />
+          )}
+          {averageRating !== null && (
+            <span className="inline-flex items-center gap-1 text-[#806c5c] dark:text-[#c2d0c8]">
+              <Star className="size-3.5 fill-[#d6a452] text-[#d6a452]" />
+              {averageRating.toFixed(1)}
+            </span>
+          )}
         </div>
       </div>
-    </Card>
+    </article>
   );
 };
 
