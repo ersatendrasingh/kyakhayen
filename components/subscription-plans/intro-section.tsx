@@ -1,151 +1,108 @@
-import React from "react";
-import { Button } from "../ui/button";
 import Link from "next/link";
-import Image from "next/image";
-import Container from "../container";
+import { ArrowRight, Check, ShieldCheck, Sparkles } from "lucide-react";
 
-const IntroSection = () => {
+import Container from "@/components/container";
+import DevicePreview from "@/components/meal-plan/device-preview";
+
+const launchBenefits = [
+  "Create your first seven-day plan without payment",
+  "Choices use taste, cuisine, exclusions and cooking comfort only",
+  "Review the plan before deciding whether membership is useful",
+];
+const memberBenefits = [
+  "Set or update your everyday food choices at any time",
+  "Generate meal plans from cuisine and cooking preferences",
+  "New purchases extend your existing access period",
+];
+
+type IntroSectionProps = {
+  activePlanName?: string;
+  hasPaidAccess: boolean;
+  isPersonalised: boolean;
+};
+
+export default function IntroSection({
+  activePlanName,
+  hasPaidAccess,
+  isPersonalised,
+}: IntroSectionProps) {
+  const planDestination = isPersonalised ? "/meal-plan" : "/meal-plan/create";
+  const benefits = hasPaidAccess ? memberBenefits : launchBenefits;
+
   return (
-    <section className="pt-16">
+    <section className="relative overflow-hidden border-b border-[#ecdfcc] dark:border-white/8">
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_16%_10%,rgba(206,155,76,0.18),transparent_30%),radial-gradient(circle_at_86%_10%,rgba(187,54,41,0.10),transparent_28%)] dark:bg-[radial-gradient(circle_at_16%_10%,rgba(206,155,76,0.13),transparent_30%),radial-gradient(circle_at_86%_10%,rgba(187,54,41,0.14),transparent_28%)]" />
       <Container>
-        <div className="flex flex-col items-center justify-center ">
-          <h2 className="text-4xl text-center text-websecondary mb-8">
-            Personalized Meal Planning, Free During Launch
-          </h2>
-          <p className="text-lg text-center leading-loose tracking-wide mb-4">
-            Plan everyday cooking with personalized meal ideas based on your
-            tastes, favourite cuisines, ingredient exclusions and cooking
-            skills. Your seven-day personalized plan is included during our
-            launch, while advanced membership tools are being prepared.
-          </p>
-          <Link href="/meal-plan/create">
-            <Button
-              variant="secondary"
-              size="lg"
-              className="bg-[#1e1a16] hover:bg-webprimary text-white rounded-full"
-            >
-              Create My Free Plan
-            </Button>
-          </Link>
-          <Image
-            src="/assets/images/meal-plan.webp"
-            alt="personalized meal plans"
-            width={500}
-            height={300}
-            className="my-6 rounded"
-          />
-          <div className="w-full flex flex-col text-center md:text-left items-center justify-center py-10">
-            <h3 className="text-4xl text-websecondary mb-8">What We Offer</h3>
-            <div className="flex flex-col md:flex-row">
-              <div className="md:w-1/2 md:pr-4">
-                <h4 className="text-xl font-medium text-websecondary mb-2">
-                  Personalized Meal Plans
-                </h4>
-                <p className="text-lg text-justify tracking-wide leading-loose mb-4">
-                  We create custom meal plans specifically based on your dietary
-                  preferences, cuisines and ingredients you avoid. Our plans
-                  keep recipe discovery practical, varied and delicious.
-                </p>
-
-                <h4 className="text-xl font-medium text-websecondary mb-2">
-                  Easy Planning Tools
-                </h4>
-                <p className="text-lg tracking-wide text-justify leading-loose mb-4">
-                  Save favourite ideas and organize meals through the week
-                  with simple planning tools.
-                </p>
-                <h4 className="text-xl font-medium text-websecondary mb-2">
-                  Community Support
-                </h4>
-                <p className="text-lg text-justify tracking-wide leading-loose mb-4">
-                  Become a member of our lively foodie community and share your
-                  culinary explorations with like-minded peoples who share your
-                  enthusiasm for cooking.
-                </p>
-              </div>
-              <div className="md:w-1/2 md:pl-4">
-                <h4 className="text-xl font-medium text-websecondary mb-2">
-                  Delicious Recipes Library
-                </h4>
-                <p className="text-lg text-justify tracking-wide leading-loose mb-4">
-                  Explore our growing library of delicious recipes
-                  that are easy to make. You can filter recipes by your dietary
-                  needs, such as veg, non-veg, pescetarian, egg free, vegan,
-                  gluten-free or high-protein meals.
-                </p>
-                <h4 className="text-xl font-medium text-websecondary mb-2">
-                  Mobile App Integration
-                </h4>
-                <p className="text-lg text-justify tracking-wide leading-loose mb-4">
-                  Access full functionality on the go with our easy-to-use PWA
-                  Kya Khayen mobile app. Here you can get reminders, track your
-                  saved ideas, and stay connected to your plan on the go.
-                </p>
-
-                <h4 className="text-xl font-medium text-websecondary mb-2">
-                  AI-Driven Delicious Recipes Recommendations
-                </h4>
-                <p className="text-lg text-justify tracking-wide leading-loose mb-4">
-                  Our platform uses your recipe preferences to suggest ideas
-                  you may enjoy and help answer what to cook next.
-                </p>
-              </div>
-            </div>
-          </div>
-          <div className="w-full flex flex-col items-center justify-center text-center md:text-left py-10">
-            <h5 className="text-4xl text-websecondary mb-8">
-              How to Get Started
-            </h5>
-            <div className="flex flex-col md:flex-row">
-              <div className="md:w-1/2 md:pr-4">
-                <h6 className="text-xl font-medium text-websecondary mb-2">
-                  Step 1: Choose Your Preferences
-                </h6>
-                <p className="text-lg text-justify tracking-wide leading-loose mb-4">
-                  Share your food style, cuisines, ingredient exclusions and
-                  cooking comfort. We never ask medical questions.
-                </p>
-                <h6 className="text-xl font-medium text-websecondary mb-2">
-                  Step 2: Sign In to Save Your Plan
-                </h6>
-                <p className="text-lg text-justify tracking-wide leading-loose mb-4">
-                  Create an account once your choices are ready so your weekly
-                  table can be saved and refreshed.
-                </p>
-              </div>
-              <div className="md:w-1/2 md:pl-4">
-                <h6 className="text-xl font-medium text-websecondary mb-2">
-                  Step 3: Receive Your Free 7-Day Plan
-                </h6>
-                <p className="text-lg text-justify tracking-wide leading-loose mb-4">
-                  We prepare practical meals around the preferences you chose,
-                  with exclusions respected in recipe selection.
-                </p>
-                <h6 className="text-xl font-medium text-websecondary mb-2">
-                  Step 4: Future Membership Features
-                </h6>
-                <p className="text-lg text-justify tracking-wide leading-loose mb-4">
-                  Subscription options will later unlock additional planning
-                  tools. The personalized weekly plan remains free at launch.
-                </p>
-              </div>
-            </div>
-            <div className="flex justify-center">
-              <Link href="/meal-plan/create">
-                <Button
-                  variant="secondary"
-                  size="lg"
-                  className="bg-[#1e1a16] hover:bg-webprimary text-white rounded-full"
-                >
-                  Create My Free Plan
-                </Button>
+        <div className="relative grid gap-9 py-10 lg:grid-cols-[1.02fr_0.88fr] lg:items-center lg:py-16">
+          <div>
+            <span className="inline-flex items-center gap-2 rounded-full bg-[#f5e7cc] px-4 py-2 text-xs font-semibold text-[#8b5e23] dark:bg-[#17362d] dark:text-[#e1b366]">
+              <Sparkles className="size-3.5" />
+              {hasPaidAccess
+                ? `${activePlanName} membership active`
+                : "7-day launch access"}
+            </span>
+            <h1 className="mt-6 max-w-3xl text-4xl font-semibold leading-[1.12] text-[#30251e] sm:text-5xl lg:text-[3.55rem] dark:text-[#f0f3ed]">
+              {hasPaidAccess
+                ? "Your membership is active. Keep planning without losing days."
+                : "Start your table. Upgrade when planning becomes a habit."}
+            </h1>
+            <p className="mt-5 max-w-2xl text-base leading-8 text-[#736357] dark:text-[#aab8b0]">
+              {hasPaidAccess
+                ? "Set your everyday food preferences and use your paid access for continued meal planning. Future purchases extend the access you already have."
+                : "Build an everyday meal plan from your food preferences. Membership provides continued planning tools, not medical advice."}
+            </p>
+            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+              <Link
+                href={planDestination}
+                className="inline-flex items-center justify-center gap-2 rounded-full bg-[#b83c2e] px-6 py-3.5 text-sm font-semibold text-white transition hover:bg-[#9c3125]"
+              >
+                {hasPaidAccess
+                  ? isPersonalised
+                    ? "Open my meal plan"
+                    : "Set up my meal plan"
+                  : "Create my 7-day plan"}
+                <ArrowRight className="size-4" />
               </Link>
+              {!hasPaidAccess && (
+                <a
+                  href="#membership-options"
+                  className="inline-flex items-center justify-center rounded-full border border-[#dfccb0] px-6 py-3.5 text-sm font-semibold text-[#46372d] transition hover:bg-[#f6ebdb] dark:border-white/12 dark:text-[#ebf0ea] dark:hover:bg-white/[0.06]"
+                >
+                  Compare membership
+                </a>
+              )}
+            </div>
+            <div className="mt-9 space-y-3">
+              {benefits.map((benefit) => (
+                <p
+                  key={benefit}
+                  className="flex items-start gap-3 text-sm text-[#645448] dark:text-[#abb9b1]"
+                >
+                  <Check className="mt-0.5 size-4 shrink-0 text-[#b83c2e] dark:text-[#dfb36c]" />
+                  {benefit}
+                </p>
+              ))}
             </div>
           </div>
+          <div className="relative rounded-[2rem] border border-[#e8d9c3] bg-[radial-gradient(circle_at_55%_20%,#fff3db,transparent_48%),#fffaf2] p-5 shadow-[0_24px_70px_rgba(72,49,28,0.09)] dark:border-white/8 dark:bg-[radial-gradient(circle_at_52%_18%,rgba(213,164,83,.18),transparent_45%),#10241e] sm:p-7">
+            <DevicePreview />
+            <p className="mt-5 text-center text-sm font-medium text-[#6f5d50] dark:text-[#adbbb3]">
+              {hasPaidAccess
+                ? "Your planner, ready on desktop and mobile."
+                : "One week, designed for desktop and mobile."}
+            </p>
+          </div>
+        </div>
+        <div className="relative mb-12 flex items-start gap-4 rounded-[1.4rem] border border-[#e9d9bf] bg-[#fffaf2] p-5 dark:border-white/8 dark:bg-[#10241e]">
+          <ShieldCheck className="mt-0.5 size-5 shrink-0 text-[#b83c2e] dark:text-[#dfb36c]" />
+          <p className="text-sm leading-7 text-[#6c5c50] dark:text-[#adbbb3]">
+            Kya Khayen provides recipe and meal-planning information for
+            everyday use. Ingredient exclusions are your selected preferences,
+            not an allergy-safety guarantee. Always verify ingredients where
+            safety matters.
+          </p>
         </div>
       </Container>
     </section>
   );
-};
-
-export default IntroSection;
+}

@@ -34,6 +34,9 @@ export const getUserById = async (id: string) => {
               gte: new Date(), // Only include plans where the end date is greater than or equal to the current date
             },
           },
+          orderBy: {
+            endDate: "desc",
+          },
           include: {
             plan: true,
           },

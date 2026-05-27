@@ -1,25 +1,30 @@
-import { DataTable } from "./_components/data-table";
-import { columns } from "./_components/columns";
+import { ArticleCategoriesDashboard } from "@/components/admin/article-categories/article-categories-dashboard";
 import { db } from "@/lib/db";
 
-import CategoryForm from "./_components/category-form";
 const ArticleCategoriesPage = async () => {
-  const categories = await db.category.findMany({
-    orderBy: {
-      title: "asc",
-    },
-  });
+  const [categories, totalArticles, uncategorizedArticles] = await Promise.all([
+    db.category.findMany({
+      orderBy: [{ position: "asc" }, { title: "asc" }],
+      include: { _count: { select: { PostCategory: true } } },
+    }),
+    db.post.count(),
+    db.post.count({ where: { PostCategory: { none: {} } } }),
+  ]);
+
   return (
-    <div className="p-6">
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <CategoryForm />
-        </div>
-        <div>
-          <DataTable columns={columns} data={categories} />
-        </div>
-      </div>
-    </div>
+    <ArticleCategoriesDashboard
+      categories={categories.map((category) => ({
+        id: category.id,
+        title: category.title,
+        slug: category.slug,
+        imageUrl: category.imageUrl,
+        position: category.position,
+        isPublished: category.isPublished,
+        articleCount: category._count.PostCategory,
+      }))}
+      totalArticles={totalArticles}
+      uncategorizedArticles={uncategorizedArticles}
+    />
   );
 };
 

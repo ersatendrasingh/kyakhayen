@@ -1,10 +1,11 @@
 "use client";
 
-import { ArrowRight, ChefHat, Flame, PlayCircle, Sparkles } from "lucide-react";
+import { ArrowRight, ChefHat, Flame, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
 import Container from "@/components/container";
+import HomeMealPlanAction from "@/components/sections/home-meal-plan-action";
 
 type PremiumHomeHeroProps = {
   catalogRecipeCount: number;
@@ -155,13 +156,7 @@ export default function PremiumHomeHero({
                   Explore recipes
                   <ArrowRight className="size-4" />
                 </Link>
-                <Link
-                  href="/meal-plan"
-                  className="home-hero-secondary-action inline-flex items-center gap-2 text-sm font-medium text-white transition hover:text-[#f8d18a]"
-                >
-                  <PlayCircle className="size-6" />
-                  Build my meal plan
-                </Link>
+                <HomeMealPlanAction variant="hero" />
               </div>
 
               {videoUrls.length > 1 && (

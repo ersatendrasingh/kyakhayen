@@ -1,9 +1,9 @@
 "use client";
 
-import Image from "next/image";
 import { Button } from "../ui/button";
 import Container from "../container";
 import Link from "next/link";
+import DevicePreview from "@/components/meal-plan/device-preview";
 
 export const IntroSection = () => {
   return (
@@ -24,7 +24,7 @@ export const IntroSection = () => {
                 className="px-6 py-3 bg-webprimary text-white font-medium rounded-lg shadow hover:bg-white hover:text-webprimary transition"
                 asChild
               >
-                <Link href="/meal-plan">Explore Meal Plans</Link>
+                <Link href="/meal-plan/create">Create Meal Plan</Link>
               </Button>
 
               <Button className="px-6 py-3 border-2 border-white text-white font-medium bg-transparent rounded-lg hover:bg-webprimary hover:text-white transition">
@@ -35,12 +35,7 @@ export const IntroSection = () => {
             </div>
           </div>
           <div className="flex-1 flex justify-center items-center">
-            <Image
-              src="/assets/images/macbook-mealplan.webp"
-              alt="Healthy lifestyle illustration"
-              width={500}
-              height={500}
-            />
+            <DevicePreview />
           </div>
         </div>
       </Container>

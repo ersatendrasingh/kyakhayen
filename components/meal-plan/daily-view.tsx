@@ -126,7 +126,7 @@ const DailyView = ({ date, onSelectDate }: DailyViewProps) => {
       <div className="overflow-hidden rounded-2xl border border-[#eadcc8] bg-white shadow-sm">
         <div className="border-b border-[#f0e5d6] bg-[#fff8ef] px-5 py-4 sm:px-7">
           <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#9a6b42]">
-            Outside your weekly plan
+            Outside your plan range
           </p>
         </div>
         <div className="flex flex-col gap-5 px-5 py-6 sm:flex-row sm:items-center sm:justify-between sm:px-7 sm:py-7">
@@ -161,7 +161,7 @@ const DailyView = ({ date, onSelectDate }: DailyViewProps) => {
       <div className="overflow-hidden rounded-2xl border border-[#eadcc8] bg-white shadow-sm">
         <div className="border-b border-[#f0e5d6] bg-[#fff8ef] px-5 py-4 sm:px-7">
           <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#9a6b42]">
-            Outside your weekly plan
+            Outside your plan range
           </p>
         </div>
         <div className="flex flex-col gap-5 px-5 py-6 sm:flex-row sm:items-center sm:justify-between sm:px-7 sm:py-7">
@@ -175,7 +175,7 @@ const DailyView = ({ date, onSelectDate }: DailyViewProps) => {
               </h2>
               <p className="mt-1 max-w-md text-sm leading-6 text-[#695b4e]">
                 Return to the final planned day, or create fresh choices for
-                your next week.
+                your next plan period.
               </p>
             </div>
           </div>
@@ -188,7 +188,7 @@ const DailyView = ({ date, onSelectDate }: DailyViewProps) => {
               Last planned day <ArrowRight className="size-4" />
             </Button>
             <Button asChild variant="outline" className="rounded-full px-5">
-              <Link href="/meal-plan/create">New week</Link>
+              <Link href="/meal-plan/create">New plan</Link>
             </Button>
           </div>
         </div>

@@ -1,146 +1,118 @@
-import { Metadata } from "next";
-import Image from "next/image";
+import type { Metadata } from "next";
 import Link from "next/link";
-import React from "react";
-import Container from "@/components/container";
-import { Button } from "@/components/ui/button";
+import { ArrowRight, Mail, MessageCircleMore, TriangleAlert } from "lucide-react";
+
 import ContactForm from "@/components/contact/contact-form";
 import { FAQ } from "@/components/contact/faqs";
-import { PageTitle } from "@/components/page-title";
+import Container from "@/components/container";
+import {
+  InformationBoundary,
+  SectionEyebrow,
+  TrustHero,
+} from "@/components/trust/trust-page";
 
-const meta = {
-  title: "Contact Us - Kya Khayen | Recipe and Meal Planning Help",
-  description:
-    "Have questions about personalized meal planning or recipes? Feel free to get in touch with us.",
-  image: `${process.env.NEXT_PUBLIC_APP_URL}/meta-images/contact-us.png`,
-};
+const siteUrl = process.env.NEXT_PUBLIC_APP_URL || "https://www.kyakhayen.com";
 
 export const metadata: Metadata = {
-  title: meta.title,
-  description: meta.description,
-  robots: {
-    index: true,
-    follow: true,
-    nocache: false,
-    googleBot: {
-      index: true,
-      follow: true,
-      noimageindex: false,
-      "max-video-preview": -1,
-      "max-image-preview": "large",
-      "max-snippet": -1,
-    },
-  },
+  title: "Contact Kya Khayen | Recipe and Meal Plan Support",
+  description:
+    "Contact Kya Khayen for account, recipe, meal-plan or privacy questions.",
+  alternates: { canonical: `${siteUrl}/contact-us` },
   openGraph: {
-    title: meta.title,
-    description: meta.description,
-    url: `${process.env.NEXT_PUBLIC_APP_URL}/contact-us`,
+    title: "Contact Kya Khayen | Recipe and Meal Plan Support",
+    description: "Get help with your Kya Khayen experience.",
+    url: `${siteUrl}/contact-us`,
     type: "website",
-    images: [
-      {
-        url: meta.image,
-        width: 1200,
-        height: 630,
-        alt: meta.title,
-      },
-    ],
-  },
-  twitter: {
-    title: meta.title,
-    description: meta.description,
-    images: [meta.image],
-    card: "summary_large_image",
-  },
-  alternates: {
-    canonical: `${process.env.NEXT_PUBLIC_APP_URL}/contact-us`,
+    images: [{ url: `${siteUrl}/meta-images/contact-us.png`, width: 1200, height: 630 }],
   },
 };
 
-const ContactUsPage = () => {
+export default function ContactUsPage() {
   return (
-    <div>
-      <PageTitle title="Contact Us" className="py-6" />
-      <section className="py-10 bg-gray-50">
-        <Container>
-          <div className="flex flex-col items-center justify-center">
-            <div className="text-center">
-              <h2 className="text-4xl text-websecondary mb-8">
-                Don't be a stranger! Simple send us a message
-              </h2>
-            </div>
+    <div className="bg-[#fcf8f0] dark:bg-[#091712]">
+      <TrustHero
+        eyebrow="Support and feedback"
+        title="Tell us how we can help your kitchen journey."
+        description="Questions about recipes, your account, meal-plan generation, privacy or a feature idea? Send us a message and include enough detail for us to investigate."
+        imageSrc="/assets/images/contact-support-hero.webp"
+        imageAlt="A person using a phone at a kitchen counter with fresh ingredients"
+        badge="Support is provided by email and this contact form."
+      />
+      <Container>
+        <div className="mt-9 grid gap-4 md:grid-cols-3">
+          <div className="rounded-[1.45rem] border border-[#eadcc7] bg-[#fffdf8] p-5 dark:border-white/8 dark:bg-[#10241e]">
+            <Mail className="size-5 text-[#b93c2f] dark:text-[#dfae61]" />
+            <h2 className="mt-4 text-sm font-semibold text-[#332820] dark:text-[#edf2ea]">
+              Email support
+            </h2>
+            <a
+              href="mailto:mailtokyakhayen@gmail.com"
+              className="mt-2 block text-sm text-[#b53a2d] underline underline-offset-4 dark:text-[#deb063]"
+            >
+              mailtokyakhayen@gmail.com
+            </a>
           </div>
-        </Container>
-      </section>
-      <section className="bg-gray-50 pb-10">
-        <Container>
-          <div className="bg-white shadow-lg rounded-lg p-8 w-full max-w-5xl mx-auto ">
-            <div className="w-full ">
-              <p className="text-sm font-bold bg-rose-200 text-rose-700 px-3 py-2 mb-3 rounded-full inline-block">
-                Have a question or feedback for us?
-              </p>
-              <ContactForm />
-            </div>
+          <div className="rounded-[1.45rem] border border-[#eadcc7] bg-[#fffdf8] p-5 dark:border-white/8 dark:bg-[#10241e]">
+            <MessageCircleMore className="size-5 text-[#b93c2f] dark:text-[#dfae61]" />
+            <h2 className="mt-4 text-sm font-semibold text-[#332820] dark:text-[#edf2ea]">
+              Helpful details
+            </h2>
+            <p className="mt-2 text-sm leading-6 text-[#75665a] dark:text-[#a7b6af]">
+              Mention the page, device and issue you saw for faster support.
+            </p>
           </div>
-        </Container>
-      </section>
+          <div className="rounded-[1.45rem] border border-[#eadcc7] bg-[#fffaf1] p-5 dark:border-white/8 dark:bg-[#10241e]">
+            <TriangleAlert className="size-5 text-[#b93c2f] dark:text-[#dfae61]" />
+            <h2 className="mt-4 text-sm font-semibold text-[#332820] dark:text-[#edf2ea]">
+              Not for emergencies
+            </h2>
+            <p className="mt-2 text-sm leading-6 text-[#75665a] dark:text-[#a7b6af]">
+              Do not use this form for allergy reactions or medical concerns.
+            </p>
+          </div>
+        </div>
 
-      <section className="py-10 md:py-10 bg-gray-50">
-        <Container>
-          <div className="flex flex-col md:flex-row items-center">
-            <div className="w-full md:w-1/2 md:mr-5">
-              <h3 className="text-4xl text-websecondary mb-4 text-left">
-                Discover Our App
-              </h3>
-              <p className="text-lg leading-loose tracking-wide mb-4">
-                Download our Kya Khayen? mobile app and unlock the power of our
-                personalized meal plans customized to your food preferences,
-                allergies and favourite cuisines. You can explore a wide
-                variety of Indian and international recipes for cooking and meal
-                planning. Our PWA app is available on both Android and iOS
-                devices.
-              </p>
-              <p className="text-lg  leading-loose tracking-wide mb-4">
-                With our app, you can:
-              </p>
-              <ul className="text-lg list-disc list-inside mb-4">
-                <li className="text-lg leading-loose tracking-wide mb-2">
-                  Access your personalized meal plans and recipes.
-                </li>
-                <li className="text-lg leading-loose tracking-wide mb-2">
-                  Explore a wide range of Indian and international recipes with
-                  their nutritional values.
-                </li>
-                <li className="text-lg leading-loose tracking-wide mb-2">
-                  You can save your favorite recipes for future reference.
-                </li>
-                <li className="text-lg leading-loose tracking-wide mb-2">
-                  You can compare recipe nutrition information while planning.
-                </li>
-                <li className="text-lg leading-loose tracking-wide mb-2">
-                  You can share your recipes and meal plans with your friends.
-                </li>
-              </ul>
-              <Link href="/download-app">
-                <Button
-                  variant="secondary"
-                  size="lg"
-                  className="bg-[#1e1a16] hover:bg-websecondary text-white rounded-full"
-                >
-                  Download Our App
-                </Button>
-              </Link>
-            </div>
-            <div className="w-full md:w-1/2 mt-5 md:mt-0">
-              <h4 className="text-4xl text-websecondary mb-4 text-left">
-                FAQs
-              </h4>
+        <InformationBoundary className="my-8" compact />
+
+        <section className="grid gap-6 pb-16 lg:grid-cols-[1.08fr_.92fr]">
+          <div className="rounded-[1.7rem] border border-[#eadcc8] bg-[#fffdf9] p-6 sm:p-8 dark:border-white/8 dark:bg-[#10241e]">
+            <SectionEyebrow>Send a message</SectionEyebrow>
+            <h2 className="mt-3 text-2xl font-semibold text-[#30261f] dark:text-[#eff3ec]">
+              We are listening.
+            </h2>
+            <p className="mt-2 text-sm leading-7 text-[#75665a] dark:text-[#a8b7b0]">
+              Please do not include medical history, diagnosis or prescription
+              details in your message.
+            </p>
+            <ContactForm />
+          </div>
+          <div className="space-y-5">
+            <div className="rounded-[1.7rem] border border-[#eadcc8] bg-[#fffdf9] p-6 sm:p-8 dark:border-white/8 dark:bg-[#10241e]">
+              <SectionEyebrow>Common questions</SectionEyebrow>
+              <h2 className="mb-5 mt-3 text-2xl font-semibold text-[#30261f] dark:text-[#eff3ec]">
+                Quick answers
+              </h2>
               <FAQ />
             </div>
+            <div className="rounded-[1.7rem] bg-[#2c211b] p-6 text-white sm:p-8 dark:bg-[#153027]">
+              <SectionEyebrow>Take it with you</SectionEyebrow>
+              <h2 className="mt-3 text-xl font-semibold">
+                Install Kya Khayen on your phone.
+              </h2>
+              <p className="mt-3 text-sm leading-7 text-white/68">
+                Keep recipes and your meal ideas within easy reach through our
+                installable web app.
+              </p>
+              <Link
+                href="/download-app"
+                className="mt-6 inline-flex items-center gap-2 rounded-full bg-[#bd3e2e] px-5 py-3 text-sm font-semibold"
+              >
+                Download app <ArrowRight className="size-4" />
+              </Link>
+            </div>
           </div>
-        </Container>
-      </section>
+        </section>
+      </Container>
     </div>
   );
-};
-
-export default ContactUsPage;
+}

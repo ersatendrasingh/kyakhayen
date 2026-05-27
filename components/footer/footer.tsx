@@ -182,7 +182,7 @@ const Footer = async () => {
           </p>
           <div className="flex flex-wrap justify-center gap-2.5 md:justify-start">
             {[
-              ["Healthy vegetarian recipes", "/recipes?k=veg&type=category"],
+              ["Vegetarian recipe ideas", "/recipes?k=veg&type=category"],
               ["North Indian dinner ideas", "/recipes?k=north-indian&type=cuisine"],
               ["South Indian breakfast recipes", "/recipes?k=south-indian&type=cuisine"],
               ["Cooling summer recipes", "/recipes?k=summer&type=season"],
@@ -200,10 +200,19 @@ const Footer = async () => {
           </div>
         </div>
         <div className="flex flex-col items-center justify-between gap-6 border-t border-white/10 py-6 md:flex-row">
-          <div className="flex gap-5 text-sm text-white/58">
-            <Link href="/about-us" className="hover:text-white">About</Link>
-            <Link href="/contact-us" className="hover:text-white">Contact</Link>
-            <Link href="/privacy-policy" className="hover:text-white">Privacy</Link>
+          <div>
+            <p className="mb-3 max-w-xl text-center text-xs leading-6 text-white/52 md:text-left">
+              Kya Khayen is a KASA product. Recipe and meal-planning
+              information only. Not medical, diagnosis, treatment or
+              allergy-safety advice.
+            </p>
+            <div className="flex justify-center gap-5 text-sm text-white/58 md:justify-start">
+              <Link href="/about-us" className="hover:text-white">About</Link>
+              <Link href="/contact-us" className="hover:text-white">Contact</Link>
+              <Link href="/subscription-plans" className="hover:text-white">Membership</Link>
+              <Link href="/privacy-policy" className="hover:text-white">Privacy</Link>
+              <Link href="/terms-and-conditions" className="hover:text-white">Terms</Link>
+            </div>
           </div>
           <div className="flex items-center gap-4">
             <span className="text-sm text-white/58">Follow us</span>

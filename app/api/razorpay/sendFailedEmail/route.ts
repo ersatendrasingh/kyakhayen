@@ -1,5 +1,6 @@
 import { db } from "@/lib/db";
 import { NextResponse } from "next/server";
+import { currentUser } from "@/lib/auth";
 
 import { render } from "react-email";
 import { sendEmail } from "@/lib/mail";
@@ -9,12 +10,20 @@ import { formatDate } from "@/lib/formatDate";
 
 export async function POST(req: Request) {
   try {
-    const { orderId, paymentStatus, name, email, phoneNumber } =
-      await req.json();
+    const user = await currentUser();
+    if (!user?.id) {
+      return NextResponse.json("Unauthorized", { status: 401 });
+    }
+    const { orderId, paymentStatus } = await req.json();
+    if (paymentStatus !== "Cancelled" && paymentStatus !== "Failed") {
+      return NextResponse.json("Invalid payment status", { status: 400 });
+    }
 
-    const order = await db.order.findUnique({
+    const order = await db.order.findFirst({
       where: {
         id: orderId,
+        userId: user.id,
+        paymentStatus: "Processing",
       },
       include: {
         user: {
@@ -31,8 +40,7 @@ export async function POST(req: Request) {
     });
 
     if (!order) {
-      console.log("Order not found");
-      return;
+      return NextResponse.json("Order not found", { status: 404 });
     }
 
     await db.order.update({
@@ -45,15 +53,21 @@ export async function POST(req: Request) {
     });
 
     const userAddress = order.user.UserAddress[0];
+    const customerName = order.user.name || "Kya Khayen member";
+    const customerEmail = order.user.email;
+    const customerPhone = order.user.phoneNumber || "";
 
     await sendEmail({
-      to: email as string,
-      subject: "Order Attempt on Kya Khayen Unsuccessful - Action Required",
+      to: customerEmail as string,
+      subject:
+        paymentStatus === "Cancelled"
+          ? "Your Kya Khayen checkout was cancelled"
+          : "Your Kya Khayen payment was unsuccessful",
       html: await render(
         OrderConfirmationMail({
           subjectLine:
-            "Order Placement Unsuccessful, Please try again or contact support for assistance.",
-          name: name as string,
+            "Your membership payment was not completed.",
+          name: customerName,
           currency: order.currency as string,
           paymentMethod: "Razorpay",
           paymentStatus: paymentStatus,
@@ -79,15 +93,15 @@ export async function POST(req: Request) {
 
     await sendEmail({
       to: process.env.ADMIN_EMAIL as string,
-      subject: "An order has been failed on Kya Khayen using Razorpay",
+      subject: `Kya Khayen membership payment ${paymentStatus.toLowerCase()}`,
       html: await render(
         CustomerOrderAdminMail({
           subjectLine:
-            "An attempt to place an order on your Kya Khayen Website was unsuccessful. Here are the details:",
-          name: name as string,
+            "A Kya Khayen membership payment attempt was not completed.",
+          name: customerName,
           currency: order.currency as string,
-          email: email as string,
-          phoneNumber: phoneNumber as string,
+          email: customerEmail as string,
+          phoneNumber: customerPhone,
           country: userAddress?.country || "",
           state: userAddress?.state || "",
           city: userAddress?.city || "",

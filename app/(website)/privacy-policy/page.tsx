@@ -1,229 +1,286 @@
-import { Metadata } from "next";
-import React from "react";
-import Container from "@/components/container";
-import { PageTitle } from "@/components/page-title";
+import type { Metadata } from "next";
+import Link from "next/link";
+import type { ReactNode } from "react";
+import { Database, FileLock2, MessageSquareText, SlidersHorizontal } from "lucide-react";
 
-const meta = {
-  title: "Privacy Policy - Kya Khayen",
-  description:
-    "Read how Kya Khayen handles information while you explore recipes, breakfast ideas and easy dinner plans.",
-  image: `${process.env.NEXT_PUBLIC_APP_URL}/meta-images/privacy-policy.png`,
-};
+import Container from "@/components/container";
+import {
+  InformationBoundary,
+  SectionEyebrow,
+  TrustHero,
+} from "@/components/trust/trust-page";
+
+const siteUrl = process.env.NEXT_PUBLIC_APP_URL || "https://www.kyakhayen.com";
+const updatedAt = "26 May 2026";
 
 export const metadata: Metadata = {
-  title: meta.title,
-  description: meta.description,
-  robots: {
-    index: true,
-    follow: true,
-    nocache: false,
-    googleBot: {
-      index: true,
-      follow: true,
-      noimageindex: false,
-      "max-video-preview": -1,
-      "max-image-preview": "large",
-      "max-snippet": -1,
-    },
-  },
+  title: "Privacy Policy | Kya Khayen",
+  description:
+    "Understand how Kya Khayen handles account details, food choices, saved recipes, meal plans and support requests.",
+  alternates: { canonical: `${siteUrl}/privacy-policy` },
   openGraph: {
-    title: meta.title,
-    description: meta.description,
-    url: `${process.env.NEXT_PUBLIC_APP_URL}/privacy-policy`,
+    title: "Privacy Policy | Kya Khayen",
+    description: "How information is handled while you use Kya Khayen.",
+    url: `${siteUrl}/privacy-policy`,
     type: "website",
-    images: [
-      {
-        url: meta.image,
-        width: 1200,
-        height: 630,
-        alt: meta.title,
-      },
-    ],
-  },
-  twitter: {
-    title: meta.title,
-    description: meta.description,
-    images: [meta.image],
-    card: "summary_large_image",
-  },
-  alternates: {
-    canonical: `${process.env.NEXT_PUBLIC_APP_URL}/privacy-policy`,
+    images: [{ url: `${siteUrl}/meta-images/privacy-policy.png`, width: 1200, height: 630 }],
   },
 };
 
-const PrivacyPolicyPage = () => {
+const navigation = [
+  ["scope", "Scope"],
+  ["collect", "Information we collect"],
+  ["use", "How we use it"],
+  ["plans", "Meal plans and food choices"],
+  ["sharing", "Service providers and sharing"],
+  ["retention", "Retention and security"],
+  ["choices", "Your choices"],
+  ["updates", "Updates and contact"],
+];
+
+const collected = [
+  {
+    icon: Database,
+    title: "Account details",
+    text: "Name, email address, profile information and account authentication records.",
+  },
+  {
+    icon: SlidersHorizontal,
+    title: "Food choices",
+    text: "Food style, cuisine selections, ingredient exclusions and cooking comfort.",
+  },
+  {
+    icon: FileLock2,
+    title: "Kitchen activity",
+    text: "Saved or viewed recipes and meal plans generated for your account.",
+  },
+  {
+    icon: MessageSquareText,
+    title: "Support messages",
+    text: "Information you submit through the contact form or send to support.",
+  },
+];
+
+function PolicySection({
+  id,
+  title,
+  children,
+}: {
+  id: string;
+  title: string;
+  children: ReactNode;
+}) {
   return (
-    <div>
-      <PageTitle title="Privacy Policy" className="py-6" />
-      <section className="py-10 ">
-        <Container>
-          <div className="w-full text-center">
-            <h2 className="text-2xl mb-4">
-              This Privacy Policy explains how Kya Khayen? collects, uses, and
-              protects your personal information.
-            </h2>
-            <p className="text-sm text-websecondary ml-4">
-              Last updated: November 15, 2024
-            </p>
+    <section id={id} className="scroll-mt-36 border-b border-[#eadfce] pb-8 last:border-none dark:border-white/8">
+      <h2 className="text-xl font-semibold text-[#30261f] dark:text-[#eef2eb]">
+        {title}
+      </h2>
+      <div className="mt-3 space-y-3 text-sm leading-7 text-[#716358] dark:text-[#abb9b2]">
+        {children}
+      </div>
+    </section>
+  );
+}
+
+export default function PrivacyPolicyPage() {
+  return (
+    <div className="bg-[#fcf8f0] dark:bg-[#091712]">
+      <TrustHero
+        eyebrow="Privacy policy"
+        title="Your choices should stay yours."
+        description="This policy explains what information Kya Khayen handles when you explore recipes, create an account, submit food preferences, generate a meal plan or contact us."
+        badge={`Last updated: ${updatedAt}`}
+        imageContent={
+          <div className="flex min-h-[300px] flex-col justify-between bg-[radial-gradient(circle_at_84%_15%,rgba(213,165,80,0.28),transparent_38%),linear-gradient(145deg,#1b362c,#11100d)] p-7 text-white sm:min-h-[390px] sm:p-9">
+            <FileLock2 className="size-10 text-[#f0c979]" />
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.25em] text-[#e7bf76]">
+                Privacy in practice
+              </p>
+              <p className="mt-4 max-w-md text-2xl font-semibold leading-tight sm:text-3xl">
+                Private meal plans. Taste-based choices. Clear boundaries.
+              </p>
+              <p className="mt-4 text-sm leading-7 text-white/68">
+                We do not request disease, diagnosis or medical treatment
+                details for personalization.
+              </p>
+            </div>
           </div>
-          <div className="w-full py-10">
-            <h3 className="text-xl font-medium text-websecondary mb-2">
-              1. Information We Collect
-            </h3>
-            <p className="text-lg text-justify tracking-wide leading-loose mb-4">
-              We collect various types of information in connection with the
-              services we are provide, including:
-            </p>
-            <ul className="list-disc pl-8 mb-4">
-              <li className="text-lg text-justify tracking-wide leading-loose mb-2">
-                <strong>Personal Information:</strong> Name, email address,
-                phone number, date of birth, and other contact details like your
-                address country, state, city and zip code.
-              </li>
-              <li className="text-lg text-justify tracking-wide leading-loose mb-2">
-                <strong>Usage Data:</strong> Information about how you use our
-                kya khayen mobile app, such as visit history, search queries and
-                the reviews and ratings of recipes you give us.
-              </li>
-              <li className="text-lg text-justify tracking-wide leading-loose mb-2">
-                <strong>Device Information:</strong> Information about the
-                device like the type of device and the operating system you use
-                to access our services.
-              </li>
-              <li className="text-lg text-justify tracking-wide leading-loose mb-2">
-                <strong>Location Information:</strong> Approximate geographic
-                your location, such as your IP address.
-              </li>
-            </ul>
-            <h4 className="text-xl font-medium text-websecondary mb-4">
-              2. How We Use Your Information
-            </h4>
-            <p className="text-lg text-justify tracking-wide leading-loose mb-4">
-              We use your provided information for the following purposes:
-            </p>
-            <ul className="list-disc pl-8 mb-4">
-              <li className="text-lg text-justify tracking-wide leading-loose mb-2">
-                <strong>Personalized Experience: </strong> Personalizing your
-                experience and providing you a customized and personalized meal
-                plan content.
-              </li>
-              <li className="text-lg text-justify tracking-wide leading-loose mb-2">
-                <strong>Customer Support: </strong>To respond to your enquiries,
-                reviews, and comments promptly and effectively.
-              </li>
-              <li className="text-lg text-justify tracking-wide leading-loose mb-2">
-                <strong>Service Improvement: </strong>To improve our services,
-                features, and user experience. we monitor and analyze usage data
-                to understand how users interact with our services.
-              </li>
-              <li className="text-lg text-justify tracking-wide leading-loose mb-2">
-                <strong>Notifications and Updates: </strong>To Sending you
-                technical notices, any updates, security alerts, and support
-                messages.
-              </li>
-            </ul>
-            <h4 className="text-xl font-medium text-websecondary mb-4">
-              3. How We Share Your Information
-            </h4>
-            <p className="text-lg text-justify tracking-wide leading-loose mb-4">
-              We value your privacy and are committed to protecting your
-              personal information. We do not share your personal data with any
-              third parties, except in the following situations:
-            </p>
-            <ul className="list-disc pl-8 mb-4">
-              <li className="text-lg text-justify tracking-wide leading-loose mb-2">
-                <strong>With Your Consent:</strong> When you give explicit
-                consent or direct us to share your information.
-              </li>
-              <li className="text-lg text-justify tracking-wide leading-loose mb-2">
-                <strong>Legal Obligations:</strong>
-                To comply with applicable laws, regulations, or any lawful
-                requests from public authorities.
-              </li>
-              <li className="text-lg text-justify tracking-wide leading-loose mb-2">
-                <strong>Protection of Rights: </strong>
-                To enforce our safegaurd our rights, terms of service, privacy,
-                safety or property, and to protect you or others from harm.
-              </li>
-              <li className="text-lg text-justify tracking-wide leading-loose mb-2">
-                <strong>Business Transactions:</strong>
-                In relation to a business transactions that involves the
-                transfer of personal information, such as a merger, acquisition,
-                asset sale, or other comparable arrangement.
-              </li>
-            </ul>
-            <h4 className="text-xl font-medium text-websecondary mb-4">
-              4. Your Rights and Choices
-            </h4>
-            <p className="text-lg text-justify tracking-wide leading-loose mb-4">
-              Regarding your personal data we gather and how we use it, you have
-              a number of rights. Among these rights are:
-            </p>
-            <ul className="list-disc pl-8 mb-4">
-              <li className="text-lg text-justify tracking-wide leading-loose mb-2">
-                <strong>Access and Updates:</strong>
-                Having the opportunity to view, update or remove your personal
-                data.
-              </li>
-              <li className="text-lg text-justify tracking-wide leading-loose mb-2">
-                <strong>Promotional Communications: </strong>
-                The choice to not receive emails, SMS, push notifications or
-                other communications from us that are promotional in nature.
-              </li>
-              <li className="text-lg text-justify tracking-wide leading-loose mb-2">
-                <strong>Data Processing:</strong>
-                In some cases, you have the right to limit or object to how your
-                personal information is processed.
-              </li>
-              <li className="text-lg text-justify tracking-wide leading-loose mb-2">
-                <strong>Data Portability:</strong>
-                The opportunity to request a copy of your personal information
-                in a machine readable format.
-              </li>
-            </ul>
-            <h4 className="text-xl font-medium text-websecondary mb-4">
-              5. Data Security
-            </h4>
-            <p className="text-lg text-justify tracking-wide leading-loose mb-4">
-              We take the responsibility of ensuring the security of your
-              personal information and have implemented a variety of measures to
-              protect it from unauthorized access, disclosure, alteration, or
-              destruction.
-            </p>
-            <p className="text-lg text-justify tracking-wide leading-loose mb-4">
-              These safeguards consist of safe approaches, access controls, and
-              encryption. Nevertheless, there is no totally safe way to store
-              data electronically or send it over the internet. Although we make
-              every effort to protect your data using commercially acceptable
-              methods, we are unable to provide a guranteed level of security.
-            </p>
-            <h5 className="text-xl font-medium text-websecondary mb-4">
-              6. Changes to This Privacy Policy
-            </h5>
-            <p className="text-lg text-justify tracking-wide leading-loose mb-4">
-              This Privacy Policy may be updated from time to time to reflect
-              modifications to our procedures, offerings, or regulatory
-              requirements. The "Last Updated" date will be updated in top of
-              the page to reflect the last time this Privacy Policy was updated.
-            </p>
-            <h6 className="text-xl font-medium text-websecondary mb-4">
-              7. Contact Us
-            </h6>
-            <p className="text-lg text-justify tracking-wide leading-loose mb-4">
-              If you have any questions about this privacy policy, please
-              contact us at:
-            </p>
-            <p className="text-lg text-justify tracking-wide leading-loose mb-4">
-              Email:{" "}
-              <a href="mailto:mailtokyakhayen@gmail.com">
-                mailtokyakhayen@gmail.com
-              </a>
-            </p>
-          </div>
-        </Container>
-      </section>
+        }
+      />
+      <Container>
+        <InformationBoundary className="my-9" compact />
+
+        <section className="mb-10 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          {collected.map(({ icon: Icon, title, text }) => (
+            <div
+              key={title}
+              className="rounded-[1.35rem] border border-[#ecdfcc] bg-[#fffdf8] p-5 dark:border-white/8 dark:bg-[#10241e]"
+            >
+              <Icon className="size-5 text-[#b83d30] dark:text-[#dfae61]" />
+              <h2 className="mt-4 text-sm font-semibold text-[#332820] dark:text-[#edf2eb]">
+                {title}
+              </h2>
+              <p className="mt-2 text-xs leading-6 text-[#75665a] dark:text-[#a7b7af]">
+                {text}
+              </p>
+            </div>
+          ))}
+        </section>
+
+        <div className="mb-16 grid gap-6 lg:grid-cols-[250px_minmax(0,1fr)]">
+          <aside className="h-fit rounded-[1.45rem] border border-[#ebddc9] bg-[#fffaf2] p-5 lg:sticky lg:top-32 dark:border-white/8 dark:bg-[#10241e]">
+            <SectionEyebrow>On this page</SectionEyebrow>
+            <nav className="mt-4 flex flex-col gap-1.5">
+              {navigation.map(([href, label]) => (
+                <a
+                  key={href}
+                  href={`#${href}`}
+                  className="rounded-xl px-3 py-2 text-sm text-[#655449] transition hover:bg-[#f1e5d2] hover:text-[#b23a2c] dark:text-[#b7c2bc] dark:hover:bg-white/[0.06] dark:hover:text-[#ecbf71]"
+                >
+                  {label}
+                </a>
+              ))}
+            </nav>
+          </aside>
+
+          <article className="space-y-8 rounded-[1.7rem] border border-[#eadcc8] bg-[#fffdf9] p-6 sm:p-9 dark:border-white/8 dark:bg-[#10241e]">
+            <PolicySection id="scope" title="1. Scope and who we are">
+              <p>
+                Kya Khayen is a recipe discovery and meal-planning information
+                platform. This policy applies to this website, installed web
+                app experience and associated account and support features.
+              </p>
+              <p>
+                Our food planning tools are not a healthcare service. Please do
+                not send medical history, diagnosis, prescriptions or other
+                sensitive health details through personalization or support
+                forms.
+              </p>
+            </PolicySection>
+
+            <PolicySection id="collect" title="2. Information we collect">
+              <p>
+                We may collect account and profile information you submit, such
+                as your name, email address, telephone number and profile
+                details; information needed for login and account security; and
+                messages you submit through support.
+              </p>
+              <p>
+                When you use our food tools, we store your selected food style,
+                preferred cuisines, ingredient exclusions, cooking comfort,
+                saved recipes, recipe interactions and generated meal-plan
+                records so that your experience can be shown again.
+              </p>
+              <p>
+                Technical information may be processed to operate and protect
+                the service, such as browser or device details, logs and
+                notification tokens where you enable notifications.
+              </p>
+            </PolicySection>
+
+            <PolicySection id="use" title="3. How we use information">
+              <p>
+                We use information to provide accounts, remember saved recipes,
+                generate and display taste-based meal plans, respond to support
+                requests, maintain security, troubleshoot failures and improve
+                the website experience.
+              </p>
+              <p>
+                We may send service communications connected with your account,
+                support request or enabled notifications. Marketing messages, if
+                introduced, should be subject to the choices provided to you.
+              </p>
+            </PolicySection>
+
+            <PolicySection id="plans" title="4. Meal plans and food choices">
+              <p>
+                Meal plans can be stored as private files and records linked to
+                your account so they can be retrieved or delivered to you. Food
+                preference inputs are intended to represent ordinary taste and
+                exclusion choices only, not health status or medical data.
+              </p>
+              <p>
+                Ingredient exclusion selections do not guarantee that a recipe
+                is suitable for an allergy or free of cross-contamination.
+                Always review ingredients and preparation conditions yourself.
+              </p>
+            </PolicySection>
+
+            <PolicySection id="sharing" title="5. Service providers and sharing">
+              <p>
+                Information may be processed by infrastructure, storage,
+                authentication, notification, analytics or support providers
+                that help us operate the service, subject to their applicable
+                safeguards and our configuration. Private meal-plan files are
+                intended to be stored in restricted storage rather than exposed
+                as public media.
+              </p>
+              <p>
+                We may also disclose information when required by law, to
+                protect rights and security, in a business transfer, or when
+                you ask or consent to a disclosure. We do not sell medical
+                profiles because our meal-plan personalization is not designed
+                to create them.
+              </p>
+            </PolicySection>
+
+            <PolicySection id="retention" title="6. Retention and security">
+              <p>
+                We retain information for as long as reasonably needed to
+                provide your account and meal-plan features, respond to
+                requests, comply with legal requirements or protect the
+                service. Retention periods may differ depending on the record
+                and operational need.
+              </p>
+              <p>
+                We use reasonable technical and organizational safeguards.
+                However, no online transmission or storage system can be
+                guaranteed completely secure.
+              </p>
+            </PolicySection>
+
+            <PolicySection id="choices" title="7. Your choices and requests">
+              <p>
+                You may update available profile or food choices in your
+                account and may contact us about access, correction, deletion
+                or grievance requests relating to your information, subject to
+                applicable law and necessary verification.
+              </p>
+              <p>
+                You can manage browser permissions such as notifications
+                through your device or browser settings. Removing stored food
+                choices may affect existing personalization and meal plans.
+              </p>
+            </PolicySection>
+
+            <PolicySection id="updates" title="8. Updates and contact">
+              <p>
+                We may update this policy as our features or legal requirements
+                change. The revised date displayed above identifies the latest
+                published version.
+              </p>
+              <p>
+                Questions or privacy requests can be sent to{" "}
+                <a
+                  href="mailto:mailtokyakhayen@gmail.com"
+                  className="font-medium text-[#b53b2e] underline underline-offset-4 dark:text-[#e5b365]"
+                >
+                  mailtokyakhayen@gmail.com
+                </a>{" "}
+                or submitted through our{" "}
+                <Link
+                  href="/contact-us"
+                  className="font-medium text-[#b53b2e] underline underline-offset-4 dark:text-[#e5b365]"
+                >
+                  contact page
+                </Link>
+                .
+              </p>
+            </PolicySection>
+          </article>
+        </div>
+      </Container>
     </div>
   );
-};
-
-export default PrivacyPolicyPage;
+}

@@ -49,8 +49,7 @@ export const newVerification = async (token: string) => {
 
   await sendEmail({
     to: existingUser.email as string,
-    subject:
-      "🎉 Congratulations " + existingUser.name + ", Your Email is Verified!✅",
+    subject: "Your Kya Khayen email has been verified",
     html: await render(
       EmailVerifiedMail({
         name: existingUser.name as string,

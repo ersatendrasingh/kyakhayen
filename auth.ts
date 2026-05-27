@@ -62,10 +62,14 @@ export const {
   },
   callbacks: {
     async signIn({ user, account }) {
+      const existingUser = await getUserById(user.id as string);
+
+      if (existingUser && !existingUser.isActive) {
+        return "/auth/login?error=AccountSuspended";
+      }
+
       // Allow OAuth without email verification
       if (account?.provider !== "credentials") return true;
-
-      const existingUser = await getUserById(user.id as string);
 
       // Prevent sign in without email verification
       if (!existingUser?.emailVerified) return false;
@@ -108,6 +112,7 @@ export const {
         session.user.updateAt = token.updateAt as Date;
         session.user.isOAuth = token.isOAuth as boolean;
         session.user.isPersonalised = token.isPersonalised as boolean;
+        session.user.isActive = token.isActive !== false;
         session.user.bio = token.bio as string;
         session.user.gender = token.gender as string;
         session.user.userPlan = token.userPlan as string[];
@@ -136,6 +141,7 @@ export const {
       token.role = existingUser.role;
       token.phoneNumber = existingUser.phoneNumber;
       token.isPersonalised = existingUser.isPersonalised;
+      token.isActive = existingUser.isActive;
       token.bio = existingUser.bio;
       token.gender = existingUser.gender?.title;
       token.userPlan = existingUser.UserPlan.map((plan) => plan.plan.name);

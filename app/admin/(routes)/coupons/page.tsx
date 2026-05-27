@@ -1,12 +1,20 @@
 import { db } from "@/lib/db";
-import CouponTable from "./_components/coupons-table";
+import { CouponsDashboard } from "@/components/admin/commerce/coupons-dashboard";
 
 const CouponsPage = async () => {
-  const coupons = await db.coupon.findMany({ orderBy: { createdAt: "desc" } });
+  const coupons = await db.coupon.findMany({
+    include: {
+      PlanOnCoupon: {
+        include: { plan: { select: { id: true, name: true } } },
+      },
+      _count: { select: { UserCoupon: true } },
+    },
+    orderBy: { createdAt: "desc" },
+  });
 
   return (
-    <div className="p-6">
-      <CouponTable coupons={coupons} />
+    <div className="p-4 sm:p-6 lg:p-8">
+      <CouponsDashboard coupons={coupons} />
     </div>
   );
 };

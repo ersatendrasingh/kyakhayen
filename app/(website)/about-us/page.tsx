@@ -1,161 +1,176 @@
-import { Metadata } from "next";
+import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import React from "react";
-import Container from "@/components/container";
-import { Button } from "@/components/ui/button";
-import { PageTitle } from "@/components/page-title";
+import { BookOpen, CalendarDays, CookingPot, SlidersHorizontal } from "lucide-react";
 
-const meta = {
-  title: "About Us - Kya Khayen | Recipe and Meal Planning",
-  description:
-    "Find easy dinner recipes, snack ideas and practical meal planning inspiration for your kitchen.",
-  image: `${process.env.NEXT_PUBLIC_APP_URL}/meta-images/about-us.png`,
-};
+import Container from "@/components/container";
+import {
+  InformationBoundary,
+  SectionEyebrow,
+  TrustHero,
+} from "@/components/trust/trust-page";
+
+const siteUrl = process.env.NEXT_PUBLIC_APP_URL || "https://www.kyakhayen.com";
 
 export const metadata: Metadata = {
-  title: meta.title,
-  description: meta.description,
-  robots: {
-    index: true,
-    follow: true,
-    nocache: false,
-    googleBot: {
-      index: true,
-      follow: true,
-      noimageindex: false,
-      "max-video-preview": -1,
-      "max-image-preview": "large",
-      "max-snippet": -1,
-    },
-  },
+  title: "About Kya Khayen | Everyday Recipe Ideas and Meal Planning",
+  description:
+    "Learn how Kya Khayen helps people explore recipes and build taste-based meal plans without medical or health profiling.",
+  alternates: { canonical: `${siteUrl}/about-us` },
   openGraph: {
-    title: meta.title,
-    description: meta.description,
-    url: `${process.env.NEXT_PUBLIC_APP_URL}/about-us`,
+    title: "About Kya Khayen | Everyday Recipe Ideas and Meal Planning",
+    description:
+      "Recipe inspiration and taste-based weekly planning for everyday kitchens.",
+    url: `${siteUrl}/about-us`,
     type: "website",
-    images: [
-      {
-        url: meta.image,
-        width: 1200,
-        height: 630,
-        alt: meta.title,
-      },
-    ],
+    images: [{ url: `${siteUrl}/meta-images/about-us.png`, width: 1200, height: 630 }],
   },
   twitter: {
-    title: meta.title,
-    description: meta.description,
-    images: [meta.image],
     card: "summary_large_image",
-  },
-  alternates: {
-    canonical: `${process.env.NEXT_PUBLIC_APP_URL}/about-us`,
+    images: [`${siteUrl}/meta-images/about-us.png`],
   },
 };
 
-const AboutUsPage = () => {
+const waysWeHelp = [
+  {
+    icon: BookOpen,
+    title: "Explore recipes",
+    text: "Find dishes across mealtimes, cuisines and everyday cooking styles.",
+  },
+  {
+    icon: SlidersHorizontal,
+    title: "Share your taste",
+    text: "Choose preferred food styles, cuisines and ingredients you want excluded.",
+  },
+  {
+    icon: CalendarDays,
+    title: "Plan a week",
+    text: "Generate an organized seven-day set of meal ideas for your table.",
+  },
+  {
+    icon: CookingPot,
+    title: "Cook your way",
+    text: "Keep planning grounded in the cooking effort that suits your routine.",
+  },
+];
+
+export default function AboutUsPage() {
   return (
-    <div>
-      <PageTitle title="About Us" className="py-6 " />
-      <section className="py-16 md:pb-0 ">
-        <Container>
-          <div className="flex flex-col items-center justify-center">
-            <div className="text-center">
-              <p className="text-lg leading-loose tracking-wide mb-8">
-                Welcome to Kya Khayen?, your personalized meal planning partner
-                for discovering everyday recipes and organizing your cooking
-                routine. Whether you want a 7-day meal plan or simply a new
-                dinner idea, we have got you covered.
-              </p>
-            </div>
-          </div>
-        </Container>
-      </section>
-      <section className="py-10 md:py-10 ">
-        <Container>
-          <div className="flex flex-col md:flex-row items-center justify-between">
-            <div className="flex flex-col items-center md:items-start md:flex-row">
-              <div className="flex mb-4 md:mb-0 md:mr-4">
-                <Image
-                  src="/assets/images/about-us.webp"
-                  alt="weekly meal ideas"
-                  width={600}
-                  height={400}
-                  className="rounded-lg"
-                />
-              </div>
-            </div>
-            <div className="md:w-1/2 text-center md:text-left">
-              <h2 className="text-4xl text-websecondary mb-8">Who We Are</h2>
-              <p className="text-lg text-justify leading-loose tracking-wide mb-4 mr-4">
-                We believe home cooking does not have to be boring or
-                complicated. Here we use recipe recommendations and practical
-                planning tools to create meal ideas that align with your food
-                preferences, cuisines and ingredient exclusions.
-              </p>
-            </div>
-          </div>
-        </Container>
-      </section>
-      <section className="py-10 md:py-10 ">
-        <Container>
-          <div className="flex flex-col md:flex-row items-center justify-between">
-            <div className="md:w-1/2 text-center md:text-left">
-              <h2 className="text-4xl text-websecondary mb-8">Our Mission</h2>
-              <p className="text-lg text-justify leading-loose tracking-wide mb-4 mr-4">
-                Our mission is to help you to transform your home cooking
-                experience by providing personalized recipe recommendations and
-                meal plans according to your food preferences, cuisines and
-                ingredient exclusions. We believe that everyone deserves meals
-                that suit their kitchen and routine. That is why we provide a
-                variety of recipes that are both easy to prepare and delicious.
-              </p>
-            </div>
-            <div className="flex flex-col items-center md:items-start md:flex-row">
-              <div className="flex mb-4 md:mb-0 md:mr-4">
-                <Image
-                  src="/assets/images/our-mission.webp"
-                  alt="personalized meal planning"
-                  width={800}
-                  height={600}
-                  className="rounded-lg"
-                />
-              </div>
-            </div>
-          </div>
-        </Container>
-      </section>{" "}
-      <section className="py-16 " id="our-features">
-        <Container>
-          <div className="flex flex-col items-center justify-center">
-            <div className="text-center">
-              <h2 className="text-4xl text-websecondary mb-8">
-                Join Us on This Journey
+    <div className="bg-[#fcf8f0] dark:bg-[#091712]">
+      <TrustHero
+        eyebrow="About Kya Khayen"
+        title="Good food ideas for real everyday kitchens."
+        description="Kya Khayen is a recipe discovery and meal-planning information platform. We help you find dishes, save inspiration and assemble weekly meal ideas around your stated food preferences."
+        imageSrc="/assets/images/about-story-hero.webp"
+        imageAlt="A mother and daughter in a kitchen surrounded by fresh ingredients"
+        badge="Taste-based planning. No health or medical profiling."
+        actions={[
+          { href: "/recipes", label: "Explore recipes" },
+          { href: "/meal-plan/create", label: "Create a meal plan", secondary: true },
+        ]}
+      />
+
+      <Container>
+        <InformationBoundary className="relative -mt-2 mb-12 lg:-mt-7" />
+
+        <section className="pb-14 sm:pb-20">
+          <div className="grid gap-8 lg:grid-cols-[.82fr_1.18fr] lg:items-start">
+            <div>
+              <SectionEyebrow>What we build</SectionEyebrow>
+              <h2 className="mt-3 text-3xl font-semibold text-[#30261f] dark:text-[#f1f0e8]">
+                A calm place to answer: what should we cook next?
               </h2>
-              <p className="text-lg leading-loose tracking-wide mb-8">
-                Start your healthy journey with Kya Khayen? today and take the
-                first step toward a healthier, happier lifestyle. Join our
-                membership and unlock a world of personalized recipes,
-                recommendations and healthy meal plans.
+              <p className="mt-4 text-sm leading-7 text-[#75675b] dark:text-[#aebbb4]">
+                A busy week does not need another complicated system. Kya
+                Khayen keeps discovery simple: browse a dish, save an idea or
+                generate a weekly table using only the food choices you share.
               </p>
-              <div className="flex justify-center mt-10">
-                <Link href="/auth/register">
-                  <Button
-                    variant="secondary"
-                    size="lg"
-                    className="bg-[#1e1a16] hover:bg-websecondary text-white rounded-full"
-                  >
-                    Join Now Kya Khayen?
-                  </Button>
-                </Link>
-              </div>
+            </div>
+            <div className="grid gap-3 sm:grid-cols-2">
+              {waysWeHelp.map(({ icon: Icon, title, text }) => (
+                <div
+                  key={title}
+                  className="rounded-[1.45rem] border border-[#ebdfcc] bg-[#fffdf8] p-5 dark:border-white/8 dark:bg-[#10241e]"
+                >
+                  <Icon className="mb-4 size-5 text-[#b93e30] dark:text-[#e1b265]" />
+                  <h3 className="text-base font-semibold text-[#332820] dark:text-[#ecf1eb]">
+                    {title}
+                  </h3>
+                  <p className="mt-2 text-sm leading-6 text-[#75665b] dark:text-[#a9b8b0]">
+                    {text}
+                  </p>
+                </div>
+              ))}
             </div>
           </div>
-        </Container>
-      </section>
+        </section>
+
+        <section className="grid gap-5 pb-14 sm:pb-20 lg:grid-cols-2">
+          <div className="overflow-hidden rounded-[1.8rem] border border-[#eadcc7] bg-white dark:border-white/10 dark:bg-[#10241e]">
+            <div className="relative aspect-[1.75/1]">
+              <Image
+                src="/assets/images/our-mission.webp"
+                alt="Everyday cooking ingredients arranged on a table"
+                fill
+                sizes="(max-width: 1024px) 100vw, 48vw"
+                className="object-cover"
+              />
+            </div>
+            <div className="p-6 sm:p-8">
+              <SectionEyebrow>Our purpose</SectionEyebrow>
+              <h2 className="mt-3 text-2xl font-semibold text-[#30261f] dark:text-[#eff3ec]">
+                Make everyday meal decisions easier.
+              </h2>
+              <p className="mt-3 text-sm leading-7 text-[#716256] dark:text-[#adbbb3]">
+                We organize recipes and meal ideas so home cooks can discover
+                variety without spending the whole day planning. Our tools are
+                for culinary inspiration and organization.
+              </p>
+            </div>
+          </div>
+          <div className="rounded-[1.8rem] border border-[#e8d9c4] bg-[#fffaf1] p-6 sm:p-8 dark:border-white/10 dark:bg-[#10241e]">
+            <SectionEyebrow>What we do not do</SectionEyebrow>
+            <h2 className="mt-3 text-2xl font-semibold text-[#30261f] dark:text-[#eff3ec]">
+              No diagnosis. No treatment plans. No medical promises.
+            </h2>
+            <div className="mt-6 space-y-4 text-sm leading-7 text-[#716256] dark:text-[#adbbb3]">
+              <p>
+                We do not assess body type, disease, clinical goals, nutrition
+                requirements or suitability of food for a medical condition.
+              </p>
+              <p>
+                Recipe names, ingredients and meal-plan suggestions are
+                informational. They should not be understood as professional
+                dietetic, medical or therapeutic guidance.
+              </p>
+              <p>
+                Food safety, ingredient labels, allergens and preparation
+                conditions must always be checked by the person preparing or
+                consuming a dish.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        <section className="mb-16 rounded-[2rem] bg-[#2b211b] px-6 py-9 text-white sm:px-10 lg:flex lg:items-center lg:justify-between dark:bg-[#122b23]">
+          <div className="max-w-2xl">
+            <SectionEyebrow>Start exploring</SectionEyebrow>
+            <h2 className="mt-3 text-2xl font-semibold sm:text-3xl">
+              Build a week of ideas around the food you enjoy.
+            </h2>
+            <p className="mt-3 text-sm leading-7 text-white/68">
+              Personalization uses everyday choices only: food style,
+              cuisines, exclusions and cooking comfort.
+            </p>
+          </div>
+          <Link
+            href="/meal-plan/create"
+            className="mt-7 inline-flex rounded-full bg-[#c64030] px-6 py-3 text-sm font-semibold text-white transition hover:bg-[#ad3427] lg:mt-0"
+          >
+            Create my meal plan
+          </Link>
+        </section>
+      </Container>
     </div>
   );
-};
-
-export default AboutUsPage;
+}

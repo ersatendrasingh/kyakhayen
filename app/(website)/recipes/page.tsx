@@ -205,6 +205,39 @@ const RecipePage = async (props: {
         </Container>
       </section>
 
+      <section className="pt-8 sm:pt-10">
+        <Container>
+          <div className="flex flex-col gap-5 rounded-[1.6rem] border border-[#e5d4bc] bg-[#fffdf8]/84 p-5 shadow-[0_18px_44px_-34px_rgba(61,39,18,0.38)] sm:flex-row sm:items-center sm:justify-between sm:p-7 dark:border-white/10 dark:bg-[#10241e]">
+            <div className="max-w-2xl">
+              <p className="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.23em] text-[#a67636] dark:text-[#ddb66e]">
+                <Sparkles className="size-3.5" /> Meal planning
+              </p>
+              <h2 className="mt-2 text-xl font-semibold text-[#30251d] sm:text-2xl dark:text-[#eef3ed]">
+                Found dishes you like? Build your own table.
+              </h2>
+              <p className="mt-2 text-sm leading-6 text-[#726255] dark:text-[#a6b6ae]">
+                Choose food style, cuisines and cooking comfort, then continue
+                with membership when you want ongoing planning access.
+              </p>
+            </div>
+            <div className="flex shrink-0 flex-wrap gap-3">
+              <Link
+                href="/meal-plan/create"
+                className="inline-flex items-center gap-2 rounded-full bg-[#b63325] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#9e291e]"
+              >
+                Create meal plan <ArrowRight className="size-4" />
+              </Link>
+              <Link
+                href="/subscription-plans"
+                className="inline-flex items-center gap-2 rounded-full border border-[#dfc49b] bg-white px-5 py-3 text-sm font-semibold text-[#4e3d31] transition hover:border-[#cda66b] dark:border-white/14 dark:bg-transparent dark:text-[#edf2ec]"
+              >
+                Membership
+              </Link>
+            </div>
+          </div>
+        </Container>
+      </section>
+
       <div className="py-10 sm:py-12">
         <Container>
           <RecipeResultsFeed

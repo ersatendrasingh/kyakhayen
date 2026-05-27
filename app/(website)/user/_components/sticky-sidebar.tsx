@@ -19,12 +19,13 @@ const userMenu = [
   { name: "Home", href: "/user/dashboard", menuIcon: LayoutDashboard },
   { name: "Profile", href: "/user/profile", menuIcon: UserRound },
   { name: "Food choices", href: "/user/preferences", menuIcon: SlidersHorizontal },
-  { name: "Launch access", href: "/user/subscriptions", menuIcon: CreditCard },
+  { name: "Membership", href: "/user/subscriptions", menuIcon: CreditCard },
   { name: "Settings", href: "/user/settings", menuIcon: Settings },
 ];
 
 const StickySidebar = () => {
   const user = useCurrentUser();
+  const planDestination = user?.isPersonalised ? "/meal-plan" : "/meal-plan/create";
   const initials =
     user?.name
       ?.split(" ")
@@ -49,8 +50,8 @@ const StickySidebar = () => {
               </p>
             </div>
           </div>
-          <Link href="/meal-plan" className="rounded-full bg-[#c43829] px-3.5 py-2 text-xs font-semibold text-white">
-            Plan
+          <Link href={planDestination} className="rounded-full bg-[#c43829] px-3.5 py-2 text-xs font-semibold text-white">
+            {user?.isPersonalised ? "Plan" : "Create"}
           </Link>
         </div>
         <nav className="-mx-4 mb-5 flex gap-2 overflow-x-auto px-4 pb-1 pr-10 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
@@ -79,11 +80,11 @@ const StickySidebar = () => {
               </div>
             </div>
             <Link
-              href="/meal-plan"
+              href={planDestination}
               className="mt-6 flex items-center justify-center gap-2 rounded-2xl bg-[#bd382a] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[#a92f23]"
             >
               <CalendarDays className="size-4" />
-              Open meal plan
+              {user?.isPersonalised ? "Open meal plan" : "Create meal plan"}
             </Link>
           </div>
           <nav className="space-y-1.5 rounded-[1.7rem] border border-[#eadcc9] bg-[#fffdf8] p-3 dark:border-white/10 dark:bg-[#10231c]">

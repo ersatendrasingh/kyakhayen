@@ -2,18 +2,17 @@
 
 import { useEffect, useRef, useState } from "react";
 import { addDays, subDays } from "date-fns";
-import { ArrowRight, Sparkles } from "lucide-react";
+import { ArrowRight, Loader2, Sparkles } from "lucide-react";
 import Link from "next/link";
 import CalendarHeader from "@/components/calendar/calendar-header";
 import DailyView from "@/components/meal-plan/daily-view";
 
 import { useSession } from "next-auth/react";
-import { useCurrentUser } from "@/hooks/use-current-user";
 import MealPlanLanding from "./meal-plan-landing";
 
 const MealPlan = () => {
-  const user = useCurrentUser();
-  const { update } = useSession();
+  const { data: session, status, update } = useSession();
+  const user = session?.user;
   const hasRunOnce = useRef(false);
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
 
@@ -36,8 +35,34 @@ const MealPlan = () => {
     setSelectedDate((prevDate) => addDays(prevDate, 7));
   };
 
+  const currentPlanIndex =
+    user?.userPlanEndDate?.reduce(
+      (latestIndex, date, index, dates) =>
+        new Date(date).getTime() > new Date(dates[latestIndex]).getTime()
+          ? index
+          : latestIndex,
+      0,
+    ) ?? -1;
+  const activePlan =
+    currentPlanIndex >= 0 ? user?.userPlan?.[currentPlanIndex] : undefined;
+  const hasPaidAccess = Boolean(activePlan && activePlan !== "Freemium");
+
+  if (status === "loading") {
+    return (
+      <main className="flex min-h-[calc(100vh-180px)] items-center justify-center bg-[#fffaf2]">
+        <Loader2 className="size-7 animate-spin text-primary" />
+      </main>
+    );
+  }
+
   if (!user || !user.isPersonalised) {
-    return <MealPlanLanding isSignedIn={Boolean(user)} />;
+    return (
+      <MealPlanLanding
+        isSignedIn={Boolean(user)}
+        activePlan={activePlan}
+        hasPaidAccess={hasPaidAccess}
+      />
+    );
   }
   return (
     <main className="min-h-screen bg-[#fffaf2] pb-24 pt-4 sm:py-8">
@@ -48,13 +73,16 @@ const MealPlan = () => {
               <Sparkles className="size-4" /> Made for your table
             </p>
             <h1 className="text-xl font-semibold tracking-tight text-[#2c2118] sm:mt-2 sm:text-3xl">
-              Your personalized meal plan
+              {hasPaidAccess ? "Your planned meals" : "Your personalized meal plan"}
             </h1>
             <p className="mt-1 max-w-xl text-xs leading-5 text-[#695b4e] sm:mt-2 sm:text-sm">
-              <span className="sm:hidden">Your seven-day food planner</span>
+              <span className="sm:hidden">
+                {hasPaidAccess ? "Your membership meal calendar" : "Your seven-day food planner"}
+              </span>
               <span className="hidden sm:inline">
-                Seven days of meal ideas based on your food style, cuisines,
-                exclusions and cooking comfort.
+                {hasPaidAccess
+                  ? "Meals based on your food style, cuisines, exclusions and cooking comfort."
+                  : "Seven days of meal ideas based on your food style, cuisines, exclusions and cooking comfort."}
               </span>
             </p>
           </div>

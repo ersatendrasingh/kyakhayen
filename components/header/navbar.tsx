@@ -58,6 +58,11 @@ export const Navbar = ({
             </Link>
           </NavigationMenuItem>
           <NavigationMenuItem>
+            <Link href="/blog" className={navControlClass}>
+              Journal
+            </Link>
+          </NavigationMenuItem>
+          <NavigationMenuItem>
             <NavigationMenuTrigger className={navControlClass}>
               Recipes
             </NavigationMenuTrigger>

@@ -1,74 +1,113 @@
 import { NextResponse } from "next/server";
 
-import { db } from "@/lib/db";
-import {
-  deleteFolderFromS3,
-  deleteImageFromS3,
-  getStorageKeyFromUrl,
-} from "@/lib/s3utils";
 import { currentUser } from "@/lib/auth";
+import { db } from "@/lib/db";
+import { deleteFolderFromS3, getVerifiedPublicMediaKey } from "@/lib/s3utils";
 import { slugify } from "@/lib/slugify";
 
-export async function DELETE(req: Request, props: { params: Promise<{ articleId: string }> }) {
-  const params = await props.params;
+type UpdateArticleBody = {
+  title?: string;
+  content?: string | null;
+  imageUrl?: string | null;
+  metaTitle?: string | null;
+  metaDescription?: string | null;
+  metaSlug?: string | null;
+};
+
+async function updateUniqueSlug(articleId: string, title: string) {
+  const baseSlug = slugify(title) || "article";
+  let slug = baseSlug;
+  let suffix = 2;
+
+  while (
+    await db.post.findFirst({
+      where: { slug, NOT: { id: articleId } },
+      select: { id: true },
+    })
+  ) {
+    slug = `${baseSlug}-${suffix}`;
+    suffix += 1;
+  }
+
+  return slug;
+}
+
+export async function DELETE(
+  req: Request,
+  props: { params: Promise<{ articleId: string }> }
+) {
+  const { articleId } = await props.params;
   try {
     const user = await currentUser();
     if (!user || user.role !== "ADMIN") {
       return NextResponse.json("Unauthorized", { status: 401 });
     }
-    const { articleId } = params;
 
-    const post = await db.post.findUnique({
-      where: {
-        id: articleId,
-      },
-    });
-
+    const post = await db.post.findUnique({ where: { id: articleId }, select: { id: true } });
     if (!post) {
-      return NextResponse.json("Post not found", { status: 404 });
+      return NextResponse.json("Article not found", { status: 404 });
     }
-    if (post.imageUrl) {
-      await deleteImageFromS3(getStorageKeyFromUrl(post.imageUrl));
-    }
-    await deleteFolderFromS3(`articles/${articleId}`);
 
-    const deletedArticle = await db.post.delete({
-      where: {
-        id: articleId,
-      },
-    });
-    return NextResponse.json(deletedArticle, { status: 200 });
+    const deletedArticle = await db.post.delete({ where: { id: articleId } });
+    try {
+      await deleteFolderFromS3(`articles/${articleId}`);
+    } catch (storageError) {
+      console.log("[ARTICLE_MEDIA_CLEANUP]", storageError);
+    }
+
+    return NextResponse.json(deletedArticle);
   } catch (error) {
     console.log("[ARTICLE_ID_DELETE]", error);
     return NextResponse.json("Internal Server Error", { status: 500 });
   }
 }
-export async function PATCH(req: Request, props: { params: Promise<{ articleId: string }> }) {
-  const params = await props.params;
+
+export async function PATCH(
+  req: Request,
+  props: { params: Promise<{ articleId: string }> }
+) {
+  const { articleId } = await props.params;
   try {
     const user = await currentUser();
     if (!user || user.role !== "ADMIN") {
       return NextResponse.json("Unauthorized", { status: 401 });
     }
-    const { articleId } = params;
-    const { title, ...values } = await req.json();
-    let slug: string | undefined;
-    if (title) {
-      slug = slugify(title);
+
+    const current = await db.post.findUnique({ where: { id: articleId } });
+    if (!current) {
+      return NextResponse.json("Article not found", { status: 404 });
     }
 
-    const post = await db.post.update({
-      where: {
-        id: articleId,
-      },
-      data: {
-        ...(title && { title }),
-        ...(slug && { slug }),
-        ...(user && { authorId: user.id }),
-        ...values,
-      },
-    });
-    return NextResponse.json(post, { status: 200 });
+    const body = (await req.json()) as UpdateArticleBody;
+    const data: UpdateArticleBody & { slug?: string } = {};
+
+    if (body.title !== undefined) {
+      const title = body.title.trim();
+      if (!title) {
+        return NextResponse.json("Article title is required", { status: 400 });
+      }
+      data.title = title;
+      data.slug = await updateUniqueSlug(articleId, title);
+    }
+
+    if (body.content !== undefined) data.content = body.content;
+    if (body.metaTitle !== undefined) data.metaTitle = body.metaTitle;
+    if (body.metaDescription !== undefined) data.metaDescription = body.metaDescription;
+    if (body.metaSlug !== undefined) data.metaSlug = body.metaSlug;
+    if (body.imageUrl !== undefined) {
+      const imageUrl = body.imageUrl?.trim() || null;
+      if (imageUrl && imageUrl !== current.imageUrl) {
+        try {
+          getVerifiedPublicMediaKey(imageUrl);
+        } catch {
+          return NextResponse.json("Choose an image from the media library", { status: 400 });
+        }
+      }
+      data.imageUrl = imageUrl;
+    }
+
+    const post = await db.post.update({ where: { id: articleId }, data });
+    return NextResponse.json(post);
   } catch (error) {
     console.log("[ARTICLE_ID]", error);
     return NextResponse.json("Internal Server Error", { status: 500 });

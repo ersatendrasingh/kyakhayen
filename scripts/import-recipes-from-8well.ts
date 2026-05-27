@@ -4,6 +4,13 @@ import { PrismaClient } from "@prisma/client";
 import { readFile, readdir } from "node:fs/promises";
 import path from "node:path";
 
+import { DUPLICATE_SOURCE_RECIPE_IDS } from "../lib/recipe-duplicates";
+import {
+  EDITORIAL_REMOVED_SOURCE_RECIPE_IDS,
+  EDITORIAL_SUPPRESSED_IMAGE_SOURCE_IDS,
+  EDITORIAL_TITLE_OVERRIDES,
+} from "../lib/recipe-editorial-cleanup";
+import { buildRecipeSeoPlan, normalizeRecipeTitle } from "../lib/recipe-seo";
 import { slugify } from "../lib/slugify";
 
 loadEnvConfig(process.cwd());
@@ -36,13 +43,6 @@ type SourceRecipe = {
 type SourceNamedRow = {
   id: number;
   name: string;
-};
-
-type SourceIngredientEntry = {
-  sourceIngredientId: number;
-  sourceFormId: number;
-  quantity: number;
-  sourceUnitId: number;
 };
 
 type LocalImage = {
@@ -82,6 +82,7 @@ const COOKING_METHOD_SLUGS: Record<string, string> = {
 };
 
 const IMAGE_ALIASES: Record<string, string> = {
+  "yellow-moong-dal-cheela-stuffed-with-onions": "yellow-moong-dal-cheela",
   "kalachana-sprouts-poha": "kala-chana-sprouts-poha",
   "stir-fried-mixed-vegetables": "stir-fried-mix-vegetables",
   "black-masoor-dal": "black-masoor-daal",
@@ -313,7 +314,7 @@ async function main() {
       ),
       target.ingredients.findMany({
         where: { sourceSystem: SOURCE_SYSTEM },
-        select: { id: true, sourceId: true, isPublished: true },
+        select: { id: true, sourceId: true, isPublished: true, slug: true },
       }),
       target.recipeCategories.findMany({ select: { id: true, slug: true } }),
       target.cuisines.findMany({ select: { id: true, slug: true } }),
@@ -347,12 +348,12 @@ async function main() {
     const recipeTypeMap = new Map(targetRecipeTypes.map((item) => [item.slug, item.id]));
     const seasonMap = new Map(targetSeasons.map((item) => [cleanTitle(item.title), item.id]));
     const difficultyMap = new Map(targetDifficulties.map((item) => [cleanTitle(item.title), item.id]));
-    const slugCounts = new Map<string, number>();
-
-    sourceRecipes.forEach((recipe) => {
-      const slug = slugify(cleanTitle(recipe.name));
-      slugCounts.set(slug, (slugCounts.get(slug) ?? 0) + 1);
-    });
+    const categorySlugById = new Map(targetCategories.map((item) => [item.id, item.slug]));
+    const cuisineSlugById = new Map(targetCuisines.map((item) => [item.id, item.slug]));
+    const mealTimeSlugById = new Map(targetMealTimes.map((item) => [item.id, item.slug]));
+    const cookingMethodSlugById = new Map(targetCookingMethods.map((item) => [item.id, item.slug]));
+    const dietTypeSlugById = new Map(targetDietTypes.map((item) => [item.id, item.slug]));
+    const recipeTypeSlugById = new Map(targetRecipeTypes.map((item) => [item.id, item.slug]));
 
     const unresolved = {
       category: 0,
@@ -376,21 +377,24 @@ async function main() {
     let publishedWithVerifiedNutrition = 0;
     let publishedPendingNutritionReview = 0;
     let neutralizedDescriptions = 0;
-    let duplicateSlugRecipes = 0;
     let multiSeasonRecipes = 0;
     let multiDifficultyRecipes = 0;
     const usedImageKeys = new Set<string>();
     const allowedSourceUnitIds = new Set(sourceUnits.map((unit) => unit.id));
+    const importableSourceRecipes = sourceRecipes.filter(
+      (recipe) =>
+        !DUPLICATE_SOURCE_RECIPE_IDS.has(recipe.id) &&
+        !EDITORIAL_REMOVED_SOURCE_RECIPE_IDS.has(recipe.id)
+    );
 
-    const prepared = sourceRecipes.map((recipe) => {
-      const title = cleanTitle(recipe.name);
-      const baseSlug = slugify(title);
-      const slug =
-        (slugCounts.get(baseSlug) ?? 0) > 1 ? `${baseSlug}-${recipe.id}` : baseSlug;
-      duplicateSlugRecipes += Number(slug !== baseSlug);
+    const prepared = importableSourceRecipes.map((recipe) => {
+      const title = normalizeRecipeTitle(EDITORIAL_TITLE_OVERRIDES.get(recipe.id) ?? recipe.name);
+      const slug = slugify(title);
       const steps = recipeSteps(recipe.steps);
       const ingredients = parseIngredients(recipe.ingrs_list);
-      const image = resolveImage(recipe, imageData.bySlug);
+      const image = EDITORIAL_SUPPRESSED_IMAGE_SOURCE_IDS.has(recipe.id)
+        ? undefined
+        : resolveImage(recipe, imageData.bySlug);
       const categoryId = categoryMap.get(categorySlug(recipe));
       const recipeTypeName = sourceRecipeTypeMap.get(recipe.recipe_type_id)?.name;
       const recipeTypeId = recipeTypeName
@@ -523,14 +527,47 @@ async function main() {
       };
     });
 
-    console.log(`Source recipes: ${prepared.length}`);
+    const seoPlan = buildRecipeSeoPlan(
+      prepared.map((row) => ({
+        id: String(row.source.id),
+        title: row.title,
+        slug: row.slug,
+        keywords: [
+          row.categoryId ? categorySlugById.get(row.categoryId) : undefined,
+          ...row.cuisineIds.map((id) => cuisineSlugById.get(id)),
+          row.dietTypeId ? dietTypeSlugById.get(row.dietTypeId) : undefined,
+          ...row.mealTimeIds.map((id) => mealTimeSlugById.get(id)),
+          ...row.cookingMethodIds.map((id) => cookingMethodSlugById.get(id)),
+          row.recipeTypeId ? recipeTypeSlugById.get(row.recipeTypeId) : undefined,
+          ...row.ingredients.map(({ ingredient }) => ingredient.slug),
+        ].filter((keyword): keyword is string => Boolean(keyword)),
+      }))
+    );
+    if (seoPlan.unresolved.length > 0) {
+      throw new Error(`Unable to assign SEO slugs: ${seoPlan.unresolved.join(" ")}`);
+    }
+    const seoBySourceId = new Map(seoPlan.updates.map((row) => [row.id, row]));
+    const importRows = prepared.map((row) => {
+      const identity = seoBySourceId.get(String(row.source.id));
+      if (!identity) {
+        throw new Error(`Missing SEO identity for source recipe ${row.source.id}.`);
+      }
+      return { ...row, title: identity.title, slug: identity.slug };
+    });
+    const keywordQualifiedSlugs = seoPlan.updates.filter(
+      (row) => row.slug !== slugify(row.title)
+    ).length;
+
+    console.log(`Source recipes: ${sourceRecipes.length}`);
+    console.log(`Source duplicate/editorial redundant recipes omitted: ${sourceRecipes.length - importRows.length}`);
+    console.log(`Recipes prepared for import: ${importRows.length}`);
     console.log(`Recipes receiving local images: ${actualImages}`);
     console.log(`Unique local image files used: ${usedImageKeys.size}/${imageData.files.length}`);
-    console.log(`Default-image drafts required: ${prepared.length - actualImages}`);
+    console.log(`Default-image drafts required: ${importRows.length - actualImages}`);
     console.log(`Recipes published with matched images: ${safelyPublishable}`);
     console.log(`Image-published recipes with verified nutrition: ${publishedWithVerifiedNutrition}`);
     console.log(`Image-published recipes pending nutrition display: ${publishedPendingNutritionReview}`);
-    console.log(`Duplicate source slugs stabilized with source id: ${duplicateSlugRecipes}`);
+    console.log(`Duplicate dish slugs qualified with relevant keywords: ${keywordQualifiedSlugs}`);
     console.log(`Multi-season relations preserved: ${multiSeasonRecipes}`);
     console.log(`Multi-difficulty relations preserved: ${multiDifficultyRecipes}`);
     console.log(`Medical/claim descriptions not copied; neutral descriptions created: ${neutralizedDescriptions}`);
@@ -573,7 +610,7 @@ async function main() {
     const s3 = new S3Client({ region: requireEnv("AWS_REGION") });
     await upload(s3, mediaBucket, DEFAULT_IMAGE_KEY, DEFAULT_IMAGE_PATH, "image/png");
 
-    for (const row of prepared) {
+    for (const row of importRows) {
       const imageUrl = row.image
         ? publicMediaUrl(row.image.imageKey)
         : publicMediaUrl(DEFAULT_IMAGE_KEY);
@@ -592,10 +629,7 @@ async function main() {
         update: {
           title: row.title,
           slug: row.slug,
-          metaTitle: row.title,
           metaSlug: null,
-          metaDescription: row.description,
-          description: row.description,
           imageUrl,
           recipeCategoriesId: row.categoryId,
           recipeDifficultyId: row.difficultyIds[0] ?? null,
@@ -724,7 +758,7 @@ async function main() {
       });
     }
 
-    console.log(`Imported recipes: ${prepared.length}`);
+    console.log(`Imported recipes: ${importRows.length}`);
     console.log(`Published recipes: ${safelyPublishable}`);
     console.log(`Uploaded recipe-specific image matches: ${actualImages}`);
     console.log(`Post-write mapping issues: ${JSON.stringify(unresolved)}`);

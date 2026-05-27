@@ -30,6 +30,14 @@ export async function GET(req: Request) {
           },
         },
         UserPlan: {
+          where: {
+            endDate: {
+              gte: new Date(),
+            },
+          },
+          orderBy: {
+            endDate: "desc",
+          },
           include: {
             plan: true,
           },

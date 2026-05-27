@@ -1,23 +1,5 @@
-import { db } from "@/lib/db";
-import CommentsTable from "./_components/comments-table";
-import { CommentWithRelations } from "@/types/comment";
+import { redirect } from "next/navigation";
 
-const CommentsPage = async () => {
-  const comments: CommentWithRelations[] = await db.comment.findMany({
-    include: {
-      user: true,
-      recipe: true,
-      Post: true,
-    },
-    orderBy: {
-      createdAt: "desc",
-    },
-  });
-  return (
-    <div className="p-6">
-      <CommentsTable comments={comments} />
-    </div>
-  );
-};
+const CommentsPage = () => redirect("/admin/community?tab=comments");
 
 export default CommentsPage;

@@ -6,9 +6,9 @@ import {
   MessageSquareCode,
   Newspaper,
   Images,
+  ReceiptIndianRupee,
   Salad,
   SmartphoneNfc,
-  Stars,
   Users,
   type LucideIcon,
 } from "lucide-react";
@@ -76,8 +76,8 @@ export const adminNavigation: AdminNavigationGroup[] = [
         icon: Newspaper,
         children: [
           { title: "All Articles", href: "/admin/articles" },
-          { title: "Add Article", href: "/admin/articles/create" },
           { title: "Categories", href: "/admin/articles/categories" },
+          { title: "Tags", href: "/admin/articles/tags" },
         ],
       },
       {
@@ -90,6 +90,11 @@ export const adminNavigation: AdminNavigationGroup[] = [
   {
     label: "Commerce",
     items: [
+      {
+        title: "Orders",
+        href: "/admin/orders",
+        icon: ReceiptIndianRupee,
+      },
       {
         title: "Coupons",
         href: "/admin/coupons",
@@ -106,14 +111,9 @@ export const adminNavigation: AdminNavigationGroup[] = [
     label: "Community",
     items: [
       {
-        title: "Comments",
-        href: "/admin/comments",
+        title: "Community",
+        href: "/admin/community",
         icon: MessageSquareCode,
-      },
-      {
-        title: "Reviews",
-        href: "/admin/reviews",
-        icon: Stars,
       },
       {
         title: "Users",

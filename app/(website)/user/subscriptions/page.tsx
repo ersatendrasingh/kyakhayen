@@ -7,14 +7,26 @@ import AccountPageHeading from "../_components/account-page-heading";
 const UserSubscriptionPage = async () => {
   const user = await currentUser();
   if (!user) return null;
-  const hasPlan = Boolean(user.userPlan?.length);
+  const currentPlanIndex =
+    user.userPlanEndDate?.reduce(
+      (latestIndex, date, index, dates) =>
+        new Date(date).getTime() > new Date(dates[latestIndex]).getTime()
+          ? index
+          : latestIndex,
+      0,
+    ) ?? -1;
+  const currentPlan =
+    currentPlanIndex >= 0 ? user.userPlan?.[currentPlanIndex] : undefined;
+  const hasPlan = Boolean(currentPlan);
+  const isPaidMembership = currentPlan && currentPlan !== "Freemium";
+  const planDestination = user.isPersonalised ? "/meal-plan" : "/meal-plan/create";
 
   return (
     <div>
       <AccountPageHeading
-        eyebrow="Launch access"
-        title="Everything is open during launch"
-        description="Personalized meal plans are available free right now, including future downloadable and email-ready plan experiences as they arrive."
+        eyebrow="My access"
+        title="Your meal-planning membership"
+        description="View your active access period, continue your weekly meal plan, or extend your membership without losing unused days."
       />
 
       <section className="relative mb-5 overflow-hidden rounded-[1.8rem] bg-[#32241b] p-6 text-white dark:bg-[#142820] sm:p-8">
@@ -22,29 +34,40 @@ const UserSubscriptionPage = async () => {
         <div className="relative flex flex-col gap-7 sm:flex-row sm:items-end sm:justify-between">
           <div className="max-w-xl">
             <span className="mb-4 inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1.5 text-xs font-semibold text-[#f1d5a2]">
-              <Gift className="size-3.5" /> Free during launch
+              <Gift className="size-3.5" /> {isPaidMembership ? "Paid membership active" : "Launch access active"}
             </span>
-            <h2 className="text-2xl font-semibold sm:text-3xl">Your weekly table, without a paywall.</h2>
+            <h2 className="text-2xl font-semibold sm:text-3xl">
+              {isPaidMembership
+                ? "Your meal-planning membership is ready."
+                : "Your first weekly table starts free."}
+            </h2>
             <p className="mt-3 text-sm leading-6 text-white/72">
-              Generate, revisit and refine a meal plan with your everyday food choices while launch access is active.
+              {isPaidMembership
+                ? "Buying another membership extends your current access period, so remaining days are kept."
+                : "Generate a meal plan during launch, then extend access later without losing remaining free days."}
             </p>
           </div>
-          <Link href="/meal-plan/create" className="inline-flex items-center justify-center gap-2 rounded-full bg-[#bf3a2b] px-5 py-3 text-sm font-semibold text-white">
-            Create a plan <ArrowRight className="size-4" />
-          </Link>
+          <div className="flex flex-col gap-3">
+            <Link href={planDestination} className="inline-flex items-center justify-center gap-2 rounded-full bg-[#bf3a2b] px-5 py-3 text-sm font-semibold text-white">
+              {user.isPersonalised ? "Open meal plan" : "Set up meal plan"} <ArrowRight className="size-4" />
+            </Link>
+            <Link href="/subscription-plans" className="inline-flex items-center justify-center rounded-full border border-white/18 px-5 py-3 text-sm font-semibold text-white">
+              Extend access
+            </Link>
+          </div>
         </div>
       </section>
 
       {hasPlan ? (
         <SubscriptionCard
-          subscription={user.userPlan![0]}
-          planStartDate={user.userPlanStartDate[0]}
-          planEndDate={user.userPlanEndDate[0]}
+          subscription={currentPlan!}
+          planStartDate={user.userPlanStartDate[currentPlanIndex]}
+          planEndDate={user.userPlanEndDate[currentPlanIndex]}
         />
       ) : (
         <div className="grid gap-5 md:grid-cols-2">
           <AccessItem icon={Sparkles} title="Personalized weekly plan" text="Food style, cuisines, exclusions and cooking comfort shape your week." />
-          <AccessItem icon={Mail} title="Plan sharing ahead" text="PDF and email delivery will fit into the same launch access experience." />
+          <AccessItem icon={Mail} title="Premium tools ahead" text="PDF delivery, fresh weekly planning and convenient sharing can be offered through membership." />
         </div>
       )}
     </div>

@@ -36,6 +36,12 @@ export const login = async (
     return { error: "Email does not exist!" };
   }
 
+  if (!existingUser.isActive) {
+    return {
+      error: "Your account is temporarily suspended. Please contact support.",
+    };
+  }
+
   if (!existingUser.emailVerified) {
     const verificationToken = await generateVerificationToken(
       existingUser.email
@@ -51,7 +57,10 @@ export const login = async (
         })
       ),
     });
-    return { success: "Confirmation email sent! Please check your email" };
+    return {
+      success: "A 6-digit verification code has been sent to your email.",
+      verificationRequired: true,
+    };
   }
   if (existingUser.isTwoFactorEnabled && existingUser.email) {
     if (code) {

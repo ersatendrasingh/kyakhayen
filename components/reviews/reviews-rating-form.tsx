@@ -1,11 +1,11 @@
 "use client";
 
 import axios from "axios";
-import { LoaderCircle } from "lucide-react";
+import { ArrowRight, LoaderCircle, LogIn } from "lucide-react";
+import Link from "next/link";
 import { useState } from "react";
 import { toast } from "sonner";
 
-import LoginPopup from "@/components/modals/login-popup";
 import StarRating from "@/components/reviews/star-rating";
 import { useCurrentUser } from "@/hooks/use-current-user";
 
@@ -18,7 +18,6 @@ export const ReviewsRatingForm = ({
   recipeId,
   onReviewAdded,
 }: ReviewsRatingFormProps) => {
-  const [showPopup, setShowPopup] = useState(false);
   const [rating, setRating] = useState(0);
   const [review, setReview] = useState("");
   const [ratingError, setRatingError] = useState<string | null>(null);
@@ -27,7 +26,6 @@ export const ReviewsRatingForm = ({
 
   const handleSubmit = async () => {
     if (!user) {
-      setShowPopup(true);
       return;
     }
     if (rating < 1 || rating > 5) {
@@ -86,15 +84,36 @@ export const ReviewsRatingForm = ({
           </button>
         </div>
       ) : (
-        <button
-          type="button"
-          onClick={() => setShowPopup(true)}
-          className="mt-5 cursor-pointer rounded-full bg-[#b83324] px-5 py-3 text-sm font-semibold text-white"
-        >
-          Log in to review
-        </button>
+        <div className="mt-5 rounded-2xl border border-[#eadcc8] bg-[#fffdf8] p-4 dark:border-white/10 dark:bg-[#10241e]">
+          <div className="flex gap-3">
+            <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-[#f6e8d2] text-[#b83324] dark:bg-white/8 dark:text-[#dfb36c]">
+              <LogIn className="size-4" />
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-[#332820] dark:text-[#eef2ed]">
+                Sign in to rate this recipe
+              </p>
+              <p className="mt-1 text-xs leading-5 text-[#75665a] dark:text-[#a7b5af]">
+                Share your result after you have cooked it.
+              </p>
+            </div>
+          </div>
+          <div className="mt-4 flex flex-wrap gap-2">
+            <Link
+              href="/auth/login"
+              className="inline-flex h-10 items-center gap-1.5 rounded-full bg-[#b83324] px-4 text-xs font-semibold text-white transition hover:bg-[#9c2d21]"
+            >
+              Sign in <ArrowRight className="size-3.5" />
+            </Link>
+            <Link
+              href="/auth/register"
+              className="inline-flex h-10 items-center rounded-full border border-[#decbb0] px-4 text-xs font-semibold text-[#57493e] transition hover:bg-[#f8ecda] dark:border-white/12 dark:text-[#d6dfda] dark:hover:bg-white/6"
+            >
+              Create account
+            </Link>
+          </div>
+        </div>
       )}
-      {showPopup && <LoginPopup onClose={() => setShowPopup(false)} />}
     </div>
   );
 };

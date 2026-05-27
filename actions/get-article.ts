@@ -31,6 +31,11 @@ export const getArticleBySlug = async ({
             category: true,
           },
         },
+        PostTag: {
+          include: {
+            tag: true,
+          },
+        },
         articleComments: {
           where: {
             OR: [{ isPublished: true }, { userId }],

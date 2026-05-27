@@ -6,15 +6,17 @@ import {
   ShieldCheck,
   Sparkles,
 } from "lucide-react";
-import Image from "next/image";
 import Link from "next/link";
 
 import Container from "@/components/container";
+import DevicePreview from "@/components/meal-plan/device-preview";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
 type MealPlanLandingProps = {
   isSignedIn: boolean;
+  activePlan?: string;
+  hasPaidAccess: boolean;
 };
 
 const benefits = [
@@ -45,7 +47,20 @@ const steps = [
   "Tell us your cooking comfort",
 ];
 
-export default function MealPlanLanding({ isSignedIn }: MealPlanLandingProps) {
+export default function MealPlanLanding({
+  isSignedIn,
+  activePlan,
+  hasPaidAccess,
+}: MealPlanLandingProps) {
+  const accessLabel = hasPaidAccess
+    ? `${activePlan} membership active`
+    : isSignedIn
+      ? "7-day launch access active"
+      : "Try your first 7-day plan";
+  const variedPlanDescription = hasPaidAccess
+    ? "A changing table designed to avoid boring repetition across your planned meals."
+    : benefits[2].description;
+
   return (
     <main className="bg-[#fffaf2] text-[#2c2118]">
       <section className="relative overflow-hidden border-b border-[#eadcc8] py-12 sm:py-16 lg:py-20">
@@ -56,10 +71,12 @@ export default function MealPlanLanding({ isSignedIn }: MealPlanLandingProps) {
             <div>
               <Badge className="mb-5 bg-[#f7e7c5] px-4 py-2 text-[#7d4d1c] hover:bg-[#f7e7c5]">
                 <Sparkles className="size-3.5" />
-                Launch access: free
+                {accessLabel}
               </Badge>
               <h1 className="max-w-xl text-4xl font-semibold leading-tight tracking-tight sm:text-5xl">
-                A 7-day meal plan made around your taste.
+                {hasPaidAccess
+                  ? "Meals planned around your taste."
+                  : "A 7-day meal plan made around your taste."}
               </h1>
               <p className="mt-5 max-w-xl text-base leading-7 text-[#625447] sm:text-lg">
                 Pick what you like to cook and eat. We will create a practical
@@ -67,12 +84,15 @@ export default function MealPlanLanding({ isSignedIn }: MealPlanLandingProps) {
                 kitchen comfort.
               </p>
               <p className="mt-4 text-sm font-medium text-[#8b5530]">
-                No medical questions. No payment required during launch.
+                {hasPaidAccess
+                  ? "Your membership is ready. Complete food choices to build your plan."
+                  : "No medical questions. Everyday food choices only."}
               </p>
               <div className="mt-8 flex flex-wrap gap-3">
                 <Button asChild size="lg" className="h-12 rounded-full px-7">
                   <Link href="/meal-plan/create">
-                    Create my free plan <ArrowRight className="size-4" />
+                    {hasPaidAccess ? "Set up my meal plan" : "Create my 7-day plan"}{" "}
+                    <ArrowRight className="size-4" />
                   </Link>
                 </Button>
                 {!isSignedIn && (
@@ -90,22 +110,15 @@ export default function MealPlanLanding({ isSignedIn }: MealPlanLandingProps) {
               </div>
             </div>
             <div className="relative mx-auto w-full max-w-[620px]">
-              <div className="overflow-hidden rounded-[2rem] border border-[#eadcc8] bg-white p-3 shadow-xl shadow-[#5c3618]/10">
-                <Image
-                  src="/assets/images/meal-plan.webp"
-                  alt="A weekly meal plan preview"
-                  width={720}
-                  height={480}
-                  className="h-auto w-full rounded-[1.45rem] object-cover"
-                  priority
-                />
+              <div className="overflow-hidden rounded-[2rem] border border-[#eadcc8] bg-[radial-gradient(circle_at_50%_14%,#fff0d5,transparent_44%),white] px-4 py-6 shadow-xl shadow-[#5c3618]/10 sm:p-7">
+                <DevicePreview />
               </div>
               <div className="absolute -bottom-5 left-5 rounded-2xl border border-[#eadcc8] bg-white px-4 py-3 shadow-lg sm:left-10">
                 <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#9a6b42]">
-                  Included during launch
+                  {hasPaidAccess ? "Included in membership" : "Plan preview"}
                 </p>
                 <p className="mt-1 flex items-center gap-2 text-sm font-semibold">
-                  <CalendarDays className="size-4 text-primary" /> Full 7-day plan
+                  <CalendarDays className="size-4 text-primary" /> Personalized meal plan
                 </p>
               </div>
             </div>
@@ -116,7 +129,7 @@ export default function MealPlanLanding({ isSignedIn }: MealPlanLandingProps) {
       <section className="py-14 sm:py-20">
         <Container>
           <div className="grid gap-5 md:grid-cols-3">
-            {benefits.map(({ icon: Icon, title, description }) => (
+            {benefits.map(({ icon: Icon, title, description }, index) => (
               <div
                 key={title}
                 className="rounded-[1.5rem] border border-[#eadcc8] bg-white p-6 shadow-sm"
@@ -126,7 +139,7 @@ export default function MealPlanLanding({ isSignedIn }: MealPlanLandingProps) {
                 </span>
                 <h2 className="text-lg font-semibold">{title}</h2>
                 <p className="mt-3 text-sm leading-6 text-[#695b4e]">
-                  {description}
+                  {index === 2 ? variedPlanDescription : description}
                 </p>
               </div>
             ))}
@@ -173,14 +186,19 @@ export default function MealPlanLanding({ isSignedIn }: MealPlanLandingProps) {
               Personalized planning is open
             </p>
             <h2 className="mx-auto mt-4 max-w-2xl text-3xl font-semibold">
-              Start your weekly table for free today.
+              {hasPaidAccess
+                ? "Complete your choices and open your table."
+                : "Start your weekly table today."}
             </h2>
             <p className="mx-auto mt-4 max-w-xl text-sm leading-7 text-white/70">
-              Subscription features will arrive later. Your personalized meal
-              plan is included free during launch.
+              {hasPaidAccess
+                ? "Your active membership covers taste-based meal planning. Set your choices once and we will prepare your plan."
+                : "Build a plan from your tastes and cooking comfort. You can choose continued membership later."}
             </p>
             <Button asChild size="lg" className="mt-8 h-12 rounded-full px-8">
-              <Link href="/meal-plan/create">Build my 7-day plan</Link>
+              <Link href="/meal-plan/create">
+                {hasPaidAccess ? "Complete my choices" : "Build my 7-day plan"}
+              </Link>
             </Button>
           </div>
         </Container>

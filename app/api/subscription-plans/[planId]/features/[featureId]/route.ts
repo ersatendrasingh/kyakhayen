@@ -58,6 +58,10 @@ export async function PATCH(
     if (!feature) {
       return NextResponse.json("Feature not found", { status: 404 });
     }
+    const name = typeof values?.name === "string" ? values.name.trim() : "";
+    if (!name) {
+      return NextResponse.json("Benefit name is required", { status: 400 });
+    }
     if (values) {
       const updatedFeature = await db.feature.update({
         where: {
@@ -65,7 +69,7 @@ export async function PATCH(
           planId: params.planId,
         },
         data: {
-          ...values,
+          name,
         },
       });
       return NextResponse.json(updatedFeature, { status: 200 });

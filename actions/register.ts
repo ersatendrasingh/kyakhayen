@@ -56,5 +56,8 @@ export const register = async (values: z.infer<typeof RegisterSchema>) => {
     ),
   });
 
-  return { success: "Confirmation email sent! Please check your inbox." };
+  return {
+    success: "A 6-digit verification code has been sent to your email.",
+    verificationRequired: true,
+  };
 };

@@ -99,6 +99,18 @@ export const MobileMenuItems = ({
         </SheetClose>
       </div>
 
+      <SheetClose asChild>
+        <Link
+          href="/blog"
+          className="mx-4 mt-4 flex cursor-pointer items-center justify-between rounded-2xl border border-[#eadbc8] bg-white px-4 py-4 text-sm font-semibold text-[#45362c]"
+        >
+          <span className="inline-flex items-center gap-2">
+            <Sparkles className="size-4 text-[#bd8030]" /> Food journal
+          </span>
+          <span aria-hidden="true">-&gt;</span>
+        </Link>
+      </SheetClose>
+
       <DrawerGroup
         label="Recipes"
         kicker="Choose your plate"

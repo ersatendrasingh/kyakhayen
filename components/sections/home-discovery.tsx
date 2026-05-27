@@ -1,8 +1,12 @@
+"use client";
+
 import { ArrowRight, Clock3, Leaf, Sparkles, SunMedium } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { useState } from "react";
 
 import Container from "@/components/container";
+import HomeMealPlanAction from "@/components/sections/home-meal-plan-action";
 import { FoodPreferenceMarker } from "@/components/recipes/food-preference-marker";
 import {
   RecipeSteam,
@@ -34,6 +38,18 @@ type SeasonalSpotlightProps = {
 type InterestSpotlightProps = {
   recipes: DiscoveryRecipe[];
   editorialImage: string;
+};
+
+export type MealPlanMoment = {
+  label: string;
+  recipe: DiscoveryRecipe;
+};
+
+export type MealPlanDay = {
+  key: "today" | "tomorrow";
+  tabLabel: string;
+  dayLabel: string;
+  meals: MealPlanMoment[];
 };
 
 function recipeHref(recipe: DiscoveryRecipe) {
@@ -259,9 +275,53 @@ export function InterestSpotlight({
   );
 }
 
-export function MealPlanStory({ recipes }: { recipes: DiscoveryRecipe[] }) {
-  const plannedRecipes = recipes.slice(0, 3);
-  const moments = ["Breakfast", "Lunch", "Dinner"];
+type MealPlanStoryProps = {
+  recipes: DiscoveryRecipe[];
+  plannedDays?: MealPlanDay[];
+  fallbackDayLabel: string;
+  fallbackTomorrowLabel: string;
+};
+
+export function MealPlanStory({
+  recipes,
+  plannedDays = [],
+  fallbackDayLabel,
+  fallbackTomorrowLabel,
+}: MealPlanStoryProps) {
+  const availableDays = plannedDays.filter((day) => day.meals.length > 0);
+  const fallbackMoments = ["Breakfast", "Lunch", "Dinner"];
+  const buildPreviewMeals = (offset: number) =>
+    fallbackMoments.map((label, index) => ({
+      recipe: recipes[(offset + index) % recipes.length],
+      label,
+    })).filter((meal) => Boolean(meal.recipe));
+  const guestPreviewDays: MealPlanDay[] = [
+    {
+      key: "today",
+      tabLabel: "Today",
+      dayLabel: fallbackDayLabel,
+      meals: buildPreviewMeals(0),
+    },
+    {
+      key: "tomorrow",
+      tabLabel: "Tomorrow",
+      dayLabel: fallbackTomorrowLabel,
+      meals: buildPreviewMeals(3),
+    },
+  ];
+  const displayDays = availableDays.length > 0 ? availableDays : guestPreviewDays;
+  const preferredDay =
+    displayDays.find((day) => day.key === "today") ?? displayDays[0];
+  const [selectedDayKey, setSelectedDayKey] = useState(
+    preferredDay?.key ?? "today",
+  );
+  const selectedDay =
+    displayDays.find((day) => day.key === selectedDayKey) ?? preferredDay;
+  const hasPersonalizedDay = availableDays.length > 0;
+  const plannedMeals = selectedDay?.meals.slice(0, 3) ?? [];
+  const signals = hasPersonalizedDay
+    ? ["Your saved plan", `${selectedDay.dayLabel}'s meals`, "Personalized"]
+    : ["Vegetarian", "North Indian", "Under 30 min"];
 
   return (
     <section className="home-surface home-meal-story py-16 sm:py-24">
@@ -275,14 +335,17 @@ export function MealPlanStory({ recipes }: { recipes: DiscoveryRecipe[] }) {
                 <Sparkles className="size-4" /> Your table, in rhythm
               </p>
               <h2 className="max-w-xl text-3xl font-semibold leading-tight sm:text-5xl">
-                A menu that learns your mood.
+                {hasPersonalizedDay
+                  ? "Your table is ready whenever you are."
+                  : "A menu that learns your mood."}
               </h2>
               <p className="mt-5 max-w-lg text-sm leading-7 text-white/72 sm:text-base">
-                Likes paneer? Prefers vegetarian? Short on time? Your home
-                screen turns those signals into a fresh daily table.
+                {hasPersonalizedDay
+                  ? "See today's meals at a glance, then switch to tomorrow whenever you want to plan ahead."
+                  : "Explore today's ideas now, or switch to tomorrow for a preview of how meal planning can feel."}
               </p>
               <div className="mt-7 flex flex-wrap gap-2">
-                {["Vegetarian", "North Indian", "Under 30 min"].map((filter) => (
+                {signals.map((filter) => (
                   <span
                     key={filter}
                     className="rounded-full border border-white/13 bg-white/[0.07] px-3.5 py-2 text-xs text-white/74"
@@ -292,12 +355,7 @@ export function MealPlanStory({ recipes }: { recipes: DiscoveryRecipe[] }) {
                 ))}
               </div>
               <div className="mt-9 flex flex-wrap gap-3">
-                <Link
-                  href="/meal-plan"
-                  className="rounded-full bg-primary px-6 py-3.5 text-sm font-semibold transition hover:bg-websecondary-400"
-                >
-                  Build my meal plan
-                </Link>
+                <HomeMealPlanAction variant="story" />
                 <Link
                   href="/recipes"
                   className="rounded-full border border-white/20 px-6 py-3.5 text-sm font-semibold text-white transition hover:border-white/55"
@@ -311,20 +369,42 @@ export function MealPlanStory({ recipes }: { recipes: DiscoveryRecipe[] }) {
               <div className="mb-4 flex items-center justify-between gap-3 border-b border-white/10 pb-4">
                 <div>
                   <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-[#f4cb83]">
-                    Today for you
+                    {selectedDay ? `${selectedDay.tabLabel} for you` : "Today for you"}
                   </p>
-                  <p className="mt-1 text-lg font-semibold">Tuesday table</p>
+                  <p className="mt-1 text-lg font-semibold">
+                    {selectedDay?.dayLabel ?? fallbackDayLabel} table
+                  </p>
                 </div>
-                <span className="rounded-full bg-[#ddeebd]/15 px-3 py-2 text-xs font-medium text-[#dceec2]">
-                  Live suggestions
-                </span>
+                {displayDays.length > 0 ? (
+                  <div className="flex rounded-full border border-white/10 bg-black/10 p-1">
+                    {displayDays.map((day) => (
+                        <button
+                          key={day.key}
+                          type="button"
+                          onClick={() => setSelectedDayKey(day.key)}
+                          aria-pressed={day.key === selectedDay?.key}
+                          className={`rounded-full px-3 py-1.5 text-xs font-medium transition ${
+                            day.key === selectedDay?.key
+                              ? "bg-[#ecd198] text-[#2d231a]"
+                              : "text-white/68 hover:text-white"
+                          }`}
+                        >
+                          {day.tabLabel}
+                        </button>
+                      ))}
+                  </div>
+                ) : (
+                  <span className="rounded-full bg-[#ddeebd]/15 px-3 py-2 text-xs font-medium text-[#dceec2]">
+                    Fresh ideas
+                  </span>
+                )}
               </div>
 
               <div className="grid gap-3 sm:grid-cols-3">
-                {plannedRecipes.map((recipe, index) => (
+                {plannedMeals.map(({ recipe, label }) => (
                   <Link
                     href={recipeHref(recipe)}
-                    key={recipe.id}
+                    key={`${label}-${recipe.id}`}
                     className="group overflow-hidden rounded-[1.15rem] bg-white/[0.075] p-2 transition hover:bg-white/[0.13]"
                   >
                     <div className="relative aspect-[1.08] overflow-hidden rounded-[0.9rem]">
@@ -340,7 +420,7 @@ export function MealPlanStory({ recipes }: { recipes: DiscoveryRecipe[] }) {
                       )}
                     </div>
                     <p className="mt-3 text-[10px] font-semibold uppercase tracking-[0.16em] text-[#efcb83]">
-                      {moments[index]}
+                      {label}
                     </p>
                     <p className="mt-1 line-clamp-2 text-xs font-medium leading-5 text-white/92">
                       {recipe.title}
@@ -353,8 +433,9 @@ export function MealPlanStory({ recipes }: { recipes: DiscoveryRecipe[] }) {
                 <span className="inline-flex size-8 shrink-0 items-center justify-center rounded-full bg-[#e9bf68]/16 text-[#f4d08a]">
                   <Sparkles className="size-4" />
                 </span>
-                You enjoyed paneer lately. Tomorrow&apos;s ideas will lean into
-                that craving.
+                {hasPersonalizedDay
+                  ? `Showing Breakfast, Lunch and Dinner saved in your ${selectedDay.dayLabel} plan.`
+                  : `${selectedDay?.tabLabel ?? "Today"} preview: build your plan to turn these ideas into your own table.`}
               </div>
             </div>
           </div>

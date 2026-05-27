@@ -20,31 +20,39 @@ const worker = new Worker(
   "generateMealPlan",
   async (job) => {
     try {
+      const isDeliveryJob = job.name === "deliverMealPlanDay";
       console.log(
-        `Starting job ${job.id}: Generating meal plan for user ${job.data.userId}`
+        `Starting job ${job.id}: ${isDeliveryJob ? "Delivering meal plan day" : "Generating meal plan"} for user ${job.data.userId}`
       );
 
       // Update progress to 10%
       await job.updateProgress({
         percentage: 5,
-        message: "Starting your personalized meal plan",
+        message: isDeliveryJob
+          ? "Preparing daily meal-plan delivery"
+          : "Starting your personalized meal plan",
       });
 
-      const response = await axios.post(`${APP_URL}/api/generate-meal-plan`, {
-        userId: job.data.userId,
-        jobId: job.id,
-      }, {
-        headers: {
-          "x-meal-plan-worker-secret": MEAL_PLAN_WORKER_SECRET,
+      const response = await axios.post(
+        `${APP_URL}${isDeliveryJob ? "/api/deliver-meal-plan-day" : "/api/generate-meal-plan"}`,
+        isDeliveryJob
+          ? { userId: job.data.userId, date: job.data.date }
+          : { userId: job.data.userId, jobId: job.id },
+        {
+          headers: {
+            "x-meal-plan-worker-secret": MEAL_PLAN_WORKER_SECRET,
+          },
         },
-      });
+      );
 
       await job.updateProgress({
         percentage: 100,
-        message: "Your meal plan is ready",
+        message: isDeliveryJob
+          ? "Daily meal-plan PDF delivered"
+          : "Your meal plan is ready",
       });
       console.log(
-        `Job ${job.id}: Progress 100% - Meal plan generation complete`
+        `Job ${job.id}: Progress 100% - ${isDeliveryJob ? "delivery complete" : "meal plan generation complete"}`
       );
 
       return response.data;

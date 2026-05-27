@@ -14,7 +14,7 @@ import {
 import Image from "next/image";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
 import Container from "@/components/container";
@@ -34,6 +34,8 @@ type MealPlanBuilderProps = {
   cuisines: Option[];
   exclusions: Option[];
   cookingSkills: Option[];
+  activePlanName?: string;
+  hasPaidAccess: boolean;
   initialDraft: Draft;
 };
 
@@ -51,6 +53,7 @@ const emptyDraft: Draft = {
   cookingSkill: null,
 };
 const storageKey = "mealPlanBuilderDraft";
+const pendingGenerationKey = "mealPlanPendingGeneration";
 const storageVersion = 2;
 
 type SavedWizard = {
@@ -84,7 +87,7 @@ const stepDetails = [
   {
     label: "Review",
     title: "Ready to build your week?",
-    detail: "Check your choices before we prepare your free seven-day plan.",
+    detail: "Check your choices before we prepare your personalized plan.",
   },
 ];
 
@@ -115,8 +118,13 @@ export default function MealPlanBuilder({
   cuisines,
   exclusions,
   cookingSkills,
+  activePlanName,
+  hasPaidAccess,
   initialDraft,
 }: MealPlanBuilderProps) {
+  const accessLabel = hasPaidAccess
+    ? `${activePlanName || "Membership"} access`
+    : "7-day launch access";
   const [draft, setDraft] = useState<Draft>(initialDraft);
   const [hydrated, setHydrated] = useState(false);
   const [step, setStep] = useState(0);
@@ -130,6 +138,7 @@ export default function MealPlanBuilder({
   );
   const [generationFailed, setGenerationFailed] = useState(false);
   const choiceRailRef = useRef<HTMLDivElement>(null);
+  const resumedGenerationRef = useRef(false);
   const router = useRouter();
   const { data: session, update } = useSession();
 
@@ -220,11 +229,13 @@ export default function MealPlanBuilder({
     }));
   };
 
-  const submit = async () => {
+  const submit = useCallback(async () => {
     if (!session?.user) {
-      router.push("/auth/login?callbackUrl=%2Fmeal-plan%2Fcreate");
+      window.localStorage.setItem(pendingGenerationKey, "true");
+      router.push("/auth/register?callbackUrl=%2Fmeal-plan%2Fcreate");
       return;
     }
+    window.localStorage.removeItem(pendingGenerationKey);
     setGenerationModalOpen(true);
     setGenerationJobId(null);
     setSaving(true);
@@ -254,7 +265,15 @@ export default function MealPlanBuilder({
     } finally {
       setSaving(false);
     }
-  };
+  }, [draft, router, session?.user]);
+
+  useEffect(() => {
+    if (!hydrated || !session?.user || resumedGenerationRef.current) return;
+    if (window.localStorage.getItem(pendingGenerationKey) !== "true") return;
+
+    resumedGenerationRef.current = true;
+    void submit();
+  }, [hydrated, session?.user, submit]);
 
   const options =
     step === 0
@@ -305,12 +324,13 @@ export default function MealPlanBuilder({
   };
 
   return (
-    <main className="min-h-screen bg-[#fffaf2] py-10 sm:py-14">
+    <main className="min-h-screen bg-[#fffaf2] py-10 text-[#2c2118] dark:bg-[#091712] dark:text-[#eef2ec] sm:py-14">
       <MealPlanProgressModal
         open={generationModalOpen}
         percentage={generationProgress}
         message={generationMessage}
         failed={generationFailed}
+        progressLabel={hasPaidAccess ? "Preparing your membership plan" : "Preparing seven days"}
         onRetry={() => {
           setGenerationJobId(null);
           setGenerationFailed(false);
@@ -321,17 +341,17 @@ export default function MealPlanBuilder({
         <div className="mx-auto max-w-5xl">
           <div className="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
             <div>
-              <Badge className="mb-4 bg-[#f7e7c5] px-4 py-2 text-[#7d4d1c] hover:bg-[#f7e7c5]">
-                <Sparkles className="size-3.5" /> Free during launch
+              <Badge className="mb-4 bg-[#f7e7c5] px-4 py-2 text-[#7d4d1c] hover:bg-[#f7e7c5] dark:bg-[#17362d] dark:text-[#e1b366] dark:hover:bg-[#17362d]">
+                <Sparkles className="size-3.5" /> {accessLabel}
               </Badge>
               <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
                 Create your meal plan
               </h1>
-              <p className="mt-3 text-sm text-[#695b4e]">
+              <p className="mt-3 text-sm text-[#695b4e] dark:text-[#aab8b0]">
                 Everyday food preferences only. No health or medical profiling.
               </p>
             </div>
-            <p className="text-sm font-medium text-[#8b5530]">
+            <p className="text-sm font-medium text-[#8b5530] dark:text-[#e0b36c]">
               Step {step + 1} of {stepDetails.length}
             </p>
           </div>
@@ -341,20 +361,20 @@ export default function MealPlanBuilder({
               <div key={item.label} className="flex-1">
                 <div
                   className={cn(
-                    "h-1.5 rounded-full bg-[#eadcc8]",
-                    index <= step && "bg-primary",
+                    "h-1.5 rounded-full bg-[#eadcc8] dark:bg-white/10",
+                    index <= step && "bg-primary dark:bg-primary",
                   )}
                 />
-                <p className="mt-2 hidden text-xs font-medium text-[#695b4e] sm:block">
+                <p className="mt-2 hidden text-xs font-medium text-[#695b4e] dark:text-[#aab8b0] sm:block">
                   {item.label}
                 </p>
               </div>
             ))}
           </div>
 
-          <section className="rounded-[2rem] border border-[#eadcc8] bg-white p-6 shadow-sm sm:p-10">
+          <section className="rounded-[2rem] border border-[#eadcc8] bg-white p-6 shadow-sm dark:border-white/10 dark:bg-[#10241e] dark:shadow-none sm:p-10">
             <h2 className="text-2xl font-semibold">{stepDetails[step].title}</h2>
-            <p className="mt-3 max-w-2xl text-sm leading-6 text-[#695b4e]">
+            <p className="mt-3 max-w-2xl text-sm leading-6 text-[#695b4e] dark:text-[#aab8b0]">
               {stepDetails[step].detail}
             </p>
 
@@ -368,7 +388,7 @@ export default function MealPlanBuilder({
                           ? "Search cuisines"
                           : "Search ingredients to leave out"}
                       </span>
-                      <Search className="absolute left-4 top-1/2 size-4 -translate-y-1/2 text-[#8b7a69]" />
+                      <Search className="absolute left-4 top-1/2 size-4 -translate-y-1/2 text-[#8b7a69] dark:text-[#91a198]" />
                       <input
                         type="search"
                         aria-label={
@@ -383,18 +403,18 @@ export default function MealPlanBuilder({
                             ? "Search cuisines"
                             : "Search ingredients to leave out"
                         }
-                        className="h-12 w-full rounded-full border border-[#eadcc8] bg-[#fffaf2] pl-11 pr-4 text-sm outline-none transition placeholder:text-[#988a7c] focus:border-primary"
+                        className="h-12 w-full rounded-full border border-[#eadcc8] bg-[#fffaf2] pl-11 pr-4 text-sm outline-none transition placeholder:text-[#988a7c] focus:border-primary dark:border-white/10 dark:bg-[#142b23] dark:text-[#eef2ec] dark:placeholder:text-[#81938a] dark:focus:border-[#d9a556]"
                       />
                     </label>
                     <div className="flex items-center justify-between gap-4">
-                      <p className="text-xs font-medium text-[#8b7a69]">
+                      <p className="text-xs font-medium text-[#8b7a69] dark:text-[#9eaea6]">
                         {filteredOptions.length} of {options.length} choices
                       </p>
                       <div className="hidden gap-2 sm:flex">
                         <button
                           type="button"
                           aria-label="Previous choices"
-                          className="flex size-9 cursor-pointer items-center justify-center rounded-full border border-[#eadcc8] text-[#695b4e] transition hover:border-primary hover:bg-[#fff2ec] hover:text-primary"
+                          className="flex size-9 cursor-pointer items-center justify-center rounded-full border border-[#eadcc8] text-[#695b4e] transition hover:border-primary hover:bg-[#fff2ec] hover:text-primary dark:border-white/12 dark:text-[#b5c1bb] dark:hover:border-[#d9a556] dark:hover:bg-[#19372d] dark:hover:text-[#e1b366]"
                           onClick={() => scrollChoices("left")}
                         >
                           <ChevronLeft className="size-4" />
@@ -402,7 +422,7 @@ export default function MealPlanBuilder({
                         <button
                           type="button"
                           aria-label="Next choices"
-                          className="flex size-9 cursor-pointer items-center justify-center rounded-full border border-[#eadcc8] text-[#695b4e] transition hover:border-primary hover:bg-[#fff2ec] hover:text-primary"
+                          className="flex size-9 cursor-pointer items-center justify-center rounded-full border border-[#eadcc8] text-[#695b4e] transition hover:border-primary hover:bg-[#fff2ec] hover:text-primary dark:border-white/12 dark:text-[#b5c1bb] dark:hover:border-[#d9a556] dark:hover:bg-[#19372d] dark:hover:text-[#e1b366]"
                           onClick={() => scrollChoices("right")}
                         >
                           <ChevronRight className="size-4" />
@@ -414,7 +434,7 @@ export default function MealPlanBuilder({
                 <div
                   ref={choiceRailRef}
                   className={cn(
-                    "flex snap-x gap-5 overflow-x-auto rounded-[1.5rem] bg-[#fffdf9] px-5 py-4 [scrollbar-width:thin]",
+                    "flex snap-x gap-5 overflow-x-auto rounded-[1.5rem] bg-[#fffdf9] px-5 py-4 [scrollbar-width:thin] dark:border dark:border-white/[0.05] dark:bg-[#142920]",
                     centerChoices && "sm:justify-center",
                   )}
                 >
@@ -448,9 +468,9 @@ export default function MealPlanBuilder({
                       >
                         <span
                           className={cn(
-                            "relative block size-20 overflow-hidden rounded-full border-2 border-transparent bg-[#f6eadb] shadow-sm transition group-hover:-translate-y-0.5 group-hover:shadow-md sm:size-24",
+                            "relative block size-20 overflow-hidden rounded-full border-2 border-transparent bg-[#f6eadb] shadow-sm transition group-hover:-translate-y-0.5 group-hover:shadow-md dark:bg-[#20382f] dark:shadow-none sm:size-24",
                             active &&
-                              "border-primary shadow-[0_0_0_3px_#fff2ec]",
+                              "border-primary shadow-[0_0_0_3px_#fff2ec] dark:border-[#d7a45d] dark:shadow-[0_0_0_3px_rgba(218,174,98,0.18)]",
                           )}
                         >
                           <Image
@@ -466,8 +486,8 @@ export default function MealPlanBuilder({
                         </span>
                         <span
                           className={cn(
-                            "mt-3 text-sm font-medium text-[#514136]",
-                            active && "font-semibold text-primary",
+                            "mt-3 text-sm font-medium text-[#514136] dark:text-[#e6e8e2]",
+                            active && "font-semibold text-primary dark:text-[#e3b56b]",
                           )}
                         >
                           {option.title}
@@ -477,20 +497,20 @@ export default function MealPlanBuilder({
                   })}
                 </div>
                 {filteredOptions.length === 0 && options.length > 0 && (
-                  <p className="-mt-[9rem] flex h-[9rem] items-center justify-center text-sm text-[#695b4e]">
+                  <p className="-mt-[9rem] flex h-[9rem] items-center justify-center text-sm text-[#695b4e] dark:text-[#aab8b0]">
                     No matching choices found. Try another search.
                   </p>
                 )}
                 {browseStep && selectedBrowseOptions.length > 0 && (
                   <div className="mt-5 flex items-center gap-2 overflow-x-auto pb-1">
-                    <span className="shrink-0 text-xs font-medium text-[#8b7a69]">
+                    <span className="shrink-0 text-xs font-medium text-[#8b7a69] dark:text-[#9eaea6]">
                       Selected:
                     </span>
                     {selectedBrowseOptions.map((option) => (
                       <button
                         key={option.id}
                         type="button"
-                        className="flex shrink-0 cursor-pointer items-center gap-1.5 rounded-full bg-[#fff2ec] px-3 py-2 text-xs font-semibold text-[#73422c] transition hover:bg-[#ffe7de]"
+                        className="flex shrink-0 cursor-pointer items-center gap-1.5 rounded-full bg-[#fff2ec] px-3 py-2 text-xs font-semibold text-[#73422c] transition hover:bg-[#ffe7de] dark:bg-[#1c382e] dark:text-[#e2b36d] dark:hover:bg-[#24453a]"
                         onClick={() =>
                           toggleMany(
                             step === 1 ? "cuisines" : "exclusions",
@@ -505,7 +525,7 @@ export default function MealPlanBuilder({
                   </div>
                 )}
                 {step === 2 && exclusions.length === 0 && (
-                  <p className="text-sm text-[#695b4e]">
+                  <p className="text-sm text-[#695b4e] dark:text-[#aab8b0]">
                     No exclusions available. You can continue.
                   </p>
                 )}
@@ -516,14 +536,16 @@ export default function MealPlanBuilder({
                   <div className="flex items-start justify-between gap-4">
                     <div>
                       <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#f7cf8a]">
-                        Your weekly palette
+                        {hasPaidAccess ? "Your meal palette" : "Your weekly palette"}
                       </p>
                       <h3 className="mt-2 text-xl font-semibold">
-                        Seven days shaped around your table
+                        {hasPaidAccess
+                          ? "Planned meals shaped around your table"
+                          : "Seven days shaped around your table"}
                       </h3>
                     </div>
                     <span className="shrink-0 rounded-full bg-white/10 px-3 py-2 text-xs font-semibold text-[#f7cf8a]">
-                      Free launch plan
+                      {accessLabel}
                     </span>
                   </div>
                 </div>
@@ -552,9 +574,9 @@ export default function MealPlanBuilder({
                   ].map((summary) => (
                     <div
                       key={summary.label}
-                      className="min-h-32 rounded-2xl border border-[#f0e5d6] bg-[#fffaf2] p-3"
+                      className="min-h-32 rounded-2xl border border-[#f0e5d6] bg-[#fffaf2] p-3 dark:border-white/8 dark:bg-[#142b23]"
                     >
-                      <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[#9a6b42]">
+                      <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[#9a6b42] dark:text-[#d6aa60]">
                         {summary.label}
                       </p>
                       {summary.items.length > 0 ? (
@@ -563,7 +585,7 @@ export default function MealPlanBuilder({
                             {summary.items.slice(0, 3).map((option) => (
                               <span
                                 key={option.id}
-                                className="relative block size-10 overflow-hidden rounded-full border-2 border-white bg-[#f6eadb]"
+                                className="relative block size-10 overflow-hidden rounded-full border-2 border-white bg-[#f6eadb] dark:border-[#142b23] dark:bg-[#20382f]"
                               >
                                 <Image
                                   src={
@@ -578,17 +600,17 @@ export default function MealPlanBuilder({
                               </span>
                             ))}
                             {summary.items.length > 3 && (
-                              <span className="flex size-10 items-center justify-center rounded-full border-2 border-white bg-[#f1dfc7] text-[11px] font-semibold text-[#73422c]">
+                              <span className="flex size-10 items-center justify-center rounded-full border-2 border-white bg-[#f1dfc7] text-[11px] font-semibold text-[#73422c] dark:border-[#142b23] dark:bg-[#24453a] dark:text-[#e2b36d]">
                                 +{summary.items.length - 3}
                               </span>
                             )}
                           </div>
-                          <p className="mt-3 line-clamp-2 text-xs font-medium text-[#44372d]">
+                          <p className="mt-3 line-clamp-2 text-xs font-medium text-[#44372d] dark:text-[#e4eae5]">
                             {summary.items.map((item) => item.title).join(", ")}
                           </p>
                         </>
                       ) : (
-                        <p className="mt-7 text-xs text-[#8b7a69]">
+                        <p className="mt-7 text-xs text-[#8b7a69] dark:text-[#9eaea6]">
                           {summary.empty}
                         </p>
                       )}
@@ -598,7 +620,7 @@ export default function MealPlanBuilder({
               </div>
             )}
 
-            <div className="mt-8 flex items-center justify-between border-t border-[#f0e5d6] pt-6">
+            <div className="mt-8 flex items-center justify-between border-t border-[#f0e5d6] pt-6 dark:border-white/8">
               <Button
                 type="button"
                 variant="ghost"
@@ -618,16 +640,37 @@ export default function MealPlanBuilder({
                   Continue <ArrowRight className="size-4" />
                 </Button>
               ) : (
-                <Button
-                  type="button"
-                  size="lg"
-                  className="rounded-full px-7"
-                  disabled={saving}
-                  onClick={submit}
-                >
-                  {saving && <Loader2 className="size-4 animate-spin" />}
-                  {session?.user ? "Generate my free plan" : "Sign in to generate"}
-                </Button>
+                <div className="flex flex-col items-end gap-2">
+                  <Button
+                    type="button"
+                    size="lg"
+                    className="rounded-full px-7"
+                    disabled={saving}
+                    onClick={submit}
+                  >
+                    {saving && <Loader2 className="size-4 animate-spin" />}
+                    {session?.user
+                      ? "Generate my meal plan"
+                      : "Create account & generate"}
+                  </Button>
+                  {!session?.user && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        window.localStorage.setItem(
+                          pendingGenerationKey,
+                          "true",
+                        );
+                        router.push(
+                          "/auth/login?callbackUrl=%2Fmeal-plan%2Fcreate",
+                        );
+                      }}
+                      className="cursor-pointer text-xs font-medium text-primary underline decoration-primary/30 underline-offset-4"
+                    >
+                      Already have an account? Sign in
+                    </button>
+                  )}
+                </div>
               )}
             </div>
           </section>
