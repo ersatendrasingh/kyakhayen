@@ -103,31 +103,31 @@ export default function InstallPrompt() {
   return (
     <aside
       aria-label="Install Kya Khayen app"
-      className="install-prompt-card fixed bottom-[5.35rem] left-3 right-3 z-[48] rounded-[1.35rem] border border-[#eedbc2] bg-[#fffaf2]/98 p-3.5 shadow-[0_24px_55px_-25px_rgba(44,26,13,0.58)] backdrop-blur-md sm:hidden"
+      className="install-prompt-card fixed bottom-[5.35rem] left-3 right-3 z-[48] rounded-[1.35rem] border border-[#244238] bg-[#10231c]/98 p-3.5 shadow-[0_24px_55px_-25px_rgba(5,15,12,0.8)] backdrop-blur-md sm:hidden"
     >
       <button
         type="button"
         aria-label="Dismiss install suggestion"
         onClick={dismissPrompt}
-        className="absolute right-2.5 top-2.5 flex size-7 cursor-pointer items-center justify-center rounded-full text-[#776456] transition hover:bg-black/5"
+        className="absolute right-2.5 top-2.5 flex size-7 cursor-pointer items-center justify-center rounded-full text-[#a9b9af] transition hover:bg-white/5"
       >
         <X className="size-4" />
       </button>
 
       <div className="flex items-center gap-3 pr-8">
-        <span className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-[#fff0da]">
+        <span className="flex size-11 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-[#19352b]">
           <Image
-            src="/assets/images/kyakhayen-logo.png"
+            src="/pwa/icon-192.png"
             alt=""
             width={38}
             height={38}
-            className="h-auto w-9 object-contain"
+            className="size-11 object-cover"
           />
         </span>
         <div>
-          <p className="text-sm font-semibold text-[#30251d]">Get recipes faster</p>
-          <p className="mt-0.5 text-[11px] leading-4 text-[#746659]">
-            Install Kya Khayen for quick search and saved meals.
+          <p className="text-sm font-semibold text-[#f3eee6]">Your kitchen, one tap away</p>
+          <p className="mt-0.5 text-[11px] leading-4 text-[#a9b9af]">
+            Install Kya Khayen for meal plans and helpful alerts.
           </p>
         </div>
       </div>
@@ -136,7 +136,7 @@ export default function InstallPrompt() {
         <button
           type="button"
           onClick={installApp}
-          className="inline-flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-full bg-primary px-4 py-2.5 text-xs font-semibold text-white transition hover:bg-[#a92d20]"
+          className="inline-flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-full bg-[#b63a2b] px-4 py-2.5 text-xs font-semibold text-white transition hover:bg-[#ca4635]"
         >
           <Download className="size-3.5" />
           Install app
@@ -144,7 +144,7 @@ export default function InstallPrompt() {
         <button
           type="button"
           onClick={dismissPrompt}
-          className="cursor-pointer rounded-full border border-[#eadbc8] px-4 py-2.5 text-xs font-semibold text-[#665448]"
+          className="cursor-pointer rounded-full border border-[#29473e] px-4 py-2.5 text-xs font-semibold text-[#c5d1cb]"
         >
           Not now
         </button>

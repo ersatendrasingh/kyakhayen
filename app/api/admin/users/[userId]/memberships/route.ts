@@ -3,6 +3,7 @@ import { z } from "zod";
 
 import { currentUser } from "@/lib/auth";
 import { db } from "@/lib/db";
+import { scheduleMembershipExpiryNotifications } from "@/lib/meal-plan-queue";
 
 const membershipSchema = z.object({
   assignmentId: z.string().nullable(),
@@ -66,6 +67,7 @@ export async function POST(
         data: { userId, planId: input.planId, startDate, endDate },
       });
     }
+    await scheduleMembershipExpiryNotifications(userId, assignment.id, assignment.endDate);
 
     return NextResponse.json(assignment);
   } catch (error) {

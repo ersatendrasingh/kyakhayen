@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { GoogleTagManager } from "@next/third-parties/google";
 import { SessionProvider } from "next-auth/react";
 import { Poppins } from "next/font/google";
@@ -27,6 +27,7 @@ const meta = {
 };
 
 export const metadata: Metadata = {
+  applicationName: "Kya Khayen",
   manifest: "/manifest.json",
   title: meta.title,
   description: meta.description,
@@ -68,6 +69,17 @@ export const metadata: Metadata = {
   alternates: {
     canonical: process.env.NEXT_PUBLIC_APP_URL,
   },
+  icons: {
+    icon: [
+      { url: "/pwa/icon-192.png", type: "image/png", sizes: "192x192" },
+      { url: "/pwa/icon-512.png", type: "image/png", sizes: "512x512" },
+    ],
+    apple: [{ url: "/pwa/apple-touch-icon.png", sizes: "180x180", type: "image/png" }],
+  },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#10231c",
 };
 
 export default async function RootLayout({

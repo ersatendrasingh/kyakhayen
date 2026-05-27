@@ -1,5 +1,5 @@
 import { UserRole } from "@prisma/client";
-import NextAuth, { type DefaultSession } from "next-auth";
+import { type DefaultSession } from "next-auth";
 
 export type ExtendedUser = DefaultSession["user"] & {
   id: string;
@@ -11,7 +11,6 @@ export type ExtendedUser = DefaultSession["user"] & {
   userPlanEndDate: Date[];
   foodPreference?: string;
   cookingSkill?: string;
-  firebaseToken?: string;
   createdAt?: Date;
   updateAt?: Date;
   role: UserRole;

@@ -3,6 +3,7 @@ import { currentUser } from "@/lib/auth";
 import ChangePassword from "../_components/change-password";
 import GeneralInformation from "../_components/general-information";
 import AccountPageHeading from "../_components/account-page-heading";
+import { PushNotificationSettings } from "@/components/notifications/push-notification-settings";
 
 const SettingsPage = async () => {
   const user = await currentUser();
@@ -16,6 +17,7 @@ const SettingsPage = async () => {
         description="Update the details attached to your account and control sign-in security from one place."
       />
       <div className="space-y-5">
+        <PushNotificationSettings />
         <section className="rounded-[1.8rem] border border-[#eadcc9] bg-[#fffdf8] p-5 dark:border-white/10 dark:bg-[#10231c] sm:p-7">
           <div className="mb-6 flex items-center gap-3">
             <div className="flex size-11 items-center justify-center rounded-2xl bg-[#f6ead9] text-[#b63a2b] dark:bg-[#19352b] dark:text-[#dbb16f]">

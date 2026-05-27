@@ -7,10 +7,14 @@ import { formatDate } from "@/lib/formatDate";
 import { generateInvoicePdf } from "@/lib/generate-invoice-pdf";
 import { sendEmail } from "@/lib/mail";
 import { getMealPlanQueue } from "@/lib/meal-plan-queue";
+import { NotificationAutomationTrigger } from "@prisma/client";
+import { scheduleMembershipExpiryNotifications } from "@/lib/meal-plan-queue";
+import { runUserAutomationRules } from "@/lib/notification-automations";
 
 type ActivationResult = {
   alreadyProcessed: boolean;
   accessEndDate?: Date;
+  assignmentId?: string;
 };
 
 export async function activatePaidMembership(
@@ -85,7 +89,7 @@ export async function activatePaidMembership(
       data: { endDate: now },
     });
 
-    await tx.userPlan.upsert({
+    const assignment = await tx.userPlan.upsert({
       where: {
         userId_planId: {
           userId: order.userId,
@@ -103,7 +107,7 @@ export async function activatePaidMembership(
       },
     });
 
-    return { alreadyProcessed: false, accessEndDate };
+    return { alreadyProcessed: false, accessEndDate, assignmentId: assignment.id };
   });
 
   if (activation.alreadyProcessed) {
@@ -118,6 +122,20 @@ export async function activatePaidMembership(
     } catch (error) {
       console.error("[PAID_MEMBERSHIP_MEAL_PLAN_QUEUE]", error);
     }
+  }
+
+  try {
+    await runUserAutomationRules({
+      trigger: NotificationAutomationTrigger.PAYMENT_SUCCESS,
+      userId: order.user.id,
+      tokens: { planName: plan.name },
+      dedupeScope: `payment-success-${order.id}`,
+    });
+    if (activation.assignmentId) {
+      await scheduleMembershipExpiryNotifications(order.user.id, activation.assignmentId, activation.accessEndDate || null);
+    }
+  } catch (error) {
+    console.error("[PAID_MEMBERSHIP_PUSH]", error);
   }
 
   const invoiceAttachment = generateInvoicePdf({

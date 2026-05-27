@@ -32,7 +32,7 @@ function CompactBrandIcon() {
       className="brand-icon-glow relative flex size-[42px] shrink-0 items-center justify-start overflow-hidden rounded-[13px] border border-[#ecd9c1] bg-white pl-0.5 shadow-sm"
     >
       <Image
-        src="/icons-192.png"
+        src="/pwa/icon-192.png"
         alt=""
         width={36}
         height={36}

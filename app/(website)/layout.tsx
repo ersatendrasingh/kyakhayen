@@ -1,4 +1,3 @@
-import FirebaseMessaging from "@/components/firebase-messaging";
 import Footer from "@/components/footer/footer";
 import { Header } from "@/components/header/header";
 import MobileMenu from "@/components/header/mobile-menu";
@@ -8,7 +7,6 @@ import { ModeToggle } from "@/components/mode-toggle";
 const WebsiteLayout = ({ children }: { children: React.ReactNode }) => {
   return (
     <div className="flex flex-col min-h-screen">
-      <FirebaseMessaging />
       <Header />
       <MobileMenu />
       <div className="fixed bottom-7 left-7 z-40 hidden lg:block">

@@ -471,7 +471,6 @@ model User {
   suspendedAt           DateTime?
   suspensionReason      String?                @db.Text
   twoFactorConfirmation TwoFactorConfirmation?
-  firebaseToken         String?
   CommentLikes          CommentLikes[]
   Review                Review[]
   Favorite              Favorite[]
@@ -480,9 +479,149 @@ model User {
   UserAddress           UserAddress[]
   Order                 Order[]
   UserCoupon            UserCoupon[]
+  PushSubscription      PushSubscription[]
+  targetedCampaigns     NotificationCampaign[] @relation("NotificationTargetUser")
+  notificationDeliveries NotificationDelivery[]
 
   createdAt DateTime @default(now())
   updateAt  DateTime @updatedAt
+}
+
+model PushSubscription {
+  id            String   @id @default(cuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  endpoint      String   @unique @db.VarChar(512)
+  p256dh        String   @db.Text
+  auth          String   @db.Text
+  userAgent     String?  @db.Text
+  isActive      Boolean  @default(true)
+  lastSentAt    DateTime?
+  failureReason String?  @db.Text
+  deliveries    NotificationDelivery[]
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([userId, isActive])
+}
+
+enum NotificationAudience {
+  ALL_SUBSCRIBERS
+  USER
+  PREFERENCE_SEGMENT
+}
+
+enum NotificationCampaignStatus {
+  SCHEDULED
+  PROCESSING
+  SENT
+  FAILED
+}
+
+enum NotificationSource {
+  ADMIN_BROADCAST
+  ADMIN_TARGETED
+  MEAL_PLAN_READY
+  MEAL_REMINDER
+  MEMBERSHIP_EXPIRY
+  PAYMENT_SUCCESS
+  PAYMENT_FAILED
+  PREFERENCE_PROMOTION
+}
+
+enum NotificationAutomationTrigger {
+  MEAL_PLAN_READY
+  MEAL_REMINDER
+  MEMBERSHIP_EXPIRY
+  PAYMENT_SUCCESS
+  PAYMENT_FAILED
+  RECIPE_PUBLISHED
+}
+
+enum NotificationDeliveryStatus {
+  QUEUED
+  DELIVERED
+  FAILED
+  EXPIRED
+}
+
+model NotificationCampaign {
+  id                   String               @id @default(cuid())
+  title                String
+  body                 String               @db.Text
+  url                  String?
+  imageUrl             String?
+  audience             NotificationAudience @default(ALL_SUBSCRIBERS)
+  source               NotificationSource   @default(ADMIN_BROADCAST)
+  status               NotificationCampaignStatus @default(PROCESSING)
+  segmentType          String?
+  segmentId            String?
+  dedupeKey            String?              @unique
+  targetUserId         String?
+  targetUser           User?                @relation("NotificationTargetUser", fields: [targetUserId], references: [id], onDelete: SetNull)
+  createdById          String?
+  createdByName        String?
+  totalRecipients      Int                  @default(0)
+  successfulDeliveries Int                  @default(0)
+  failedDeliveries     Int                  @default(0)
+  expiredSubscriptions Int                  @default(0)
+  openedCount          Int                  @default(0)
+  clickedCount         Int                  @default(0)
+  scheduledAt          DateTime?
+  sentAt               DateTime?
+  automationRuleId     String?
+  automationRule       NotificationAutomationRule? @relation(fields: [automationRuleId], references: [id], onDelete: SetNull)
+  deliveries           NotificationDelivery[]
+  createdAt            DateTime             @default(now())
+
+  @@index([createdAt])
+  @@index([targetUserId])
+  @@index([status, scheduledAt])
+  @@index([automationRuleId])
+}
+
+model NotificationAutomationRule {
+  id              String                        @id @default(cuid())
+  name            String
+  trigger         NotificationAutomationTrigger
+  source          NotificationSource
+  isActive        Boolean                       @default(true)
+  isSystem        Boolean                       @default(false)
+  audience        NotificationAudience          @default(USER)
+  segmentType     String?
+  segmentId       String?
+  titleTemplate   String
+  bodyTemplate    String                        @db.Text
+  urlTemplate     String?
+  imageUrl        String?
+  createdById     String?
+  createdByName   String?
+  campaigns       NotificationCampaign[]
+  createdAt       DateTime                      @default(now())
+  updatedAt       DateTime                      @updatedAt
+
+  @@index([trigger, isActive])
+}
+
+model NotificationDelivery {
+  id               String                     @id @default(cuid())
+  campaignId       String
+  campaign         NotificationCampaign       @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  userId           String
+  user             User                       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  subscriptionId   String?
+  subscription     PushSubscription?          @relation(fields: [subscriptionId], references: [id], onDelete: SetNull)
+  status           NotificationDeliveryStatus @default(QUEUED)
+  deliveredAt      DateTime?
+  openedAt         DateTime?
+  clickedAt        DateTime?
+  failureReason    String?                    @db.Text
+  createdAt        DateTime                   @default(now())
+  updatedAt        DateTime                   @updatedAt
+
+  @@unique([campaignId, subscriptionId])
+  @@index([campaignId, status])
+  @@index([userId, createdAt])
 }
 
 model UserAddress {

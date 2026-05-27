@@ -10,8 +10,8 @@ import { DEFAULT_LOGIN_REDIRECT } from "@/routes";
 export const Social = () => {
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get("callbackUrl");
-  const onClick = (provider: "google" | "github") => {
-    signIn(provider, {
+  const onClick = () => {
+    signIn("google", {
       callbackUrl: callbackUrl || DEFAULT_LOGIN_REDIRECT,
     });
   };
@@ -26,7 +26,7 @@ export const Social = () => {
         type="button"
         variant="outline"
         className="h-12 w-full rounded-xl border-[#e3d4c2] bg-white font-medium text-[#35271c] hover:bg-[#fffaf2] dark:border-white/12 dark:bg-white/[0.04] dark:text-[#f4f1ea] dark:hover:bg-white/[0.08]"
-        onClick={() => onClick("google")}
+        onClick={onClick}
       >
         <FcGoogle className="mr-2 size-5" />
         Continue with Google

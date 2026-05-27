@@ -1,5 +1,6 @@
 import { currentUser } from "@/lib/auth";
 import { db } from "@/lib/db";
+import { runRecipePublishedAutomations } from "@/lib/notification-automations";
 import { NextResponse } from "next/server";
 
 export async function PATCH(req: Request, props: { params: Promise<{ recipeId: string }> }) {
@@ -33,6 +34,13 @@ export async function PATCH(req: Request, props: { params: Promise<{ recipeId: s
         isPublished: true,
       },
     });
+    if (!recipe.isPublished) {
+      try {
+        await runRecipePublishedAutomations(recipeId);
+      } catch (notificationError) {
+        console.error("[RECIPE_PUBLISH_NOTIFICATIONS]", notificationError);
+      }
+    }
     return NextResponse.json(publishedRecipe, { status: 200 });
   } catch (error) {
     console.log("[RECIPE_ID_PUBLISH]", error);

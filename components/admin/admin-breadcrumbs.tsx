@@ -37,6 +37,7 @@ const labels: Record<string, string> = {
   comments: "Comments",
   reviews: "Reviews",
   community: "Community",
+  notifications: "Notifications",
   users: "Users",
   "contact-queries": "Contact Queries",
   create: "Create",
