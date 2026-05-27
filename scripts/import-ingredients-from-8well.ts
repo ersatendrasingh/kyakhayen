@@ -1,6 +1,10 @@
 import { PrismaClient } from "@prisma/client";
 import { loadEnvConfig } from "@next/env";
-import { getIngredientSlug, normalizeIngredientName } from "../lib/ingredients";
+import {
+  getIngredientSlug,
+  normalizeIngredientDisplayName,
+  normalizeIngredientName,
+} from "../lib/ingredients";
 import { slugify } from "../lib/slugify";
 
 loadEnvConfig(process.cwd());
@@ -267,7 +271,7 @@ async function main() {
         const parsedMeasurements = parseMeasurements(row.unit_measurement);
         return {
           source: row,
-          name: normalizeIngredientName(row.name),
+          name: normalizeIngredientDisplayName(row.name),
           slug: getIngredientSlug(row.name),
           categoryName: categoryFor(row),
           nutritionSource,

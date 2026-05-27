@@ -36,6 +36,8 @@
     "recipes:methods": "ts-node --project tsconfig.scripts.json scripts/backfill-recipe-methods.ts --apply",
     "recipes:ingredients:dry-run": "ts-node --project tsconfig.scripts.json scripts/backfill-recipe-ingredients.ts",
     "recipes:ingredients": "ts-node --project tsconfig.scripts.json scripts/backfill-recipe-ingredients.ts --apply",
+    "ingredients:catalog:dry-run": "ts-node --project tsconfig.scripts.json scripts/backfill-ingredient-catalog.ts",
+    "ingredients:catalog": "ts-node --project tsconfig.scripts.json scripts/backfill-ingredient-catalog.ts --apply",
     "import:body-types:dry-run": "ts-node --project tsconfig.scripts.json scripts/import-body-types-from-8well.ts",
     "import:body-types": "ts-node --project tsconfig.scripts.json scripts/import-body-types-from-8well.ts --apply",
     "import:articles:dry-run": "ts-node --project tsconfig.scripts.json scripts/import-articles.ts",
