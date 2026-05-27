@@ -39,9 +39,18 @@ export type AdminDashboardData = {
     active: number;
     personalised: number;
     verified: number;
-    plans: DataPoint[];
+    setupPending: number;
   };
   health: Array<DataPoint & { total: number; href: string }>;
+  publishing: { readyDrafts: number };
+  subscriptions: {
+    assignments: number;
+    memberUsers: number;
+    pricedAccess: number;
+    expiringSoon: number;
+    noExpiry: number;
+    plans: Array<DataPoint & { paid: boolean }>;
+  };
   inventory: { articles: number; ingredients: number; media: number };
   topRecipes: Array<{
     id: string;
@@ -218,6 +227,25 @@ export function AdminDashboard({ data }: { data: AdminDashboardData }) {
             <TinyStat label="Verified" value={data.audience.verified} />
             <TinyStat label="Set up" value={data.audience.personalised} />
           </div>
+          <Link
+            href="/admin/users"
+            className="mt-5 flex items-center justify-between rounded-2xl border bg-muted/25 p-3.5 text-sm transition-colors hover:bg-muted/45"
+          >
+            <span className="text-muted-foreground">Personalisation still pending</span>
+            <span className="font-semibold text-amber-600 dark:text-amber-300">{data.audience.setupPending}</span>
+          </Link>
+          <div className="mt-3 rounded-2xl border border-dashed px-3.5 py-3">
+            <div className="flex items-center justify-between gap-3 text-xs">
+              <span className="text-muted-foreground">Onboarding completion</span>
+              <span className="font-semibold">{percentage(data.audience.personalised, data.stats.totalUsers)}%</span>
+            </div>
+            <div className="mt-2.5 h-1.5 overflow-hidden rounded-full bg-muted">
+              <div
+                className="h-full rounded-full bg-gradient-to-r from-webprimary to-primary"
+                style={{ width: `${percentage(data.audience.personalised, data.stats.totalUsers)}%` }}
+              />
+            </div>
+          </div>
         </section>
 
         <section className="rounded-[28px] border bg-card p-5 shadow-sm sm:p-6">
@@ -251,14 +279,28 @@ export function AdminDashboard({ data }: { data: AdminDashboardData }) {
             <span className="flex items-center gap-1"><ChefHat className="size-3.5" /> {data.inventory.ingredients} ingredients</span>
             <span className="flex items-center gap-1"><Images className="size-3.5" /> {data.inventory.media} assets</span>
           </div>
+          <Link
+            href="/admin/recipes"
+            className="mt-5 flex items-center justify-between rounded-2xl border border-primary/15 bg-primary/[0.04] p-3.5 transition-colors hover:bg-primary/[0.08]"
+          >
+            <span className="text-sm text-muted-foreground">Complete drafts ready to review</span>
+            <span className="flex items-center gap-1 text-sm font-semibold text-primary">
+              {data.publishing.readyDrafts} <ArrowRight className="size-3.5" />
+            </span>
+          </Link>
         </section>
 
         <section className="rounded-[28px] border bg-card p-5 shadow-sm sm:p-6">
-          <div>
+          <div className="flex items-start justify-between gap-3">
+            <div>
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">Subscriptions</p>
-            <h2 className="mt-2 text-xl font-semibold">Membership mix</h2>
+              <h2 className="mt-2 text-xl font-semibold">Access health</h2>
+            </div>
+            <Button size="icon-sm" variant="ghost" asChild className="rounded-xl">
+              <Link href="/admin/subscription-plans" aria-label="Open subscription plans"><ArrowUpRight /></Link>
+            </Button>
           </div>
-          <MembershipMix plans={data.audience.plans} />
+          <MembershipMix subscriptions={data.subscriptions} totalUsers={data.stats.totalUsers} />
         </section>
       </div>
 
@@ -286,7 +328,7 @@ export function AdminDashboard({ data }: { data: AdminDashboardData }) {
                 <span className={`size-2 rounded-full ${recipe.published ? "bg-emerald-500" : "bg-amber-500"}`} />
               </Link>
             ))}
-            {!data.topRecipes.length && <EmptyState label="Recipes will appear here after creation." />}
+            {!data.topRecipes.length && <EmptyState label="No recipe engagement has been tracked yet." />}
           </div>
         </section>
 
@@ -365,8 +407,10 @@ function RevenueBars({ points }: { points: Array<DataPoint & { orders: number }>
               <p className="text-muted-foreground">{point.orders} orders</p>
             </div>
             <div
-              className="w-full max-w-[74px] rounded-t-[18px] bg-gradient-to-t from-primary to-webprimary transition-[height,filter] duration-500 group-hover:brightness-110"
-              style={{ height: `${point.value ? Math.max(12, (point.value / maximum) * 100) : 3}%` }}
+              className={`w-full max-w-[74px] rounded-t-[18px] transition-[height,filter] duration-500 ${
+                point.value ? "bg-gradient-to-t from-primary to-webprimary group-hover:brightness-110" : "bg-muted"
+              }`}
+              style={{ height: `${point.value ? Math.max(12, (point.value / maximum) * 100) : 2}%` }}
             />
           </div>
           <div className="text-center">
@@ -448,39 +492,101 @@ function TinyStat({ label, value }: { label: string; value: number }) {
   );
 }
 
-function MembershipMix({ plans }: { plans: DataPoint[] }) {
-  const total = plans.reduce((sum, plan) => sum + plan.value, 0);
-  const first = percentage(plans[0]?.value || 0, total);
-  const second = percentage(plans[1]?.value || 0, total);
+function MembershipMix({
+  subscriptions,
+  totalUsers,
+}: {
+  subscriptions: AdminDashboardData["subscriptions"];
+  totalUsers: number;
+}) {
+  const coverage = percentage(subscriptions.memberUsers, totalUsers);
+  const palette = ["bg-primary", "bg-webprimary", "bg-[var(--chart-3)]", "bg-[var(--chart-4)]"];
+  const chartPalette = ["var(--primary)", "var(--webprimary)", "var(--chart-3)", "var(--chart-4)"];
+  const chartPlans = subscriptions.plans.slice(0, 4);
+  const chartSegments = chartPlans.map((plan, index) => {
+    const start =
+      (chartPlans.slice(0, index).reduce((total, current) => total + current.value, 0) /
+        Math.max(subscriptions.assignments, 1)) *
+      100;
+    const end = start + (plan.value / Math.max(subscriptions.assignments, 1)) * 100;
+    return `${chartPalette[index]} ${start}% ${end}%`;
+  });
   return (
     <>
-      <div className="mt-6 flex items-center gap-5">
+      <div className="mt-5 flex items-center gap-4 rounded-2xl border bg-muted/20 p-4">
         <div
-          className="flex size-28 shrink-0 items-center justify-center rounded-full"
+          className="flex size-24 shrink-0 items-center justify-center rounded-full"
           style={{
-            background: `conic-gradient(var(--primary) 0 ${first}%, var(--webprimary) ${first}% ${first + second}%, var(--chart-3) ${first + second}% 100%)`,
+            background: chartSegments.length ? `conic-gradient(${chartSegments.join(", ")})` : "var(--muted)",
           }}
         >
-          <div className="flex size-[76px] flex-col items-center justify-center rounded-full bg-card">
-            <span className="text-xl font-semibold">{total}</span>
-            <span className="text-[10px] text-muted-foreground">active</span>
+          <div className="flex size-[66px] flex-col items-center justify-center rounded-full bg-card shadow-sm">
+            <span className="text-xl font-semibold">{subscriptions.memberUsers}</span>
+            <span className="text-[10px] text-muted-foreground">members</span>
           </div>
         </div>
-        <div className="min-w-0 space-y-3">
-          {plans.slice(0, 3).map((plan, index) => (
-            <div key={plan.label} className="flex items-center gap-2 text-sm">
-              <span className={`size-2.5 rounded-full ${index === 0 ? "bg-primary" : index === 1 ? "bg-webprimary" : "bg-[var(--chart-3)]"}`} />
-              <span className="truncate text-muted-foreground">{plan.label}</span>
-              <span className="font-medium">{plan.value}</span>
-            </div>
-          ))}
+        <div className="min-w-0 flex-1">
+          <p className="text-xs text-muted-foreground">Members with active access</p>
+          <p className="mt-1 text-lg font-semibold text-primary">{coverage}% coverage</p>
+          <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-muted">
+            <div className="h-full rounded-full bg-gradient-to-r from-primary to-webprimary" style={{ width: `${coverage}%` }} />
+          </div>
+          <p className="mt-2 text-[11px] leading-4 text-muted-foreground">
+            {subscriptions.assignments} plan assignments across {totalUsers} users
+          </p>
         </div>
       </div>
-      {!plans.length && <EmptyState label="No active memberships yet." />}
-      <Button variant="outline" asChild className="mt-6 w-full rounded-xl">
-        <Link href="/admin/subscription-plans">Manage subscriptions <ArrowRight /></Link>
+
+      <div className="mt-3 grid grid-cols-3 gap-2">
+        <SubscriptionStat label="Priced" value={subscriptions.pricedAccess} tone="emerald" />
+        <SubscriptionStat label="Ending 7d" value={subscriptions.expiringSoon} tone="amber" />
+        <SubscriptionStat label="No expiry" value={subscriptions.noExpiry} tone="blue" />
+      </div>
+
+      <div className="mt-5 space-y-3 border-t pt-4">
+        {subscriptions.plans.slice(0, 4).map((plan, index) => (
+          <div key={plan.label}>
+            <div className="mb-1.5 flex items-center justify-between gap-2 text-sm">
+              <span className="flex min-w-0 items-center gap-2">
+                <span className={`size-2.5 shrink-0 rounded-full ${palette[index] || "bg-muted-foreground"}`} />
+                <span className="truncate">{plan.label}</span>
+                {plan.paid && <span className="rounded-full bg-emerald-500/10 px-1.5 py-0.5 text-[10px] font-medium text-emerald-600 dark:text-emerald-300">Paid</span>}
+              </span>
+              <span className="font-semibold">{plan.value}</span>
+            </div>
+            <div className="h-1.5 overflow-hidden rounded-full bg-muted">
+              <div className={`h-full rounded-full ${palette[index] || "bg-muted-foreground"}`} style={{ width: `${percentage(plan.value, subscriptions.assignments)}%` }} />
+            </div>
+          </div>
+        ))}
+        {!subscriptions.plans.length && <p className="text-sm text-muted-foreground">No active memberships yet.</p>}
+      </div>
+      <Button variant="outline" asChild className="mt-5 w-full rounded-xl">
+        <Link href="/admin/users">Review member access <ArrowRight /></Link>
       </Button>
     </>
+  );
+}
+
+function SubscriptionStat({
+  label,
+  value,
+  tone,
+}: {
+  label: string;
+  value: number;
+  tone: "emerald" | "amber" | "blue";
+}) {
+  const colors = {
+    emerald: "text-emerald-600 dark:text-emerald-300",
+    amber: "text-amber-600 dark:text-amber-300",
+    blue: "text-blue-600 dark:text-blue-300",
+  };
+  return (
+    <div className="rounded-xl border bg-muted/20 px-2 py-3 text-center">
+      <p className={`text-lg font-semibold ${colors[tone]}`}>{value}</p>
+      <p className="mt-0.5 text-[10px] text-muted-foreground">{label}</p>
+    </div>
   );
 }
 

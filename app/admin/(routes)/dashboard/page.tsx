@@ -79,7 +79,11 @@ const DashboardPage = async () => {
         user: { isActive: true },
         OR: [{ endDate: null }, { endDate: { gte: now } }],
       },
-      select: { plan: { select: { name: true } } },
+      select: {
+        userId: true,
+        endDate: true,
+        plan: { select: { name: true, priceInr: true } },
+      },
     }),
     db.order.findMany({
       select: {
@@ -121,9 +125,21 @@ const DashboardPage = async () => {
   const paidRevenue = paidOrders.reduce((total, order) => total + (order.totalAmount || 0), 0);
   const publishedRecipes = recipes.filter((recipe) => recipe.isPublished);
   const activeUsers = users.filter((user) => user.isActive);
+  const activeMemberUsers = new Set(memberships.map((membership) => membership.userId)).size;
+  const membershipExpiryWindow = new Date(now.getTime() + 7 * 86_400_000);
+  const publishingReadyDrafts = recipes.filter(
+    (recipe) =>
+      !recipe.isPublished &&
+      Boolean(recipe.imageUrl) &&
+      recipe._count.recipeIngredients > 0 &&
+      recipe._count.recipeMethods > 0,
+  ).length;
 
-  const planCounts = memberships.reduce<Record<string, number>>((result, membership) => {
-    result[membership.plan.name] = (result[membership.plan.name] || 0) + 1;
+  const planCounts = memberships.reduce<Record<string, { value: number; paid: boolean }>>((result, membership) => {
+    result[membership.plan.name] = {
+      value: (result[membership.plan.name]?.value || 0) + 1,
+      paid: Boolean(membership.plan.priceInr && membership.plan.priceInr > 0),
+    };
     return result;
   }, {});
 
@@ -133,7 +149,7 @@ const DashboardPage = async () => {
       paidRevenue,
       paidOrders: paidOrders.length,
       totalUsers: users.length,
-      activeMembers: memberships.length,
+      activeMembers: activeMemberUsers,
       publishedRecipes: publishedRecipes.length,
       totalRecipes: recipes.length,
       actionItems:
@@ -165,9 +181,7 @@ const DashboardPage = async () => {
       active: activeUsers.length,
       personalised: users.filter((user) => user.isPersonalised).length,
       verified: users.filter((user) => Boolean(user.emailVerified)).length,
-      plans: Object.entries(planCounts)
-        .map(([label, value]) => ({ label, value }))
-        .sort((first, second) => second.value - first.value),
+      setupPending: users.filter((user) => !user.isPersonalised).length,
     },
     health: [
       {
@@ -199,6 +213,22 @@ const DashboardPage = async () => {
         href: "/admin/ingredients",
       },
     ],
+    publishing: {
+      readyDrafts: publishingReadyDrafts,
+    },
+    subscriptions: {
+      assignments: memberships.length,
+      memberUsers: activeMemberUsers,
+      pricedAccess: memberships.filter((membership) => Boolean(membership.plan.priceInr && membership.plan.priceInr > 0))
+        .length,
+      expiringSoon: memberships.filter(
+        (membership) => membership.endDate && membership.endDate >= now && membership.endDate <= membershipExpiryWindow,
+      ).length,
+      noExpiry: memberships.filter((membership) => !membership.endDate).length,
+      plans: Object.entries(planCounts)
+        .map(([label, plan]) => ({ label, value: plan.value, paid: plan.paid }))
+        .sort((first, second) => second.value - first.value),
+    },
     inventory: {
       articles: articles.length,
       ingredients: ingredients.length,
@@ -206,7 +236,12 @@ const DashboardPage = async () => {
     },
     topRecipes: recipes
       .slice()
-      .sort((first, second) => second.views - first.views)
+      .filter((recipe) => recipe.views > 0 || recipe._count.Favorite > 0 || recipe._count.Review > 0)
+      .sort(
+        (first, second) =>
+          second.views + second._count.Favorite * 3 + second._count.Review * 5 -
+          (first.views + first._count.Favorite * 3 + first._count.Review * 5),
+      )
       .slice(0, 5)
       .map((recipe) => ({
         id: recipe.id,
