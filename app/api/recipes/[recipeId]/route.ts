@@ -5,6 +5,7 @@ import {
   deleteFolderFromS3,
 } from "@/lib/s3utils";
 import { currentUser } from "@/lib/auth";
+import { normalizeRecipeTitle } from "@/lib/recipe-seo";
 import { slugify } from "@/lib/slugify";
 
 export async function DELETE(req: Request, props: { params: Promise<{ recipeId: string }> }) {
@@ -46,10 +47,18 @@ export async function PATCH(req: Request, props: { params: Promise<{ recipeId: s
       return NextResponse.json("Unauthorized", { status: 401 });
     }
     const { recipeId } = params;
-    const { title, ...values } = await req.json();
+    const { title: requestedTitle, ...values } = await req.json();
+    const title = requestedTitle ? normalizeRecipeTitle(requestedTitle) : undefined;
     let slug: string | undefined;
     if (title) {
       slug = slugify(title);
+      const existing = await db.recipes.findUnique({ where: { slug }, select: { id: true } });
+      if (existing && existing.id !== recipeId) {
+        return NextResponse.json(
+          "A recipe with this title already exists. Use a descriptive variation such as cuisine or style.",
+          { status: 409 }
+        );
+      }
     }
 
     const recipe = await db.recipes.update({
