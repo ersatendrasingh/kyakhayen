@@ -16,7 +16,7 @@ export const userProfileSchema = z.object({
   firstName: z.string().min(1, { message: "First Name is required" }),
   lastName: z.string().min(1, { message: "Last Name is required" }),
   email: z.string().email({
-    message: "Billing Email is required",
+    message: "A valid email address is required",
   }),
   phoneNumber: z
     .string()
@@ -75,10 +75,7 @@ export const contactFormSchema = z.object({
     .min(10, { message: "Phone number is required" })
     .max(12, { message: "Phone number must be maximum 12 digits" })
     .regex(/^\d{10,12}$/, { message: "Invalid phone number" }),
-  country: z.string().min(1),
-  city: z.string().min(1),
-  state: z.string().min(1),
-  query: z.string().min(1, { message: "Your bio is required" }),
+  query: z.string().min(1, { message: "Please enter your message" }),
 });
 
 export const commentFormSchema = z.object({
@@ -96,11 +93,6 @@ export const checkoutSchema = z.object({
     .min(10, { message: "Phone number is required" })
     .max(12, { message: "Phone number must be maximum 12 digits" })
     .regex(/^\d{10,12}$/, { message: "Invalid phone number" }),
-  address: z.string().min(1, { message: "Address is required" }),
-  country: z.string().min(1),
-  city: z.string().min(1),
-  state: z.string().min(1),
-  zip: z.string().min(1, { message: "Zip Code is required" }),
 });
 
 export const couponSchema = z.object({

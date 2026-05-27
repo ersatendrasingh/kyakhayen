@@ -1,15 +1,17 @@
 import { db } from "@/lib/db";
-import { DataTable } from "./_components/data-table";
-import { columns } from "./_components/columns";
+import { ContactQueriesDashboard } from "@/components/admin/support/contact-queries-dashboard";
+
 const ContactQueriesPage = async () => {
   const queries = await db.contactUsQueries.findMany({
-    orderBy: {
-      createdAt: "asc",
+    include: {
+      activities: { orderBy: { contactedAt: "desc" } },
     },
+    orderBy: { createdAt: "desc" },
   });
+
   return (
-    <div className="p-6">
-      <DataTable columns={columns} data={queries} />
+    <div className="p-4 sm:p-6 lg:p-8">
+      <ContactQueriesDashboard queries={queries} />
     </div>
   );
 };

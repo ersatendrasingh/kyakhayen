@@ -10,6 +10,7 @@ type MealPlanProgressModalProps = {
   percentage: number;
   message: string;
   failed: boolean;
+  progressLabel: string;
   onRetry: () => void;
 };
 
@@ -25,13 +26,14 @@ export default function MealPlanProgressModal({
   percentage,
   message,
   failed,
+  progressLabel,
   onRetry,
 }: MealPlanProgressModalProps) {
   if (!open) return null;
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[#160f0a]/70 px-4 backdrop-blur-md">
-      <section className="relative w-full max-w-lg overflow-hidden rounded-[2rem] border border-white/15 bg-[#fffaf2] p-6 text-[#2c2118] shadow-2xl sm:p-9">
+      <section className="relative w-full max-w-lg overflow-hidden rounded-[2rem] border border-white/15 bg-[#fffaf2] p-6 text-[#2c2118] shadow-2xl dark:border-white/10 dark:bg-[#10241e] dark:text-[#eef2ec] sm:p-9">
         <div className="absolute -right-16 -top-20 size-52 rounded-full bg-[#e4a448]/25 blur-3xl" />
         <div className="absolute -bottom-20 -left-20 size-52 rounded-full bg-primary/16 blur-3xl" />
         <div className="relative">
@@ -54,22 +56,22 @@ export default function MealPlanProgressModal({
                 ? "Your weekly plan is ready"
                 : "Crafting meals just for your table"}
           </h2>
-          <p className="mx-auto mt-3 max-w-sm text-center text-sm leading-6 text-[#695b4e]">
+          <p className="mx-auto mt-3 max-w-sm text-center text-sm leading-6 text-[#695b4e] dark:text-[#aab8b0]">
             {message}
           </p>
 
           {!failed && (
             <>
               <div className="mt-8 flex items-end justify-between">
-                <span className="flex items-center gap-2 text-sm font-medium text-[#695b4e]">
+                <span className="flex items-center gap-2 text-sm font-medium text-[#695b4e] dark:text-[#c2ccc6]">
                   <Sparkles className="size-4 text-primary" />
-                  Preparing seven days
+                  {progressLabel}
                 </span>
                 <span className="text-3xl font-semibold text-primary">
                   {percentage}%
                 </span>
               </div>
-              <Progress value={percentage} className="mt-4 h-3 bg-[#eddfcc]" />
+              <Progress value={percentage} className="mt-4 h-3 bg-[#eddfcc] dark:bg-white/10" />
               <div className="mt-7 grid grid-cols-4 gap-2">
                 {milestones.map((milestone) => {
                   const done = percentage >= milestone.limit;
@@ -79,12 +81,12 @@ export default function MealPlanProgressModal({
                         className={`mx-auto flex size-7 items-center justify-center rounded-full text-xs ${
                           done
                             ? "bg-primary text-white"
-                            : "bg-[#eddfcc] text-[#8b7a69]"
+                            : "bg-[#eddfcc] text-[#8b7a69] dark:bg-white/10 dark:text-[#aab8b0]"
                         }`}
                       >
                         {done ? <Check className="size-3.5" /> : <Loader2 className="size-3.5" />}
                       </span>
-                      <p className="mt-2 text-[10px] leading-4 text-[#695b4e]">
+                      <p className="mt-2 text-[10px] leading-4 text-[#695b4e] dark:text-[#aab8b0]">
                         {milestone.text}
                       </p>
                     </div>

@@ -1,181 +1,225 @@
 "use client";
 
-import { useRouter, useSearchParams } from "next/navigation";
-import { toast } from "sonner";
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { CircleCheckBig } from "lucide-react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
+import { useSession } from "next-auth/react";
+import {
+  ArrowRight,
+  CheckCircle2,
+  Clock3,
+  Loader2,
+  ReceiptText,
+  XCircle,
+} from "lucide-react";
 
 import Container from "@/components/container";
-import PageTitle from "@/components/sections/page-title";
-
-import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
-import { Badge } from "@/components/ui/badge";
 import { useCart } from "@/context/cart-context";
-import OrderFeatureItem from "@/components/order-feature-item";
+import { useUserCountry } from "@/context/user-country-context";
+import { formatCurrency } from "@/lib/formatCurrency";
 
 type Order = {
-  id: string;
-  email: string;
   orderId: string;
   subTotal: number;
-  taxTotal?: number;
+  discount?: number | null;
   totalAmount: number;
-  coupon?: string;
-  discount?: number;
   paymentMethod: string;
+  paymentStatus: "Processing" | "Paid" | "Failed" | "Cancelled";
   currency: string;
-  paymentStatus: string;
-  items: {
-    id: string;
-    itemName: string;
-    quantity: number;
-    price: number;
-    priceInr: number;
-    item: {
-      id: string;
-      name: string;
-      priceInr: number;
-      priceUsd: number;
-    };
-  }[];
-  createdAt: Date;
+  items: { id: string; itemName: string }[];
 };
 
-const SuccessPage = () => {
+export default function SuccessPage() {
+  const providerOrderId = useSearchParams().get("orderId");
+  const { emptyCart } = useCart();
+  const { userCurrency } = useUserCountry();
+  const { data: session, update } = useSession();
   const [order, setOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
-  const searchParams = useSearchParams();
-  const router = useRouter();
-  const orderId = searchParams.get("orderId");
-  const { emptyCart } = useCart();
+  const [unavailable, setUnavailable] = useState(false);
 
   useEffect(() => {
-    const fetchOrder = async () => {
+    if (!providerOrderId) {
+      setUnavailable(true);
+      setLoading(false);
+      return;
+    }
+    let active = true;
+    let attempts = 0;
+    const loadOrder = async () => {
       try {
-        if (!orderId) {
-          throw new Error("Order ID not found");
-        }
-        const response = await axios.get(`/api/order/${orderId}`);
-        const fetchedOrder = response.data;
-        console.log("Fetch Order", response);
-        if (
-          fetchedOrder.paymentStatus === "Paid" ||
-          fetchedOrder.paymentStatus === "Processing"
-        ) {
-          emptyCart();
-        }
-        setOrder(fetchedOrder);
+        const response = await axios.get(`/api/order/${providerOrderId}`);
+        if (!active) return;
+        const result = response.data as Order;
+        setOrder(result);
         setLoading(false);
-      } catch (error) {
-        console.error("Error fetching order:", error);
-        toast.error("Error fetching order details");
-        router.push("/");
+        if (result.paymentStatus === "Paid") {
+          emptyCart();
+          await update();
+        } else if (result.paymentStatus === "Processing" && attempts < 12) {
+          attempts += 1;
+          window.setTimeout(loadOrder, 900);
+        }
+      } catch {
+        if (active) {
+          setUnavailable(true);
+          setLoading(false);
+        }
       }
     };
+    loadOrder();
+    return () => {
+      active = false;
+    };
+  }, [emptyCart, providerOrderId, update]);
 
-    fetchOrder();
-  }, [orderId, router]);
+  const status = order?.paymentStatus || "Processing";
+  const statusCopy = {
+    Paid: {
+      icon: CheckCircle2,
+      title: "Membership activated",
+      text: "Your payment is confirmed and your membership access is ready.",
+      tone: "text-[#2f7448] bg-[#e8f3e9] dark:bg-[#17372b] dark:text-[#a8dcb5]",
+    },
+    Processing: {
+      icon: Clock3,
+      title: "Confirming your payment",
+      text: "Payment was submitted. This page will unlock your meal plan as soon as Razorpay confirms it.",
+      tone: "text-[#9a6725] bg-[#f7eddc] dark:bg-[#332a1d] dark:text-[#e4bd7b]",
+    },
+    Failed: {
+      icon: XCircle,
+      title: "Payment was not completed",
+      text: "Your membership was not activated. You may return to plans and try again.",
+      tone: "text-[#aa392d] bg-[#fae9e5] dark:bg-[#37221e] dark:text-[#efaca1]",
+    },
+    Cancelled: {
+      icon: XCircle,
+      title: "Payment cancelled",
+      text: "No membership was activated. You can choose a plan again whenever ready.",
+      tone: "text-[#aa392d] bg-[#fae9e5] dark:bg-[#37221e] dark:text-[#efaca1]",
+    },
+  };
+  const display = statusCopy[status];
+  const Icon = display.icon;
+  const mealPlanHref = session?.user?.isPersonalised
+    ? "/meal-plan"
+    : "/meal-plan/create";
+  const mealPlanAction = session?.user?.isPersonalised
+    ? "Open meal plan"
+    : "Set up meal plan";
 
   return (
-    <div>
-      <PageTitle title="Thank You" className="py-4" />
+    <div className="min-h-[calc(100vh-180px)] bg-[#fcf8f0] py-12 dark:bg-[#091712]">
       <Container>
-        <div className="max-w-lg mx-auto bg-white shadow-md rounded-lg overflow-hidden my-20">
-          <div className="w-full flex flex-col items-center px-6 py-4">
-            <div className="flex items-center justify-center mb-4">
-              <div className="relative inline-block">
-                <CircleCheckBig className="w-20 h-20 text-emerald-500" />
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="w-20 h-20 rounded-full animate-ping absolute inset-0 border-4 border-emerald-500"></div>
+        <div className="mx-auto max-w-2xl rounded-[2rem] border border-[#eadbc6] bg-[#fffdf9] p-6 shadow-[0_24px_70px_rgba(62,43,24,0.08)] sm:p-10 dark:border-white/8 dark:bg-[#10241e]">
+          {loading ? (
+            <div className="flex min-h-[300px] flex-col items-center justify-center text-[#716358] dark:text-[#aab8b0]">
+              <Loader2 className="size-8 animate-spin text-[#b83c2e] dark:text-[#dfb36c]" />
+              <p className="mt-5 text-sm">Retrieving your payment status...</p>
+            </div>
+          ) : unavailable ? (
+            <div className="py-8 text-center">
+              <XCircle className="mx-auto size-12 text-[#b83c2e]" />
+              <h1 className="mt-5 text-2xl font-semibold text-[#30251e] dark:text-[#eef2ec]">
+                Payment details are unavailable.
+              </h1>
+              <p className="mt-3 text-sm leading-7 text-[#716358] dark:text-[#aab8b0]">
+                Please open your account subscriptions page or contact support
+                if you completed payment.
+              </p>
+            </div>
+          ) : (
+            <>
+              <div className={`rounded-[1.45rem] p-5 ${display.tone}`}>
+                <div className="flex items-start gap-3">
+                  <Icon className="mt-0.5 size-6 shrink-0" />
+                  <div>
+                    <h1 className="text-xl font-semibold">{display.title}</h1>
+                    <p className="mt-2 text-sm leading-6">{display.text}</p>
+                  </div>
                 </div>
               </div>
-            </div>
-            <div className="flex items-center justify-center">
-              <h1 className="text-3xl font-bold mb-4">
-                Your order has been placed
-              </h1>
-            </div>
-            <div className="w-full flex items-center justify-center">
-              {loading ? (
-                <div className="w-full flex flex-col items-center">
-                  <p className="text-lg mb-2">Loading order details...</p>
-                  <Progress value={100} /> {/* Add the progress bar here */}
+              <div className="mt-7 rounded-[1.4rem] border border-[#ece0cf] p-5 dark:border-white/8">
+                <div className="flex items-center gap-2 text-sm font-semibold text-[#30251e] dark:text-[#eef2ec]">
+                  <ReceiptText className="size-4 text-[#b83c2e] dark:text-[#dfb36c]" />
+                  Payment summary
                 </div>
-              ) : (
-                <div className="w-full">
-                  <OrderFeatureItem title="Order ID" value={order?.orderId} />
-                  <OrderFeatureItem title="Sub Total" value={order?.subTotal} />
-                  {order?.currency === "INR" && (
-                    <OrderFeatureItem title="Tax" value={order?.taxTotal} />
-                  )}
-                  {order?.coupon && (
-                    <OrderFeatureItem
-                      title="Coupon"
-                      value={order?.coupon}
-                      titleClassName="text-purple-500 font-bold"
-                      valueClassName="text-purple-500 font-bold"
+                <div className="mt-5 space-y-4 text-sm">
+                  <Row label="Membership" value={order?.items[0]?.itemName || "-"} />
+                  <Row label="Order ID" value={order?.orderId || "-"} />
+                  <Row
+                    label="Plan price"
+                    value={formatCurrency(order?.subTotal || 0, order?.currency || userCurrency)}
+                  />
+                  {!!order?.discount && (
+                    <Row
+                      label="Discount"
+                      value={`- ${formatCurrency(order.discount, order.currency || userCurrency)}`}
                     />
                   )}
-                  {order?.discount && (
-                    <OrderFeatureItem
-                      title="Coupon Discount"
-                      value={"-" + order?.discount}
-                      titleClassName="text-emerald-500 font-bold"
-                      valueClassName="text-emerald-500 font-bold"
-                    />
-                  )}
-                  <OrderFeatureItem
-                    title="Total Amount"
-                    value={order?.totalAmount}
-                    titleClassName="text-websecondary font-bold"
-                    valueClassName="text-websecondary font-bold"
+                  <Row
+                    strong
+                    label="Amount paid"
+                    value={formatCurrency(order?.totalAmount || 0, order?.currency || userCurrency)}
                   />
-                  <OrderFeatureItem
-                    title="Payment Method"
-                    value={order?.paymentMethod}
-                  />
-                  <OrderFeatureItem
-                    title="Payment Status"
-                    value={order?.paymentStatus}
-                  />
-                  {order?.items && order?.items.length > 0 && (
-                    <div className="w-full flex mx-2 my-4  border-b-2 border-gray-200 items-center justify-between">
-                      <div className="w-1/2">
-                        <span className="text-gray-600 font-bold mr-2">
-                          Plan
-                        </span>
-                      </div>
-                      <div className="w-1/2 text-end">
-                        {order.items.map((item) => (
-                          <Badge className="bg-emerald-500 mb-1" key={item.id}>
-                            {item.itemName}
-                          </Badge>
-                        ))}
-                      </div>
-                    </div>
-                  )}
                 </div>
-              )}
-            </div>
-            <div className="flex items-center justify-center mt-4">
-              <Link href="/meal-plan">
-                <Button
-                  size="lg"
-                  variant="default"
-                  className="w-full bg-websecondary"
-                >
-                  Go to Meal Plan
-                </Button>
+              </div>
+            </>
+          )}
+          <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+            {status === "Paid" && !unavailable ? (
+              <Link
+                className="inline-flex flex-1 items-center justify-center gap-2 rounded-full bg-[#b83c2e] px-5 py-3.5 text-sm font-semibold text-white"
+                href={mealPlanHref}
+              >
+                {mealPlanAction} <ArrowRight className="size-4" />
               </Link>
-            </div>
+            ) : status === "Processing" && !unavailable ? (
+              <span className="inline-flex flex-1 cursor-wait items-center justify-center gap-2 rounded-full bg-[#eee2d1] px-5 py-3.5 text-sm font-semibold text-[#907b68] dark:bg-white/8 dark:text-[#bbc6bf]">
+                <Loader2 className="size-4 animate-spin" /> Preparing meal plan
+              </span>
+            ) : (
+              <Link
+                className="inline-flex flex-1 items-center justify-center gap-2 rounded-full bg-[#b83c2e] px-5 py-3.5 text-sm font-semibold text-white"
+                href="/subscription-plans"
+              >
+                Try payment again <ArrowRight className="size-4" />
+              </Link>
+            )}
+            <Link
+              href="/user/subscriptions"
+              className="inline-flex flex-1 items-center justify-center rounded-full border border-[#ddcab0] px-5 py-3.5 text-sm font-semibold text-[#44362c] dark:border-white/12 dark:text-[#edf1eb]"
+            >
+              {status === "Paid" ? "Membership details" : "Check payment status"}
+            </Link>
           </div>
         </div>
       </Container>
     </div>
   );
-};
+}
 
-export default SuccessPage;
+function Row({
+  label,
+  value,
+  strong,
+}: {
+  label: string;
+  value: string;
+  strong?: boolean;
+}) {
+  return (
+    <div
+      className={`flex justify-between gap-4 border-b border-[#eee3d4] pb-3 last:border-0 last:pb-0 dark:border-white/8 ${
+        strong
+          ? "font-semibold text-[#30251e] dark:text-[#eef2ec]"
+          : "text-[#716358] dark:text-[#aab8b0]"
+      }`}
+    >
+      <span>{label}</span>
+      <span className="text-right">{value}</span>
+    </div>
+  );
+}

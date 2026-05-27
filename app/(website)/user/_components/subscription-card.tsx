@@ -32,7 +32,8 @@ const SubscriptionCard = ({ subscription, planStartDate, planEndDate }: Subscrip
       <div className="flex items-start gap-3 rounded-2xl bg-[#faf1e5] p-4 dark:bg-[#172d25]">
         <Sparkles className="mt-0.5 size-4 shrink-0 text-[#bd382a] dark:text-[#ddb271]" />
         <p className="text-sm leading-6 text-[#6f5d50] dark:text-[#abbab2]">
-          Your account keeps launch access to personalized meal plans without an extra charge.
+          Your active access supports everyday taste-based meal planning. It
+          does not provide medical or allergy-safety advice.
         </p>
       </div>
     </section>

@@ -2,11 +2,13 @@
 
 import {
   BookHeart,
+  CreditCard,
   ChevronDown,
   Heart,
   LogOut,
   Settings,
   SlidersHorizontal,
+  CircleUserRound,
   UserRound,
 } from "lucide-react";
 import Link from "next/link";
@@ -45,7 +47,7 @@ function getInitials(name?: string | null) {
 const Usermenu = ({ variant = "header" }: WebsiteNavUserProps) => {
   const pathname = usePathname();
   const user = useCurrentUser();
-  const name = user?.name ?? "Food Explorer";
+  const name = user?.name ?? "Kya Khayen account";
   const email = user?.email ?? "Sign in for personalised recipes";
   const compact = variant !== "header";
 
@@ -58,12 +60,16 @@ const Usermenu = ({ variant = "header" }: WebsiteNavUserProps) => {
         compact ? "size-10 justify-center p-0" : "h-12 gap-2.5 py-1 pl-1 pr-3",
       )}
     >
-      <Avatar className={cn("shrink-0 ring-1 ring-[#efdabe]", compact ? "size-8" : "size-10")}>
-        <AvatarImage src={user?.image ?? undefined} alt={name} />
-        <AvatarFallback className="bg-[#f7e6cc] text-xs font-bold text-primary">
-          {getInitials(name)}
-        </AvatarFallback>
-      </Avatar>
+      {user ? (
+        <Avatar className={cn("shrink-0 ring-1 ring-[#efdabe]", compact ? "size-8" : "size-10")}>
+          <AvatarImage src={user.image ?? undefined} alt={name} />
+          <AvatarFallback className="bg-[#f7e6cc] text-xs font-bold text-primary">
+            {getInitials(name)}
+          </AvatarFallback>
+        </Avatar>
+      ) : (
+        <CircleUserRound className={cn("shrink-0 text-[#b83c2e]", compact ? "size-7" : "size-8")} />
+      )}
       {!compact && (
         <>
           <span className="max-w-24 truncate text-sm font-semibold">
@@ -121,6 +127,11 @@ const Usermenu = ({ variant = "header" }: WebsiteNavUserProps) => {
           <DropdownMenuItem asChild className="rounded-xl px-3 py-2.5 focus:bg-[#faf0e2]">
             <Link href="/user/preferences">
               <SlidersHorizontal /> Food preferences
+            </Link>
+          </DropdownMenuItem>
+          <DropdownMenuItem asChild className="rounded-xl px-3 py-2.5 focus:bg-[#faf0e2]">
+            <Link href="/user/subscriptions">
+              <CreditCard /> Membership
             </Link>
           </DropdownMenuItem>
           <DropdownMenuItem asChild className="rounded-xl px-3 py-2.5 focus:bg-[#faf0e2]">

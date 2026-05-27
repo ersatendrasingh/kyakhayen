@@ -25,12 +25,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: "/blog", lastModified: "2024-12-14", changeFrequency: "daily" },
     {
       url: "/about-us",
-      lastModified: "2024-12-14",
+      lastModified: "2026-05-26",
       changeFrequency: "yearly",
     },
     {
       url: "/contact-us",
-      lastModified: "2024-12-14",
+      lastModified: "2026-05-26",
       changeFrequency: "yearly",
     },
     { url: "/meal-plan", lastModified: "2024-12-14", changeFrequency: "daily" },
@@ -41,12 +41,17 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     },
     {
       url: "/download-app",
-      lastModified: "2024-12-14",
+      lastModified: "2026-05-26",
       changeFrequency: "yearly",
     },
     {
       url: "/privacy-policy",
-      lastModified: "2024-12-14",
+      lastModified: "2026-05-26",
+      changeFrequency: "yearly",
+    },
+    {
+      url: "/terms-and-conditions",
+      lastModified: "2026-05-26",
       changeFrequency: "yearly",
     },
     {

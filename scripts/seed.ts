@@ -28,7 +28,13 @@ async function ensurePlans() {
       priceInr: 0,
       regularPriceUsd: 0,
       priceUsd: 0,
-      features: ["Recipe discovery", "Basic meal planning"],
+      features: [
+        "One personalized 7-day meal plan during launch",
+        "Choose food style, cuisines and cooking comfort",
+        "Exclude ingredients you prefer to avoid",
+        "Open planned recipes from your weekly table",
+        "Desktop and mobile meal-plan view",
+      ],
     },
     {
       name: "Monthly",
@@ -39,9 +45,11 @@ async function ensurePlans() {
       regularPriceUsd: 5,
       priceUsd: 3,
       features: [
-        "Personalized meal plans",
-        "Nutrition filters",
-        "Saved favourites",
+        "Continued personalized meal-plan access",
+        "Edit future meals while earlier days stay saved",
+        "Daily breakfast, lunch and dinner ideas",
+        "Downloadable meal-plan PDF delivery",
+        "Desktop and mobile weekly planning view",
       ],
     },
   ];

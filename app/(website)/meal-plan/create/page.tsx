@@ -5,7 +5,7 @@ import { currentUser } from "@/lib/auth";
 import { db } from "@/lib/db";
 
 export const metadata: Metadata = {
-  title: "Create Your Free Meal Plan | Kya Khayen",
+  title: "Create Your Meal Plan | Kya Khayen",
   description:
     "Create a seven-day meal plan based on your food style, cuisines, ingredient exclusions and cooking comfort.",
 };
@@ -41,10 +41,21 @@ export default async function CreateMealPlanPage() {
               cookingSkillId: true,
               userCuisines: { select: { cuisineId: true } },
               UserAllrgies: { select: { allergyId: true } },
+              UserPlan: {
+                where: { endDate: { gte: new Date() } },
+                orderBy: { endDate: "desc" },
+                take: 1,
+                include: { plan: true },
+              },
             },
           })
         : Promise.resolve(null),
     ]);
+  const activePlan = savedPreferences?.UserPlan[0]?.plan;
+  const hasPaidAccess = Boolean(
+    activePlan &&
+      ((activePlan.priceInr || 0) > 0 || (activePlan.priceUsd || 0) > 0),
+  );
 
   return (
     <MealPlanBuilder
@@ -56,6 +67,8 @@ export default async function CreateMealPlanPage() {
       cuisines={cuisines}
       exclusions={exclusions}
       cookingSkills={cookingSkills}
+      activePlanName={activePlan?.name}
+      hasPaidAccess={hasPaidAccess}
       initialDraft={{
         foodPreference: savedPreferences?.foodPreferenceId ?? null,
         cuisines:

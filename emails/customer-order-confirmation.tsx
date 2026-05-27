@@ -1,5 +1,12 @@
-import { Img } from "react-email";
-import { getPublicMediaUrl } from "@/lib/s3utils";
+import {
+  DetailRow,
+  DetailTable,
+  EmailButton,
+  EmailNotice,
+  EmailParagraph,
+  EmailShell,
+  emailLinks,
+} from "@/emails/components/email-shell";
 
 interface OrderConfirmationMailProps {
   subjectLine: string;
@@ -25,8 +32,10 @@ interface OrderConfirmationMailProps {
   };
 }
 
+const formatMoney = (value: number, currency: string) =>
+  `${currency === "INR" ? "Rs. " : "$"}${value.toFixed(2)}`;
+
 const OrderConfirmationMail = ({
-  subjectLine,
   name,
   currency,
   paymentMethod,
@@ -40,552 +49,60 @@ const OrderConfirmationMail = ({
     totalTax: 0,
   },
 }: OrderConfirmationMailProps) => {
-  const domain = process.env.NEXT_PUBLIC_APP_URL;
-  const mealPlanLink = `${domain}/meal-plan`;
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "Paid":
-        return "green";
-      case "Cancelled":
-        return "red";
-      case "Failed":
-        return "red";
-      case "Processing":
-        return "purple";
-      default:
-        return "black";
-    }
-  };
-
-  const grandTotal =
-    currency === "INR"
-      ? orderDetails.subTotal + orderDetails.totalTax
-      : orderDetails.subTotal;
+  const paid = paymentStatus === "Paid";
+  const statusLabel = paid
+    ? "Payment confirmed"
+    : paymentStatus === "Cancelled"
+      ? "Payment cancelled"
+      : "Payment unsuccessful";
 
   return (
-    <div
-      style={{
-        background: "#f2f2f2",
-        fontFamily: "Poppins, sans-serif",
-      }}
+    <EmailShell
+      eyebrow={statusLabel}
+      preview={`${statusLabel} for your Kya Khayen membership.`}
+      title={
+        paid
+          ? `${name}, your membership is active.`
+          : `${name}, your payment was not completed.`
+      }
     >
-      {/* Header */}
-      <div
-        style={{
-          maxWidth: "600px",
-          margin: "0 auto",
-          background: "linear-gradient(to right, #ff0000, #ff7f00)",
-          paddingLeft: "20px",
-          paddingRight: "20px",
-          paddingTop: "5px",
-          paddingBottom: "5px",
-          textAlign: "center",
-          color: "white",
-        }}
-      >
-        <a
-          href="https://www.kyakhayen.com"
-          style={{ color: "#fff", textDecoration: "none" }}
-        >
-          <Img
-            src={getPublicMediaUrl("others/kyakhayen-white-logo.png")}
-            alt="Kya Khayen Logo"
-            width={260}
-            height={80}
-            style={{ margin: "0px auto" }}
+      <EmailParagraph>
+        {paid
+          ? "Thank you. Your secure payment is confirmed and your payment receipt PDF is attached to this email."
+          : "Your membership was not activated and no successful charge was recorded by this confirmation. You may try again when ready."}
+      </EmailParagraph>
+      <DetailTable>
+        <DetailRow label="Order reference" value={orderDetails.orderId} />
+        <DetailRow label="Date" value={orderDetails.orderDate} />
+        <DetailRow
+          label="Membership"
+          value={orderDetails.items.map((item) => item.name).join(", ") || "-"}
+        />
+        <DetailRow label="Payment method" value={paymentMethod} />
+        <DetailRow label="Status" value={statusLabel} />
+        {orderDetails.discount ? (
+          <DetailRow
+            label="Discount"
+            value={`- ${formatMoney(orderDetails.discount, currency)}`}
           />
-        </a>
-      </div>
-
-      {/* Main Content */}
-      <div
-        style={{
-          maxWidth: "600px",
-          margin: "0 auto",
-          padding: "20px",
-          backgroundColor: "white",
-          boxShadow: "0 0 10px rgba(0, 0, 0, 0.1)",
-        }}
-      >
-        <h1 style={{ fontSize: "24px", fontWeight: "bold", color: "#333" }}>
-          Dear {name}!
-        </h1>
-
-        <h2
-          style={{
-            fontSize: "20px",
-            fontWeight: "500",
-            marginTop: "10px",
-            color: "#555",
-          }}
-        >
-          {subjectLine}
-        </h2>
-
-        <p style={{ fontSize: "16px", marginBottom: "10px", color: "#666" }}>
-          We are delighted to inform you that your order with details as follows
-          has been successfully placed:
-        </p>
-
-        {/* Order Details */}
-
-        <table
-          style={{
-            width: "100%",
-            borderCollapse: "collapse",
-            fontSize: "12px",
-          }}
-        >
-          <thead>
-            <tr style={{ background: "#f2f2f2" }}>
-              <th
-                style={{
-                  padding: "10px",
-                  textAlign: "left",
-                  borderBottom: "1px solid #ddd",
-                }}
-              >
-                Product
-              </th>
-              <th
-                style={{
-                  padding: "10px",
-                  textAlign: "left",
-                  borderBottom: "1px solid #ddd",
-                }}
-              >
-                Quantity
-              </th>
-              <th
-                style={{
-                  padding: "10px",
-                  textAlign: "left",
-                  borderBottom: "1px solid #ddd",
-                }}
-              >
-                Duration
-              </th>
-              <th
-                style={{
-                  padding: "10px",
-                  textAlign: "right",
-                  borderBottom: "1px solid #ddd",
-                }}
-              >
-                Price
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {orderDetails.items.map((item, index) => (
-              <tr key={index}>
-                <td style={{ padding: "10px", borderBottom: "1px solid #ddd" }}>
-                  {item.name}
-                </td>
-                <td style={{ padding: "10px", borderBottom: "1px solid #ddd" }}>
-                  {`x${item.quantity}`}
-                </td>
-                <td style={{ padding: "10px", borderBottom: "1px solid #ddd" }}>
-                  {item.durationDays && item.durationDays > 1
-                    ? `${item.durationDays} Days`
-                    : `${item.durationDays || 0} Day`}
-                </td>
-                <td
-                  style={{
-                    padding: "10px",
-                    borderBottom: "1px solid #ddd",
-                    textAlign: "right",
-                  }}
-                >
-                  {currency === "INR"
-                    ? `${currency} ${item.priceInr.toFixed(2)}`
-                    : `${currency} ${item.priceUsd.toFixed(2)}`}
-                </td>
-              </tr>
-            ))}
-            {currency === "INR" && (
-              <>
-                <tr style={{ textAlign: "right" }}>
-                  <td
-                    colSpan={3}
-                    style={{
-                      padding: "10px",
-                      textAlign: "right",
-                      fontWeight: "bold",
-                      borderTop: "1px solid #ddd",
-                    }}
-                  >
-                    Sub Total:
-                  </td>
-                  <td
-                    style={{
-                      padding: "10px",
-                      borderTop: "1px solid #ddd",
-                      fontWeight: "bold",
-                    }}
-                  >
-                    {`${currency} ${orderDetails.subTotal.toFixed(2)}`}
-                  </td>
-                </tr>
-                <tr style={{ textAlign: "right" }}>
-                  <td
-                    colSpan={3}
-                    style={{
-                      padding: "10px",
-                      textAlign: "right",
-                      fontWeight: "bold",
-                      borderTop: "1px solid #ddd",
-                    }}
-                  >
-                    Total Tax:
-                  </td>
-                  <td
-                    style={{
-                      padding: "10px",
-                      borderTop: "1px solid #ddd",
-                      fontWeight: "bold",
-                    }}
-                  >
-                    {`${currency} ${orderDetails.totalTax.toFixed(2)}`}
-                  </td>
-                </tr>
-              </>
-            )}
-
-            <tr style={{ textAlign: "right" }}>
-              <td
-                colSpan={3}
-                style={{
-                  padding: "10px",
-                  textAlign: "right",
-                  fontWeight: "bold",
-                  borderTop: "1px solid #ddd",
-                }}
-              >
-                Grand Total:
-              </td>
-              <td
-                style={{
-                  padding: "10px",
-                  borderTop: "1px solid #ddd",
-                  fontWeight: "bold",
-                }}
-              >
-                {`${currency} ${grandTotal.toFixed(2)}`}
-              </td>
-            </tr>
-            {orderDetails?.coupon && (
-              <tr className="coupon" style={{ textAlign: "right" }}>
-                <td
-                  colSpan={3}
-                  style={{
-                    padding: "10px",
-                    textAlign: "right",
-                    fontWeight: "bold",
-                    borderTop: "1px solid #ddd",
-                  }}
-                >
-                  Coupon
-                </td>
-                <td
-                  style={{
-                    padding: "10px",
-                    borderTop: "1px solid #ddd",
-                    fontWeight: "bold",
-                    color: "purple",
-                  }}
-                >
-                  {orderDetails?.coupon}
-                </td>
-              </tr>
-            )}
-
-            {orderDetails?.discount && orderDetails.discount > 0 ? (
-              <tr style={{ textAlign: "right" }}>
-                <td
-                  colSpan={3}
-                  style={{
-                    padding: "10px",
-                    textAlign: "right",
-                    fontWeight: "bold",
-                    borderTop: "1px solid #ddd",
-                  }}
-                >
-                  Discount
-                </td>
-                <td
-                  style={{
-                    padding: "10px",
-                    borderTop: "1px solid #ddd",
-                    fontWeight: "bold",
-                    color: "green",
-                  }}
-                >
-                  {`${currency} -  ${orderDetails.discount.toFixed(2)}`}
-                </td>
-              </tr>
-            ) : null}
-            <tr style={{ textAlign: "right" }}>
-              <td
-                colSpan={3}
-                style={{
-                  padding: "10px",
-                  textAlign: "right",
-                  fontWeight: "bold",
-                  borderTop: "1px solid #ddd",
-                }}
-              >
-                Total Amount:
-              </td>
-              <td
-                style={{
-                  padding: "10px",
-                  borderTop: "1px solid #ddd",
-                  fontWeight: "bold",
-                }}
-              >
-                {`${currency} ${orderDetails.totalAmount.toFixed(2)}`}
-              </td>
-            </tr>
-            <tr style={{ textAlign: "right" }}>
-              <td
-                colSpan={3}
-                style={{
-                  padding: "10px",
-                  textAlign: "right",
-                  fontWeight: "bold",
-                  borderTop: "1px solid #ddd",
-                }}
-              >
-                Payment Method:
-              </td>
-              <td
-                style={{
-                  padding: "10px",
-                  borderTop: "1px solid #ddd",
-                  fontWeight: "bold",
-                }}
-              >
-                {paymentMethod}
-              </td>
-            </tr>
-            <tr style={{ textAlign: "right" }}>
-              <td
-                colSpan={3}
-                style={{
-                  padding: "10px",
-                  textAlign: "right",
-                  fontWeight: "bold",
-                  borderTop: "1px solid #ddd",
-                }}
-              >
-                Payment Status:
-              </td>
-              <td
-                style={{
-                  padding: "10px",
-                  borderTop: "1px solid #ddd",
-                  fontWeight: "bold",
-                  color: getStatusColor(paymentStatus),
-                }}
-              >
-                {paymentStatus}
-              </td>
-            </tr>
-          </tbody>
-        </table>
-
-        <div style={{ textAlign: "center", margin: "20px 0" }}>
-          <a
-            href={mealPlanLink}
-            style={{
-              display: "inline-block",
-              padding: "10px 20px",
-              background: "linear-gradient(to right, #ff0000, #ff7f00)",
-              color: "white",
-              textDecoration: "none",
-              borderRadius: "5px",
-              fontSize: "16px",
-              fontWeight: "bold",
-            }}
-          >
-            View Your Meal Plan
-          </a>
-        </div>
-
-        <p style={{ fontSize: "16px", marginBottom: "10px", color: "#666" }}>
-          Thank you for choosing Kyakhayen. We're excited to have you on board
-          and can't wait for you to experience the benefits of your new plan.
-        </p>
-        <p style={{ fontSize: "16px", marginBottom: "10px", color: "#666" }}>
-          If you have any questions or need assistance, feel free to reach out
-          to our support team at{" "}
-          <a href="mailto:mailtokyakhayen@gmail.com">
-            mailtokyakhayen@gmail.com
-          </a>{" "}
-          .
-        </p>
-
-        <p style={{ fontSize: "16px", marginBottom: "10px", color: "#666" }}>
-          We look forward to serving you again!
-        </p>
-        <div style={{ textAlign: "left", marginTop: "20px" }}>
-          <h2
-            style={{
-              fontSize: "18px",
-              fontWeight: "bold",
-              color: "#333",
-              margin: "0",
-            }}
-          >
-            Thank you,
-          </h2>
-          <h3
-            style={{
-              fontSize: "16px",
-              fontWeight: "500",
-              marginTop: "5px",
-              color: "#555",
-            }}
-          >
-            Team Kya Khayen?
-          </h3>
-        </div>
-      </div>
-      {/* Download App Section */}
-      <div
-        style={{
-          maxWidth: "600px",
-          margin: "20px auto",
-          padding: "20px",
-          backgroundColor: "white",
-          boxShadow: "0 0 10px rgba(0, 0, 0, 0.1)",
-          textAlign: "center",
-        }}
-      >
-        <h2 style={{ fontSize: "20px", fontWeight: "bold", color: "#333" }}>
-          Download Our App
-        </h2>
-        <a href="https://www.kyakhayen.com/download-app">
-          <Img
-            src={getPublicMediaUrl("others/download-app.jpg")}
-            alt="Download Our App"
-            width="100%"
-            height="auto"
-            style={{ maxWidth: "400px", margin: "20px auto" }}
-          />
-        </a>
-        <p style={{ fontSize: "16px", color: "#666", marginBottom: "20px" }}>
-          Discover culinary delights with Kya Khayen?. Get your ultimate
-          mealtime companion. From personalized recipe recommendations to
-          seamless organization and meal planning, Kya Khayen? simplifies the
-          joy of home cooking.
-        </p>
-        <div>
-          <a
-            href="https://www.kyakhayen.com/download-app"
-            style={{
-              display: "inline-block",
-              margin: "0 10px",
-              padding: "10px 20px",
-              background: "linear-gradient(to right, #ff0000, #ff7f00)",
-              color: "white",
-              textDecoration: "none",
-              borderRadius: "5px",
-            }}
-          >
-            Download Now
-          </a>
-        </div>
-      </div>
-      {/* Footer */}
-      <div
-        style={{
-          maxWidth: "600px",
-          margin: "0 auto",
-          background: "linear-gradient(to right, #ff0000, #ff7f00)",
-          padding: "20px",
-          textAlign: "center",
-          color: "white",
-        }}
-      >
-        <p>&copy; {new Date().getFullYear()} Kyakhayen. All rights reserved.</p>
-        <h2
-          style={{
-            fontSize: "20px",
-            textAlign: "center",
-            fontWeight: "bold",
-            color: "white",
-          }}
-        >
-          Follow Us
-        </h2>
-        <table
-          style={{
-            margin: "0 auto",
-          }}
-        >
-          <tr>
-            <td>
-              <a
-                href="https://www.facebook.com/mailtokyakhayen"
-                style={{ color: "#fff", textDecoration: "none" }}
-              >
-                <Img
-                  src={getPublicMediaUrl("others/facebook.png")}
-                  alt="Facebook"
-                  width={24}
-                  height={24}
-                  style={{ marginRight: "5px" }}
-                />
-              </a>
-            </td>
-            <td>
-              <a
-                href="https://twitter.com/kyakhayen"
-                style={{ color: "#fff", textDecoration: "none" }}
-              >
-                <Img
-                  src={getPublicMediaUrl("others/x-icon.png")}
-                  alt="Twitter"
-                  width={24}
-                  height={24}
-                  style={{ marginRight: "5px" }}
-                />
-              </a>
-            </td>
-            <td>
-              <a
-                href="https://www.instagram.com/kyakhayen/"
-                style={{ color: "#fff", textDecoration: "none" }}
-              >
-                <Img
-                  src={getPublicMediaUrl("others/social.png")}
-                  alt="Instagram"
-                  width={24}
-                  height={24}
-                  style={{ marginRight: "5px" }}
-                />
-              </a>
-            </td>
-            <td>
-              <a
-                href="https://www.youtube.com/channel/UC-kmoWXdqoZaUDSpemR2hCw"
-                style={{ color: "#fff", textDecoration: "none" }}
-              >
-                <Img
-                  src={getPublicMediaUrl("others/youtube.png")}
-                  alt="YouTube"
-                  width={24}
-                  height={24}
-                  style={{ marginRight: "5px" }}
-                />
-              </a>
-            </td>
-          </tr>
-        </table>
-      </div>
-    </div>
+        ) : null}
+        <DetailRow
+          label="Total"
+          value={formatMoney(orderDetails.totalAmount, currency)}
+        />
+      </DetailTable>
+      {paid ? (
+        <>
+          <EmailNotice tone="dark">
+            Your meal-plan delivery starts after your plan is generated. Your
+            plan remains based on food preferences only.
+          </EmailNotice>
+          <EmailButton href={emailLinks.mealPlan}>Open my meal plan</EmailButton>
+        </>
+      ) : (
+        <EmailButton href={emailLinks.plans}>Try payment again</EmailButton>
+      )}
+    </EmailShell>
   );
 };
 

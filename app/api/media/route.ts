@@ -80,6 +80,7 @@ async function isReferenced(url: string) {
     genders,
     posts,
     postCategories,
+    users,
   ] = await Promise.all([
     db.recipes.count({ where: { imageUrl: url } }),
     db.recipeMethods.count({ where: { imageUrl: url } }),
@@ -99,6 +100,7 @@ async function isReferenced(url: string) {
     db.gender.count({ where: { imageUrl: url } }),
     db.post.count({ where: { imageUrl: url } }),
     db.category.count({ where: { imageUrl: url } }),
+    db.user.count({ where: { image: url } }),
   ]);
 
   return (
@@ -119,7 +121,8 @@ async function isReferenced(url: string) {
       ingredientCategories +
       genders +
       posts +
-      postCategories >
+      postCategories +
+      users >
     0
   );
 }

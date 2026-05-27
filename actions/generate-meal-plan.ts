@@ -3,10 +3,16 @@ import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 import { db } from "@/lib/db";
 import { generateRecipesForDate } from "@/lib/assignDiet";
 
-import { formatISO } from "date-fns";
+import { addDays, formatISO, startOfDay } from "date-fns";
 import { sendEmail } from "@/lib/mail";
 import { render } from "react-email";
 import CustomerMealPlanMail from "@/emails/customer-meal-plan-mail";
+import {
+  generateMealPlanPdf,
+  type PdfMealPlanDay,
+} from "@/lib/generate-meal-plan-pdf";
+import type { RecipeWithCategory } from "@/types/recipe";
+import { scheduleMealPlanDeliveries } from "@/lib/meal-plan-queue";
 
 const getS3Client = () => {
   const region = process.env.AWS_REGION;
@@ -27,6 +33,7 @@ const getS3Client = () => {
 type MealPlanResult = {
   date: Date;
   s3Url: string;
+  mealsByTime: Record<string, RecipeWithCategory[]>;
 };
 
 type MealPlanProgressReporter = (
@@ -59,24 +66,53 @@ export const generateMealPlan = async (
 ): Promise<MealPlanResult[]> => {
   try {
     const now = new Date();
+    const today = startOfDay(now);
     await reportProgress?.(10, "Understanding your food preferences");
 
     // Fetch user's details
     const user = await db.user.findUnique({
       where: { id: userId },
+      include: {
+        foodPreference: {
+          select: { name: true },
+        },
+        cookingSkill: {
+          select: { title: true },
+        },
+        userCuisines: {
+          include: {
+            cuisine: {
+              select: { title: true, position: true },
+            },
+          },
+        },
+        UserAllrgies: {
+          include: {
+            allergy: {
+              select: { title: true, position: true },
+            },
+          },
+        },
+      },
     });
     if (!user) {
       throw new Error(`User with ID ${userId} not found.`);
     }
-    await reportProgress?.(16, "Preparing your seven-day canvas");
+    await reportProgress?.(16, "Preparing your meal schedule");
 
     // Fetch user's current active plan
     const userPlan = await db.userPlan.findFirst({
       where: {
         userId,
         endDate: {
-          gte: now, // Plan must still be active
+          gte: today, // Plan must still be active today
         },
+      },
+      orderBy: {
+        endDate: "desc",
+      },
+      include: {
+        plan: true,
       },
     });
 
@@ -85,13 +121,12 @@ export const generateMealPlan = async (
       where: {
         userId,
         planEndDate: {
-          gte: now, // Plan end date should be in the future
+          gte: today, // Keep using the current meal-plan history record
         },
       },
     });
 
-    const launchEndDate = new Date(now);
-    launchEndDate.setDate(launchEndDate.getDate() + 6);
+    const launchEndDate = addDays(today, 6);
     let startDate: Date;
     const endDate =
       userPlan?.endDate && userPlan.endDate > launchEndDate
@@ -99,8 +134,9 @@ export const generateMealPlan = async (
         : launchEndDate;
 
     if (userMealPlan) {
-      // If an active meal plan exists, start from today to regenerate
-      startDate = now;
+      // Preferences only affect today onward. Earlier S3 date keys stay
+      // untouched so the member can return to meals shown on past days.
+      startDate = today;
 
       // Update the meal plan's end date to match the current user plan's end date
       await db.userMealPlan.update({
@@ -111,7 +147,7 @@ export const generateMealPlan = async (
       });
     } else {
       // Launch access always provides a fresh seven-day plan without purchase.
-      startDate = now;
+      startDate = today;
       userMealPlan = await db.userMealPlan.create({
         data: {
           userId,
@@ -138,7 +174,7 @@ export const generateMealPlan = async (
       // Upload meal plan JSON to S3
       await uploadToS3(s3Key, mealPlanJson);
 
-      mealPlanResults.push({ date, s3Url: s3Key });
+      mealPlanResults.push({ date, s3Url: s3Key, mealsByTime });
       const percentage = Math.round(18 + ((index + 1) / dates.length) * 66);
       await reportProgress?.(
         percentage,
@@ -146,17 +182,63 @@ export const generateMealPlan = async (
       );
     }
 
-    await reportProgress?.(91, "Saving your weekly plan");
+    await reportProgress?.(88, "Designing your meal-plan PDF");
     try {
+      const isPaidAccess = Boolean(
+        userPlan?.plan &&
+          ((userPlan.plan.priceInr || 0) > 0 ||
+            (userPlan.plan.priceUsd || 0) > 0),
+      );
+      const deliveryDays: PdfMealPlanDay[] = (
+        isPaidAccess ? mealPlanResults.slice(0, 1) : mealPlanResults
+      ).map(({ date, mealsByTime }) => ({ date, mealsByTime }));
+      const mealPlanAttachment = await generateMealPlanPdf(
+        {
+          name: user.name || "Member",
+          email: user.email,
+          accessLabel: isPaidAccess
+            ? `${userPlan?.plan?.name || "Membership"} access`
+            : "7-day launch plan",
+          foodStyle: user.foodPreference?.name,
+          cookingComfort: user.cookingSkill?.title,
+          cuisines: [...user.userCuisines]
+            .sort(
+              (first, second) =>
+                (first.cuisine.position ?? Number.MAX_SAFE_INTEGER) -
+                (second.cuisine.position ?? Number.MAX_SAFE_INTEGER),
+            )
+            .map(({ cuisine }) => cuisine.title),
+          exclusions: [...user.UserAllrgies]
+            .sort(
+              (first, second) =>
+                (first.allergy.position ?? Number.MAX_SAFE_INTEGER) -
+                (second.allergy.position ?? Number.MAX_SAFE_INTEGER),
+            )
+            .map(({ allergy }) => allergy.title),
+        },
+        deliveryDays,
+        isPaidAccess ? "Day one delivery" : "Seven-day launch plan",
+      );
+      if (isPaidAccess && mealPlanResults.length > 1) {
+        await scheduleMealPlanDeliveries(
+          userId,
+          mealPlanResults.slice(1).map(({ date }) => date),
+        );
+      }
+
+      await reportProgress?.(94, "Sending your meal-plan PDF");
       await sendEmail({
         to: user.email as string,
-        subject: "Your Customized Meal Plan is Ready For You!",
+        subject: isPaidAccess
+          ? "Your first Kya Khayen meal-plan day is ready"
+          : "Your seven-day Kya Khayen meal plan is ready",
         html: await render(
           CustomerMealPlanMail({
-            subjectLine: "Exciting News! Your Personalized Meal Plan Awaits.",
-            name: user.name as string,
+            name: user.name || "Member",
+            daysIncluded: deliveryDays.length,
           })
         ),
+        attachments: [mealPlanAttachment],
       });
     } catch (emailError) {
       console.error("Meal plan created, but ready email could not be sent:", emailError);

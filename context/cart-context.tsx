@@ -11,6 +11,7 @@ import { CartItem } from "@/types/cart-item";
 
 interface CartContextType {
   cartItems: CartItem[];
+  isHydrated: boolean;
   addToCart: (item: CartItem) => void;
   updateQuantityInCart: (id: string, newQuantity: number) => void;
   removeFromCart: (id: string) => void;
@@ -19,6 +20,7 @@ interface CartContextType {
 
 const CartContext = createContext<CartContextType>({
   cartItems: [],
+  isHydrated: false,
   addToCart: () => {},
   updateQuantityInCart: () => {},
   removeFromCart: () => {},
@@ -31,11 +33,23 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({
   children,
 }) => {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  const [isHydrated, setIsHydrated] = useState(false);
 
   useEffect(() => {
-    const localStorageCartItems = localStorage.getItem("cartItems");
-    if (localStorageCartItems) {
-      setCartItems(JSON.parse(localStorageCartItems));
+    try {
+      const localStorageCartItems = localStorage.getItem("cartItems");
+      if (localStorageCartItems) {
+        const persistedCart = JSON.parse(localStorageCartItems);
+        if (Array.isArray(persistedCart)) {
+          setCartItems(persistedCart);
+        } else {
+          localStorage.removeItem("cartItems");
+        }
+      }
+    } catch {
+      localStorage.removeItem("cartItems");
+    } finally {
+      setIsHydrated(true);
     }
   }, [setCartItems]);
 
@@ -85,6 +99,7 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({
     <CartContext.Provider
       value={{
         cartItems,
+        isHydrated,
         addToCart,
         updateQuantityInCart,
         removeFromCart,

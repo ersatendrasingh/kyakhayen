@@ -1,23 +1,22 @@
-import { db } from "@/lib/db";
 import { NextResponse } from "next/server";
 
-export async function GET(req: Request, props: { params: Promise<{ orderId: string }> }) {
-  const params = await props.params;
-  try {
-    const { orderId } = params;
+import { currentUser } from "@/lib/auth";
+import { db } from "@/lib/db";
 
-    const order = await db.order.findUnique({
-      where: {
-        orderId,
-      },
-      include: {
-        items: {
-          include: {
-            plan: true,
-          },
-        },
-        user: true,
-      },
+export async function GET(
+  _req: Request,
+  props: { params: Promise<{ orderId: string }> },
+) {
+  try {
+    const user = await currentUser();
+    if (!user?.id) {
+      return NextResponse.json("Unauthorized", { status: 401 });
+    }
+
+    const { orderId } = await props.params;
+    const order = await db.order.findFirst({
+      where: { orderId, userId: user.id },
+      include: { items: { include: { plan: true } } },
     });
 
     if (!order) {
@@ -26,7 +25,7 @@ export async function GET(req: Request, props: { params: Promise<{ orderId: stri
 
     return NextResponse.json(order, { status: 200 });
   } catch (error) {
-    console.log("[ORDER_ID]", error);
-    return NextResponse.json("Internal Server Error", { status: 500 });
+    console.error("[ORDER_ID]", error);
+    return NextResponse.json("Unable to retrieve order.", { status: 500 });
   }
 }

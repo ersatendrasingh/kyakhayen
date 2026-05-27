@@ -12,6 +12,10 @@ export async function POST(req: Request, props: { params: Promise<{ planId: stri
     const values = await req.json();
 
     const { planId } = params;
+    const name = typeof values?.name === "string" ? values.name.trim() : "";
+    if (!name) {
+      return NextResponse.json("Benefit name is required", { status: 400 });
+    }
     if (values) {
       const lastFeature = await db.feature.findFirst({
         where: {
@@ -26,7 +30,7 @@ export async function POST(req: Request, props: { params: Promise<{ planId: stri
         data: {
           planId,
           position: newPosition,
-          ...values,
+          name,
         },
       });
       return NextResponse.json(method, { status: 200 });

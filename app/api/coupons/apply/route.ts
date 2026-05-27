@@ -1,115 +1,89 @@
+import { NextResponse } from "next/server";
+
 import { currentUser } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { CartItem } from "@/types/cart-item";
-import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
   try {
     const user = await currentUser();
     if (!user) {
-      return NextResponse.json("Unauthorized", { status: 401 });
+      return NextResponse.json("Please sign in to use a coupon.", {
+        status: 401,
+      });
     }
 
-    const { code, cartItems } = await req.json();
-    const coupon = await db.coupon.findUnique({
-      where: { code },
-      include: { PlanOnCoupon: true },
-    });
+    const { code, cartItems, currency } = await req.json();
+    const normalizedCode =
+      typeof code === "string" ? code.trim().toUpperCase() : "";
+    const selectedId = Array.isArray(cartItems) ? cartItems[0]?.id : null;
+    if (!selectedId) {
+      return NextResponse.json("Select a membership first.", { status: 400 });
+    }
 
-    if (!coupon) {
+    const [coupon, plan] = await Promise.all([
+      db.coupon.findUnique({
+        where: { code: normalizedCode },
+        include: { PlanOnCoupon: true },
+      }),
+      db.plan.findFirst({
+        where: { id: selectedId, isPublished: true },
+      }),
+    ]);
+
+    if (!coupon || !plan) {
       return NextResponse.json("Invalid coupon code", { status: 404 });
     }
-
     if (!coupon.isActive) {
       return NextResponse.json("Coupon is not active", { status: 400 });
     }
-
     if (coupon.expiryDate && coupon.expiryDate < new Date()) {
-      return NextResponse.json("Coupon is expired", { status: 400 });
+      return NextResponse.json("Coupon has expired", { status: 400 });
     }
-
-    // Check if the coupon is applicable to the cart items
-    let isApplicable = false;
-    let discount = 0;
-    if (coupon.PlanOnCoupon.length === 0) {
-      // If no products are associated with the coupon, it is applicable to all products
-      isApplicable = true;
-    } else {
-      // If there are associated products, check if any of the cart items match
-      const applicableProductIds = coupon.PlanOnCoupon.map((poc) => poc.planId);
-      const cartProductIds = cartItems.map((item: CartItem) => item.id);
-
-      isApplicable = cartProductIds.some((id: string) =>
-        applicableProductIds.includes(id)
-      );
-    }
-
-    if (!isApplicable) {
-      return NextResponse.json("Coupon not applicable to cart items", {
+    if (
+      coupon.PlanOnCoupon.length > 0 &&
+      !coupon.PlanOnCoupon.some((item) => item.planId === plan.id)
+    ) {
+      return NextResponse.json("Coupon is not available for this membership.", {
         status: 400,
       });
     }
 
-    // Calculate discount based on coupon type
-    if (coupon.discountType === "FIXED_PRODUCT") {
-      const applicableItems = cartItems.filter((item: CartItem) =>
-        coupon.PlanOnCoupon.some((poc) => poc.planId === item.id)
-      );
-      discount =
-        coupon.PlanOnCoupon.length === 0
-          ? cartItems.reduce(
-              (sum: number, item: CartItem) =>
-                sum + coupon.discountValue! / cartItems.length,
-              0
-            )
-          : applicableItems.reduce(
-              (sum: number, item: CartItem) =>
-                sum + coupon.discountValue! / applicableItems.length,
-              0
-            );
-    } else if (coupon.discountType === "CART_PERCENTAGE") {
-      const applicableItems = cartItems.filter((item: CartItem) =>
-        coupon.PlanOnCoupon.some((poc) => poc.planId === item.id)
-      );
-      const total =
-        coupon.PlanOnCoupon.length === 0
-          ? cartItems.reduce(
-              (sum: number, item: CartItem) =>
-                sum + item.priceInr! * item.quantity,
-              0
-            )
-          : applicableItems.reduce(
-              (sum: number, item: CartItem) =>
-                sum + item.priceInr! * item.quantity,
-              0
-            );
-      discount = (total * coupon.discountValue!) / 100;
+    const amount = currency === "INR" ? plan.priceInr : plan.priceUsd;
+    if (typeof amount !== "number" || amount <= 0) {
+      return NextResponse.json("This membership cannot accept a coupon.", {
+        status: 400,
+      });
     }
-    // Apply the coupon to the user by creating an entry in UserCoupon table
-    await db.userCoupon.create({
-      data: {
-        userId: user.id,
-        couponId: coupon.id,
-      },
-    });
+
+    const value = coupon.discountValue ?? 0;
+    const calculatedDiscount =
+      coupon.discountType === "CART_PERCENTAGE"
+        ? (amount * value) / 100
+        : value;
 
     return NextResponse.json(
       {
         code: coupon.code,
-        calculatedDiscount: discount,
-        discountValue: coupon.discountValue,
+        calculatedDiscount: Number(
+          Math.min(amount, Math.max(0, calculatedDiscount)).toFixed(2),
+        ),
+        discountValue: value,
         discountType: coupon.discountType,
-        applicableProducts:
-          coupon.PlanOnCoupon.length === 0
-            ? cartItems
-            : cartItems.filter((item: CartItem) =>
-                coupon.PlanOnCoupon.some((poc) => poc.planId === item.id)
-              ),
+        applicableProducts: [
+          {
+            id: plan.id,
+            name: plan.name,
+            priceInr: plan.priceInr,
+            priceUsd: plan.priceUsd,
+          },
+        ],
       },
-      { status: 200 }
-    ); // Return applied coupon and discount
+      { status: 200 },
+    );
   } catch (error) {
     console.error("[COUPON_APPLY]", error);
-    return NextResponse.json("Internal Server Error", { status: 500 });
+    return NextResponse.json("Unable to apply coupon right now.", {
+      status: 500,
+    });
   }
 }

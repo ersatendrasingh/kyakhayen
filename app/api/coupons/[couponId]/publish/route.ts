@@ -21,8 +21,14 @@ export async function PATCH(req: Request, props: { params: Promise<{ couponId: s
       return NextResponse.json("Coupon not found", { status: 404 });
     }
 
-    if (!coupon.code || !coupon.discountType || !coupon.discountValue) {
-      return NextResponse.json("Missing required fields", { status: 400 });
+    if (!coupon.code || !coupon.discountType || !coupon.discountValue || coupon.discountValue <= 0) {
+      return NextResponse.json("Set a valid discount before publishing", { status: 400 });
+    }
+    if (coupon.discountType === "CART_PERCENTAGE" && coupon.discountValue > 100) {
+      return NextResponse.json("Percentage discount cannot exceed 100%", { status: 400 });
+    }
+    if (coupon.expiryDate && coupon.expiryDate < new Date()) {
+      return NextResponse.json("Update the expired date before publishing", { status: 400 });
     }
 
     const publishedCoupon = await db.coupon.update({

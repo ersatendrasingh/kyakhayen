@@ -1,25 +1,17 @@
 "use client";
 
-import * as z from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useRouter } from "next/navigation";
-import { useForm } from "react-hook-form";
 import axios from "axios";
-import { useState } from "react";
-
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { couponSchema } from "@/schemas";
-import { Button } from "@/components/ui/button";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Check, Loader2, TicketPercent } from "lucide-react";
+import { useForm } from "react-hook-form";
 import { toast } from "sonner";
+import * as z from "zod";
+
+import { Form, FormControl, FormField, FormItem, FormMessage } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { useUserCountry } from "@/context/user-country-context";
+import { couponSchema } from "@/schemas";
 import { CartItem } from "@/types/cart-item";
-import { Loader2 } from "lucide-react";
 
 interface CouponCodeFormProps {
   onApplyCoupon: (
@@ -32,21 +24,16 @@ interface CouponCodeFormProps {
       name: string;
       priceInr: number;
       priceUsd: number;
-    }[]
+    }[],
   ) => void;
   cartItems: CartItem[];
 }
 
-const CouponCodeForm = ({ onApplyCoupon, cartItems }: CouponCodeFormProps) => {
-  const router = useRouter();
-  const [couponStatus, setCouponStatus] = useState<string | null>(null);
-  const [isSuccess, setIsSuccess] = useState<boolean>(false);
-
+export default function CouponCodeForm({ onApplyCoupon, cartItems }: CouponCodeFormProps) {
+  const { userCurrency } = useUserCountry();
   const form = useForm<z.infer<typeof couponSchema>>({
     resolver: zodResolver(couponSchema),
-    defaultValues: {
-      code: "",
-    },
+    defaultValues: { code: "" },
   });
   const { isSubmitting, isValid } = form.formState;
 
@@ -55,77 +42,65 @@ const CouponCodeForm = ({ onApplyCoupon, cartItems }: CouponCodeFormProps) => {
       const response = await axios.post("/api/coupons/apply", {
         ...values,
         cartItems,
+        currency: userCurrency,
       });
-      setCouponStatus("Coupon applied successfully!");
-      setIsSuccess(true);
       onApplyCoupon(
         response.data.code,
         response.data.calculatedDiscount,
         response.data.discountValue,
         response.data.discountType,
-        response.data.applicableProducts
-      ); // Pass the coupon data to the parent component or a state management
+        response.data.applicableProducts,
+      );
+      toast.success("Offer applied");
     } catch (error) {
-      setIsSuccess(false);
-      if (axios.isAxiosError(error)) {
-        const errorMessage = error.response?.data || "Something went wrong";
-        toast.error(errorMessage, {
-          duration: 5000,
-        });
-        setCouponStatus(errorMessage);
-      } else {
-        setCouponStatus("Something went wrong");
-      }
+      const message = axios.isAxiosError(error)
+        ? error.response?.data || "Coupon could not be applied."
+        : "Coupon could not be applied.";
+      toast.error(message);
     }
   };
 
   return (
-    <div className="w-full flex flex-col items-start justify-start relative">
-      {isSubmitting && (
-        <div className="absolute h-full w-full  top-0 right-0 rounded-md flex items-center justify-center">
-          <Loader2 className="w-6 h-6 text-sky-700 animate-spin" />
-        </div>
-      )}
-      <h1 className="text-2xl font-bold">Discount Coupon Code</h1>
+    <section className="rounded-[1.35rem] border border-[#eadbc6] bg-[#fffdf9] p-4 dark:border-white/8 dark:bg-[#10241e]">
+      <div className="mb-3 flex items-center gap-2 text-sm font-semibold text-[#49392e] dark:text-[#ecf1eb]">
+        <TicketPercent className="size-4 text-[#b83c2e] dark:text-[#dfb36c]" />
+        Have a coupon?
+      </div>
       <Form {...form}>
-        <form
-          onSubmit={form.handleSubmit(onSubmit)}
-          className="space-y-8 mt-8 w-full"
-        >
-          <div className="flex items-center w-full gap-x-4">
-            <FormField
-              control={form.control}
-              name="code"
-              render={({ field }) => (
-                <FormItem className="flex flex-col w-full">
-                  <FormControl className="w-full">
+        <form onSubmit={form.handleSubmit(onSubmit)}>
+          <FormField
+            control={form.control}
+            name="code"
+            render={({ field }) => (
+              <FormItem>
+                <div className="relative">
+                  <FormControl>
                     <Input
                       disabled={isSubmitting}
-                      placeholder="Coupon Code"
+                      placeholder="Coupon code"
                       {...field}
-                      className="w-full text-lg font-medium"
+                      className="h-12 rounded-full border-[#dfcfb8] bg-white pl-5 pr-14 text-sm font-medium uppercase shadow-none focus-visible:ring-[#b83c2e]/15 dark:border-white/10 dark:bg-[#11251f]"
                     />
                   </FormControl>
-                  <FormMessage
-                    className={isSuccess ? "text-green-500" : "text-red-500"}
-                  >
-                    {couponStatus}
-                  </FormMessage>
-                  <Button
+                  <button
                     type="submit"
                     disabled={!isValid || isSubmitting}
-                    className="w-full md:w-[200px] flex bg-websecondary hover:bg-gradient-to-r from-yellow-400 to-yellow-500 px-4 py-4 rounded-md"
+                    aria-label="Apply coupon"
+                    className="absolute right-1.5 top-1.5 flex size-9 cursor-pointer items-center justify-center rounded-full bg-[#b83c2e] text-white transition hover:bg-[#9d3126] disabled:cursor-not-allowed disabled:bg-[#d4c1a7]"
                   >
-                    Apply
-                  </Button>
-                </FormItem>
-              )}
-            />
-          </div>
+                    {isSubmitting ? (
+                      <Loader2 className="size-4 animate-spin" />
+                    ) : (
+                      <Check className="size-4" />
+                    )}
+                  </button>
+                </div>
+                <FormMessage className="mt-2 text-xs" />
+              </FormItem>
+            )}
+          />
         </form>
       </Form>
-    </div>
+    </section>
   );
-};
-
-export default CouponCodeForm;
+}

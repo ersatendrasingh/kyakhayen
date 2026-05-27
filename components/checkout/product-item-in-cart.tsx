@@ -1,68 +1,34 @@
-"use client";
+import { CalendarDays } from "lucide-react";
 
-import { useUserCountry } from "@/context/user-country-context";
-import { exchangePrice } from "@/lib/exchangePrice";
 import { formatCurrency } from "@/lib/formatCurrency";
-import { cn } from "@/lib/utils";
-import { useEffect, useState } from "react";
 
 interface ProductItemInCartProps {
   title: string;
   price: number;
-  quantity: number;
+  currency: string;
 }
 
-const ProductItemInCart = ({
+export default function ProductItemInCart({
   title,
   price,
-  quantity,
-}: ProductItemInCartProps) => {
-  const [itemPrice, setItemPrice] = useState(price);
-  const { userCurrency } = useUserCountry();
-
-  useEffect(() => {
-    const handlePriceExchange = async (price: number, userCurrency: string) => {
-      try {
-        const exchangedValue = await exchangePrice(price, userCurrency);
-        setItemPrice(exchangedValue);
-      } catch (error) {
-        console.error("Error exchanging price:", error);
-        setItemPrice(price);
-      }
-    };
-
-    handlePriceExchange(price, userCurrency);
-  }, [userCurrency, price]);
+  currency,
+}: ProductItemInCartProps) {
   return (
-    <div
-      className={cn(
-        "flex mx-2 my-4   items-center justify-between",
-        title === "Grand Total" ? "" : "border-b-2 pb-2 border-gray-100"
-      )}
-    >
-      <div>
-        <span
-          className={cn(
-            "text-gray-600 mr-2",
-            title === "Grand Total" ? "font-bold" : ""
-          )}
-        >
-          {title}
+    <div className="flex items-center justify-between gap-4 rounded-2xl border border-[#ecdeca] bg-[#fffaf2] p-4 dark:border-white/8 dark:bg-[#11251f]">
+      <div className="flex items-center gap-3">
+        <span className="flex size-10 items-center justify-center rounded-xl bg-[#f5e7d5] text-[#b83c2e] dark:bg-[#19372e] dark:text-[#dfb36c]">
+          <CalendarDays className="size-5" />
         </span>
-        <span>x {quantity}</span>
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#a77838] dark:text-[#d6aa60]">
+            Membership
+          </p>
+          <p className="mt-1 font-semibold text-[#30251e] dark:text-[#edf2ec]">{title}</p>
+        </div>
       </div>
-      <div>
-        <span
-          className={cn(
-            "text-gray-600 mr-2",
-            title === "Grand Total" ? "font-bold" : ""
-          )}
-        >
-          {formatCurrency(itemPrice * quantity, userCurrency)}
-        </span>
-      </div>
+      <p className="text-sm font-semibold text-[#30251e] dark:text-[#edf2ec]">
+        {formatCurrency(price, currency)}
+      </p>
     </div>
   );
-};
-
-export default ProductItemInCart;
+}

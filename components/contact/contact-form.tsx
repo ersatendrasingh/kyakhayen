@@ -14,134 +14,22 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 
 import * as z from "zod";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { useUserCountry } from "@/context/user-country-context";
-import { useCallback, useEffect, useState } from "react";
-import { City, Country, State } from "@/types/country-state-city";
 import axios from "axios";
 import { toast } from "sonner";
 
 import { Button } from "../ui/button";
 
 const ContactForm = () => {
-  const { userCountry } = useUserCountry();
-  const [countries, setCountries] = useState<Country[]>([]);
-  const [selectedCountry, setSelectedCountry] = useState<Country | null>(null);
-  const [selectedCountryCode, setSelectedCountryCode] =
-    useState<Country | null>(null);
-  const [states, setStates] = useState<State[]>([]);
-  const [selectedState, setSelectedState] = useState<State | null>(null);
-  const [cities, setCities] = useState<City[]>([]);
-  const [selectedCity, setSelectedCity] = useState<City | null>(null);
-  const [countriesFetched, setCountriesFetched] = useState(false);
-  const [resumeFile, setResumeFile] = useState<File | null>(null);
-
   const form = useForm<z.infer<typeof contactFormSchema>>({
     resolver: zodResolver(contactFormSchema),
     defaultValues: {
       name: "",
       email: "",
       phoneNumber: "",
-      country: "",
-      state: "",
-      city: "",
       query: "",
     },
   });
   const { isSubmitting, isValid } = form.formState;
-  const getCurrentCountry = useCallback(async () => {
-    try {
-      const selectedCountry = countries.find(
-        (country) => country.countryCode === userCountry
-      );
-      setSelectedCountry(
-        selectedCountry !== undefined ? selectedCountry : null
-      );
-      setSelectedCountryCode(
-        selectedCountryCode !== undefined ? selectedCountryCode : null
-      );
-    } catch (error) {
-      console.error("Error fetching current country:", error);
-    }
-  }, [
-    countries,
-    userCountry,
-    selectedCountryCode,
-    setSelectedCountry,
-    setSelectedCountryCode,
-  ]);
-
-  async function fetchStates(countryId: number) {
-    try {
-      const response = await axios.post("/api/states", { countryId });
-      const statesData = response.data;
-      setStates(statesData);
-      setSelectedState(null);
-    } catch (error: any) {
-      throw new Error("Error fetching states:", error);
-    }
-  }
-
-  async function fetchCities(stateId: number) {
-    try {
-      const response = await axios.post("/api/cities", { stateId });
-      const citiesData = response.data;
-      setCities(citiesData);
-    } catch (error: any) {
-      throw new Error("Error fetching cities:", error);
-    }
-  }
-
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await axios.get("/api/countries");
-        const countries = response.data;
-        setCountries(countries);
-        setCountriesFetched(true);
-      } catch (error: any) {
-        console.error("Error fetching countries:", error);
-      }
-    };
-
-    fetchData();
-  }, []);
-
-  useEffect(() => {
-    if (countriesFetched) {
-      getCurrentCountry();
-    }
-  }, [countriesFetched, getCurrentCountry]);
-
-  useEffect(() => {
-    if (selectedCountry) {
-      form.setValue("country", selectedCountry.name);
-      fetchStates(selectedCountry.id);
-    }
-  }, [selectedCountry, form]);
-
-  const handleCountryChange = (country: Country) => {
-    setSelectedCountry(country);
-    setSelectedState(null);
-    setSelectedCity(null);
-    fetchStates(country.id);
-  };
-
-  const handleStateChange = (state: State) => {
-    setSelectedState(state);
-    fetchCities(state.id);
-    setSelectedCity(null);
-  };
-
-  const handleCityChange = (city: City) => {
-    setSelectedCity(city);
-  };
 
   const onSubmit = async (values: z.infer<typeof contactFormSchema>) => {
     try {
@@ -156,10 +44,6 @@ const ContactForm = () => {
       const response = await axios.post("/api/contact", formData);
       if (response.status === 200) {
         form.reset();
-        setSelectedCountry(null);
-        setSelectedState(null);
-        setSelectedCity(null);
-
         toast.success(response.data, {
           duration: 5000,
         });
@@ -178,24 +62,29 @@ const ContactForm = () => {
       }
     }
   };
+  const inputClassName =
+    "h-12 rounded-xl border-[#e4d5be] bg-[#fffaf3] px-4 text-[#40342c] shadow-none placeholder:text-[#a49688] focus-visible:border-[#bc4637] focus-visible:ring-[#bc4637]/15 dark:border-white/10 dark:bg-[#132c24] dark:text-[#eef2ea] dark:placeholder:text-[#81938a]";
+
   return (
-    <div className="w-full flex flex-col items-start justify-start bg-white rounded-md mb-10">
-      <h1 className="text-2xl font-bold">Contact Us</h1>
-      <div className="space-y-8 mt-2 w-full">
+    <div className="mt-7 w-full">
+      <div className="w-full">
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)}>
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 my-4">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <FormField
                 control={form.control}
                 name="name"
                 render={({ field }) => (
                   <FormItem>
+                    <p className="text-sm font-medium text-[#47392f] dark:text-[#dae4dc]">
+                      Full name <span className="text-[#b83d30]">*</span>
+                    </p>
                     <FormControl>
                       <Input
                         disabled={isSubmitting}
-                        placeholder="Full Name"
+                        placeholder="Your name"
                         {...field}
-                        className="w-full h-12 rounded-md"
+                        className={inputClassName}
                       />
                     </FormControl>
                     <FormMessage />
@@ -207,13 +96,16 @@ const ContactForm = () => {
                 name="email"
                 render={({ field }) => (
                   <FormItem>
+                    <p className="text-sm font-medium text-[#47392f] dark:text-[#dae4dc]">
+                      Email address <span className="text-[#b83d30]">*</span>
+                    </p>
                     <FormControl>
                       <Input
                         type="email"
                         disabled={isSubmitting}
-                        placeholder="Email"
+                        placeholder="you@example.com"
                         {...field}
-                        className="w-full h-12 rounded-md"
+                        className={inputClassName}
                       />
                     </FormControl>
                     <FormMessage />
@@ -221,163 +113,43 @@ const ContactForm = () => {
                 )}
               />
             </div>
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 my-4">
+            <div className="mt-4">
               <FormField
                 control={form.control}
                 name="phoneNumber"
                 render={({ field }) => (
                   <FormItem>
+                    <p className="text-sm font-medium text-[#47392f] dark:text-[#dae4dc]">
+                      Phone number <span className="text-[#b83d30]">*</span>
+                    </p>
                     <FormControl>
                       <Input
                         disabled={isSubmitting}
-                        placeholder="Phone Number"
+                        placeholder="10 to 12 digit phone number"
                         {...field}
-                        className="w-full h-12 rounded-md"
+                        className={inputClassName}
                       />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
-              <FormField
-                control={form.control}
-                name="country"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormControl>
-                      <Select
-                        key={selectedCountry?.countryCode}
-                        onValueChange={(value) => {
-                          const selectedCountry = countries.find(
-                            (c) => c.countryCode === value
-                          ) as Country;
-                          handleCountryChange(selectedCountry);
-                          field.onChange(selectedCountry.name);
-                        }}
-                        disabled={isSubmitting}
-                      >
-                        <SelectTrigger className="w-full h-12">
-                          <SelectValue
-                            placeholder={
-                              selectedCountry
-                                ? selectedCountry?.name
-                                : "Select a country"
-                            }
-                          />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {countries.map((country: Country) => {
-                            return (
-                              <SelectItem
-                                key={country.countryCode}
-                                value={country.countryCode}
-                              >
-                                {country.name}
-                              </SelectItem>
-                            );
-                          })}
-                        </SelectContent>
-                      </Select>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
             </div>
-
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 my-4">
-              <FormField
-                control={form.control}
-                name="state"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormControl>
-                      <Select
-                        onValueChange={(value) => {
-                          const selectedState = states.find(
-                            (s) => s.name === value
-                          ) as State;
-                          handleStateChange(selectedState);
-                          field.onChange(value);
-                        }}
-                        disabled={!selectedCountry || isSubmitting}
-                      >
-                        <SelectTrigger className="w-full h-12">
-                          <SelectValue
-                            //placeholder="Select a state"
-                            placeholder={
-                              selectedState
-                                ? selectedState?.name
-                                : "Select a state"
-                            }
-                          />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {states.map((state: State) => {
-                            return (
-                              <SelectItem key={state.id} value={state.name}>
-                                {state.name}
-                              </SelectItem>
-                            );
-                          })}
-                        </SelectContent>
-                      </Select>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="city"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormControl>
-                      <Select
-                        onValueChange={(value) => {
-                          const selectedCity = cities.find(
-                            (city) => city.name === value
-                          ) as City;
-                          handleCityChange(selectedCity);
-                          field.onChange(value);
-                        }}
-                        disabled={!selectedState || isSubmitting}
-                      >
-                        <SelectTrigger className="w-full h-12">
-                          <SelectValue
-                            placeholder={
-                              selectedCity ? selectedCity.name : "Select a city"
-                            }
-                          />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {cities.map((city: City) => {
-                            return (
-                              <SelectItem key={city.id} value={city.name}>
-                                {city.name}
-                              </SelectItem>
-                            );
-                          })}
-                        </SelectContent>
-                      </Select>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-            <div className="grid grid-cols-1 gap-4">
+            <div className="mt-4 grid grid-cols-1 gap-4">
               <FormField
                 control={form.control}
                 name="query"
                 render={({ field }) => (
                   <FormItem>
+                    <p className="text-sm font-medium text-[#47392f] dark:text-[#dae4dc]">
+                      How can we help? <span className="text-[#b83d30]">*</span>
+                    </p>
                     <FormControl>
                       <Textarea
                         disabled={isSubmitting}
                         {...field}
-                        placeholder="e.g. 'I want to know about meal plans'"
-                        className="w-full h-32 rounded-md"
+                        placeholder="Tell us the page or feature you need help with."
+                        className="min-h-32 rounded-xl border-[#e4d5be] bg-[#fffaf3] px-4 py-3 text-[#40342c] placeholder:text-[#a49688] focus-visible:border-[#bc4637] focus-visible:ring-[#bc4637]/15 dark:border-white/10 dark:bg-[#132c24] dark:text-[#eef2ea] dark:placeholder:text-[#81938a]"
                       />
                     </FormControl>
                     <FormMessage />
@@ -385,13 +157,13 @@ const ContactForm = () => {
                 )}
               />
             </div>
-            <div className="flex items-center justify-end mt-4">
+            <div className="mt-6 flex items-center justify-end">
               <Button
                 type="submit"
                 disabled={isSubmitting || !isValid}
-                className="pt-2 bg-gradient-to-r from-red-500 to-orange-500 cursor-pointer"
+                className="h-12 rounded-full bg-[#be3d2e] px-7 text-sm font-semibold text-white hover:bg-[#a93327]"
               >
-                {isSubmitting ? "Submitting..." : "Submit Query"}
+                {isSubmitting ? "Sending..." : "Send message"}
               </Button>
             </div>
           </form>

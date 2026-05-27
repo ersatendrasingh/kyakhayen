@@ -56,6 +56,21 @@ const UserDashboard = () => {
   }, []);
 
   const firstName = user?.name ? capitalizeName(user.name).split(" ")[0] : "there";
+  const currentPlanIndex =
+    user?.userPlanEndDate?.reduce(
+      (latestIndex, date, index, dates) =>
+        new Date(date).getTime() > new Date(dates[latestIndex]).getTime()
+          ? index
+          : latestIndex,
+      0,
+    ) ?? -1;
+  const currentPlan =
+    currentPlanIndex >= 0 ? user?.userPlan?.[currentPlanIndex] : undefined;
+  const currentPlanEndDate =
+    currentPlanIndex >= 0
+      ? user?.userPlanEndDate?.[currentPlanIndex]
+      : undefined;
+  const planDestination = user?.isPersonalised ? "/meal-plan" : "/meal-plan/create";
   const activeRecipes = activity[activeActivity].slice(0, 3);
   const activityTabs = [
     { key: "saved" as const, label: "Saved", icon: BookHeart, count: activity.saved.length },
@@ -82,10 +97,16 @@ const UserDashboard = () => {
           <div>
             <div className="mb-5 inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1.5 text-xs font-medium text-[#f7e6ca]">
               <ChefHat className="size-3.5" />
-              {user?.isPersonalised ? "Your choices are ready" : "Set your everyday choices"}
+              {currentPlan && currentPlan !== "Freemium"
+                ? `${currentPlan} membership active`
+                : user?.isPersonalised
+                  ? "Your choices are ready"
+                  : "Set your everyday choices"}
             </div>
             <h2 className="max-w-lg text-2xl font-semibold leading-tight sm:text-3xl">
-              Plan seven days of meals made for your table.
+              {currentPlan && currentPlan !== "Freemium"
+                ? "Keep your planned meals shaped around your table."
+                : "Plan seven days of meals made for your table."}
             </h2>
             <p className="mt-3 max-w-lg text-sm leading-6 text-white/70">
               Food style, cuisines, exclusions and cooking comfort only. No medical profiling.
@@ -93,11 +114,11 @@ const UserDashboard = () => {
           </div>
           <div className="flex flex-col gap-3 sm:flex-row md:flex-col">
             <Link
-              href="/meal-plan"
+              href={planDestination}
               className="inline-flex items-center justify-center gap-2 rounded-full bg-[#c33b2d] px-6 py-3.5 text-sm font-semibold text-white transition hover:bg-[#ae3023]"
             >
               <CalendarDays className="size-4" />
-              View meal plan
+              {user?.isPersonalised ? "View meal plan" : "Create meal plan"}
             </Link>
             <Link
               href="/meal-plan/create"
@@ -122,7 +143,14 @@ const UserDashboard = () => {
           <div className="space-y-3">
             <TasteRow label="Food style" value={user?.foodPreference || "Set your style"} />
             <TasteRow label="Cooking comfort" value={user?.cookingSkill || "Set your comfort"} />
-            <TasteRow label="Plan status" value={user?.isPersonalised ? "Ready to generate" : "Complete choices"} />
+            <TasteRow
+              label="Access"
+              value={
+                currentPlan
+                  ? `${currentPlan}${currentPlanEndDate ? ` through ${new Date(currentPlanEndDate).toLocaleDateString("en-IN", { day: "numeric", month: "short" })}` : ""}`
+                  : "No active plan"
+              }
+            />
           </div>
           <Link href="/user/preferences" className="mt-5 inline-flex items-center gap-1.5 text-sm font-semibold text-[#b53527] dark:text-[#e3bb73]">
             See all choices <ArrowRight className="size-4" />

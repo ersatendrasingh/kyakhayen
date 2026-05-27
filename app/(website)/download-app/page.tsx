@@ -1,242 +1,168 @@
-import { Metadata } from "next";
-import Image from "next/image";
+import type { Metadata } from "next";
 import Link from "next/link";
-import React from "react";
-import Container from "@/components/container";
-import { Button } from "@/components/ui/button";
-import { PageTitle } from "@/components/page-title";
+import { ArrowRight, Bell, BookHeart, CalendarDays, Download, Smartphone } from "lucide-react";
 
-const meta = {
-  title: "Download Kya Khayen App | Recipe and Meal Planner",
-  description:
-    "Find breakfast, dinner and snack recipes, save favourites, and plan meals around your taste and schedule.",
-  image: `${process.env.NEXT_PUBLIC_APP_URL}/meta-images/download-app.png`,
-};
+import Container from "@/components/container";
+import DevicePreview from "@/components/meal-plan/device-preview";
+import {
+  InformationBoundary,
+  SectionEyebrow,
+  TrustHero,
+} from "@/components/trust/trust-page";
+
+const siteUrl = process.env.NEXT_PUBLIC_APP_URL || "https://www.kyakhayen.com";
 
 export const metadata: Metadata = {
-  title: meta.title,
-  description: meta.description,
-  robots: {
-    index: true,
-    follow: true,
-    nocache: false,
-    googleBot: {
-      index: true,
-      follow: true,
-      noimageindex: false,
-      "max-video-preview": -1,
-      "max-image-preview": "large",
-      "max-snippet": -1,
-    },
-  },
+  title: "Install Kya Khayen App | Recipes and Meal Ideas on Mobile",
+  description:
+    "Install the Kya Khayen web app to explore recipes, save dishes and open your taste-based meal plan from your phone.",
+  alternates: { canonical: `${siteUrl}/download-app` },
   openGraph: {
-    title: meta.title,
-    description: meta.description,
-    url: `${process.env.NEXT_PUBLIC_APP_URL}/download-app`,
-
+    title: "Install Kya Khayen App | Recipes and Meal Ideas on Mobile",
+    description: "Take everyday recipe discovery and meal planning with you.",
+    url: `${siteUrl}/download-app`,
     type: "website",
-    images: [
-      {
-        url: meta.image,
-        width: 1200,
-        height: 630,
-        alt: meta.title,
-      },
+    images: [{ url: `${siteUrl}/meta-images/download-app.png`, width: 1200, height: 630 }],
+  },
+};
+
+const features = [
+  {
+    icon: BookHeart,
+    title: "Save recipes",
+    description: "Keep dishes you want to revisit in your account.",
+  },
+  {
+    icon: CalendarDays,
+    title: "Open meal plans",
+    description: "Carry your seven-day food ideas in a phone-friendly view.",
+  },
+  {
+    icon: Bell,
+    title: "Optional alerts",
+    description: "Enable notifications only when you want updates.",
+  },
+];
+
+const installGuides = [
+  {
+    title: "Android with Chrome",
+    steps: [
+      "Open Kya Khayen in Chrome on your phone.",
+      "Tap the browser menu and choose Install app or Add to Home screen.",
+      "Confirm installation, then open Kya Khayen from your home screen.",
     ],
   },
-  twitter: {
-    title: meta.title,
-    description: meta.description,
-    images: [meta.image],
-    card: "summary_large_image",
+  {
+    title: "iPhone with Safari",
+    steps: [
+      "Open Kya Khayen in Safari on your iPhone.",
+      "Tap Share, then choose Add to Home Screen.",
+      "Confirm Add and open the new Kya Khayen icon.",
+    ],
   },
-  alternates: {
-    canonical: `${process.env.NEXT_PUBLIC_APP_URL}/download-app`,
-  },
-};
-const DownloadApp = () => {
+];
+
+export default function DownloadAppPage() {
   return (
-    <div>
-      <PageTitle title="Download Kya Khayen?" className="py-6" />
-      <section className="py-16 ">
-        <Container>
-          <div className="flex flex-col items-center justify-center">
-            <div className="text-center">
-              <h2 className="text-4xl text-websecondary mb-8">
-                Your Personalized Cooking Assistant
+    <div className="bg-[#fcf8f0] dark:bg-[#091712]">
+      <TrustHero
+        eyebrow="Install the app"
+        title="Your recipe ideas, ready on your home screen."
+        description="Kya Khayen is installable from your browser as a lightweight web app. Browse recipes, return to saved dishes and view taste-based meal plans with a mobile-first experience."
+        badge="No app-store download required."
+        actions={[
+          { href: "#install-guide", label: "How to install" },
+          { href: "/recipes", label: "Explore first", secondary: true },
+        ]}
+        imageContent={
+          <div className="relative flex min-h-[360px] items-center justify-center overflow-hidden bg-[radial-gradient(circle_at_45%_35%,#fff0d6,transparent_44%),linear-gradient(145deg,#f6ead5,#efe0c6)] p-7 dark:bg-[radial-gradient(circle_at_42%_32%,rgba(221,177,98,.22),transparent_40%),linear-gradient(145deg,#10271f,#0c1612)]">
+            <DevicePreview className="max-w-[600px]" />
+          </div>
+        }
+      />
+      <Container>
+        <section className="my-10 grid gap-4 sm:grid-cols-3">
+          {features.map(({ icon: Icon, title, description }) => (
+            <div
+              key={title}
+              className="rounded-[1.45rem] border border-[#ebdeca] bg-[#fffdf8] p-5 dark:border-white/8 dark:bg-[#10241e]"
+            >
+              <Icon className="size-5 text-[#b93e30] dark:text-[#e1b268]" />
+              <h2 className="mt-4 text-base font-semibold text-[#332820] dark:text-[#edf2eb]">
+                {title}
               </h2>
-              <p className="text-lg text-center leading-loose tracking-wide mb-4">
-                Experience the comfort of Kya Khayen? anytime, anywhere with our
-                cutting-edge Progressive Web App (PWA). Designed and developed
-                to bring personalized meal planning and recipe discovery to
-                your fingertips, our mobile app makes everyday cooking easier.
+              <p className="mt-2 text-sm leading-6 text-[#746559] dark:text-[#a9b8b1]">
+                {description}
               </p>
-              <Link href="#how-to-download">
-                <Button
-                  variant="secondary"
-                  size="lg"
-                  className="bg-[#1e1a16] hover:bg-websecondary text-white rounded-full"
-                >
-                  Download Kya Khayen? Now
-                </Button>
-              </Link>
             </div>
-            <div className="flex md:flex-row items-center justify-center mt-10">
-              <Image
-                src="/assets/images/macbook-mealplan.webp"
-                alt="weekly meal plans"
-                width={400}
-                height={400}
-                className="w-72 h-52 md:w-96 md:h-96 mb-4 md:mb-0"
-              />
-              <Image
-                src="/assets/images/mobile-app-download.webp"
-                alt="meal planner app"
-                width={200}
-                height={300}
-                className="w-32 h-40 md:w-48 md:h-80  "
-              />
+          ))}
+        </section>
+
+        <section
+          id="install-guide"
+          className="scroll-mt-32 rounded-[2rem] border border-[#eadcc7] bg-[#fffdf9] p-6 sm:p-9 dark:border-white/8 dark:bg-[#10241e]"
+        >
+          <div className="mb-8 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+            <div>
+              <SectionEyebrow>Install guide</SectionEyebrow>
+              <h2 className="mt-3 text-3xl font-semibold text-[#30261f] dark:text-[#eff3ec]">
+                Add Kya Khayen in a few taps.
+              </h2>
             </div>
+            <p className="max-w-sm text-sm leading-7 text-[#75665b] dark:text-[#a9b8b1]">
+              Installation options depend on your browser. Look for an install
+              prompt or use your browser menu.
+            </p>
           </div>
-        </Container>
-      </section>
-      <section className="py-10 md:py-10">
-        <Container>
-          <div className="flex flex-col md:flex-row items-center justify-between">
-            <div className="text-center md:text-left">
-              <h3 className="text-4xl text-websecondary mb-8">
-                Key Benefits of Kya Khayen? App
-              </h3>
-              <ul>
-                <li className="flex text-left items-center mb-4">
-                  <span className="text-md md:text-4xl mr-4">&#8594;</span>
-                  <span className="text-lg leading-loose tracking-wide">
-                    <strong>Fast and Lightweight:</strong> Our meal plan mobile
-                    application loads quickly, ensuring a smooth and responsive
-                    user experience.
-                  </span>
-                </li>
-                <li className="flex text-left items-center mb-4">
-                  <span className="text-md md:text-4xl mr-4">&#8594;</span>
-                  <span className="text-lg leading-loose tracking-wide">
-                    <strong>Cross-Device Compatibility:</strong> Access our pwa
-                    app from your mobile, tablet, or desktop browser with
-                    consistent functionality.
-                  </span>
-                </li>
-                <li className="flex text-left items-center mb-4">
-                  <span className="text-md md:text-4xl mr-4">&#8594;</span>
-                  <span className="text-lg leading-loose tracking-wide">
-                    <strong>Always Updated:</strong> There are no any manual
-                    updates needed! Our app is automatically kept up-to-date
-                    with the latest features and improvements.
-                  </span>
-                </li>
-              </ul>
-            </div>
-            <div className="items-center">
-              <Image
-                src="/assets/images/home-banner-app-download.webp"
-                alt="recipe discovery app"
-                width={600}
-                height={600}
-              />
-            </div>
-          </div>
-        </Container>
-      </section>
-      <section className="py-16 " id="how-to-download">
-        <Container>
-          <div className="flex flex-col items-center justify-center">
-            <h4 className="text-4xl text-websecondary mb-8">
-              How To Download Our App
-            </h4>
-            <div className="flex flex-col md:flex-row items-center justify-center text-xl">
-              <div className="mb-8 md:mb-0 md:mr-8">
-                <h5 className="text-4xl text-websecondary mb-8">For Android</h5>
-                <p className="text-lg text-left mb-4">
-                  Follow these steps to download Kya Khayen? app for Android:
-                </p>
-                <ol className="list-decimal text-left">
-                  <li className="flex items-center text-left mb-4">
-                    <span className="text-md md:text-4xl mr-4">&#8594;</span>
-                    <span className="text-lg">
-                      Just open your mobile browser.
-                    </span>
-                  </li>
-                  <li className="flex items-center text-left mb-4">
-                    <span className="text-md md:text-4xl mr-4">&#8594;</span>
-                    <span className="text-lg">
-                      Visit our website &quot;www.kyakhayen.com&quot;.
-                    </span>
-                  </li>
-                  <li className="flex items-center text-left mb-4">
-                    <span className="text-md md:text-4xl mr-4">&#8594;</span>
-                    <span className="text-lg">
-                      Go to the option menu in the browser.
-                    </span>
-                  </li>
-                  <li className="flex items-center text-left mb-4">
-                    <span className="text-md md:text-4xl mr-4">&#8594;</span>
-                    <span className="text-lg">
-                      Tap on &quot;Install App&quot; and confirm.
-                    </span>
-                  </li>
-                  <li className="flex items-center text-left mb-4">
-                    <span className="text-md md:text-4xl mr-4">&#8594;</span>
-                    <span className="text-lg">
-                      Once added, you&apos;ll find Kya Khayen? app icon on your
-                      home screen. Tap to open!
-                    </span>
-                  </li>
+          <div className="grid gap-5 md:grid-cols-2">
+            {installGuides.map((guide) => (
+              <div
+                key={guide.title}
+                className="rounded-[1.45rem] border border-[#eee2d0] bg-[#fcf6eb] p-5 sm:p-6 dark:border-white/8 dark:bg-[#132c24]"
+              >
+                <h3 className="flex items-center gap-2 text-base font-semibold text-[#30261f] dark:text-[#edf2eb]">
+                  <Smartphone className="size-5 text-[#b93d30] dark:text-[#dfad63]" />
+                  {guide.title}
+                </h3>
+                <ol className="mt-5 space-y-4">
+                  {guide.steps.map((step, index) => (
+                    <li
+                      key={step}
+                      className="flex gap-3 text-sm leading-6 text-[#716256] dark:text-[#aebcb4]"
+                    >
+                      <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-white text-xs font-semibold text-[#b83d2f] dark:bg-white/[0.08] dark:text-[#e6b76a]">
+                        {index + 1}
+                      </span>
+                      {step}
+                    </li>
+                  ))}
                 </ol>
               </div>
-              <div>
-                <h6 className="text-4xl text-websecondary mb-8">For iOS</h6>
-                <p className="text-lg text-left mb-4">
-                  Follow these steps to download Kya Khayen? app for iOS:
-                </p>
-                <ol className="list-decimal text-left ">
-                  <li className="flex text-left items-center mb-4">
-                    <span className="text-md md:text-4xl mr-4">&#8594;</span>
-                    <span className="text-lg">
-                      Just open your mobile browser.
-                    </span>
-                  </li>
-                  <li className="flex text-left items-center mb-4">
-                    <span className="text-md md:text-4xl mr-4">&#8594;</span>
-                    <span className="text-lg">
-                      Visit our website &quot;www.kyakhayen.com&quot;.
-                    </span>
-                  </li>
-                  <li className="flex text-left items-center mb-4">
-                    <span className="text-md md:text-4xl mr-4">&#8594;</span>
-                    <span className="text-lg">
-                      Look for the &quot;Add to Home Screen&quot; option in the
-                      browser menu.
-                    </span>
-                  </li>
-                  <li className="flex text-left items-center mb-4">
-                    <span className="text-md md:text-4xl mr-4">&#8594;</span>
-                    <span className="text-lg">
-                      Tap on &quot;Add to Home Screen&quot; and confirm.
-                    </span>
-                  </li>
-                  <li className="flex text-left items-center mb-4">
-                    <span className="text-md md:text-4xl mr-4">&#8594;</span>
-                    <span className="text-lg">
-                      Once added, you&apos;ll find Kya Khayen? app icon on your
-                      home screen. Tap to open!
-                    </span>
-                  </li>
-                </ol>
-              </div>
-            </div>
+            ))}
           </div>
-        </Container>
-      </section>
+        </section>
+
+        <InformationBoundary className="my-8" compact />
+
+        <section className="mb-16 overflow-hidden rounded-[2rem] bg-[#2a211b] px-6 py-8 text-white sm:px-9 lg:flex lg:items-center lg:justify-between dark:bg-[#142e26]">
+          <div>
+            <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.22em] text-[#efc57a]">
+              <Download className="size-4" />
+              Ready to begin
+            </p>
+            <h2 className="mt-3 text-2xl font-semibold">
+              Start with recipes, then build your weekly table.
+            </h2>
+          </div>
+          <Link
+            href="/meal-plan/create"
+            className="mt-6 inline-flex items-center gap-2 rounded-full bg-[#c43e2f] px-6 py-3 text-sm font-semibold transition hover:bg-[#ad3427] lg:mt-0"
+          >
+            Create meal plan <ArrowRight className="size-4" />
+          </Link>
+        </section>
+      </Container>
     </div>
   );
-};
-
-export default DownloadApp;
+}

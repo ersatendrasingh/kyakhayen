@@ -12,11 +12,21 @@ export async function POST(req: Request) {
       return NextResponse.json("Unauthorized", { status: 401 });
     }
     const { name } = await req.json();
-    const slug = slugify(name);
+    const normalizedName = typeof name === "string" ? name.trim() : "";
+    if (!normalizedName) {
+      return NextResponse.json("Plan name is required", { status: 400 });
+    }
+    const slug = slugify(normalizedName);
+    const existingPlan = await db.plan.findUnique({ where: { slug } });
+    if (existingPlan) {
+      return NextResponse.json("A plan with this name already exists", {
+        status: 409,
+      });
+    }
 
     const plan = await db.plan.create({
       data: {
-        name,
+        name: normalizedName,
         slug,
       },
     });

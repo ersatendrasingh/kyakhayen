@@ -13,9 +13,6 @@ export async function POST(req: Request) {
       name: formData.get("name") as string,
       email: formData.get("email") as string,
       phoneNumber: formData.get("phoneNumber") as string,
-      country: formData.get("country") as string,
-      state: formData.get("state") as string,
-      city: formData.get("city") as string,
       query: formData.get("query") as string,
     };
 
@@ -59,9 +56,6 @@ export async function POST(req: Request) {
           name: combinedData.name,
           email: combinedData.email,
           phoneNumber: combinedData.phoneNumber,
-          country: combinedData.country,
-          state: combinedData.state,
-          city: combinedData.city,
           message: combinedData.query,
           timestamp: formattedTimestamp,
         })

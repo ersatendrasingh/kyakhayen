@@ -17,10 +17,19 @@ export async function DELETE(req: Request, props: { params: Promise<{ planId: st
       where: {
         id: planId,
       },
+      include: {
+        _count: { select: { UserPlan: true } },
+      },
     });
 
     if (!plan) {
       return NextResponse.json("Plan not found", { status: 404 });
+    }
+    if (plan._count.UserPlan > 0) {
+      return NextResponse.json(
+        "This plan has member assignments and must be retained for access history",
+        { status: 409 }
+      );
     }
 
     const deletedPlan = await db.plan.delete({
@@ -44,8 +53,17 @@ export async function PATCH(req: Request, props: { params: Promise<{ planId: str
     const { planId } = params;
     const { name, ...values } = await req.json();
     let slug: string | undefined;
-    if (name) {
-      slug = slugify(name);
+    const normalizedName = typeof name === "string" ? name.trim() : undefined;
+    if (normalizedName) {
+      slug = slugify(normalizedName);
+      const duplicate = await db.plan.findFirst({
+        where: { slug, NOT: { id: planId } },
+      });
+      if (duplicate) {
+        return NextResponse.json("A plan with this name already exists", {
+          status: 409,
+        });
+      }
     }
 
     const plan = await db.plan.update({
@@ -53,7 +71,7 @@ export async function PATCH(req: Request, props: { params: Promise<{ planId: str
         id: planId,
       },
       data: {
-        ...(name && { name }),
+        ...(normalizedName && { name: normalizedName }),
         ...(slug && { slug }),
         ...values,
       },
