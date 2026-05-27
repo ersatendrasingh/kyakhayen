@@ -32,6 +32,8 @@
     "recipes:content:refresh": "ts-node --project tsconfig.scripts.json scripts/backfill-recipe-content.ts --refresh-generated --apply",
     "recipes:content:images:dry-run": "ts-node --project tsconfig.scripts.json scripts/backfill-recipe-content.ts --images-only",
     "recipes:content:images": "ts-node --project tsconfig.scripts.json scripts/backfill-recipe-content.ts --images-only --apply",
+    "recipes:methods:dry-run": "ts-node --project tsconfig.scripts.json scripts/backfill-recipe-methods.ts",
+    "recipes:methods": "ts-node --project tsconfig.scripts.json scripts/backfill-recipe-methods.ts --apply",
     "import:body-types:dry-run": "ts-node --project tsconfig.scripts.json scripts/import-body-types-from-8well.ts",
     "import:body-types": "ts-node --project tsconfig.scripts.json scripts/import-body-types-from-8well.ts --apply",
     "import:articles:dry-run": "ts-node --project tsconfig.scripts.json scripts/import-articles.ts",
