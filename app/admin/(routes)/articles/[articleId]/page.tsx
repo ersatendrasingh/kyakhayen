@@ -1,120 +1,63 @@
-import { LayoutDashboard, ListChecks } from "lucide-react";
-import { redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 
-import { IconBadge } from "@/components/icon-badge";
+import { ArticleEditor } from "@/components/admin/articles/article-editor";
+import type { ArticleEditorRecord } from "@/components/admin/articles/article-types";
 import { db } from "@/lib/db";
 
-import { TitleForm } from "./_components/title-form";
-import { DescriptionForm } from "./_components/description-form";
-import { ImageForm } from "./_components/image-form";
-import { CategoryForm } from "./_components/category-form";
-
-import { Banner } from "@/components/banner";
-import { ArticleActions } from "./_components/article-actions";
-import { ArticleMetaDataForm } from "./_components/article-meta-data-form";
-
-const ArticleIdPage = async (props: { params: Promise<{ articleId: string }> }) => {
+const ArticlePage = async (props: { params: Promise<{ articleId: string }> }) => {
   const params = await props.params;
-  const post = await db.post.findUnique({
-    where: {
-      id: params.articleId,
-    },
-    include: {
-      PostCategory: {
-        include: {
-          category: true,
-        },
+  const [post, categories, tags] = await Promise.all([
+    db.post.findUnique({
+      where: { id: params.articleId },
+      include: {
+        author: { select: { name: true } },
+        PostCategory: { include: { category: { select: { id: true, title: true } } } },
+        PostTag: { include: { tag: { select: { id: true, title: true } } } },
       },
-    },
-  });
+    }),
+    db.category.findMany({
+      orderBy: { title: "asc" },
+      select: { id: true, title: true },
+    }),
+    db.articleTag.findMany({
+      orderBy: [{ position: "asc" }, { title: "asc" }],
+      select: { id: true, title: true },
+    }),
+  ]);
 
   if (!post) {
-    return redirect("/");
+    notFound();
   }
 
-  const categories = await db.category.findMany({
-    orderBy: {
-      title: "asc",
-    },
-  });
-  const categoriesData = post.PostCategory.map((category) => ({
-    id: category.id,
-    postId: category.postId,
-    categoryId: category.categoryId,
-    category: {
-      id: category.category.id,
-      title: category.category.title,
-      slug: category.category.slug,
-      imageUrl: category.category.imageUrl,
-    },
-  }));
-
-  const requiredFields = [post.title, post.content, post.imageUrl];
-
-  const totalFields = requiredFields.length;
-  const completedFields = requiredFields.filter(Boolean).length;
-
-  const completedText = `${completedFields}/${totalFields}`;
-  const isComplete = requiredFields.every(Boolean);
+  const article: ArticleEditorRecord = {
+    id: post.id,
+    title: post.title,
+    slug: post.slug,
+    imageUrl: post.imageUrl,
+    content: post.content,
+    metaTitle: post.metaTitle,
+    metaDescription: post.metaDescription,
+    metaSlug: post.metaSlug,
+    isPublished: post.isPublished,
+    updatedAt: post.updatedAt.toISOString(),
+    categories: post.PostCategory.map(({ category }) => ({
+      id: category.id,
+      label: category.title,
+    })),
+    tags: post.PostTag.map(({ tag }) => ({ id: tag.id, label: tag.title })),
+    authorName: post.author.name,
+  };
 
   return (
-    <>
-      {!post.isPublished && (
-        <Banner
-          variant="warning"
-          label="This post is unpublished. It will not be visible to the public."
-        />
-      )}
-      <div className="p-6">
-        <div className="flex items-center justify-between">
-          <div className="flex flex-col gap-y-2">
-            <h1 className="text-2xl font-medium">Article Setup</h1>
-            <span className="text-sm text-slate-700">
-              Complete the all required fields {completedText}
-            </span>
-          </div>
-          <ArticleActions
-            disabled={!isComplete}
-            postId={params.articleId}
-            isPublished={post.isPublished}
-          />
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-16">
-          <div>
-            <div className="flex items-center gap-x-2">
-              <IconBadge icon={LayoutDashboard} />
-              <h2 className="text-xl">Customize Article</h2>
-            </div>
-            <TitleForm initialData={post} postId={post.id} />
-
-            <ImageForm initialData={post} postId={post.id} />
-            <CategoryForm
-              initialData={categoriesData}
-              postId={post.id}
-              options={categories.map((category) => ({
-                label: category.title,
-                value: category.id,
-              }))}
-            />
-            <div className="flex items-center mt-4 gap-x-2">
-              <IconBadge icon={ListChecks} />
-              <h2 className="text-md">Article Meta Data for SEO</h2>
-            </div>
-            <ArticleMetaDataForm initialData={post} postId={post.id} />
-          </div>
-          <div className="space-y-6">
-            <div>
-              <div className="flex items-center gap-x-2">
-                <IconBadge icon={ListChecks} />
-                <h2 className="text-md">Article Content</h2>
-              </div>
-              <DescriptionForm initialData={post} postId={post.id} />
-            </div>
-          </div>
-        </div>
-      </div>
-    </>
+    <ArticleEditor
+      article={article}
+      categoryOptions={categories.map((category) => ({
+        id: category.id,
+        label: category.title,
+      }))}
+      tagOptions={tags.map((tag) => ({ id: tag.id, label: tag.title }))}
+    />
   );
 };
 
-export default ArticleIdPage;
+export default ArticlePage;

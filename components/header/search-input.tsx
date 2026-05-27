@@ -22,8 +22,9 @@ type SearchInputProps = {
 };
 
 const searchPrompts = [
-  "Search for 2M+ recipes...",
+  "Search recipes and food stories...",
   "Paneer, breakfast, rajma chawal...",
+  "Summer kitchen ideas and guides...",
   "Chicken curry, lunch, dinner ideas...",
   "Chole, North Indian thali...",
   "Summer smoothies, juices, coolers...",
@@ -140,11 +141,24 @@ export const SearchInput = ({
     onClose?.();
   };
 
+  const openSuggestion = (suggestion: RecipeSearchSuggestion) => {
+    if (suggestion.href) {
+      router.push(suggestion.href);
+      setShowSuggestions(false);
+      setSearchResults([]);
+      inputRef.current?.blur();
+      onClose?.();
+      return;
+    }
+
+    runSearch(suggestion.query);
+  };
+
   const handleKeyPress = (event: React.KeyboardEvent<HTMLInputElement>) => {
     if (event.key === "Enter") {
       event.preventDefault();
       if (selectedResultIndex >= 0) {
-        runSearch(searchResults[selectedResultIndex].query);
+        openSuggestion(searchResults[selectedResultIndex]);
       } else {
         runSearch(value);
       }
@@ -194,7 +208,7 @@ export const SearchInput = ({
           onKeyDown={handleKeyPress}
           value={value}
           autoComplete="off"
-          aria-label="Search recipes, ingredients or cuisines"
+          aria-label="Search recipes, ingredients or food stories"
           className={cn(
             "w-full rounded-full border-[#ead6b9] bg-white pl-14 text-[#34271f] shadow-[0_12px_32px_-24px_rgba(61,37,20,0.48)] placeholder:text-[#968577] focus-visible:border-[#d9a24b] focus-visible:ring-[#d9a24b]/18",
             dense
@@ -232,7 +246,7 @@ export const SearchInput = ({
         value.trim().length >= 2 && (
         <div
           role="listbox"
-          aria-label="Recipe ideas"
+          aria-label="Search suggestions"
           className="search-suggestions absolute top-[calc(100%+0.55rem)] z-[70] flex w-full flex-col overflow-hidden rounded-[1.25rem] border border-[#ead9c2] bg-[#fffdf8] p-2 shadow-[0_24px_62px_-26px_rgba(56,35,19,0.44)]"
         >
           {isPending && searchResults.length === 0 && (
@@ -263,10 +277,15 @@ export const SearchInput = ({
                   "search-suggestion-active border-[#dfb36a] bg-[#faf1e4]",
               )}
               onClick={() => {
-                runSearch(result.query);
+                openSuggestion(result);
               }}
             >
-              <span className="text-sm font-medium text-[#372921]">{result.label}</span>
+              <span className="min-w-0">
+                <span className="block truncate text-sm font-medium text-[#372921]">{result.label}</span>
+                <span className="mt-0.5 block text-[10px] font-semibold uppercase tracking-[0.18em] text-[#a7834d]">
+                  {result.kind}
+                </span>
+              </span>
               <ArrowRight className="search-suggestion-arrow size-4 text-[#b38b53]" />
             </button>
           ))}

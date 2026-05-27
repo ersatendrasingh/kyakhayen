@@ -621,6 +621,7 @@ model Post {
   authorId        String
   author          User           @relation(fields: [authorId], references: [id])
   PostCategory    PostCategory[]
+  PostTag         PostTag[]
   articleComments Comment[]
   createdAt       DateTime       @default(now())
   updatedAt       DateTime       @updatedAt
@@ -631,6 +632,8 @@ model Category {
   title        String         @unique
   slug         String         @unique
   imageUrl     String?
+  position     Int?
+  isPublished  Boolean        @default(false)
   PostCategory PostCategory[]
 }
 
@@ -642,6 +645,26 @@ model PostCategory {
   category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
 
   @@unique([postId, categoryId])
+}
+
+model ArticleTag {
+  id          String    @id @default(uuid())
+  title       String    @unique
+  slug        String    @unique
+  imageUrl    String?
+  position    Int?
+  isPublished Boolean   @default(false)
+  PostTag     PostTag[]
+}
+
+model PostTag {
+  id     String     @id @default(uuid())
+  postId String
+  tagId  String
+  post   Post       @relation(fields: [postId], references: [id], onDelete: Cascade)
+  tag    ArticleTag @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@unique([postId, tagId])
 }
 
 model Country {

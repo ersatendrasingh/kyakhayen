@@ -13,6 +13,7 @@ import HomeFeaturedRecipes from "@/components/sections/home-featured-recipes";
 import { HomePreferenceProvider } from "@/components/sections/home-preference-context";
 import PremiumHomeHero from "@/components/sections/premium-home-hero";
 import MembershipPromptModal from "@/components/sections/membership-prompt-modal";
+import HomeEditorialStories from "@/components/sections/home-editorial-stories";
 import { getMealPlanFromS3 } from "@/actions/get-meal-plan-from-s3";
 import { currentUser } from "@/lib/auth";
 import { db } from "@/lib/db";
@@ -81,6 +82,7 @@ export default async function Home() {
     cuisineStories,
     paneerRecipes,
     foodPreferenceStories,
+    homeArticles,
   ] = await Promise.all([
       db.recipes.count(),
       db.recipes.findMany({
@@ -250,6 +252,27 @@ export default async function Home() {
         },
         orderBy: { position: "asc" },
       }),
+      db.post.findMany({
+        where: { isPublished: true, imageUrl: { not: null } },
+        select: {
+          id: true,
+          title: true,
+          metaDescription: true,
+          content: true,
+          imageUrl: true,
+          slug: true,
+          metaSlug: true,
+          updatedAt: true,
+          PostCategory: {
+            select: { category: { select: { title: true, slug: true } } },
+          },
+          PostTag: {
+            select: { tag: { select: { title: true, slug: true } } },
+          },
+        },
+        orderBy: { updatedAt: "desc" },
+        take: 4,
+      }),
     ]);
   let plannedDays: MealPlanDay[] = [];
 
@@ -390,6 +413,7 @@ export default async function Home() {
             recipes={paneerRecipes}
             editorialImage={ingredientEditorialImage}
           />
+          <HomeEditorialStories articles={homeArticles} />
           <HomeFoodPreference
             preferences={foodPreferenceStories.map((preference) => ({
               id: preference.id,

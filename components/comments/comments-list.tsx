@@ -320,7 +320,7 @@ const CommentsList = ({
         )}
       </div>
       {comments.length === 0 && (
-        <p className="rounded-xl border border-dashed border-[#dfccb0] p-5 text-sm text-[#75665a] dark:border-white/10 dark:text-[#a7b5af]">
+        <p className="w-full rounded-xl border border-dashed border-[#dfccb0] p-5 text-sm text-[#75665a] dark:border-white/10 dark:text-[#a7b5af]">
           No kitchen questions yet. Start the conversation above.
         </p>
       )}

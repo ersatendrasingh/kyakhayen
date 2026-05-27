@@ -4,8 +4,10 @@ import Link from "next/link";
 
 import {
   GetRecipeSearchSuggestions,
+  GetSearchedArticles,
   GetSearchedRecipePage,
 } from "@/actions/get-searched-recipes";
+import { EditorialStoryRow } from "@/components/blogs/editorial-story-card";
 import Container from "@/components/container";
 import RecipeResultsFeed from "@/components/recipes/recipe-results-feed";
 
@@ -13,13 +15,13 @@ const siteUrl =
   process.env.NEXT_PUBLIC_APP_URL || "https://www.kyakhayen.com";
 
 export const metadata: Metadata = {
-  title: "Search Recipes by Ingredient, Cuisine or Craving | Kya Khayen",
+  title: "Search Recipes and Food Stories | Kya Khayen",
   description:
-    "Search recipes using ingredients, meal times, cuisines and cravings. Find paneer dishes, breakfast recipes, summer drinks and more.",
+    "Search recipes and original food stories using ingredients, meal times, cuisines and kitchen questions.",
   alternates: { canonical: `${siteUrl}/search` },
   openGraph: {
-    title: "Search Recipes by Ingredient, Cuisine or Craving | Kya Khayen",
-    description: "Discover food by the words you naturally use.",
+    title: "Search Recipes and Food Stories | Kya Khayen",
+    description: "Discover dishes and original food stories by the words you naturally use.",
     url: `${siteUrl}/search`,
     type: "website",
     images: [{ url: `${siteUrl}/meta-images/recipe-page.jpg`, width: 1200, height: 630 }],
@@ -42,10 +44,12 @@ const SearchPage = async ({
 }) => {
   const { k = "" } = await searchParams;
   const query = k.trim();
-  const [initialPage, relatedSuggestions] = await Promise.all([
+  const [initialPage, articleMatches, relatedSuggestions] = await Promise.all([
     GetSearchedRecipePage({ k: query }),
+    GetSearchedArticles({ k: query }),
     GetRecipeSearchSuggestions({ k: query }),
   ]);
+  const hasResults = initialPage.recipes.length > 0 || articleMatches.length > 0;
 
   return (
     <div className="search-page-surface min-h-screen bg-[radial-gradient(circle_at_12%_0%,rgba(217,156,61,0.14),transparent_28rem),linear-gradient(180deg,#fffaf2,#f8eee2)] pb-20">
@@ -53,13 +57,13 @@ const SearchPage = async ({
         <Container>
           <div className="mx-auto max-w-[900px] text-center">
             <p className="mb-3 inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.26em] text-[#a67636]">
-              <Sparkles className="size-3.5" /> Smart recipe discovery
+              <Sparkles className="size-3.5" /> Smart kitchen discovery
             </p>
             <h1 className="text-3xl font-semibold tracking-tight text-[#30251d] sm:text-5xl">
               Find food the way you think.
             </h1>
             <p className="mx-auto mt-4 max-w-xl text-sm leading-7 text-[#746659] sm:text-base">
-              Search from the header anytime, or jump into a popular craving below.
+              Find a dish to cook or a food story to read, all from one search.
             </p>
             <div className="mt-7 flex flex-wrap justify-center gap-2">
               {quickSearches.map((term) => (
@@ -85,13 +89,13 @@ const SearchPage = async ({
                   Search results
                 </p>
                 <h2 className="mt-2 text-2xl font-semibold text-[#30251d] sm:text-3xl">
-                  {initialPage.recipes.length > 0
+                  {hasResults
                     ? `Fresh matches for "${query}"`
                     : `Explore another flavour`}
                 </h2>
-                {initialPage.recipes.length > 0 && (
+                {hasResults && (
                   <p className="mt-2 text-sm text-[#75675b]">
-                    Ranked from related names, ingredients, cuisines and meal moments.
+                    Matching recipes, ingredients, collections and original journal stories.
                   </p>
                 )}
               </div>
@@ -100,7 +104,7 @@ const SearchPage = async ({
                   {relatedSuggestions.slice(0, 4).map((suggestion) => (
                     <Link
                       key={`${suggestion.kind}-${suggestion.label}`}
-                      href={`/search?k=${encodeURIComponent(suggestion.query)}`}
+                      href={suggestion.href || `/search?k=${encodeURIComponent(suggestion.query)}`}
                       className="rounded-full bg-[#f1e7d7] px-3.5 py-2 text-xs font-medium text-[#604a39] transition hover:text-primary"
                     >
                       {suggestion.label}
@@ -119,14 +123,14 @@ const SearchPage = async ({
             </div>
           )}
 
-          {query && initialPage.recipes.length === 0 && (
+          {query && !hasResults && (
             <div className="rounded-[1.7rem] border border-[#ead9c3] bg-white p-8 text-center shadow-sm">
               <p className="text-lg font-semibold text-[#30251d]">
                 Try a simpler food word
               </p>
               <p className="mx-auto mt-2 max-w-lg text-sm leading-6 text-[#75675b]">
-                Search by an ingredient like paneer, rajma or potato, or by a
-                moment such as breakfast or dinner.
+                Search by an ingredient like paneer or rajma, a meal such as
+                breakfast, or a reading topic such as summer kitchens.
               </p>
               <Link
                 href="/recipes"
@@ -135,6 +139,29 @@ const SearchPage = async ({
                 Browse all recipes <ArrowRight className="size-4" />
               </Link>
             </div>
+          )}
+
+          {articleMatches.length > 0 && (
+            <section className="mb-12 rounded-[1.8rem] border border-[#ead9c3] bg-[#fffdf8]/80 p-5 shadow-sm sm:p-7">
+              <div className="mb-6 flex items-end justify-between gap-4">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[#a67636]">
+                    From the journal
+                  </p>
+                  <h2 className="mt-2 text-2xl font-semibold text-[#30251d]">
+                    Stories related to your search
+                  </h2>
+                </div>
+                <Link href="/blog" className="hidden text-sm font-semibold text-primary sm:inline-flex">
+                  Read the journal
+                </Link>
+              </div>
+              <div className="grid gap-4 lg:grid-cols-2">
+                {articleMatches.map((article) => (
+                  <EditorialStoryRow key={article.id} story={article} compact />
+                ))}
+              </div>
+            </section>
           )}
 
           {initialPage.recipes.length > 0 && (

@@ -76,8 +76,8 @@ export const adminNavigation: AdminNavigationGroup[] = [
         icon: Newspaper,
         children: [
           { title: "All Articles", href: "/admin/articles" },
-          { title: "Add Article", href: "/admin/articles/create" },
           { title: "Categories", href: "/admin/articles/categories" },
+          { title: "Tags", href: "/admin/articles/tags" },
         ],
       },
       {

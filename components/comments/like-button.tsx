@@ -1,10 +1,10 @@
 "use client";
 import axios from "axios";
 import { Heart } from "lucide-react";
+import Link from "next/link";
 import { useEffect, useState } from "react";
 
 import { useCurrentUser } from "@/hooks/use-current-user";
-import LoginPopup from "@/components/modals/login-popup";
 import { cn } from "@/lib/utils";
 
 interface LikeButtonProps {
@@ -16,7 +16,6 @@ interface LikeButtonProps {
 const LikeButton = ({ commentId, postId, initialLikes }: LikeButtonProps) => {
   const [likes, setLikes] = useState(initialLikes || 0);
   const [isLiked, setIsLiked] = useState(false);
-  const [showPopup, setShowPopup] = useState(false);
 
   const user = useCurrentUser();
 
@@ -37,7 +36,6 @@ const LikeButton = ({ commentId, postId, initialLikes }: LikeButtonProps) => {
 
   const handleLike = async () => {
     if (!user) {
-      setShowPopup(true);
       return;
     }
     const previousLikes = likes;
@@ -74,22 +72,33 @@ const LikeButton = ({ commentId, postId, initialLikes }: LikeButtonProps) => {
 
   return (
     <div className="flex items-center">
-      <button
-        type="button"
-        onClick={handleLike}
-        className={cn(
-          "inline-flex cursor-pointer items-center gap-1.5 rounded-full px-3 py-2 text-xs font-medium transition-colors",
-          isLiked
-            ? "bg-[#f9e5e1] text-[#b83324] hover:bg-[#f5d7d1] dark:bg-[#b83324]/16 dark:text-[#ec796d]"
-            : "text-[#817061] hover:bg-[#f4e7d4] hover:text-[#b83324] dark:text-[#a5b4ad] dark:hover:bg-white/7 dark:hover:text-[#ec796d]"
-        )}
-        aria-label={isLiked ? "Unlike comment" : "Like comment"}
-      >
-        <Heart className={cn("size-4", isLiked && "fill-current")} />
-        <span>{isLiked ? "Liked" : "Like"}</span>
-        <span className="tabular-nums">{likes}</span>
-      </button>
-      {showPopup && <LoginPopup onClose={() => setShowPopup(false)} />}
+      {user ? (
+        <button
+          type="button"
+          onClick={handleLike}
+          className={cn(
+            "inline-flex cursor-pointer items-center gap-1.5 rounded-full px-3 py-2 text-xs font-medium transition-colors",
+            isLiked
+              ? "bg-[#f9e5e1] text-[#b83324] hover:bg-[#f5d7d1] dark:bg-[#b83324]/16 dark:text-[#ec796d]"
+              : "text-[#817061] hover:bg-[#f4e7d4] hover:text-[#b83324] dark:text-[#a5b4ad] dark:hover:bg-white/7 dark:hover:text-[#ec796d]"
+          )}
+          aria-label={isLiked ? "Unlike comment" : "Like comment"}
+        >
+          <Heart className={cn("size-4", isLiked && "fill-current")} />
+          <span>{isLiked ? "Liked" : "Like"}</span>
+          <span className="tabular-nums">{likes}</span>
+        </button>
+      ) : (
+        <Link
+          href="/auth/login"
+          className="inline-flex items-center gap-1.5 rounded-full px-3 py-2 text-xs font-medium text-[#817061] transition hover:bg-[#f4e7d4] hover:text-[#b83324] dark:text-[#a5b4ad] dark:hover:bg-white/7 dark:hover:text-[#ec796d]"
+          aria-label="Sign in to like comment"
+        >
+          <Heart className="size-4" />
+          <span>Sign in to like</span>
+          <span className="tabular-nums">{likes}</span>
+        </Link>
+      )}
     </div>
   );
 };

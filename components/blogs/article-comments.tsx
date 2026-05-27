@@ -28,7 +28,7 @@ const ArticleComments = ({ articleId, comments }: ArticleCommentsProps) => {
   };
 
   return (
-    <div className="w-full mt-5">
+    <div className="mt-5 w-full space-y-5">
       <CommentsForm postId={articleId} onCommentAdded={handleCommentAdded} />
       <CommentsList
         postId={articleId}

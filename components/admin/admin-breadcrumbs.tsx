@@ -30,6 +30,7 @@ const labels: Record<string, string> = {
   forms: "Preparation Forms",
   units: "Measurement Units",
   articles: "Articles",
+  tags: "Tags",
   coupons: "Coupons",
   orders: "Orders",
   "subscription-plans": "Subscription Plans",

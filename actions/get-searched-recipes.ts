@@ -23,7 +23,21 @@ export type SearchedRecipePage = {
 export type RecipeSearchSuggestion = {
   label: string;
   query: string;
-  kind: "Dish" | "Ingredient" | "Cuisine" | "Mealtime" | "Preference" | "Collection";
+  href?: string;
+  kind: "Dish" | "Ingredient" | "Cuisine" | "Mealtime" | "Preference" | "Collection" | "Story";
+};
+
+export type SearchedArticle = {
+  id: string;
+  title: string;
+  metaDescription: string | null;
+  content: string | null;
+  imageUrl: string | null;
+  slug: string;
+  metaSlug: string | null;
+  updatedAt: Date;
+  PostCategory: Array<{ category: { title: string; slug: string } }>;
+  PostTag: Array<{ tag: { title: string; slug: string } }>;
 };
 
 const stopWords = new Set([
@@ -140,6 +154,16 @@ function fieldMatches(tokens: string[]): Prisma.RecipesWhereInput[] {
   ]);
 }
 
+function articleFieldMatches(tokens: string[]): Prisma.PostWhereInput[] {
+  return tokens.flatMap((term) => [
+    { title: { contains: term } },
+    { metaDescription: { contains: term } },
+    { content: { contains: term } },
+    { PostCategory: { some: { category: { isPublished: true, title: { contains: term } } } } },
+    { PostTag: { some: { tag: { isPublished: true, title: { contains: term } } } } },
+  ]);
+}
+
 function scoreRecipe(recipe: Awaited<ReturnType<typeof searchCandidates>>[number], query: string, tokens: string[]) {
   const title = normalize(recipe.title);
   const category = normalize(recipe.RecipeCategories?.name || "");
@@ -233,6 +257,43 @@ export const GetSearchedRecipePage = async ({
   }
 };
 
+export const GetSearchedArticles = async ({
+  k,
+  limit = 4,
+}: SearchInput & { limit?: number }): Promise<SearchedArticle[]> => {
+  const query = k?.trim();
+  if (!query) return [];
+
+  try {
+    const tokens = searchTokens(query);
+
+    return await db.post.findMany({
+      where: {
+        isPublished: true,
+        imageUrl: { not: null },
+        OR: articleFieldMatches(tokens),
+      },
+      select: {
+        id: true,
+        title: true,
+        metaDescription: true,
+        content: true,
+        imageUrl: true,
+        slug: true,
+        metaSlug: true,
+        updatedAt: true,
+        PostCategory: { select: { category: { select: { title: true, slug: true } } } },
+        PostTag: { select: { tag: { select: { title: true, slug: true } } } },
+      },
+      orderBy: { updatedAt: "desc" },
+      take: limit,
+    });
+  } catch (error) {
+    console.error("[SEARCH_ARTICLES]", error);
+    return [];
+  }
+};
+
 export const GetRecipeSearchSuggestions = async ({
   k,
 }: SearchInput): Promise<RecipeSearchSuggestion[]> => {
@@ -242,7 +303,7 @@ export const GetRecipeSearchSuggestions = async ({
   try {
     const tokens = searchTokens(query);
     const containsAny = tokens.map((token) => ({ contains: token }));
-    const [recipes, ingredients, cuisines, mealTimes, categories, recipeTypes] =
+    const [recipes, ingredients, cuisines, mealTimes, categories, recipeTypes, articles] =
       await Promise.all([
         db.recipes.findMany({
           where: {
@@ -279,9 +340,29 @@ export const GetRecipeSearchSuggestions = async ({
           select: { title: true },
           take: 2,
         }),
+        db.post.findMany({
+          where: {
+            isPublished: true,
+            OR: articleFieldMatches(tokens),
+          },
+          select: { title: true, slug: true, metaSlug: true },
+          orderBy: { updatedAt: "desc" },
+          take: 3,
+        }),
       ]);
 
     const suggestions: RecipeSearchSuggestion[] = [
+      ...articles.map((item) => ({
+        label: item.title,
+        query: item.title,
+        href: item.metaSlug ? `/${item.slug}-${item.metaSlug}` : `/${item.slug}`,
+        kind: "Story" as const,
+      })),
+      ...recipes.map((item) => ({
+        label: item.title,
+        query: item.title,
+        kind: "Dish" as const,
+      })),
       ...ingredients.map((item) => ({
         label: `${item.name} recipes`,
         query: item.name,
@@ -306,11 +387,6 @@ export const GetRecipeSearchSuggestions = async ({
         label: `${item.title} recipes`,
         query: item.title,
         kind: "Collection" as const,
-      })),
-      ...recipes.map((item) => ({
-        label: item.title,
-        query: item.title,
-        kind: "Dish" as const,
       })),
     ];
     const unique = new Map<string, RecipeSearchSuggestion>();

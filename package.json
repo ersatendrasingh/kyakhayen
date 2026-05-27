@@ -23,6 +23,8 @@
     "import:recipes": "ts-node --project tsconfig.scripts.json scripts/import-recipes-from-8well.ts --apply",
     "import:body-types:dry-run": "ts-node --project tsconfig.scripts.json scripts/import-body-types-from-8well.ts",
     "import:body-types": "ts-node --project tsconfig.scripts.json scripts/import-body-types-from-8well.ts --apply",
+    "import:articles:dry-run": "ts-node --project tsconfig.scripts.json scripts/import-articles.ts",
+    "import:articles": "ts-node --project tsconfig.scripts.json scripts/import-articles.ts --apply",
     "media:backfill:dry-run": "ts-node --project tsconfig.scripts.json scripts/backfill-media-assets.ts",
     "media:backfill": "ts-node --project tsconfig.scripts.json scripts/backfill-media-assets.ts --apply",
     "storage:verify": "ts-node --project tsconfig.scripts.json scripts/verify-storage.ts",

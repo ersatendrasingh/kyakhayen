@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
 import axios from "axios";
+import { ArrowRight, LogIn } from "lucide-react";
+import Link from "next/link";
 import { toast } from "sonner";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -14,7 +15,6 @@ import {
   FormItem,
   FormMessage,
 } from "@/components/ui/form";
-import LoginPopup from "@/components/modals/login-popup";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { useCurrentUser } from "@/hooks/use-current-user";
@@ -36,7 +36,6 @@ export const CommentsForm = ({
   title,
   onCommentAdded,
 }: CommentFormProps) => {
-  const [showPopup, setShowPopup] = useState(false);
   const user = useCurrentUser();
 
   const form = useForm<z.infer<typeof commentFormSchema>>({
@@ -51,7 +50,6 @@ export const CommentsForm = ({
   const onSubmit = async (values: z.infer<typeof commentFormSchema>) => {
     try {
       if (!user) {
-        setShowPopup(true);
         return;
       }
       const data = {
@@ -134,17 +132,36 @@ export const CommentsForm = ({
           </Form>
         </div>
       ) : (
-        <div className="mt-5">
-          <Button
-            type="button"
-            onClick={() => setShowPopup(true)}
-            className="h-11 cursor-pointer rounded-full bg-[#b83324] px-5 text-white hover:bg-[#9c2d21]"
-          >
-            Log in to join the conversation
-          </Button>
+        <div className="mt-5 w-full rounded-2xl border border-[#eadcc8] bg-[#fffdf8] p-4 dark:border-white/10 dark:bg-[#10241e] sm:flex sm:items-center sm:justify-between sm:gap-5">
+          <div className="flex gap-3">
+            <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-[#f6e8d2] text-[#b83324] dark:bg-white/8 dark:text-[#dfb36c]">
+              <LogIn className="size-4" />
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-[#332820] dark:text-[#eef2ed]">
+                Sign in to join the conversation
+              </p>
+              <p className="mt-1 text-xs leading-5 text-[#75665a] dark:text-[#a7b5af]">
+                Ask questions, share tips and keep your replies in one account.
+              </p>
+            </div>
+          </div>
+          <div className="mt-4 flex flex-wrap gap-2 sm:mt-0 sm:shrink-0">
+            <Link
+              href="/auth/login"
+              className="inline-flex h-10 items-center gap-1.5 rounded-full bg-[#b83324] px-4 text-xs font-semibold text-white transition hover:bg-[#9c2d21]"
+            >
+              Sign in <ArrowRight className="size-3.5" />
+            </Link>
+            <Link
+              href="/auth/register"
+              className="inline-flex h-10 items-center rounded-full border border-[#decbb0] px-4 text-xs font-semibold text-[#57493e] transition hover:bg-[#f8ecda] dark:border-white/12 dark:text-[#d6dfda] dark:hover:bg-white/6"
+            >
+              Create account
+            </Link>
+          </div>
         </div>
       )}
-      {showPopup && <LoginPopup onClose={() => setShowPopup(false)} />}
     </div>
   );
 };
