@@ -130,6 +130,81 @@ const curatedNutrition: Record<string, Record<string, number>> = {
     tocopherolEquivalent: 0.42,
     vitaminK: 2,
   },
+  "biryani-masala": {
+    calories: 325,
+    carbohydrate: 55,
+    totalFat: 10,
+    dietaryFiber: 15,
+    protein: 12,
+  },
+  "black-carrots": {
+    calories: 41,
+    carbohydrate: 9.6,
+    totalFat: 0.2,
+    dietaryFiber: 2.8,
+    protein: 0.9,
+  },
+  "groundnut-oil": {
+    calories: 884,
+    carbohydrate: 0,
+    totalFat: 100,
+    dietaryFiber: 0,
+    protein: 0,
+  },
+  "rice-bran-oil": {
+    calories: 884,
+    carbohydrate: 0,
+    totalFat: 100,
+    dietaryFiber: 0,
+    protein: 0,
+  },
+  "safflower-oil": {
+    calories: 884,
+    carbohydrate: 0,
+    totalFat: 100,
+    dietaryFiber: 0,
+    protein: 0,
+  },
+  "sherry-vinegar": {
+    calories: 18,
+    carbohydrate: 0.3,
+    totalFat: 0,
+    dietaryFiber: 0,
+    protein: 0,
+  },
+  "yellow-bell-pepper": {
+    calories: 27,
+    carbohydrate: 6.3,
+    totalFat: 0.2,
+    dietaryFiber: 0.9,
+    protein: 1,
+  },
+};
+
+const curatedMeasurements: Record<string, Record<string, number>> = {
+  "black-pepper": { pinch: 0.5, tsp: 2.3 },
+  "bread-crumbs-dry-grated-plain": { cup: 126 },
+  "bread-pita-whole-wheat": { no: 60 },
+  "carrot-orange": { cup: 128 },
+  "chillies-green---all-varieties": { no: 5 },
+  "cloves": { tsp: 2 },
+  "corn-flour-masa-enriched-white": { tsp: 3.1 },
+  "egg-white": { no: 30, pc: 30 },
+  "garlic-raw": { cloves: 5, no: 5, pc: 5 },
+  "ginger-fresh": { tsp: 2 },
+  "lemon-juice": { ml: 1, tbsp: 15, tsp: 5 },
+  "lime-juice-raw": { ml: 1, tbsp: 15, tsp: 5 },
+  "rice-flakes": { cup: 31 },
+  "rice-puffed": { cup: 14 },
+  "rock-salt": { tsp: 5.6 },
+  "salt-table": { tsp: 5 },
+  "cashew-nut": { no: 5, pc: 5 },
+  "nuts-almonds-blanched": { no: 1.2, pc: 1.2 },
+  "pistachio-nuts": { no: 0.7, pc: 0.7 },
+  "spices-chili-powder": { tsp: 2.72 },
+  "spices-thyme-dried": { tsp: 0.91 },
+  "turmeric-powder": { tsp: 3.15 },
+  "walnut": { no: 4, pc: 4 },
 };
 
 const nutritionFields = [
@@ -339,6 +414,23 @@ async function main() {
         return Object.keys(data).length ? { id: ingredient.id, name: ingredient.name, data } : null;
       })
       .filter(Boolean) as Array<{ id: string; name: string; data: Record<string, number> }>;
+    const ingredientBySlug = new Map(
+      targetIngredients.flatMap((ingredient) =>
+        ingredient.slug ? [[ingredient.slug, ingredient] as const] : [],
+      ),
+    );
+    const curatedMeasurementUpdates = Object.entries(curatedMeasurements).flatMap(
+      ([slug, unitsByShortName]) => {
+        const ingredient = ingredientBySlug.get(slug);
+        if (!ingredient) return [];
+        return Object.entries(unitsByShortName).flatMap(([shortName, values]) => {
+          const unit = targetUnitByShortName.get(shortName);
+          return unit
+            ? [{ ingredientId: ingredient.id, ingredientName: ingredient.name, unitId: unit.id, unitShortName: unit.shortName, values }]
+            : [];
+        });
+      },
+    );
 
     const missingConversionRows = recipeIngredientRows.filter((row) => {
       const shortName = row.unit.shortName.toLowerCase();
@@ -384,6 +476,7 @@ async function main() {
     console.log(`Nutrition rows to complete: ${nutritionUpdates.length}`);
     console.log(`Missing conversion rows found: ${missingConversionRows.length}`);
     console.log(`Ingredient-unit conversions to add: ${conversionUpdates.size}`);
+    console.log(`Curated measurement mappings to upsert: ${curatedMeasurementUpdates.length}`);
     console.log(`Unresolved conversions after source lookup: ${new Set(unresolvedConversions).size}`);
     const currentPublishableDrafts = await targetDb.ingredients.findMany({
       where: {
@@ -406,6 +499,11 @@ async function main() {
     [...conversionUpdates.values()].slice(0, 25).forEach((update) =>
       console.log(
         `Conversion: ${update.ingredientName} ${update.unitShortName} = ${update.values} g (${update.samples} source samples)`,
+      ),
+    );
+    curatedMeasurementUpdates.slice(0, 25).forEach((update) =>
+      console.log(
+        `Curated conversion: ${update.ingredientName} ${update.unitShortName} = ${update.values} g`,
       ),
     );
     [...new Set(unresolvedConversions)].slice(0, 25).forEach((entry) =>
@@ -457,6 +555,26 @@ async function main() {
       skipDuplicates: true,
     });
     console.log(`Added ${conversionUpdates.size} ingredient-unit conversions.`);
+
+    for (const update of curatedMeasurementUpdates) {
+      await targetDb.ingredientUnitMeasurements.upsert({
+        where: {
+          ingredientId_unitId: {
+            ingredientId: update.ingredientId,
+            unitId: update.unitId,
+          },
+        },
+        update: { values: update.values },
+        create: {
+          ingredientId: update.ingredientId,
+          unitId: update.unitId,
+          values: update.values,
+        },
+      });
+    }
+    if (curatedMeasurementUpdates.length > 0) {
+      console.log(`Upserted ${curatedMeasurementUpdates.length} curated conversions.`);
+    }
 
     const publishableDrafts = await targetDb.ingredients.findMany({
       where: {
