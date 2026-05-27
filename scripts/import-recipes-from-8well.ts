@@ -82,7 +82,6 @@ const COOKING_METHOD_SLUGS: Record<string, string> = {
 };
 
 const IMAGE_ALIASES: Record<string, string> = {
-  "yellow-moong-dal-cheela-stuffed-with-onions": "yellow-moong-dal-cheela",
   "kalachana-sprouts-poha": "kala-chana-sprouts-poha",
   "stir-fried-mixed-vegetables": "stir-fried-mix-vegetables",
   "black-masoor-dal": "black-masoor-daal",

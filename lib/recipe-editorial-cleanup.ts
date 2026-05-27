@@ -46,6 +46,7 @@ export const EDITORIAL_RECIPE_REMOVALS: EditorialRecipeRemoval[] = [
 ];
 
 export const EDITORIAL_RECIPE_RENAMES: EditorialRecipeRename[] = [
+  { sourceId: 1, title: "Yellow Moong Dal Cheela Stuffed with Onions", suppressImage: true },
   { sourceId: 3193, title: "Almond-Crusted Baked Zucchini with Parmesan" },
   { sourceId: 231, title: "Bathua Saag with Onion and Tomato" },
   { sourceId: 2725, title: "Coconut Beans Foogath" },
