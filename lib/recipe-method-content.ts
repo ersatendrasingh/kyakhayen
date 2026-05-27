@@ -38,6 +38,7 @@ type MethodFamily =
   | "dip"
   | "fresh"
   | "salad"
+  | "sandwich"
   | "snack"
   | "soup"
   | "sweet"
@@ -48,7 +49,9 @@ const INGREDIENT_NAMES: Array<[RegExp, string]> = [
   [/^apple.*$/i, "apple"],
   [/^banana.*$/i, "banana"],
   [/^bay leaf.*$/i, "bay leaf"],
+  [/^beet root.*$/i, "beetroot"],
   [/^black pepper.*$/i, "black pepper"],
+  [/^bread,\s*multi-grain.*$/i, "multigrain bread"],
   [/^bread crumbs.*$/i, "breadcrumbs"],
   [/^button mushroom.*$/i, "button mushrooms"],
   [/^bottle gourd.*$/i, "bottle gourd"],
@@ -58,12 +61,14 @@ const INGREDIENT_NAMES: Array<[RegExp, string]> = [
   [/^chillies?,\s*green.*$/i, "green chillies"],
   [/^coriander leaves.*$/i, "coriander leaves"],
   [/^curry leaves.*$/i, "curry leaves"],
+  [/^cucumber,\s*green.*$/i, "cucumber"],
   [/^egg,.*$/i, "egg"],
   [/^garlic.*$/i, "garlic"],
   [/^ginger,\s*fresh.*$/i, "fresh ginger"],
   [/^okra,.*$/i, "okra"],
   [/^onions?,\s*raw.*$/i, "onion"],
   [/^paneer.*$/i, "paneer"],
+  [/^potato,\s*brown skin.*$/i, "potato"],
   [/^cheese,\s*parmesan.*$/i, "grated parmesan"],
   [/^milk,\s*whole,\s*cow.*$/i, "milk"],
   [/^beverages?,\s*coffee,\s*instant.*$/i, "instant coffee"],
@@ -160,13 +165,16 @@ function familyOf(recipe: RecipeMethodRecord): MethodFamily {
   if (/(roti|chapati|paratha|thepla|cheela|chilla|dosa|pancake|bread)/.test(signals)) {
     return "bread";
   }
+  if (/(sandwich|toast)/.test(signals)) return "sandwich";
   if (/(soup|broth|shorba)/.test(signals)) return "soup";
   if (/(salad|chaat)/.test(signals)) return "salad";
   if (/(chutney|dip|raita)/.test(signals)) return "dip";
   if (/(kabab|kebab|cutlet|tikki|pakoda|snack|dhokla|idli)/.test(signals)) return "snack";
   if (/(halwa|kheer|ladoo|laddu|sweet|dessert)/.test(signals)) return "sweet";
   if (/(curry|dal|lentil|khichdi|stew|gravy)/.test(signals)) return "curry";
-  if (/(saute|stir|vegetable|sabzi|shaak|bhaji|okra)/.test(signals)) return "vegetable";
+  if (/(saute|stir|vegetable|sabzi|shaak|bhaji|okra|aloo|gobhi|cauliflower|potato)/.test(signals)) {
+    return "vegetable";
+  }
   return "general";
 }
 
@@ -373,6 +381,13 @@ function fallbackMethods(recipe: RecipeMethodRecord): GeneratedMethod[] {
         step("Check the flavour", `Taste and adjust the seasoning carefully. Add only a small amount of liquid if the texture needs loosening.`, 3),
         step("Serve as an accompaniment", `Transfer the ${title} to a clean bowl and serve fresh or chilled with your meal.`, 4),
       ];
+    case "sandwich":
+      return [
+        step("Prepare the filling", `Prepare ${featured} as listed, keeping the slices even so the ${title} is easy to assemble and eat.`, 1),
+        step("Assemble the sandwich", `Place the filling between the bread slices and season lightly with the listed salt, pepper, chutney, or spread. Press gently so the layers hold together.`, 2),
+        step("Toast if needed", `Toast on a warm pan or sandwich press until the bread is lightly crisp and the filling is warmed through, or serve fresh if the recipe is meant to stay untoasted.`, 3),
+        step("Serve neatly", `Cut the ${title} into portions and serve warm or fresh with chutney, salad, or another simple side.`, 4),
+      ];
     case "snack":
       return [
         step("Prepare the mixture", `Combine ${featured} with the remaining listed seasonings until the mixture for ${title} holds together evenly.`, 1),
@@ -412,7 +427,20 @@ function fallbackMethods(recipe: RecipeMethodRecord): GeneratedMethod[] {
 }
 
 export function generateRecipeMethods(recipe: RecipeMethodRecord): GeneratedMethod[] {
-  if (recipe.currentMethods.length === 0) return fallbackMethods(recipe);
+  const shouldRegenerateFallback =
+    recipe.currentMethods.length === 0 ||
+    recipe.currentMethods.some((method) =>
+      /\b(listed ingredients|remaining listed ingredients|listed cooking method)\b/i.test(
+        method.description ?? "",
+      ),
+    );
+
+  if (shouldRegenerateFallback) {
+    return fallbackMethods(recipe).map((method, index) => ({
+      ...method,
+      existingId: recipe.currentMethods[index]?.id ?? null,
+    }));
+  }
 
   return recipe.currentMethods.map((method, index) => {
     const sourceInstruction =
