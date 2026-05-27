@@ -5,6 +5,7 @@ import { RecipeWithCategory } from "@/types/recipe";
 import { MealTimes } from "@prisma/client";
 import { currentUser } from "@/lib/auth";
 import { db } from "@/lib/db";
+import { hydrateMealPlanRecipes } from "@/lib/hydrate-meal-plan-recipes";
 
 type GetMealPlanParams = {
   date: string; // Corrected to lowercase 'string'
@@ -74,10 +75,15 @@ export const getMealPlanFromS3 = async ({
     const body = Buffer.concat(chunks).toString("utf-8");
 
     // Parse the JSON content
-    const { mealsByTime } = JSON.parse(body);
+    const { mealsByTime = {} } = JSON.parse(body) as {
+      mealsByTime?: Record<string, RecipeWithCategory[]>;
+    };
 
-    // Return the parsed meal plan
-    return { mealTimes, mealsByTime };
+    // Preserve the saved selections, but render current recipe titles, media and URLs.
+    return {
+      mealTimes,
+      mealsByTime: await hydrateMealPlanRecipes(mealsByTime),
+    };
   } catch (error) {
     const s3Error = error as S3LookupError;
     if (

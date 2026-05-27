@@ -72,6 +72,22 @@ function buildPageHref(filters: RecipeFilters, page: number) {
   return query ? `/admin/recipes?${query}` : "/admin/recipes";
 }
 
+function visiblePageNumbers(page: number, pageCount: number) {
+  const candidates = new Set([
+    1,
+    pageCount,
+    page - 2,
+    page - 1,
+    page,
+    page + 1,
+    page + 2,
+  ]);
+
+  return Array.from(candidates)
+    .filter((number) => number >= 1 && number <= pageCount)
+    .sort((left, right) => left - right);
+}
+
 export function RecipesDashboard({
   recipes,
   categories,
@@ -106,6 +122,7 @@ export function RecipesDashboard({
   const [deleteSelection, setDeleteSelection] = useState<DeleteSelection>(null);
   const [deleting, setDeleting] = useState(false);
   const [publishingId, setPublishingId] = useState<string | null>(null);
+  const [jumpPage, setJumpPage] = useState(String(page));
 
   const refresh = () => {
     setRowSelection({});
@@ -129,6 +146,16 @@ export function RecipesDashboard({
     setFilterValues(cleared);
     setRowSelection({});
     router.replace("/admin/recipes", { scroll: false });
+  };
+
+  const goToPage = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const target = Math.min(
+      Math.max(Number.parseInt(jumpPage, 10) || page, 1),
+      pageCount,
+    );
+    setJumpPage(String(target));
+    router.push(buildPageHref(filters, target), { scroll: false });
   };
 
   const updatePublished = async (recipe: RecipeListRecord, checked: boolean) => {
@@ -181,6 +208,7 @@ export function RecipesDashboard({
     deleteSelection?.type === "single"
       ? [deleteSelection.recipe]
       : deleteSelection?.recipes ?? [];
+  const pageNumbers = visiblePageNumbers(page, pageCount);
 
   const confirmDelete = async () => {
     if (!deleteItems.length) return;
@@ -412,16 +440,58 @@ export function RecipesDashboard({
                 <Badge variant="secondary">{selectedRecipes.length} selected</Badge>
               )}
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center justify-end gap-2">
+              <Button variant="outline" size="sm" disabled={page <= 1} asChild={page > 1}>
+                {page > 1 ? <Link href={buildPageHref(filters, 1)}>First</Link> : "First"}
+              </Button>
               <Button variant="outline" size="sm" disabled={page <= 1} asChild={page > 1}>
                 {page > 1 ? <Link href={buildPageHref(filters, page - 1)}>Previous</Link> : "Previous"}
               </Button>
-              <span className="px-2 text-sm text-muted-foreground">
-                Page {page} of {pageCount}
-              </span>
+              <nav className="flex items-center gap-1" aria-label="Recipe pages">
+                {pageNumbers.map((number, index) => (
+                  <span key={number} className="flex items-center gap-1">
+                    {index > 0 && number - pageNumbers[index - 1] > 1 && (
+                      <span className="px-1 text-sm text-muted-foreground">...</span>
+                    )}
+                    <Button
+                      variant={number === page ? "default" : "outline"}
+                      size="sm"
+                      asChild={number !== page}
+                      aria-current={number === page ? "page" : undefined}
+                    >
+                      {number === page ? (
+                        String(number)
+                      ) : (
+                        <Link href={buildPageHref(filters, number)}>{number}</Link>
+                      )}
+                    </Button>
+                  </span>
+                ))}
+              </nav>
               <Button variant="outline" size="sm" disabled={page >= pageCount} asChild={page < pageCount}>
                 {page < pageCount ? <Link href={buildPageHref(filters, page + 1)}>Next</Link> : "Next"}
               </Button>
+              <Button variant="outline" size="sm" disabled={page >= pageCount} asChild={page < pageCount}>
+                {page < pageCount ? <Link href={buildPageHref(filters, pageCount)}>Last</Link> : "Last"}
+              </Button>
+              <form onSubmit={goToPage} className="ml-1 flex items-center gap-2">
+                <label htmlFor="recipe-page-jump" className="sr-only">
+                  Go to page
+                </label>
+                <Input
+                  id="recipe-page-jump"
+                  type="text"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                  value={jumpPage}
+                  onChange={(event) => setJumpPage(event.target.value)}
+                  className="h-8 w-20 rounded-lg px-2"
+                  aria-label={`Go to page from 1 to ${pageCount}`}
+                />
+                <Button type="submit" variant="outline" size="sm">
+                  Go
+                </Button>
+              </form>
             </div>
           </div>
         </div>
