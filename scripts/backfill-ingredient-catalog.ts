@@ -132,6 +132,29 @@ const curatedNutrition: Record<string, Record<string, number>> = {
   },
 };
 
+const nutritionFields = [
+  "calories",
+  "carbohydrate",
+  "totalFat",
+  "dietaryFiber",
+  "protein",
+  "vitaminA",
+  "ascorbicAcids",
+  "vitaminD",
+  "tocopherolEquivalent",
+  "vitaminK",
+  "thiamine",
+  "riboflavin",
+  "totalB6",
+  "folates",
+  "calcium",
+  "iron",
+  "phosphorus",
+  "potassium",
+  "sodium",
+  "zinc",
+] as const;
+
 function requireEnv(name: string) {
   const value = process.env[name];
   if (!value) throw new Error(`${name} is required to backfill ingredient catalog.`);
@@ -362,6 +385,17 @@ async function main() {
     console.log(`Missing conversion rows found: ${missingConversionRows.length}`);
     console.log(`Ingredient-unit conversions to add: ${conversionUpdates.size}`);
     console.log(`Unresolved conversions after source lookup: ${new Set(unresolvedConversions).size}`);
+    const currentPublishableDrafts = await targetDb.ingredients.findMany({
+      where: {
+        isPublished: false,
+        name: { not: "" },
+        ingredientCategoriesId: { not: null },
+        ...Object.fromEntries(nutritionFields.map((field) => [field, { not: null }])),
+        IngredientUnitMeasurements: { some: {} },
+      },
+      select: { id: true, name: true },
+    });
+    console.log(`Publishable draft ingredients: ${currentPublishableDrafts.length}`);
 
     nameUpdates.slice(0, 25).forEach((update) =>
       console.log(`Name: ${update.from} -> ${update.to}`),
@@ -376,6 +410,9 @@ async function main() {
     );
     [...new Set(unresolvedConversions)].slice(0, 25).forEach((entry) =>
       console.warn(`Unresolved conversion: ${entry}`),
+    );
+    currentPublishableDrafts.slice(0, 25).forEach((ingredient) =>
+      console.log(`Publish: ${ingredient.name}`),
     );
 
     if (unresolvedConversions.length > 0) {
@@ -420,6 +457,24 @@ async function main() {
       skipDuplicates: true,
     });
     console.log(`Added ${conversionUpdates.size} ingredient-unit conversions.`);
+
+    const publishableDrafts = await targetDb.ingredients.findMany({
+      where: {
+        isPublished: false,
+        name: { not: "" },
+        ingredientCategoriesId: { not: null },
+        ...Object.fromEntries(nutritionFields.map((field) => [field, { not: null }])),
+        IngredientUnitMeasurements: { some: {} },
+      },
+      select: { id: true },
+    });
+    if (publishableDrafts.length > 0) {
+      const result = await targetDb.ingredients.updateMany({
+        where: { id: { in: publishableDrafts.map((ingredient) => ingredient.id) } },
+        data: { isPublished: true },
+      });
+      console.log(`Published ${result.count} complete ingredients.`);
+    }
   } finally {
     await targetDb.$disconnect();
     await sourceDb.$disconnect();
