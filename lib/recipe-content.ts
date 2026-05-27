@@ -102,6 +102,10 @@ const INGREDIENT_NAMES: Array<[RegExp, string]> = [
   [/^goo?sberry.*$/i, "amla"],
   [/^bottle gourd.*$/i, "bottle gourd"],
   [/^amaranth flour.*$/i, "amaranth flour"],
+  [/^capsicum,\s*green.*$/i, "green capsicum"],
+  [/^carrot,\s*orange.*$/i, "carrot"],
+  [/^button mushroom.*$/i, "button mushrooms"],
+  [/^curry leaves.*$/i, "curry leaves"],
 ];
 
 function displayIngredient(value: string) {
@@ -310,7 +314,7 @@ function familyCopy(family: RecipeFamily) {
 
 function ingredientRole(ingredient: string, index: number) {
   const value = lower(ingredient);
-  if (/(chilli|pepper|ginger|garlic|spice|cumin|turmeric|coriander|cardamom|cinnamon|clove)/.test(value)) {
+  if (/(chilli|pepper|ginger|garlic|spice|cumin|turmeric|coriander|cardamom|cinnamon|clove|curry leaves)/.test(value)) {
     return "Adds aroma and seasoning depth to the preparation.";
   }
   if (/(lemon|lime|tomato|yogurt|curd|vinegar)/.test(value)) {

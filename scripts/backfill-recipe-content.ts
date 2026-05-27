@@ -12,6 +12,7 @@ loadEnvConfig(process.cwd());
 const db = new PrismaClient();
 const shouldApply = process.argv.includes("--apply");
 const imagesOnly = process.argv.includes("--images-only");
+const refreshGenerated = process.argv.includes("--refresh-generated");
 const sampleSlugs = process.argv
   .filter((arg) => arg.startsWith("--sample="))
   .flatMap((arg) => arg.slice("--sample=".length).split(","))
@@ -95,7 +96,13 @@ async function main() {
   const withoutLinks = generated.filter((row) => row.related.length === 0);
   const underMinimum = generated.filter((row) => row.content.wordCount < 300);
   const preservedRichContent = generated.filter((row) =>
-    /<(?:h2|h3|ul|blockquote)\b/i.test(row.recipe.currentDescription ?? "")
+    /<(?:h2|h3|ul|blockquote)\b/i.test(row.recipe.currentDescription ?? "") &&
+    !(
+      refreshGenerated &&
+      (row.recipe.currentDescription ?? "").includes(
+        "tags on Kya Khayen help with discovery and everyday preference-based planning"
+      )
+    )
   );
   const changed = generated.filter(
     (row) =>
@@ -106,6 +113,7 @@ async function main() {
   );
 
   console.log(`Content scope: ${imagesOnly ? "recipes with real images only" : "all recipes"}`);
+  console.log(`Generated content refresh: ${refreshGenerated ? "enabled" : "disabled"}`);
   console.log(`Recipes prepared for rich content: ${generated.length}`);
   console.log(`Existing rich recipe descriptions preserved: ${preservedRichContent.length}`);
   console.log(`Recipes requiring rich-content updates: ${changed.length}`);

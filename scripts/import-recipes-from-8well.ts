@@ -5,6 +5,11 @@ import { readFile, readdir } from "node:fs/promises";
 import path from "node:path";
 
 import { DUPLICATE_SOURCE_RECIPE_IDS } from "../lib/recipe-duplicates";
+import {
+  EDITORIAL_REMOVED_SOURCE_RECIPE_IDS,
+  EDITORIAL_SUPPRESSED_IMAGE_SOURCE_IDS,
+  EDITORIAL_TITLE_OVERRIDES,
+} from "../lib/recipe-editorial-cleanup";
 import { buildRecipeSeoPlan, normalizeRecipeTitle } from "../lib/recipe-seo";
 import { slugify } from "../lib/slugify";
 
@@ -377,15 +382,19 @@ async function main() {
     const usedImageKeys = new Set<string>();
     const allowedSourceUnitIds = new Set(sourceUnits.map((unit) => unit.id));
     const importableSourceRecipes = sourceRecipes.filter(
-      (recipe) => !DUPLICATE_SOURCE_RECIPE_IDS.has(recipe.id)
+      (recipe) =>
+        !DUPLICATE_SOURCE_RECIPE_IDS.has(recipe.id) &&
+        !EDITORIAL_REMOVED_SOURCE_RECIPE_IDS.has(recipe.id)
     );
 
     const prepared = importableSourceRecipes.map((recipe) => {
-      const title = normalizeRecipeTitle(recipe.name);
+      const title = normalizeRecipeTitle(EDITORIAL_TITLE_OVERRIDES.get(recipe.id) ?? recipe.name);
       const slug = slugify(title);
       const steps = recipeSteps(recipe.steps);
       const ingredients = parseIngredients(recipe.ingrs_list);
-      const image = resolveImage(recipe, imageData.bySlug);
+      const image = EDITORIAL_SUPPRESSED_IMAGE_SOURCE_IDS.has(recipe.id)
+        ? undefined
+        : resolveImage(recipe, imageData.bySlug);
       const categoryId = categoryMap.get(categorySlug(recipe));
       const recipeTypeName = sourceRecipeTypeMap.get(recipe.recipe_type_id)?.name;
       const recipeTypeId = recipeTypeName
@@ -550,7 +559,7 @@ async function main() {
     ).length;
 
     console.log(`Source recipes: ${sourceRecipes.length}`);
-    console.log(`Exact source duplicate recipes omitted: ${sourceRecipes.length - importRows.length}`);
+    console.log(`Source duplicate/editorial redundant recipes omitted: ${sourceRecipes.length - importRows.length}`);
     console.log(`Recipes prepared for import: ${importRows.length}`);
     console.log(`Recipes receiving local images: ${actualImages}`);
     console.log(`Unique local image files used: ${usedImageKeys.size}/${imageData.files.length}`);
