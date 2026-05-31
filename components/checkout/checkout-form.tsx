@@ -126,7 +126,7 @@ export default function CheckoutForm() {
       const payment = gatewayResponse.data;
 
       const options = {
-        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY,
+        key: payment.key,
         name: "Kya Khayen",
         currency: payment.currency,
         amount: payment.amount,

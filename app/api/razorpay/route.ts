@@ -54,6 +54,7 @@ export async function POST(req: Request) {
     return NextResponse.json(
       {
         id: paymentOrder.id,
+        key: keyId,
         currency: paymentOrder.currency,
         amount: paymentOrder.amount,
       },

@@ -23,7 +23,6 @@ jobs:
       NEXT_PUBLIC_SITE_URL: ${{ secrets.NEXT_PUBLIC_SITE_URL || vars.NEXT_PUBLIC_SITE_URL || 'https://www.kyakhayen.com' }}
       NEXT_PUBLIC_MEDIA_URL: ${{ secrets.NEXT_PUBLIC_MEDIA_URL || vars.NEXT_PUBLIC_MEDIA_URL || 'https://d2211nhxa294e1.cloudfront.net' }}
       NEXT_PUBLIC_GTM_ID: ${{ secrets.NEXT_PUBLIC_GTM_ID || vars.NEXT_PUBLIC_GTM_ID || 'GTM-N99FLD9B' }}
-      NEXT_PUBLIC_RAZORPAY_KEY: ${{ secrets.NEXT_PUBLIC_RAZORPAY_KEY || vars.NEXT_PUBLIC_RAZORPAY_KEY || secrets.RAZORPAY_KEY_ID || vars.RAZORPAY_KEY_ID }}
       NEXT_PUBLIC_DEFAULT_COUNTRY: ${{ secrets.NEXT_PUBLIC_DEFAULT_COUNTRY || vars.NEXT_PUBLIC_DEFAULT_COUNTRY || 'IN' }}
       NEXT_PUBLIC_DEFAULT_CURRENCY: ${{ secrets.NEXT_PUBLIC_DEFAULT_CURRENCY || vars.NEXT_PUBLIC_DEFAULT_CURRENCY || 'INR' }}
       NEXT_PUBLIC_EXCHANGE_API_URL: ${{ secrets.NEXT_PUBLIC_EXCHANGE_API_URL || vars.NEXT_PUBLIC_EXCHANGE_API_URL }}
@@ -39,10 +38,6 @@ jobs:
 
       - name: Install dependencies
         run: npm ci || npm install
-
-      - name: Validate public build inputs
-        run: |
-          test -n "$NEXT_PUBLIC_RAZORPAY_KEY" || { echo "NEXT_PUBLIC_RAZORPAY_KEY is required for checkout builds"; exit 1; }
 
       - name: Lint report
         run: npm run lint
