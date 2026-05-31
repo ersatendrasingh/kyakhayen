@@ -337,10 +337,10 @@ export const SearchInput = ({
           className={cn(
             "w-full rounded-full border-[#ead6b9] bg-white pl-14 text-[#34271f] shadow-[0_12px_32px_-24px_rgba(61,37,20,0.48)] placeholder:text-[#968577] focus-visible:border-[#d9a24b] focus-visible:ring-[#d9a24b]/18",
             dense
-              ? "h-[42px] pr-[50px] text-sm"
+              ? "h-[42px] pr-[50px] text-[16px] sm:text-sm"
               : compact
-              ? "h-[46px] pr-[54px] text-sm"
-              : "h-[58px] pr-[110px] text-sm sm:h-[66px] sm:pr-28 sm:text-base",
+              ? "h-[46px] pr-[54px] text-[16px] sm:text-sm"
+              : "h-[58px] pr-[110px] text-[16px] sm:h-[66px] sm:pr-28 sm:text-base",
           )}
           placeholder={animatedPlaceholder}
         />

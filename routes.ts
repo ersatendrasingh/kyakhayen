@@ -51,7 +51,7 @@ export const adminRoutePrefix = "/admin";
  * Routes that start with this prefix are used for User Dashboard purposes
  * @type {string}
  */
-const userRoutePrefix = "/user";
+export const userRoutePrefix = "/user";
 
 /**
  * The default redirect path after logging in

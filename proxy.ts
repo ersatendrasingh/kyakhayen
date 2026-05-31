@@ -10,13 +10,22 @@ import {
   articlePrefix,
   isValidRoute,
   adminRoutePrefix,
+  userRoutePrefix,
 } from "@/routes";
 
 const { auth } = NextAuth(authConfig);
 
 export default auth((req) => {
   const { nextUrl } = req;
+  const host = req.headers.get("host")?.toLowerCase();
   const isLoggedIn = !!req.auth;
+
+  if (host === "kyakhayen.com") {
+    const canonicalUrl = nextUrl.clone();
+    canonicalUrl.protocol = "https";
+    canonicalUrl.hostname = "www.kyakhayen.com";
+    return Response.redirect(canonicalUrl, 308);
+  }
 
   const isApiAuthRoute = nextUrl.pathname.startsWith(apiAuthPrefix);
   const isRecipeRoute = nextUrl.pathname.startsWith(recipePrefix);
@@ -24,6 +33,7 @@ export default auth((req) => {
   const isProtectedRoute = protectedRoutes.includes(nextUrl.pathname);
   const isAuthRoute = authRoutes.includes(nextUrl.pathname);
   const isAdminRoute = nextUrl.pathname.startsWith(adminRoutePrefix);
+  const isUserRoute = nextUrl.pathname.startsWith(userRoutePrefix);
 
   if (!isValidRoute(nextUrl.pathname)) {
     return null;
@@ -38,7 +48,11 @@ export default auth((req) => {
     }
     return null;
   }
-  if ((!isLoggedIn && isProtectedRoute) || (!isLoggedIn && isAdminRoute)) {
+  if (
+    (!isLoggedIn && isProtectedRoute) ||
+    (!isLoggedIn && isAdminRoute) ||
+    (!isLoggedIn && isUserRoute)
+  ) {
     let callbackUrl = nextUrl.pathname;
     if (nextUrl.search) {
       callbackUrl += nextUrl.search;

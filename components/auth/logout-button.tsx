@@ -1,8 +1,7 @@
 "use client";
 
+import { signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
-
-import { logout } from "@/actions/logout";
 
 interface LogoutButtonProps {
   children?: React.ReactNode;
@@ -12,9 +11,12 @@ interface LogoutButtonProps {
 export const LogoutButton = ({ children, callbackUrl }: LogoutButtonProps) => {
   const router = useRouter();
   const onClick = async () => {
-    await logout();
     const encodedCallbackUrl = encodeURIComponent(callbackUrl || "");
-    router.push("/auth/login?callbackUrl=" + encodedCallbackUrl);
+    const redirectTo = "/auth/login?callbackUrl=" + encodedCallbackUrl;
+
+    await signOut({ redirect: false, redirectTo });
+    router.replace(redirectTo);
+    router.refresh();
   };
 
   return (

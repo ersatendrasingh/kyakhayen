@@ -387,18 +387,6 @@ body {
     box-shadow: 0 10px 34px -29px rgb(66 42 24 / 45%);
   }
 
-  .brand-icon-glow {
-    background-image: url("/assets/images/kyakhayen-logo.png");
-    background-position: 5px center;
-    background-repeat: no-repeat;
-    background-size: 104px 32px;
-  }
-
-  .brand-icon-glow > img,
-  .brand-icon-glow > span {
-    opacity: 0;
-  }
-
   .brand-icon-glow::after {
     position: absolute;
     top: -45%;
