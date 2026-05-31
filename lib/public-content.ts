@@ -83,6 +83,21 @@ const publicRecipeInclude = {
   },
 } satisfies Prisma.RecipesInclude;
 
+const publicRecipeMetadataInclude = {
+  RecipeCategories: true,
+  recipeCuisine: {
+    include: { cuisine: true },
+  },
+  recipeDietType: {
+    where: { dietType: { isPublished: true } },
+    include: { dietType: true },
+  },
+  recipeRecipeType: {
+    where: { recipeType: { isPublished: true } },
+    include: { recipeType: true },
+  },
+} satisfies Prisma.RecipesInclude;
+
 const publicArticleInclude = {
   PostCategory: {
     include: { category: true },
@@ -104,6 +119,15 @@ const publicArticleInclude = {
     },
     orderBy: { createdAt: "desc" },
     take: 30,
+  },
+} satisfies Prisma.PostInclude;
+
+const publicArticleMetadataInclude = {
+  PostCategory: {
+    include: { category: true },
+  },
+  PostTag: {
+    include: { tag: true },
   },
 } satisfies Prisma.PostInclude;
 
@@ -148,12 +172,54 @@ async function findRecipeByRouteSlug(routeSlug: string) {
 
   if (combinedSlugCandidates.length === 0) return null;
 
-  const recipe = await db.recipes.findFirst({
-    where: publishedRecipeAnd([{ OR: combinedSlugCandidates }]),
+  const recipes = await db.recipes.findMany({
+    where: publishedRecipeAnd([
+      { slug: { in: combinedSlugCandidates.map((candidate) => candidate.slug) } },
+    ]),
     include: publicRecipeInclude,
   });
+  const recipe = combinedSlugCandidates
+    .map((candidate) =>
+      recipes.find(
+        (item) => item.slug === candidate.slug && item.metaSlug === candidate.metaSlug,
+      ),
+    )
+    .find((item): item is NonNullable<typeof item> => Boolean(item));
 
   return recipe ? normalizeRecipe(recipe) : null;
+}
+
+async function findRecipeMetadataByRouteSlug(routeSlug: string) {
+  const exactRecipe = await db.recipes.findFirst({
+    where: publishedRecipeAnd([{ slug: routeSlug }]),
+    include: publicRecipeMetadataInclude,
+  });
+
+  if (exactRecipe) return exactRecipe;
+
+  const combinedSlugCandidates = routeSlugCandidates(routeSlug)
+    .filter((candidate) => candidate.metaSlug)
+    .map((candidate) => ({
+      slug: candidate.slug,
+      metaSlug: candidate.metaSlug as string,
+    }));
+
+  if (combinedSlugCandidates.length === 0) return null;
+
+  const recipes = await db.recipes.findMany({
+    where: publishedRecipeAnd([
+      { slug: { in: combinedSlugCandidates.map((candidate) => candidate.slug) } },
+    ]),
+    include: publicRecipeMetadataInclude,
+  });
+
+  return combinedSlugCandidates
+    .map((candidate) =>
+      recipes.find(
+        (item) => item.slug === candidate.slug && item.metaSlug === candidate.metaSlug,
+      ),
+    )
+    .find((item): item is NonNullable<typeof item> => Boolean(item)) ?? null;
 }
 
 async function findArticleByRouteSlug(routeSlug: string): Promise<PostWithCategory | null> {
@@ -173,13 +239,59 @@ async function findArticleByRouteSlug(routeSlug: string): Promise<PostWithCatego
 
   if (combinedSlugCandidates.length === 0) return null;
 
-  return db.post.findFirst({
+  const articles = await db.post.findMany({
     where: {
       isPublished: true,
-      OR: combinedSlugCandidates,
+      slug: { in: combinedSlugCandidates.map((candidate) => candidate.slug) },
     },
     include: publicArticleInclude,
   });
+
+  return (
+    combinedSlugCandidates
+      .map((candidate) =>
+        articles.find(
+          (item) => item.slug === candidate.slug && item.metaSlug === candidate.metaSlug,
+        ),
+      )
+      .find((item): item is NonNullable<typeof item> => Boolean(item)) ?? null
+  );
+}
+
+async function findArticleMetadataByRouteSlug(routeSlug: string) {
+  const exactArticle = await db.post.findFirst({
+    where: { isPublished: true, slug: routeSlug },
+    include: publicArticleMetadataInclude,
+  });
+
+  if (exactArticle) return exactArticle;
+
+  const combinedSlugCandidates = routeSlugCandidates(routeSlug)
+    .filter((candidate) => candidate.metaSlug)
+    .map((candidate) => ({
+      slug: candidate.slug,
+      metaSlug: candidate.metaSlug as string,
+    }));
+
+  if (combinedSlugCandidates.length === 0) return null;
+
+  const articles = await db.post.findMany({
+    where: {
+      isPublished: true,
+      slug: { in: combinedSlugCandidates.map((candidate) => candidate.slug) },
+    },
+    include: publicArticleMetadataInclude,
+  });
+
+  return (
+    combinedSlugCandidates
+      .map((candidate) =>
+        articles.find(
+          (item) => item.slug === candidate.slug && item.metaSlug === candidate.metaSlug,
+        ),
+      )
+      .find((item): item is NonNullable<typeof item> => Boolean(item)) ?? null
+  );
 }
 
 export const getPublicRecipeByRouteSlug = unstable_cache(
@@ -191,9 +303,27 @@ export const getPublicRecipeByRouteSlug = unstable_cache(
   },
 );
 
+export const getPublicRecipeMetadataByRouteSlug = unstable_cache(
+  findRecipeMetadataByRouteSlug,
+  ["public-recipe-metadata-by-route-slug-v1"],
+  {
+    revalidate: PUBLIC_CONTENT_REVALIDATE_SECONDS,
+    tags: ["recipes", "public-content"],
+  },
+);
+
 export const getPublicArticleByRouteSlug = unstable_cache(
   findArticleByRouteSlug,
   ["public-article-by-route-slug-v1"],
+  {
+    revalidate: PUBLIC_CONTENT_REVALIDATE_SECONDS,
+    tags: ["articles", "public-content"],
+  },
+);
+
+export const getPublicArticleMetadataByRouteSlug = unstable_cache(
+  findArticleMetadataByRouteSlug,
+  ["public-article-metadata-by-route-slug-v1"],
   {
     revalidate: PUBLIC_CONTENT_REVALIDATE_SECONDS,
     tags: ["articles", "public-content"],

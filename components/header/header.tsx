@@ -13,6 +13,7 @@ type DrinkRecipeType = {
   title: string;
   slug: string;
   imageUrl: string | null;
+  _count: { recipeRecipeType: number };
   recipeRecipeType: { recipe: DrinkRecipe }[];
 };
 
@@ -108,7 +109,7 @@ function buildDrinkItems(drinkRecipeTypes: DrinkRecipeType[]): MenuLink[] {
     beverageType?.imageUrl ||
     beverageType?.recipeRecipeType.find((item) => item.recipe.imageUrl)?.recipe.imageUrl ||
     null;
-  const countFor = (type?: DrinkRecipeType) => type?.recipeRecipeType.length ?? 0;
+  const countFor = (type?: DrinkRecipeType) => type?._count.recipeRecipeType ?? 0;
   const imageFor = (type?: DrinkRecipeType) =>
     type?.imageUrl ||
     type?.recipeRecipeType.find((item) => item.recipe.imageUrl)?.recipe.imageUrl ||
@@ -219,10 +220,18 @@ const getHeaderNavigationData = unstable_cache(
             title: true,
             slug: true,
             imageUrl: true,
+            _count: {
+              select: {
+                recipeRecipeType: {
+                  where: { recipe: { isPublished: true, imageUrl: { not: null } } },
+                },
+              },
+            },
             recipeRecipeType: {
               where: { recipe: { isPublished: true, imageUrl: { not: null } } },
               select: { recipe: { select: { imageUrl: true } } },
               orderBy: { recipe: { contentUpdatedAt: "desc" } },
+              take: 1,
             },
           },
           orderBy: { position: "asc" },

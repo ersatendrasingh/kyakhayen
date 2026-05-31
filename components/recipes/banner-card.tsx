@@ -87,14 +87,22 @@ const BannerCard = ({ recipe, className }: BannerCardProps) => {
       : undefined;
 
   useEffect(() => {
-    const recordView = async () => {
-      try {
-        await axios.post("/api/add-view", { recipeId: recipe.id });
-      } catch (error) {
-        console.error("Error tracking view:", error);
-      }
-    };
-    void recordView();
+    const body = JSON.stringify({ recipeId: recipe.id });
+
+    if (navigator.sendBeacon) {
+      const payload = new Blob([body], { type: "application/json" });
+      navigator.sendBeacon("/api/add-view", payload);
+      return;
+    }
+
+    void fetch("/api/add-view", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body,
+      keepalive: true,
+    }).catch((error) => {
+      console.error("Error tracking view:", error);
+    });
   }, [recipe.id]);
 
   useEffect(() => {

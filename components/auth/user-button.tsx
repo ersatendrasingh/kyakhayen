@@ -26,19 +26,10 @@ import Link from "next/link";
 import { LoginButton } from "@/components/auth/login-button";
 
 export const UserButton = () => {
-  const { data: session, status } = useSession();
+  const { data: session } = useSession();
   const user = session?.user;
   const pathname = usePathname();
   const imageUrl = user?.image || undefined;
-
-  if (status === "loading") {
-    return (
-      <div
-        aria-hidden="true"
-        className="h-10 w-10 rounded-full border-[1px] border-websecondary/60 bg-websecondary/10"
-      />
-    );
-  }
 
   if (!user) {
     return (

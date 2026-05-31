@@ -28,14 +28,5 @@ module.exports = {
       max_memory_restart: "512M",
       restart_delay: 3000,
     },
-    {
-      name: "kyakhayen-recipe-view-worker",
-      script: "node",
-      args: "workers/recipeAddView.mjs",
-      cwd,
-      env: baseEnv,
-      max_memory_restart: "384M",
-      restart_delay: 3000,
-    },
   ],
 };

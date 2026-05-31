@@ -4,7 +4,12 @@ import SingleRecipe from "@/components/recipes/single-recipe";
 import SingleArticle from "@/components/blogs/single-article";
 import { articleHref, buildSeoMetadata, recipeHref, seoDescription } from "@/lib/seo";
 import { recipeContentUpdatedAt, recipePublishedAt } from "@/lib/recipe-publication";
-import { getPublicArticleByRouteSlug, getPublicRecipeByRouteSlug } from "@/lib/public-content";
+import {
+  getPublicArticleByRouteSlug,
+  getPublicArticleMetadataByRouteSlug,
+  getPublicRecipeByRouteSlug,
+  getPublicRecipeMetadataByRouteSlug,
+} from "@/lib/public-content";
 
 export const revalidate = 900;
 
@@ -12,7 +17,7 @@ export async function generateMetadata(props: { params: Promise<{ slug: string }
   const params = await props.params;
   const { slug } = params;
 
-  const recipe = await getPublicRecipeByRouteSlug(slug);
+  const recipe = await getPublicRecipeMetadataByRouteSlug(slug);
 
   if (recipe) {
     const description = seoDescription(
@@ -43,7 +48,7 @@ export async function generateMetadata(props: { params: Promise<{ slug: string }
     });
   }
 
-  const blog = await getPublicArticleByRouteSlug(slug);
+  const blog = await getPublicArticleMetadataByRouteSlug(slug);
 
   if (blog) {
     const description = seoDescription(

@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { GoogleTagManager } from "@next/third-parties/google";
+import Script from "next/script";
 import { SessionProvider } from "next-auth/react";
 import { Poppins } from "next/font/google";
 import NextTopLoader from "nextjs-toploader";
@@ -26,7 +26,7 @@ const meta = {
   image: DEFAULT_OG_IMAGE,
 };
 
-const googleTagManagerId =
+const GTM_ID =
   process.env.NEXT_PUBLIC_GTM_ID || process.env.GOOGLE_TAG_MANAGER_ID || "GTM-N99FLD9B";
 
 export const metadata: Metadata = {
@@ -79,9 +79,29 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body className={`${poppins.variable}`}>
-        <GoogleTagManager gtmId={googleTagManagerId} />
+    <html lang="en" className="min-h-svh" suppressHydrationWarning>
+      <body className={`${poppins.variable} min-h-svh bg-[#fcf8f0] antialiased dark:bg-[#091712]`}>
+        <Script id="gtm" strategy="lazyOnload">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            window.dataLayer.push({'gtm.start': new Date().getTime(), event: 'gtm.js'});
+            (function(w,d,s,l,i){
+              var f=d.getElementsByTagName(s)[0],
+              j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';
+              j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;
+              f.parentNode.insertBefore(j,f);
+            })(window,document,'script','dataLayer','${GTM_ID}');
+          `}
+        </Script>
+        <noscript>
+          <iframe
+            title="Google Tag Manager"
+            src={`https://www.googletagmanager.com/ns.html?id=${GTM_ID}`}
+            height="0"
+            width="0"
+            style={{ display: "none", visibility: "hidden" }}
+          />
+        </noscript>
         <SessionProvider>
           <ThemeProvider
             attribute="class"

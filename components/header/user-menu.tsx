@@ -46,23 +46,11 @@ function getInitials(name?: string | null) {
 
 const Usermenu = ({ variant = "header" }: WebsiteNavUserProps) => {
   const pathname = usePathname();
-  const { data: session, status } = useSession();
+  const { data: session } = useSession();
   const user = session?.user;
   const name = user?.name ?? "Kya Khayen account";
   const email = user?.email ?? "Sign in for personalised recipes";
   const compact = variant !== "header";
-
-  if (status === "loading") {
-    return (
-      <div
-        aria-hidden="true"
-        className={cn(
-          "website-user-trigger rounded-full border border-[#e7d6c2] bg-white shadow-sm",
-          compact ? "size-10" : "h-12 w-[128px]",
-        )}
-      />
-    );
-  }
 
   const trigger = (
     <button

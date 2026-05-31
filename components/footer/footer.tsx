@@ -3,59 +3,76 @@ import Image from "next/image";
 import { FaFacebook, FaInstagram, FaYoutube } from "react-icons/fa";
 import { FaXTwitter } from "react-icons/fa6";
 import { ArrowRight, Leaf, SunMedium } from "lucide-react";
+import { unstable_cache } from "next/cache";
 
 import Container from "@/components/container";
 import Copyrights from "@/components/footer/copyrights";
 import { db } from "@/lib/db";
 import { recipeCollectionHref } from "@/lib/recipe-collection-url";
 
+const getFooterNavigationData = unstable_cache(
+  async () => {
+    const [categories, mealTimes, cuisineResults, recipeTypes] = await Promise.all([
+      db.recipeCategories.findMany({
+        where: {
+          isPublished: true,
+          slug: { not: "desserts" },
+          recipe: { some: { isPublished: true } },
+        },
+        select: { id: true, name: true, slug: true },
+        orderBy: [{ position: "asc" }, { name: "asc" }],
+      }),
+      db.mealTimes.findMany({
+        where: {
+          isPublished: true,
+          recipeMealTime: { some: { recipe: { isPublished: true } } },
+        },
+        select: { id: true, title: true, slug: true },
+        orderBy: [{ position: "asc" }, { title: "asc" }],
+      }),
+      db.cuisines.findMany({
+        where: {
+          isPublished: true,
+          recipeCuisine: { some: { recipe: { isPublished: true } } },
+        },
+        select: {
+          id: true,
+          title: true,
+          slug: true,
+          _count: { select: { recipeCuisine: true } },
+        },
+        orderBy: { title: "asc" },
+      }),
+      db.recipeTypes.findMany({
+        where: {
+          isPublished: true,
+          recipeRecipeType: { some: { recipe: { isPublished: true } } },
+        },
+        select: { id: true, title: true, slug: true },
+        orderBy: [{ position: "asc" }, { title: "asc" }],
+        take: 9,
+      }),
+    ]);
+    const cuisines = cuisineResults
+      .sort((left, right) => {
+        if (left.slug === "north-indian") return -1;
+        if (right.slug === "north-indian") return 1;
+        return right._count.recipeCuisine - left._count.recipeCuisine;
+      })
+      .slice(0, 9);
+
+    return { categories, mealTimes, cuisines, recipeTypes };
+  },
+  ["website-footer-navigation-v1"],
+  {
+    revalidate: 60 * 60,
+    tags: ["navigation", "recipes", "articles"],
+  },
+);
+
 const Footer = async () => {
-  const [categories, mealTimes, cuisineResults, recipeTypes] = await Promise.all([
-    db.recipeCategories.findMany({
-      where: {
-        isPublished: true,
-        slug: { not: "desserts" },
-        recipe: { some: { isPublished: true } },
-      },
-      orderBy: [{ position: "asc" }, { name: "asc" }],
-    }),
-    db.mealTimes.findMany({
-      where: {
-        isPublished: true,
-        recipeMealTime: { some: { recipe: { isPublished: true } } },
-      },
-      orderBy: [{ position: "asc" }, { title: "asc" }],
-    }),
-    db.cuisines.findMany({
-      where: {
-        isPublished: true,
-        recipeCuisine: { some: { recipe: { isPublished: true } } },
-      },
-      select: {
-        id: true,
-        title: true,
-        slug: true,
-        _count: { select: { recipeCuisine: true } },
-      },
-      orderBy: { title: "asc" },
-    }),
-    db.recipeTypes.findMany({
-      where: {
-        isPublished: true,
-        recipeRecipeType: { some: { recipe: { isPublished: true } } },
-      },
-      select: { id: true, title: true, slug: true },
-      orderBy: [{ position: "asc" }, { title: "asc" }],
-      take: 9,
-    }),
-  ]);
-  const cuisines = cuisineResults
-    .sort((left, right) => {
-      if (left.slug === "north-indian") return -1;
-      if (right.slug === "north-indian") return 1;
-      return right._count.recipeCuisine - left._count.recipeCuisine;
-    })
-    .slice(0, 9);
+  const { categories, mealTimes, cuisines, recipeTypes } =
+    await getFooterNavigationData();
 
   return (
     <footer className="site-footer border-t border-border bg-[#18130f] pt-12 text-white sm:pt-16">
