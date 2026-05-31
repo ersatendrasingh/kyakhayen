@@ -505,10 +505,10 @@ function shortMetaDescription(recipe: RecipeContentRecord, family: RecipeFamily)
     family === "beverage" || family === "fresh" || family === "hotDrink" || family === "soaked"
       ? "fresh preparation"
       : "serving";
-  const candidate = `${recipe.title} recipe with ${keyIngredients}. Find practical ${method} ideas${ending}.`;
+  const candidate = `${recipe.title} recipe with ${keyIngredients}. Follow clear steps, practical timing and home-style ${method} ideas${ending}.`;
   return candidate.length <= 155
     ? candidate
-    : `${recipe.title} recipe with practical preparation tips and serving ideas for a homemade result.`;
+    : `${recipe.title} recipe with clear steps, practical timing and serving ideas for a homemade result.`;
 }
 
 function metaTitle(recipe: RecipeContentRecord) {

@@ -61,12 +61,21 @@ const SingleRecipe = async ({ recipe }: SingleRecipeProps) => {
 
   const recipeCuisine = recipe.recipeCuisine?.map((c) => c.cuisine.title);
 
-  const recipeIngredients = recipe.recipeIngredients.map(
-    (ingredient) => ingredient.ingredient.name
-  );
+  const recipeIngredients = recipe.recipeIngredients.map((ingredient) => {
+    const amount = ingredient.quantity ? String(ingredient.quantity) : "";
+    const unit = ingredient.unit?.shortName || ingredient.unit?.title || "";
+    const form = ingredient.ingredientForm?.name;
+
+    return [amount, unit, form, ingredient.ingredient.name]
+      .filter(Boolean)
+      .join(" ")
+      .replace(/\s+/g, " ")
+      .trim();
+  });
 
   const recipeMethods = recipe.recipeMethods.map((method) => ({
     "@type": "HowToStep",
+    position: method.position || undefined,
     name: method.title,
     text: stripHtml(method.description || method.title),
     ...(method.imageUrl ? { image: absoluteUrl(method.imageUrl) } : {}),
@@ -100,7 +109,7 @@ const SingleRecipe = async ({ recipe }: SingleRecipeProps) => {
     image: recipe.imageUrl ? [absoluteUrl(recipe.imageUrl)] : undefined,
     author: {
       "@type": "Organization",
-      name: "KyaKhayen",
+      name: "Kya Khayen",
     },
     datePublished: recipePublishedAt(recipe),
     dateModified: recipeContentUpdatedAt(recipe),
@@ -109,7 +118,7 @@ const SingleRecipe = async ({ recipe }: SingleRecipeProps) => {
     totalTime: totalTime,
     recipeYield: "1 serving",
     recipeCategory: recipe.RecipeCategories?.name || "General",
-    recipeCuisine: recipeCuisine || ["Global"],
+    recipeCuisine: recipeCuisine?.length ? recipeCuisine : ["Global"],
     recipeIngredient: recipeIngredients || [],
     recipeInstructions: recipeMethods || [],
     keywords: [
@@ -117,10 +126,7 @@ const SingleRecipe = async ({ recipe }: SingleRecipeProps) => {
       `${recipe.title} recipe`,
       "easy recipe",
       "homemade recipe",
-      recipe.RecipeCategories?.name,
       ...(recipe.recipeDietType ?? []).map(({ dietType }) => dietType.title),
-      ...(recipe.recipeRecipeType ?? []).map(({ recipeType }) => recipeType.title),
-      ...(recipe.recipeCuisine ?? []).map(({ cuisine }) => cuisine.title),
     ]
       .filter(Boolean)
       .join(", "),

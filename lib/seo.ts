@@ -10,6 +10,13 @@ const INTERNAL_SEO_COPY_PATTERNS = [
   /\bseo\s+optimized\b/i,
   /\bsearch\s+engine\s+optimized\b/i,
   /\bsearch\s+engine\s+friendly\b/i,
+  /\busers?\s+searching\b/i,
+  /\bpeople\s+search(?:ing)?\b/i,
+  /\bsearch\s+terms?\b/i,
+  /\brank(?:s|ing)?\s+for\b/i,
+  /\bpage\s+(?:rank|stronger|strong)\b/i,
+  /\bdatabase\s+entry\b/i,
+  /\bkeyword\s+stuffing\b/i,
 ];
 
 type SeoMetadataInput = {

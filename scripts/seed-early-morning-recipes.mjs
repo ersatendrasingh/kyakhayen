@@ -96,7 +96,7 @@ function recipeDescriptionHtml(recipe) {
 
 function metaDescription(recipe) {
   const names = visibleIngredientNames(recipe).slice(0, 2).join(" and ");
-  return `${recipe.title} recipe with ${names}. A light early morning hydration option for everyday meal plans.`;
+  return `${recipe.title} recipe with ${names}. Follow simple prep steps for a light early morning hydration option in everyday meal plans.`;
 }
 
 function methodSteps(recipe) {

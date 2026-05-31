@@ -26,7 +26,7 @@ import { useCurrentUser } from "@/hooks/use-current-user";
 import { calculateRecipeNutrition } from "@/lib/calculate-recipe-nutrition";
 import { formatDate } from "@/lib/formatDate";
 import { formatTime } from "@/lib/formatTime";
-import { absoluteUrl, recipeHref } from "@/lib/seo";
+import { absoluteUrl, recipeHref, seoDescription } from "@/lib/seo";
 import { cn } from "@/lib/utils";
 import type { RecipeWithCategory } from "@/types/recipe";
 
@@ -49,13 +49,11 @@ const BannerCard = ({ recipe, className }: BannerCardProps) => {
     (cookingTime?.prepTime || 0) +
     (cookingTime?.cookTime || 0) +
     (cookingTime?.restTime || 0);
-  const summary = (
-    recipe.metaDescription ||
+  const summary = seoDescription(
+    recipe.metaDescription,
     recipe.description?.replace(/<[^>]*>/g, " ") ||
-    "Discover ingredients and easy steps to bring this recipe to your table."
-  )
-    .replace(/\s+/g, " ")
-    .trim();
+      "Discover ingredients and easy steps to bring this recipe to your table.",
+  );
   const recipeUrl = absoluteUrl(recipeHref(recipe));
   const cuisineTags = (recipe.recipeCuisine || [])
     .map((entry) => entry.cuisine.title)
