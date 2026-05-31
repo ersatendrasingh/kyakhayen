@@ -57,6 +57,11 @@ async function recordUserRecipeView(recipeId: string, userId: string) {
     return "counted" satisfies RecordRecipeViewResult;
   } catch (error) {
     if (isPrismaError(error, "P2002")) {
+      await db.userRecipeViews.update({
+        where: { userId_recipeId: { userId, recipeId } },
+        data: { updatedAt: new Date() },
+      });
+
       return "duplicate" satisfies RecordRecipeViewResult;
     }
 

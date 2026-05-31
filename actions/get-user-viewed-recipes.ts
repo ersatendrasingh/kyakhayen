@@ -114,7 +114,7 @@ export const getUserViewedRecipes = async (): Promise<RecipeWithCategory[]> => {
         },
       },
       orderBy: {
-        createdAt: "desc",
+        updatedAt: "desc",
       },
     });
 
