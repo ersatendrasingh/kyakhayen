@@ -1,25 +1,10 @@
 import { currentUser } from "@/lib/auth";
-import { db } from "@/lib/db";
-import { Prisma } from "@prisma/client";
+import {
+  getClientIp,
+  hasSessionCookie,
+  recordRecipeView,
+} from "@/lib/recipe-view-tracker";
 import { NextResponse } from "next/server";
-
-function hasSessionCookie(req: Request) {
-  const cookie = req.headers.get("cookie") || "";
-
-  return (
-    cookie.includes("authjs.session-token") ||
-    cookie.includes("__Secure-authjs.session-token") ||
-    cookie.includes("next-auth.session-token") ||
-    cookie.includes("__Secure-next-auth.session-token")
-  );
-}
-
-function getClientIp(req: Request) {
-  const forwardedFor = req.headers.get("x-forwarded-for");
-  if (forwardedFor) return forwardedFor.split(",")[0]?.trim();
-
-  return req.headers.get("x-real-ip")?.trim() || undefined;
-}
 
 export async function POST(req: Request) {
   try {
@@ -30,36 +15,14 @@ export async function POST(req: Request) {
     }
 
     const user = hasSessionCookie(req) ? await currentUser() : undefined;
-    const userId = user?.id;
+    const result = await recordRecipeView({
+      recipeId,
+      userId: user?.id,
+      ipAddress: getClientIp(req),
+    });
 
-    if (userId) {
-      await db.userRecipeViews.upsert({
-        where: { userId_recipeId: { userId, recipeId } },
-        update: {},
-        create: { userId, recipeId },
-      });
-
-      return new NextResponse(null, { status: 204 });
-    }
-
-    const ipAddress = getClientIp(req);
-
-    if (!ipAddress) {
-      return new NextResponse(null, { status: 204 });
-    }
-
-    try {
-      await db.$transaction([
-        db.recipeViews.create({ data: { recipeId, ipAddress } }),
-        db.recipes.update({
-          where: { id: recipeId },
-          data: { views: { increment: 1 } },
-        }),
-      ]);
-    } catch (error) {
-      if (!(error instanceof Prisma.PrismaClientKnownRequestError) || error.code !== "P2002") {
-        throw error;
-      }
+    if (result === "missing-recipe") {
+      return NextResponse.json("Recipe not found", { status: 404 });
     }
 
     return new NextResponse(null, { status: 204 });

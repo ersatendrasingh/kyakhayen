@@ -1,4 +1,9 @@
-import { db } from "@/lib/db";
+import {
+  getClientIp,
+  hasSessionCookie,
+  recordRecipeView,
+} from "@/lib/recipe-view-tracker";
+import { currentUser } from "@/lib/auth";
 import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
@@ -8,38 +13,19 @@ export async function POST(req: Request) {
       return NextResponse.json("Missing recipeId", { status: 400 });
     }
 
-    let ipAddress: string | undefined;
-
-    if (req.headers.get("x-forwarded-for")) {
-      ipAddress = req.headers.get("x-forwarded-for") as string;
-    } else if (req.headers.get("x-real-ip")) {
-      ipAddress = req.headers.get("x-real-ip") as string;
-    }
-
-    if (!ipAddress) {
-      return NextResponse.json("Missing IP address", { status: 400 });
-    }
-    const viewedRecipe = await db.recipeViews.findUnique({
-      where: { recipeId_ipAddress: { recipeId, ipAddress } },
+    const user = hasSessionCookie(req) ? await currentUser() : undefined;
+    const result = await recordRecipeView({
+      recipeId,
+      userId: user?.id,
+      ipAddress: getClientIp(req),
     });
 
-    if (!viewedRecipe) {
-      // Increment unique views count in the database
-      await db.recipes.update({
-        where: {
-          id: recipeId,
-        },
-        data: {
-          views: {
-            increment: 1,
-          },
-        },
-      });
+    if (result === "missing-viewer") {
+      return NextResponse.json("Missing viewer identity", { status: 400 });
+    }
 
-      // Record that this IP address has viewed this recipe
-      await db.recipeViews.create({
-        data: { recipeId, ipAddress },
-      });
+    if (result === "missing-recipe") {
+      return NextResponse.json("Recipe not found", { status: 404 });
     }
 
     return NextResponse.json("View Count Updated", { status: 200 });
