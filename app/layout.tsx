@@ -27,7 +27,9 @@ const meta = {
 };
 
 const GTM_ID =
-  process.env.NEXT_PUBLIC_GTM_ID || process.env.GOOGLE_TAG_MANAGER_ID || "GTM-N99FLD9B";
+  process.env.NEXT_PUBLIC_GTM_ID ||
+  process.env.GOOGLE_TAG_MANAGER_ID ||
+  "GTM-N99FLD9B";
 
 export const metadata: Metadata = {
   ...buildSeoMetadata({
@@ -56,7 +58,9 @@ export const metadata: Metadata = {
       { url: "/pwa/icon-192.png", type: "image/png", sizes: "192x192" },
       { url: "/pwa/icon-512.png", type: "image/png", sizes: "512x512" },
     ],
-    apple: [{ url: "/pwa/apple-touch-icon.png", sizes: "180x180", type: "image/png" }],
+    apple: [
+      { url: "/pwa/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
+    ],
   },
   appleWebApp: {
     capable: true,
@@ -80,7 +84,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="min-h-svh" suppressHydrationWarning>
-      <body className={`${poppins.variable} min-h-svh bg-[#fcf8f0] antialiased dark:bg-[#091712]`}>
+      <body
+        className={`${poppins.variable} min-h-svh bg-[#fcf8f0] antialiased dark:bg-[#091712]`}
+      >
         <Script id="gtm" strategy="lazyOnload">
           {`
             window.dataLayer = window.dataLayer || [];
