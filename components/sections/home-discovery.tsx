@@ -113,6 +113,7 @@ export function SeasonalSpotlight({
                 src={editorialImage}
                 alt="Fresh green smoothie with leafy summer ingredients"
                 fill
+                quality={68}
                 sizes="(max-width: 1024px) 100vw, 52vw"
                 className="object-cover transition duration-700 group-hover:scale-105"
               />
@@ -143,6 +144,7 @@ export function SeasonalSpotlight({
                         src={recipe.imageUrl || "/meta-images/recipe-page.jpg"}
                         alt={recipe.title}
                         fill
+                        quality={64}
                         sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 22vw"
                         className="object-cover transition duration-500 group-hover:scale-105"
                       />
@@ -215,6 +217,7 @@ export function InterestSpotlight({
               src={editorialImage}
               alt="Paneer stuffed cheela served with fresh green chutney"
               fill
+              quality={68}
               sizes="(max-width: 1024px) 100vw, 38vw"
               className="object-cover"
             />
@@ -248,6 +251,7 @@ export function InterestSpotlight({
                       src={recipe.imageUrl || "/meta-images/recipe-page.jpg"}
                       alt={recipe.title}
                       fill
+                      quality={64}
                       sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 20vw"
                       className="object-cover transition duration-500 group-hover:scale-105"
                     />
@@ -420,6 +424,7 @@ export function MealPlanStory({
                         src={recipe.imageUrl || "/meta-images/recipe-page.jpg"}
                         alt={recipe.title}
                         fill
+                        quality={60}
                         sizes="(max-width: 640px) 33vw, 180px"
                         className="object-cover transition duration-500 group-hover:scale-105"
                       />

@@ -2,8 +2,6 @@
 
 import Link from "next/link";
 import { ArrowRight, CalendarDays, PlayCircle } from "lucide-react";
-import { useSession } from "next-auth/react";
-import { useState } from "react";
 
 type HomeMealPlanActionProps = {
   variant: "hero" | "story" | "rail" | "article";
@@ -12,24 +10,8 @@ type HomeMealPlanActionProps = {
 export default function HomeMealPlanAction({
   variant,
 }: HomeMealPlanActionProps) {
-  const { data: session } = useSession();
-  const hasMealPlan = Boolean(session?.user?.isPersonalised);
-  const [nowMs] = useState(() => Date.now());
-  const hasPaidAccess = Boolean(
-    session?.user?.userPlan?.some((plan, index) => {
-      const endDate = session.user.userPlanEndDate?.[index];
-      return (
-        plan !== "Freemium" &&
-        (!endDate || new Date(endDate).getTime() >= nowMs)
-      );
-    }),
-  );
-  const label = hasMealPlan
-    ? "View my meal plan"
-    : hasPaidAccess
-      ? "Set up my meal plan"
-      : "Build my meal plan";
-  const href = hasMealPlan ? "/meal-plan" : "/meal-plan/create";
+  const label = "Build my meal plan";
+  const href = "/meal-plan/create";
 
   if (variant === "hero") {
     return (
@@ -54,11 +36,7 @@ export default function HomeMealPlanAction({
           Your weekly table
         </p>
         <p className="mt-2 text-base font-semibold leading-6">
-          {hasMealPlan
-            ? "Your planned meals are ready to revisit."
-            : hasPaidAccess
-              ? "Use your access to create meals around your taste."
-              : "Build a meal plan from food you enjoy."}
+          Build a meal plan from food you enjoy.
         </p>
         <span className="mt-4 inline-flex items-center gap-1.5 text-xs font-semibold text-[#f2deaf]">
           {label} <ArrowRight className="size-3.5" />

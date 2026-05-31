@@ -10,7 +10,7 @@ import HomeFoodPreference from "@/components/sections/home-food-preference";
 import HomeFeaturedRecipes from "@/components/sections/home-featured-recipes";
 import { HomePreferenceProvider } from "@/components/sections/home-preference-context";
 import PremiumHomeHero from "@/components/sections/premium-home-hero";
-import MembershipPromptModal from "@/components/sections/membership-prompt-modal";
+import LazyMembershipPromptModal from "@/components/sections/lazy-membership-prompt-modal";
 import HomeEditorialStories from "@/components/sections/home-editorial-stories";
 import { db } from "@/lib/db";
 import { publishedRecipeAnd, publishedRecipeWhere } from "@/lib/recipe-publication";
@@ -24,13 +24,6 @@ import {
 } from "@/lib/seo";
 
 const mediaBaseUrl = process.env.NEXT_PUBLIC_MEDIA_URL?.replace(/\/+$/, "");
-const heroVideoKeys = [
-  "media/homepage/hero/20260524/hero-breakfast-prep.mp4",
-  "media/homepage/hero/20260524/hero-food-story-02.mp4",
-  "media/homepage/hero/20260524/hero-food-story-03.mp4",
-  "media/homepage/hero/20260524/hero-food-story-04.mp4",
-  "media/homepage/hero/20260524/hero-food-story-05.mp4",
-];
 const seasonalEditorialKey =
   "media/homepage/discovery/20260524/summer-green-smoothie.webp";
 const ingredientEditorialKey =
@@ -43,6 +36,18 @@ const summerDrinkTypeSlugs = [
   "drink-lassi-buttermilk",
   "drink-detox",
   "drink-infusions",
+] as const;
+const homepageCuisineSlugs = [
+  "north-indian",
+  "south-indian",
+  "punjabi",
+  "chinese",
+  "bihari",
+  "rajasthani",
+  "gujarati",
+  "west-indian",
+  "american",
+  "international-mediterranean",
 ] as const;
 
 function uniqueByRecipeId<T extends { id: string }>(recipes: T[]) {
@@ -125,9 +130,6 @@ export default async function Home() {
     weekday: "long",
     timeZone: "Asia/Kolkata",
   }).format(tomorrow);
-  const heroVideoUrls = mediaBaseUrl
-    ? heroVideoKeys.map((key) => `${mediaBaseUrl}/${key}`)
-    : [];
   const seasonalEditorialImage = mediaBaseUrl
     ? `${mediaBaseUrl}/${seasonalEditorialKey}`
     : "/assets/images/smoothie.png";
@@ -170,7 +172,11 @@ export default async function Home() {
             take: 1,
           },
         },
-        orderBy: [{ contentUpdatedAt: "desc" }, { updatedAt: "desc" }],
+        orderBy: [
+          { views: "desc" },
+          { contentUpdatedAt: "desc" },
+          { updatedAt: "desc" },
+        ],
         take: 5,
       }),
       db.recipes.findMany({
@@ -215,11 +221,12 @@ export default async function Home() {
           { contentUpdatedAt: "desc" },
           { updatedAt: "desc" },
         ],
-        take: 80,
+        take: 24,
       }),
       db.cuisines.findMany({
         where: {
           isPublished: true,
+          slug: { in: [...homepageCuisineSlugs] },
           recipeCuisine: {
             some: { recipe: { ...publishedRecipeWhere(), imageUrl: { not: null } } },
           },
@@ -269,7 +276,7 @@ export default async function Home() {
               },
             },
             orderBy: { recipe: { views: "desc" } },
-            take: 36,
+            take: 12,
           },
         },
         orderBy: { position: "asc" },
@@ -337,7 +344,7 @@ export default async function Home() {
               },
             },
             orderBy: { views: "desc" },
-            take: 10,
+            take: 6,
           },
         },
         orderBy: { position: "asc" },
@@ -390,9 +397,8 @@ export default async function Home() {
       />
       <PremiumHomeHero
         catalogRecipeCount={catalogRecipeCount}
-        videoUrls={heroVideoUrls}
       />
-      <MembershipPromptModal />
+      <LazyMembershipPromptModal />
       <HomePreferenceProvider defaultPreference="veg">
         <div className="home-page-body relative isolate overflow-hidden">
           <HomeFeaturedRecipes recipes={featuredRecipes} />

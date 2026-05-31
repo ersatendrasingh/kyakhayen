@@ -86,6 +86,7 @@ export default function HomeFeaturedRecipes({
               src={leadRecipe.imageUrl || "/meta-images/recipe-page.jpg"}
               alt={leadRecipe.title}
               fill
+              quality={68}
               sizes="(max-width: 1024px) 100vw, 54vw"
               className="object-cover transition duration-700 group-hover:scale-105"
             />

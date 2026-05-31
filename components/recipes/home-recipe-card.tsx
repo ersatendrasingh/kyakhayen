@@ -55,6 +55,7 @@ export default function HomeRecipeCard({
           src={recipe.imageUrl || "/meta-images/recipe-page.jpg"}
           alt={recipe.title}
           fill
+          quality={64}
           sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 24vw"
           className="object-cover transition duration-500 group-hover:scale-105"
         />

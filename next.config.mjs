@@ -33,7 +33,31 @@ const NextConfig = {
       },
     ];
   },
+  async headers() {
+    return [
+      {
+        source: "/:path*\\.(jpg|jpeg|png|webp|avif|gif|svg|ico|woff2)",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, max-age=31536000, immutable",
+          },
+        ],
+      },
+      {
+        source: "/sw.js",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, max-age=0, must-revalidate",
+          },
+        ],
+      },
+    ];
+  },
   images: {
+    formats: ["image/avif", "image/webp"],
+    minimumCacheTTL: 2592000,
     remotePatterns: [
       ...(mediaRemotePattern ? [mediaRemotePattern] : []),
       // Keep legacy S3 records renderable until stored URLs are migrated.
