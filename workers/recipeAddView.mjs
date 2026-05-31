@@ -1,7 +1,8 @@
 import axios from "axios";
 import { Worker } from "bullmq";
-import { loadEnvConfig } from "@next/env";
+import nextEnv from "@next/env";
 
+const { loadEnvConfig } = nextEnv;
 loadEnvConfig(process.cwd());
 
 // Define Redis connection options

@@ -17,22 +17,6 @@ jobs:
   check:
     name: Check
     runs-on: ubuntu-latest
-    environment: KYAKHAYEN_DEPLOYMENT
-    env:
-      NEXT_PUBLIC_APP_URL: ${{ secrets.NEXT_PUBLIC_APP_URL || vars.NEXT_PUBLIC_APP_URL || 'https://www.kyakhayen.com' }}
-      NEXT_PUBLIC_SITE_URL: ${{ secrets.NEXT_PUBLIC_SITE_URL || vars.NEXT_PUBLIC_SITE_URL || 'https://www.kyakhayen.com' }}
-      NEXT_PUBLIC_MEDIA_URL: ${{ secrets.NEXT_PUBLIC_MEDIA_URL || vars.NEXT_PUBLIC_MEDIA_URL || 'https://d2211nhxa294e1.cloudfront.net' }}
-      NEXT_PUBLIC_GTM_ID: ${{ secrets.NEXT_PUBLIC_GTM_ID || vars.NEXT_PUBLIC_GTM_ID || 'GTM-N99FLD9B' }}
-      NEXT_PUBLIC_DEFAULT_COUNTRY: ${{ secrets.NEXT_PUBLIC_DEFAULT_COUNTRY || vars.NEXT_PUBLIC_DEFAULT_COUNTRY || 'IN' }}
-      NEXT_PUBLIC_DEFAULT_CURRENCY: ${{ secrets.NEXT_PUBLIC_DEFAULT_CURRENCY || vars.NEXT_PUBLIC_DEFAULT_CURRENCY || 'INR' }}
-      NEXT_PUBLIC_EXCHANGE_API_URL: ${{ secrets.NEXT_PUBLIC_EXCHANGE_API_URL || vars.NEXT_PUBLIC_EXCHANGE_API_URL }}
-      NEXT_PUBLIC_FREE_CURRENCY_API_KEY: ${{ secrets.NEXT_PUBLIC_FREE_CURRENCY_API_KEY || vars.NEXT_PUBLIC_FREE_CURRENCY_API_KEY }}
-      DEPLOY_HOST: ${{ secrets.DEPLOY_HOST || vars.DEPLOY_HOST || '13.206.210.16' }}
-      DEPLOY_USER: ${{ secrets.DEPLOY_USER || vars.DEPLOY_USER || 'ubuntu' }}
-      DEPLOY_PORT: ${{ secrets.DEPLOY_PORT || vars.DEPLOY_PORT || '22' }}
-      DEPLOY_PATH: ${{ secrets.DEPLOY_PATH || vars.DEPLOY_PATH || '/opt/kasa/kyakhayen' }}
-      DB_TUNNEL_PORT: ${{ secrets.DB_TUNNEL_PORT || vars.DB_TUNNEL_PORT || '3307' }}
-      DEPLOY_SSH_KEY_PRESENT: ${{ secrets.DEPLOY_SSH_KEY != '' }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -51,98 +35,14 @@ jobs:
       - name: Typecheck
         run: npm run typecheck
 
-      - name: Validate production build inputs
-        run: |
-          test -n "$DEPLOY_HOST" || { echo "DEPLOY_HOST is empty"; exit 1; }
-          test -n "$DEPLOY_USER" || { echo "DEPLOY_USER is empty"; exit 1; }
-          test -n "$DEPLOY_PORT" || { echo "DEPLOY_PORT is empty"; exit 1; }
-          test -n "$DEPLOY_PATH" || { echo "DEPLOY_PATH is empty"; exit 1; }
-          test "$DEPLOY_SSH_KEY_PRESENT" = "true" || { echo "DEPLOY_SSH_KEY secret is empty"; exit 1; }
+      - name: Package source artifact
+        run: git archive --format=tar.gz --output=kyakhayen-source.tgz HEAD
 
-      - name: Configure SSH for production build data
-        run: |
-          mkdir -p ~/.ssh
-          printf '%s\n' "${{ secrets.DEPLOY_SSH_KEY }}" > ~/.ssh/kyakhayen_deploy_key
-          chmod 600 ~/.ssh/kyakhayen_deploy_key
-          ssh-keyscan -p "$DEPLOY_PORT" "$DEPLOY_HOST" >> ~/.ssh/known_hosts
-
-      - name: Prepare production build environment
-        run: |
-          ssh \
-            -i ~/.ssh/kyakhayen_deploy_key \
-            -p "$DEPLOY_PORT" \
-            -o ConnectTimeout=20 \
-            "$DEPLOY_USER@$DEPLOY_HOST" \
-            "DEPLOY_PATH='$DEPLOY_PATH' bash -s" > .env.production <<'EOF'
-          set -Eeuo pipefail
-          test -f "$DEPLOY_PATH/.env" || { echo ".env file missing in $DEPLOY_PATH" >&2; exit 1; }
-          cat "$DEPLOY_PATH/.env"
-          EOF
-
-          node <<'NODE'
-          const fs = require("fs");
-
-          const envPath = ".env.production";
-          const tunnelPort = process.env.DB_TUNNEL_PORT || "3307";
-          const lines = fs.readFileSync(envPath, "utf8").split(/\r?\n/);
-          const databaseLineIndex = lines.findIndex((line) => line.startsWith("DATABASE_URL="));
-
-          if (databaseLineIndex === -1) {
-            throw new Error("DATABASE_URL is missing from the production .env file");
-          }
-
-          const line = lines[databaseLineIndex];
-          const value = line.slice("DATABASE_URL=".length);
-          const quote = value.startsWith("'") || value.startsWith('"') ? value[0] : "";
-          const unquoted = quote ? value.slice(1, value.endsWith(quote) ? -1 : undefined) : value;
-          const databaseUrl = new URL(unquoted);
-          const remoteHost = databaseUrl.hostname;
-          const remotePort = databaseUrl.port || "3306";
-
-          databaseUrl.hostname = "127.0.0.1";
-          databaseUrl.port = tunnelPort;
-          lines[databaseLineIndex] = `DATABASE_URL=${quote}${databaseUrl.toString()}${quote}`;
-          fs.writeFileSync(envPath, `${lines.join("\n")}\n`);
-          fs.appendFileSync(process.env.GITHUB_ENV, `DB_REMOTE_HOST=${remoteHost}\nDB_REMOTE_PORT=${remotePort}\n`);
-          NODE
-
-      - name: Open production database tunnel
-        run: |
-          ssh \
-            -fN \
-            -i ~/.ssh/kyakhayen_deploy_key \
-            -p "$DEPLOY_PORT" \
-            -L "127.0.0.1:$DB_TUNNEL_PORT:$DB_REMOTE_HOST:$DB_REMOTE_PORT" \
-            -o ExitOnForwardFailure=yes \
-            -o ConnectTimeout=20 \
-            "$DEPLOY_USER@$DEPLOY_HOST"
-
-      - name: Build production bundle
-        run: |
-          export NEXT_PRIVATE_BUILD_WORKER_COUNT=1
-          npm run build
-
-      - name: Package release artifact
-        run: |
-          tar \
-            --exclude='.next/cache' \
-            --exclude='.next/dev' \
-            -czf kyakhayen-release.tgz \
-            .next \
-            public \
-            prisma \
-            scripts \
-            workers \
-            package.json \
-            package-lock.json \
-            next.config.mjs \
-            ecosystem.config.cjs
-
-      - name: Upload release artifact
+      - name: Upload source artifact
         uses: actions/upload-artifact@v4
         with:
-          name: kyakhayen-release
-          path: kyakhayen-release.tgz
+          name: kyakhayen-source
+          path: kyakhayen-source.tgz
           retention-days: 3
 
   deploy:
@@ -165,6 +65,10 @@ jobs:
       DB_BACKUP_RETENTION_DAYS: ${{ secrets.DB_BACKUP_RETENTION_DAYS || vars.DB_BACKUP_RETENTION_DAYS || '30' }}
       DB_BACKUP_S3_BUCKET: ${{ secrets.DB_BACKUP_S3_BUCKET || vars.DB_BACKUP_S3_BUCKET }}
       DB_BACKUP_S3_PREFIX: ${{ secrets.DB_BACKUP_S3_PREFIX || vars.DB_BACKUP_S3_PREFIX || 'kyakhayen/mysql' }}
+      BUILD_NODE_OPTIONS: ${{ vars.BUILD_NODE_OPTIONS || '--max_old_space_size=2048' }}
+      DEPLOY_SWAP_FILE: ${{ vars.DEPLOY_SWAP_FILE || '/swapfile' }}
+      DEPLOY_SWAP_SIZE: ${{ vars.DEPLOY_SWAP_SIZE || '2G' }}
+      DEPLOY_SWAP_SIZE_MB: ${{ vars.DEPLOY_SWAP_SIZE_MB || '2048' }}
       DEPLOY_SSH_KEY_PRESENT: ${{ secrets.DEPLOY_SSH_KEY != '' }}
     steps:
       - name: Validate deploy inputs
@@ -178,7 +82,7 @@ jobs:
       - name: Download release artifact
         uses: actions/download-artifact@v4
         with:
-          name: kyakhayen-release
+          name: kyakhayen-source
 
       - name: Configure SSH
         run: |
@@ -193,7 +97,7 @@ jobs:
             -i ~/.ssh/kyakhayen_deploy_key \
             -P "$DEPLOY_PORT" \
             -o ConnectTimeout=20 \
-            kyakhayen-release.tgz \
+            kyakhayen-source.tgz \
             "$DEPLOY_USER@$DEPLOY_HOST:/tmp/kyakhayen-${GITHUB_SHA}.tgz"
 
       - name: Deploy release
@@ -203,12 +107,77 @@ jobs:
             -p "$DEPLOY_PORT" \
             -o ConnectTimeout=20 \
             "$DEPLOY_USER@$DEPLOY_HOST" \
-            "DEPLOY_PATH='$DEPLOY_PATH' DEPLOY_RELEASES_DIR='$DEPLOY_RELEASES_DIR' DEPLOY_CURRENT_LINK='$DEPLOY_CURRENT_LINK' DEPLOY_HEALTHCHECK_URL='$DEPLOY_HEALTHCHECK_URL' DB_BACKUP_DIR='$DB_BACKUP_DIR' DB_BACKUP_RETENTION_DAYS='$DB_BACKUP_RETENTION_DAYS' DB_BACKUP_S3_BUCKET='$DB_BACKUP_S3_BUCKET' DB_BACKUP_S3_PREFIX='$DB_BACKUP_S3_PREFIX' RELEASE_ID='$GITHUB_SHA' bash -s" <<'EOF'
+            "DEPLOY_PATH='$DEPLOY_PATH' DEPLOY_RELEASES_DIR='$DEPLOY_RELEASES_DIR' DEPLOY_CURRENT_LINK='$DEPLOY_CURRENT_LINK' DEPLOY_HEALTHCHECK_URL='$DEPLOY_HEALTHCHECK_URL' DB_BACKUP_DIR='$DB_BACKUP_DIR' DB_BACKUP_RETENTION_DAYS='$DB_BACKUP_RETENTION_DAYS' DB_BACKUP_S3_BUCKET='$DB_BACKUP_S3_BUCKET' DB_BACKUP_S3_PREFIX='$DB_BACKUP_S3_PREFIX' BUILD_NODE_OPTIONS='$BUILD_NODE_OPTIONS' DEPLOY_SWAP_FILE='$DEPLOY_SWAP_FILE' DEPLOY_SWAP_SIZE='$DEPLOY_SWAP_SIZE' DEPLOY_SWAP_SIZE_MB='$DEPLOY_SWAP_SIZE_MB' RELEASE_ID='$GITHUB_SHA' bash -s" <<'EOF'
           set -Eeuo pipefail
 
           release_dir="$DEPLOY_RELEASES_DIR/$RELEASE_ID"
           bundle="/tmp/kyakhayen-${RELEASE_ID}.tgz"
           previous_target=""
+
+          ensure_swap() {
+            if ! command -v swapon >/dev/null 2>&1; then
+              echo "swapon command not available; skipping swap setup"
+              return
+            fi
+
+            if swapon --noheadings --show | grep -q .; then
+              swapon --show
+              return
+            fi
+
+            local swap_file="${DEPLOY_SWAP_FILE:-/swapfile}"
+            local swap_size="${DEPLOY_SWAP_SIZE:-2G}"
+            local swap_size_mb="${DEPLOY_SWAP_SIZE_MB:-2048}"
+
+            echo "No active swap found. Creating ${swap_file} (${swap_size})."
+            if [ ! -f "$swap_file" ]; then
+              sudo fallocate -l "$swap_size" "$swap_file" || sudo dd if=/dev/zero of="$swap_file" bs=1M count="$swap_size_mb"
+              sudo chmod 600 "$swap_file"
+              sudo mkswap "$swap_file"
+            fi
+
+            sudo swapon "$swap_file"
+            if ! grep -qs "$swap_file none swap" /etc/fstab; then
+              echo "$swap_file none swap sw 0 0" | sudo tee -a /etc/fstab >/dev/null
+            fi
+            swapon --show
+          }
+
+          require_release_env() {
+            local missing=""
+            local required_names="
+              DATABASE_URL
+              AUTH_SECRET
+              NEXT_PUBLIC_APP_URL
+              NEXT_PUBLIC_SITE_URL
+              NEXT_PUBLIC_MEDIA_URL
+              AWS_REGION
+              AWS_ACCESS_KEY_ID
+              AWS_SECRET_ACCESS_KEY
+              AWS_MEDIA_BUCKET_NAME
+              AWS_PRIVATE_BUCKET_NAME
+              REDIS_SERVER_HOST
+              REDIS_SERVER_PORT
+              MEAL_PLAN_WORKER_SECRET
+              RAZORPAY_KEY_ID
+              RAZORPAY_KEY_SECRET
+              RAZORPAY_WEBHOOK_SECRET
+              RESEND_API_KEY
+              EMAIL_FROM_ADDRESS
+              ADMIN_EMAIL
+            "
+
+            for name in $required_names; do
+              if ! grep -Eq "^${name}=.+" .env; then
+                missing="$missing $name"
+              fi
+            done
+
+            if [ -n "$missing" ]; then
+              echo "Release .env is missing required variables:$missing"
+              exit 1
+            fi
+          }
 
           if [ -L "$DEPLOY_CURRENT_LINK" ]; then
             previous_target="$(readlink -f "$DEPLOY_CURRENT_LINK")"
@@ -229,11 +198,17 @@ jobs:
           fi
 
           cd "$release_dir"
-          npm ci --omit=dev || npm install --omit=dev
+          require_release_env
+          ensure_swap
+          npm ci || npm install
 
           export NODE_ENV=production
           node scripts/backup-database.mjs predeploy
           npx prisma migrate deploy
+          export NODE_OPTIONS="${NODE_OPTIONS:-$BUILD_NODE_OPTIONS}"
+          export NEXT_PRIVATE_BUILD_WORKER_COUNT="${NEXT_PRIVATE_BUILD_WORKER_COUNT:-1}"
+          npm run build
+          npm prune --omit=dev
 
           ln -sfn "$release_dir" "$DEPLOY_CURRENT_LINK"
           export KYAKHAYEN_DEPLOY_PATH="$DEPLOY_CURRENT_LINK"

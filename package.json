@@ -7,8 +7,11 @@
     "dev:web": "next dev --webpack",
     "build": "next build --webpack",
     "start": "next start",
+    "check": "npm run lint && npm run typecheck",
     "lint": "eslint . --max-warnings=0",
     "typecheck": "tsc --noEmit",
+    "prepare": "husky",
+    "prepush": "npm run check",
     "postinstall": "prisma generate",
     "email": "email dev",
     "seed:early-morning": "node scripts/seed-early-morning-recipes.mjs",
@@ -26,7 +29,6 @@
     "@hookform/resolvers": "^3.10.0",
     "@next/third-parties": "16.2.6",
     "@prisma/client": "^5.18.0",
-    "prisma": "^5.22.0",
     "@radix-ui/react-icons": "^1.3.2",
     "@serwist/next": "^9.5.11",
     "@tanstack/react-table": "^8.16.0",
@@ -53,6 +55,7 @@
     "next-auth": "5.0.0-beta.31",
     "next-themes": "^0.4.6",
     "nextjs-toploader": "^3.9.17",
+    "prisma": "^5.22.0",
     "query-string": "^9.0.0",
     "radix-ui": "^1.4.3",
     "razorpay": "^2.9.2",
@@ -89,6 +92,8 @@
     "@types/web-push": "^3.6.4",
     "eslint": "^9.39.1",
     "eslint-config-next": "16.2.6",
+    "husky": "^9.1.7",
+    "lint-staged": "^17.0.7",
     "npm-run-all": "^4.1.5",
     "postcss": "^8",
     "serwist": "^9.5.11",
@@ -100,5 +105,8 @@
   "overrides": {
     "@types/react": "19.2.15",
     "@types/react-dom": "19.2.3"
+  },
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx,mjs,cjs}": "eslint --fix"
   }
 }
