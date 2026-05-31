@@ -27,6 +27,9 @@ const meta = {
   image: DEFAULT_OG_IMAGE,
 };
 
+const googleTagManagerId =
+  process.env.NEXT_PUBLIC_GTM_ID || process.env.GOOGLE_TAG_MANAGER_ID || "GTM-N99FLD9B";
+
 export const metadata: Metadata = {
   ...buildSeoMetadata({
     title: meta.title,
@@ -81,7 +84,7 @@ export default async function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${poppins.variable}`}>
-        <GoogleTagManager gtmId={process.env.GOOGLE_TAG_MANAGER_ID as string} />
+        <GoogleTagManager gtmId={googleTagManagerId} />
         <SessionProvider session={session}>
           <ThemeProvider
             attribute="class"

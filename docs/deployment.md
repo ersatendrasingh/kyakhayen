@@ -66,7 +66,7 @@ Useful production variables:
 - `NEXT_PUBLIC_RAZORPAY_KEY`: public Razorpay key
 - `NEXT_PUBLIC_EXCHANGE_API_URL`: optional
 - `NEXT_PUBLIC_FREE_CURRENCY_API_KEY`: optional
-- `GOOGLE_TAG_MANAGER_ID`: optional
+- `NEXT_PUBLIC_GTM_ID`: Google Tag Manager container ID, for example `GTM-N99FLD9B`
 
 ## Deploy Flow
 
