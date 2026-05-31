@@ -227,6 +227,13 @@ jobs:
           fi
 
           pm2 save
-          find "$DEPLOY_RELEASES_DIR" -mindepth 1 -maxdepth 1 -type d | sort | head -n -5 | xargs -r rm -rf
+          current_target="$(readlink -f "$DEPLOY_CURRENT_LINK")"
+          find "$DEPLOY_RELEASES_DIR" -mindepth 1 -maxdepth 1 -type d \
+            ! -path "$current_target" \
+            -printf '%T@ %p\0' \
+            | sort -z -n \
+            | head -z -n -4 \
+            | cut -z -d ' ' -f2- \
+            | xargs -0 -r rm -rf
           rm -f "$bundle"
           EOF
