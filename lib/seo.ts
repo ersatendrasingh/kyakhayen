@@ -5,6 +5,13 @@ export const SITE_TAGLINE = "Easy recipes, meal ideas, and weekly meal plans";
 export const DEFAULT_SITE_URL = "https://www.kyakhayen.com";
 export const DEFAULT_OG_IMAGE = "/meta-images/home.png";
 
+const INTERNAL_SEO_COPY_PATTERNS = [
+  /\bseo\s*[- ]?\s*friendly\b/i,
+  /\bseo\s+optimized\b/i,
+  /\bsearch\s+engine\s+optimized\b/i,
+  /\bsearch\s+engine\s+friendly\b/i,
+];
+
 type SeoMetadataInput = {
   title: string;
   description: string;
@@ -72,12 +79,31 @@ export function truncateText(value: string, maxLength = 158) {
   return `${truncated.slice(0, lastSpace > 70 ? lastSpace : maxLength).trim()}...`;
 }
 
+export function hasInternalSeoCopy(value?: string | null) {
+  const clean = stripHtml(value);
+  return Boolean(clean && INTERNAL_SEO_COPY_PATTERNS.some((pattern) => pattern.test(clean)));
+}
+
+function publicSeoText(value?: string | null) {
+  const clean = stripHtml(value);
+  return clean && !hasInternalSeoCopy(clean) ? clean : "";
+}
+
+export function seoTitle(
+  preferred?: string | null,
+  fallback?: string | null,
+  maxLength = 62,
+) {
+  const title = publicSeoText(preferred) || publicSeoText(fallback) || SITE_NAME;
+  return truncateText(title, maxLength).replace(/\.\.\.$/, "").trim();
+}
+
 export function seoDescription(
   preferred?: string | null,
   fallback?: string | null,
   maxLength = 158,
 ) {
-  return truncateText(stripHtml(preferred) || stripHtml(fallback) || SITE_TAGLINE, maxLength);
+  return truncateText(publicSeoText(preferred) || publicSeoText(fallback) || SITE_TAGLINE, maxLength);
 }
 
 export function recipeHref(recipe: { slug: string; metaSlug?: string | null }) {

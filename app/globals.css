@@ -753,6 +753,50 @@ body {
     color: #e5ede7 !important;
   }
 
+  .dark .search-suggestions .search-kind-icon {
+    background: #1d352c !important;
+    color: #e1b864 !important;
+  }
+
+  .dark .search-suggestions .search-kind-icon svg {
+    color: #e1b864 !important;
+  }
+
+  .dark .search-suggestions .search-view-all-button {
+    background: #263f33 !important;
+    color: #fff4df !important;
+  }
+
+  .dark .search-suggestions .search-view-all-button:hover {
+    background: #315242 !important;
+  }
+
+  .dark .search-suggestions .search-view-all-button span,
+  .dark .search-suggestions .search-view-all-button svg {
+    color: #fff4df !important;
+  }
+
+  .dark .search-suggestions .search-recent-header,
+  .dark .search-suggestions .search-recent-clear {
+    color: #e1b864 !important;
+  }
+
+  .dark .search-suggestions .search-recent-item:hover {
+    border-color: rgb(206 164 84 / 24%) !important;
+    background: #162e27 !important;
+  }
+
+  .dark .search-suggestions .search-recent-remove,
+  .dark .search-suggestions .search-recent-remove svg {
+    color: #c8d2cc !important;
+  }
+
+  .dark .search-suggestions .search-recent-remove:hover,
+  .dark .search-suggestions .search-recent-remove:hover svg {
+    background: #203b31 !important;
+    color: #f1c979 !important;
+  }
+
   .dark .search-loading-state,
   .dark .search-empty-copy {
     color: #a7b6af !important;

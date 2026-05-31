@@ -30,6 +30,15 @@ interface SingleRecipeProps {
   recipe: RecipeWithCategory;
 }
 
+function recipeDescriptionFallback(recipe: RecipeWithCategory) {
+  const cuisine = recipe.recipeCuisine?.[0]?.cuisine.title;
+  const category = recipe.RecipeCategories?.name;
+  const recipeType = recipe.recipeRecipeType?.[0]?.recipeType.title;
+  const context = [cuisine, category, recipeType].filter(Boolean).join(", ");
+
+  return `${recipe.title} recipe with ingredients and step-by-step cooking instructions${context ? ` for ${context.toLowerCase()} cooking` : ""}. Make it at home with Kya Khayen.`;
+}
+
 const SingleRecipe = async ({ recipe }: SingleRecipeProps) => {
   if (!recipe) return <RecipeNotFound />;
 
@@ -86,7 +95,7 @@ const SingleRecipe = async ({ recipe }: SingleRecipeProps) => {
     name: recipe.title,
     description: seoDescription(
       recipe.metaDescription,
-      recipe.description || `${recipe.title} recipe with ingredients and cooking steps.`,
+      recipeDescriptionFallback(recipe),
     ),
     image: recipe.imageUrl ? [absoluteUrl(recipe.imageUrl)] : undefined,
     author: {

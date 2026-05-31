@@ -173,9 +173,15 @@ const tokenAliases: Record<string, string[]> = {
   razma: ["rajma"],
   rajama: ["rajma"],
   chhole: ["chole"],
+  fast: ["vrat", "upvas", "fasting", "farali"],
   brrekfast: ["breakfast"],
+  mornig: ["morning", "breakfast"],
+  morng: ["morning", "breakfast"],
+  mrng: ["morning", "breakfast"],
+  mrning: ["morning", "breakfast"],
   nashta: ["breakfast"],
   subah: ["breakfast"],
+  sham: ["shaam", "evening"],
   anda: ["egg", "eggetarian"],
   chicken: ["non veg", "chicken"],
   garmi: ["summer"],
@@ -193,7 +199,18 @@ const intentRules = [
     terms: ["dinner", "supper"],
   },
   {
-    triggers: ["subah", "savera", "morning", "breakfst", "brkfast", "breakfas"],
+    triggers: [
+      "subah",
+      "savera",
+      "morning",
+      "mornig",
+      "morng",
+      "mrng",
+      "mrning",
+      "breakfst",
+      "brkfast",
+      "breakfas",
+    ],
     terms: ["early morning", "breakfast", "mid morning"],
   },
   {
@@ -290,7 +307,7 @@ const intentRules = [
     terms: ["meal", "lunch", "dinner"],
   },
   {
-    triggers: ["vrat", "fasting", "upvas", "farali"],
+    triggers: ["vrat", "fast", "fasting", "upvas", "farali"],
     terms: [
       "sendha namak",
       "rock salt",
@@ -314,6 +331,7 @@ const intentRules = [
 const genericFastingTokens = new Set([
   "vrat",
   "upvas",
+  "fast",
   "fasting",
   "farali",
   "phalahari",
@@ -350,6 +368,58 @@ const fastingSpecificTermGroups = [
   { triggers: ["rajgira"], terms: ["rajgira", "amaranth"] },
 ] as const;
 
+const mealIdeaQuestionWords = new Set([
+  "kya",
+  "what",
+  "which",
+  "kaunsa",
+  "kaunsi",
+  "kaun",
+]);
+
+const mealIdeaActionWords = new Set([
+  "khana",
+  "khane",
+  "khau",
+  "khaye",
+  "khayen",
+  "eat",
+  "eating",
+  "cook",
+  "cooking",
+  "banaye",
+  "banayen",
+  "banao",
+  "bana",
+  "banana",
+  "banani",
+  "banane",
+  "banau",
+  "banaun",
+  "banaoon",
+]);
+
+const allDayMealIdeaTerms = ["breakfast", "lunch", "dinner", "snacks", "meal"];
+
+const timeOfDayMealIdeaRules = [
+  {
+    triggers: ["subah", "savera", "morning", "mornig", "morng", "mrng", "mrning"],
+    terms: ["early morning", "breakfast", "mid morning"],
+  },
+  {
+    triggers: ["dopahar", "duphar", "afternoon"],
+    terms: ["lunch", "meal"],
+  },
+  {
+    triggers: ["shaam", "sham", "evening", "evenin"],
+    terms: ["evening", "snacks", "dinner"],
+  },
+  {
+    triggers: ["raat", "rat", "night", "raatri", "tonight"],
+    terms: ["dinner", "supper"],
+  },
+] as const;
+
 type SearchIntent = {
   tokens: string[];
   phraseQueries: string[];
@@ -365,6 +435,75 @@ function normalize(value: string) {
     .replace(/&/g, " and ")
     .replace(/[^a-z0-9]+/g, " ")
     .replace(/\s+/g, " ");
+}
+
+function queryIncludesTrigger(
+  normalizedQuery: string,
+  words: string[],
+  trigger: string,
+) {
+  const normalizedTrigger = normalize(trigger);
+  const triggerWords = normalizedTrigger.split(" ").filter(Boolean);
+
+  if (triggerWords.length <= 1) return words.includes(normalizedTrigger);
+
+  return normalizedQuery.includes(normalizedTrigger);
+}
+
+function isMealIdeaQuery(normalizedQuery: string, words: string[]) {
+  const hasQuestionWord = words.some((word) => mealIdeaQuestionWords.has(word));
+  const hasActionWord = words.some((word) => mealIdeaActionWords.has(word));
+
+  return (
+    (hasQuestionWord && hasActionWord) ||
+    normalizedQuery.includes("what to eat") ||
+    normalizedQuery.includes("what should i eat") ||
+    normalizedQuery.includes("what to cook") ||
+    normalizedQuery.includes("kya khayen") ||
+    normalizedQuery.includes("kya khaye") ||
+    normalizedQuery.includes("kya banayen") ||
+    normalizedQuery.includes("kya banaye")
+  );
+}
+
+function currentIndiaMealIdeaTerms() {
+  const hourText = new Intl.DateTimeFormat("en-IN", {
+    hour: "numeric",
+    hourCycle: "h23",
+    timeZone: "Asia/Kolkata",
+  }).format(new Date());
+  const hour = Number(hourText.match(/\d+/)?.[0] || 12);
+
+  if (hour >= 5 && hour < 11) return ["early morning", "breakfast", "mid morning"];
+  if (hour >= 11 && hour < 16) return ["lunch", "meal"];
+  if (hour >= 16 && hour < 19) return ["evening", "snacks", "beverage"];
+
+  return ["dinner", "supper", "meal"];
+}
+
+function inferredMealIdeaTerms(normalizedQuery: string) {
+  const words = normalizedQuery.split(" ").filter(Boolean);
+  const explicitTimeTerms = timeOfDayMealIdeaRules
+    .filter((rule) =>
+      rule.triggers.some((trigger) =>
+        queryIncludesTrigger(normalizedQuery, words, trigger),
+      ),
+    )
+    .flatMap((rule) => rule.terms);
+
+  if (explicitTimeTerms.length > 0) return explicitTimeTerms;
+  if (!isMealIdeaQuery(normalizedQuery, words)) return [];
+  if (words.includes("kal") || words.includes("tomorrow")) return allDayMealIdeaTerms;
+  if (
+    words.includes("aaj") ||
+    words.includes("today") ||
+    words.includes("abhi") ||
+    words.includes("now")
+  ) {
+    return currentIndiaMealIdeaTerms();
+  }
+
+  return allDayMealIdeaTerms;
 }
 
 function singularizeToken(token: string) {
@@ -607,16 +746,11 @@ async function buildSearchIntent(query: string): Promise<SearchIntent> {
   const ruleTerms = intentRules
     .filter((rule) =>
       rule.triggers.some((trigger) => {
-        const normalizedTrigger = normalize(trigger);
-        const triggerWords = normalizedTrigger.split(" ").filter(Boolean);
-        if (triggerWords.length <= 1) {
-          return normalizedQueryWords.includes(normalizedTrigger);
-        }
-
-        return normalizedQuery.includes(normalizedTrigger);
+        return queryIncludesTrigger(normalizedQuery, normalizedQueryWords, trigger);
       }),
     )
     .flatMap((rule) => rule.terms);
+  const mealIdeaTerms = inferredMealIdeaTerms(normalizedQuery);
   const ruleTermsByToken = new Map<string, string[]>();
   baseTokens.forEach((token) => {
     intentRules.forEach((rule) => {
@@ -635,6 +769,7 @@ async function buildSearchIntent(query: string): Promise<SearchIntent> {
   const expanded = [
     ...baseTokens.flatMap(expandedTermsForToken),
     ...ruleTerms,
+    ...mealIdeaTerms,
     ...fuzzyTerms,
     ...fuzzyTerms.flatMap(expandedTermsForToken),
   ];
@@ -651,7 +786,12 @@ async function buildSearchIntent(query: string): Promise<SearchIntent> {
     (token, index) => fuzzyTokenGroups[index]?.[0] || token,
   );
   const correctedQuery = correctedTokens.join(" ");
-  const phraseQueries = uniqueStrings([query, correctedQuery, ...ruleTerms]);
+  const phraseQueries = uniqueStrings([
+    query,
+    correctedQuery,
+    ...ruleTerms,
+    ...mealIdeaTerms,
+  ]);
   const coverageGroups = baseTokens.map((token, index) => {
     const alternatives = [
       token,

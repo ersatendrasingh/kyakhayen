@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import { Metadata } from "next";
 import SingleRecipe from "@/components/recipes/single-recipe";
 import SingleArticle from "@/components/blogs/single-article";
-import { articleHref, buildSeoMetadata, recipeHref, seoDescription } from "@/lib/seo";
+import { articleHref, buildSeoMetadata, recipeHref, seoDescription, seoTitle } from "@/lib/seo";
 import { recipeContentUpdatedAt, recipePublishedAt } from "@/lib/recipe-publication";
 import {
   getPublicArticleByRouteSlug,
@@ -13,6 +13,15 @@ import {
 
 export const revalidate = 900;
 
+function recipeDescriptionFallback(recipe: NonNullable<Awaited<ReturnType<typeof getPublicRecipeMetadataByRouteSlug>>>) {
+  const cuisine = recipe.recipeCuisine[0]?.cuisine.title;
+  const category = recipe.RecipeCategories?.name;
+  const recipeType = recipe.recipeRecipeType[0]?.recipeType.title;
+  const context = [cuisine, category, recipeType].filter(Boolean).join(", ");
+
+  return `${recipe.title} recipe with ingredients and step-by-step cooking instructions${context ? ` for ${context.toLowerCase()} cooking` : ""}. Make it at home with Kya Khayen.`;
+}
+
 export async function generateMetadata(props: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const params = await props.params;
   const { slug } = params;
@@ -22,7 +31,7 @@ export async function generateMetadata(props: { params: Promise<{ slug: string }
   if (recipe) {
     const description = seoDescription(
       recipe.metaDescription,
-      recipe.description || `${recipe.title} recipe with ingredients and cooking steps.`,
+      recipeDescriptionFallback(recipe),
     );
     const recipeKeywords = [
       recipe.title,
@@ -36,7 +45,7 @@ export async function generateMetadata(props: { params: Promise<{ slug: string }
     ].filter((value): value is string => Boolean(value));
 
     return buildSeoMetadata({
-      title: recipe.metaTitle || `${recipe.title} Recipe | Kya Khayen`,
+      title: seoTitle(recipe.metaTitle, `${recipe.title} Recipe | Kya Khayen`),
       description,
       path: recipeHref(recipe),
       image: recipe.imageUrl,
@@ -64,7 +73,7 @@ export async function generateMetadata(props: { params: Promise<{ slug: string }
     ].filter((value): value is string => Boolean(value));
 
     return buildSeoMetadata({
-      title: blog.metaTitle || `${blog.title} | Kya Khayen`,
+      title: seoTitle(blog.metaTitle, `${blog.title} | Kya Khayen`),
       description,
       path: articleHref(blog),
       image: blog.imageUrl,

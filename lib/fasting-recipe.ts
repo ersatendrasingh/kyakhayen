@@ -23,6 +23,15 @@ const fastingIntentTerms = [
   "rajgira",
 ];
 
+const fastingIntentPatterns = [
+  /\bfast\b/,
+  /\bfasts\b/,
+  /\bfasting\b/,
+  /\bfast recipe(?:s)?\b/,
+  /\bmera fast\b/,
+  /\bmy fast\b/,
+];
+
 const fastingAnchorTerms = [
   "kuttu",
   "buckwheat",
@@ -99,6 +108,10 @@ function containsAny(value: string, terms: string[]) {
   return terms.some((term) => value.includes(normalize(term)));
 }
 
+function matchesFastingIntent(value: string) {
+  return fastingIntentPatterns.some((pattern) => pattern.test(value));
+}
+
 function ingredientText(recipe: FastingRecipeInput) {
   return (recipe.recipeIngredients || [])
     .map((item) => item.ingredient?.name || "")
@@ -123,7 +136,7 @@ function isBlockedIngredient(name: string) {
 
 export function isFastingSearchQuery(query: string) {
   const normalizedQuery = normalize(query);
-  return containsAny(normalizedQuery, fastingIntentTerms);
+  return containsAny(normalizedQuery, fastingIntentTerms) || matchesFastingIntent(normalizedQuery);
 }
 
 export function isFastingIngredientName(name: string) {
