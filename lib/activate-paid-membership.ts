@@ -25,8 +25,12 @@ export async function activatePaidMembership(
     where: { orderId: providerOrderId },
     include: {
       user: {
-        include: {
-          UserAddress: true,
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          phoneNumber: true,
+          isPersonalised: true,
         },
       },
       items: {
@@ -194,7 +198,6 @@ export async function activatePaidMembership(
   }
 
   if (process.env.ADMIN_EMAIL) {
-    const userAddress = order.user.UserAddress[0];
     try {
       await sendEmail({
         to: process.env.ADMIN_EMAIL,
@@ -206,9 +209,6 @@ export async function activatePaidMembership(
             currency: order.currency || "INR",
             email: order.user.email || "",
             phoneNumber: order.user.phoneNumber || "",
-            country: userAddress?.country || "",
-            state: userAddress?.state || "",
-            city: userAddress?.city || "",
             paymentMethod: "Razorpay",
             paymentStatus: "Paid",
             orderDetails,

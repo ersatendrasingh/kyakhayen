@@ -100,8 +100,11 @@ const handlePaymentFailed = async (payload: RazorpayPaymentPayload) => {
       },
       include: {
         user: {
-          include: {
-            UserAddress: true,
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            phoneNumber: true,
           },
         },
         items: {
@@ -142,7 +145,6 @@ const handlePaymentFailed = async (payload: RazorpayPaymentPayload) => {
     const customerEmail = order.user.email;
     const customerName = order.user.name;
     const customerPhoneNumber = order.user.phoneNumber;
-    const userAddress = order.user.UserAddress[0];
 
     await sendEmail({
       to: order.user.email as string,
@@ -186,9 +188,6 @@ const handlePaymentFailed = async (payload: RazorpayPaymentPayload) => {
           currency: order.currency as string,
           email: customerEmail as string,
           phoneNumber: customerPhoneNumber as string,
-          country: userAddress?.country || "",
-          state: userAddress?.state || "",
-          city: userAddress?.city || "",
           paymentMethod: "Razorpay",
           paymentStatus: "Failed",
           orderDetails: {

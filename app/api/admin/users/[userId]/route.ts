@@ -135,7 +135,6 @@ export async function DELETE(
         where: { orderId: { in: orders.map(({ id }) => id) } },
       });
       await transaction.order.deleteMany({ where: { userId } });
-      await transaction.userAddress.deleteMany({ where: { userId } });
       await transaction.userPlan.deleteMany({ where: { userId } });
       await transaction.post.deleteMany({ where: { authorId: userId } });
 

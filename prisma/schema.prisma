@@ -9,8 +9,6 @@ datasource db {
 
 model Recipes {
   id                   String                       @id @default(uuid())
-  sourceSystem         String?
-  sourceId             Int?
   title                String                       @db.Text
   metaTitle            String?                      @db.Text
   metaDescription      String?                      @db.LongText
@@ -22,6 +20,7 @@ model Recipes {
   recipeCategoriesId   String?
   recipeDifficultyId   String?
   recipeSeasonsId      String?
+  seasonality          RecipeSeasonality            @default(UNREVIEWED)
   views                Int                          @default(0)
   recipeDifficulty     RecipeDifficulty?            @relation(fields: [recipeDifficultyId], references: [id])
   recipeDifficulties   RecipeDifficultyAssignment[]
@@ -45,12 +44,21 @@ model Recipes {
   Favorite             Favorite[]
   RecipeReaction       RecipeReaction[]
 
-  isPublished Boolean @default(false)
+  isPublished      Boolean   @default(false)
+  publishedAt      DateTime?
+  contentUpdatedAt DateTime?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@unique([sourceSystem, sourceId])
+  @@index([isPublished, publishedAt])
+  @@index([contentUpdatedAt])
+}
+
+enum RecipeSeasonality {
+  UNREVIEWED
+  ALL_YEAR
+  SEASONAL
 }
 
 model MediaAsset {
@@ -90,14 +98,14 @@ model UserRecipeViews {
 }
 
 model RecipeCategories {
-  id       String    @id @default(uuid())
-  name     String    @unique
-  slug     String    @unique
-  imageUrl String?
-  position Int?
-  isPublished Boolean @default(false)
-  recipe   Recipes[]
-  User     User[]
+  id          String    @id @default(uuid())
+  name        String    @unique
+  slug        String    @unique
+  imageUrl    String?
+  position    Int?
+  isPublished Boolean   @default(false)
+  recipe      Recipes[]
+  User        User[]
 }
 
 model Units {
@@ -177,14 +185,16 @@ model RecipeSeasonAssignment {
 }
 
 model RecipeCookingTime {
-  id       String  @id @default(uuid())
-  prepTime Int
-  cookTime Int
-  restTime Int
-  recipe   Recipes @relation(fields: [recipeId], references: [id], onDelete: Cascade)
-  recipeId String
+  id        String  @id @default(uuid())
+  prepTime  Int
+  cookTime  Int
+  restTime  Int
+  totalTime Int     @default(0)
+  recipe    Recipes @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+  recipeId  String
 
   @@unique([recipeId])
+  @@index([totalTime])
 }
 
 model CookingMethods {
@@ -344,8 +354,6 @@ model Ingredients {
   name                 String
   slug                 String? @unique
   imageUrl             String?
-  sourceSystem         String?
-  sourceId             Int?
   nutritionSource      String?
   nutritionBasisGrams  Float   @default(100)
   calories             Float?
@@ -378,8 +386,6 @@ model Ingredients {
   createdAt                  DateTime                     @default(now())
   updatedAt                  DateTime                     @updatedAt
   IngredientUnitMeasurements IngredientUnitMeasurements[]
-
-  @@unique([sourceSystem, sourceId])
 }
 
 model IngredientUnitMeasurements {
@@ -443,44 +449,43 @@ enum UserRole {
 }
 
 model User {
-  id                    String                 @id @default(cuid())
-  name                  String?
-  email                 String?                @unique
-  phoneNumber           String?                @unique
-  emailVerified         DateTime?
-  image                 String?
-  password              String?
-  bio                   String?                @db.Text
-  role                  UserRole               @default(USER)
-  accounts              Account[]
-  genderId              String?
-  gender                Gender?                @relation(fields: [genderId], references: [id])
-  foodPreferenceId      String?
-  foodPreference        RecipeCategories?      @relation(fields: [foodPreferenceId], references: [id])
-  cookingSkillId        String?
-  cookingSkill          RecipeDifficulty?      @relation(fields: [cookingSkillId], references: [id])
-  userCuisines          UserCuisines[]
-  UserAllrgies          UserAllrgies[]
-  Post                  Post[]
-  Comment               Comment[]
-  UserPlan              UserPlan[]
-  UserMealPlan          UserMealPlan[]
-  isTwoFactorEnabled    Boolean                @default(false)
-  isPersonalised        Boolean                @default(false)
-  isActive              Boolean                @default(true)
-  suspendedAt           DateTime?
-  suspensionReason      String?                @db.Text
-  twoFactorConfirmation TwoFactorConfirmation?
-  CommentLikes          CommentLikes[]
-  Review                Review[]
-  Favorite              Favorite[]
-  RecipeReaction        RecipeReaction[]
-  UserRecipeViews       UserRecipeViews[]
-  UserAddress           UserAddress[]
-  Order                 Order[]
-  UserCoupon            UserCoupon[]
-  PushSubscription      PushSubscription[]
-  targetedCampaigns     NotificationCampaign[] @relation("NotificationTargetUser")
+  id                     String                 @id @default(cuid())
+  name                   String?
+  email                  String?                @unique
+  phoneNumber            String?                @unique
+  emailVerified          DateTime?
+  image                  String?
+  password               String?
+  bio                    String?                @db.Text
+  role                   UserRole               @default(USER)
+  accounts               Account[]
+  genderId               String?
+  gender                 Gender?                @relation(fields: [genderId], references: [id])
+  foodPreferenceId       String?
+  foodPreference         RecipeCategories?      @relation(fields: [foodPreferenceId], references: [id])
+  cookingSkillId         String?
+  cookingSkill           RecipeDifficulty?      @relation(fields: [cookingSkillId], references: [id])
+  userCuisines           UserCuisines[]
+  UserAllrgies           UserAllrgies[]
+  Post                   Post[]
+  Comment                Comment[]
+  UserPlan               UserPlan[]
+  UserMealPlan           UserMealPlan[]
+  isTwoFactorEnabled     Boolean                @default(false)
+  isPersonalised         Boolean                @default(false)
+  isActive               Boolean                @default(true)
+  suspendedAt            DateTime?
+  suspensionReason       String?                @db.Text
+  twoFactorConfirmation  TwoFactorConfirmation?
+  CommentLikes           CommentLikes[]
+  Review                 Review[]
+  Favorite               Favorite[]
+  RecipeReaction         RecipeReaction[]
+  UserRecipeViews        UserRecipeViews[]
+  Order                  Order[]
+  UserCoupon             UserCoupon[]
+  PushSubscription       PushSubscription[]
+  targetedCampaigns      NotificationCampaign[] @relation("NotificationTargetUser")
   notificationDeliveries NotificationDelivery[]
 
   createdAt DateTime @default(now())
@@ -488,19 +493,19 @@ model User {
 }
 
 model PushSubscription {
-  id            String   @id @default(cuid())
+  id            String                 @id @default(cuid())
   userId        String
-  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  endpoint      String   @unique @db.VarChar(512)
-  p256dh        String   @db.Text
-  auth          String   @db.Text
-  userAgent     String?  @db.Text
-  isActive      Boolean  @default(true)
+  user          User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  endpoint      String                 @unique @db.VarChar(512)
+  p256dh        String                 @db.Text
+  auth          String                 @db.Text
+  userAgent     String?                @db.Text
+  isActive      Boolean                @default(true)
   lastSentAt    DateTime?
-  failureReason String?  @db.Text
+  failureReason String?                @db.Text
   deliveries    NotificationDelivery[]
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  createdAt     DateTime               @default(now())
+  updatedAt     DateTime               @updatedAt
 
   @@index([userId, isActive])
 }
@@ -546,33 +551,33 @@ enum NotificationDeliveryStatus {
 }
 
 model NotificationCampaign {
-  id                   String               @id @default(cuid())
+  id                   String                      @id @default(cuid())
   title                String
-  body                 String               @db.Text
+  body                 String                      @db.Text
   url                  String?
   imageUrl             String?
-  audience             NotificationAudience @default(ALL_SUBSCRIBERS)
-  source               NotificationSource   @default(ADMIN_BROADCAST)
-  status               NotificationCampaignStatus @default(PROCESSING)
+  audience             NotificationAudience        @default(ALL_SUBSCRIBERS)
+  source               NotificationSource          @default(ADMIN_BROADCAST)
+  status               NotificationCampaignStatus  @default(PROCESSING)
   segmentType          String?
   segmentId            String?
-  dedupeKey            String?              @unique
+  dedupeKey            String?                     @unique
   targetUserId         String?
-  targetUser           User?                @relation("NotificationTargetUser", fields: [targetUserId], references: [id], onDelete: SetNull)
+  targetUser           User?                       @relation("NotificationTargetUser", fields: [targetUserId], references: [id], onDelete: SetNull)
   createdById          String?
   createdByName        String?
-  totalRecipients      Int                  @default(0)
-  successfulDeliveries Int                  @default(0)
-  failedDeliveries     Int                  @default(0)
-  expiredSubscriptions Int                  @default(0)
-  openedCount          Int                  @default(0)
-  clickedCount         Int                  @default(0)
+  totalRecipients      Int                         @default(0)
+  successfulDeliveries Int                         @default(0)
+  failedDeliveries     Int                         @default(0)
+  expiredSubscriptions Int                         @default(0)
+  openedCount          Int                         @default(0)
+  clickedCount         Int                         @default(0)
   scheduledAt          DateTime?
   sentAt               DateTime?
   automationRuleId     String?
   automationRule       NotificationAutomationRule? @relation(fields: [automationRuleId], references: [id], onDelete: SetNull)
   deliveries           NotificationDelivery[]
-  createdAt            DateTime             @default(now())
+  createdAt            DateTime                    @default(now())
 
   @@index([createdAt])
   @@index([targetUserId])
@@ -581,58 +586,47 @@ model NotificationCampaign {
 }
 
 model NotificationAutomationRule {
-  id              String                        @id @default(cuid())
-  name            String
-  trigger         NotificationAutomationTrigger
-  source          NotificationSource
-  isActive        Boolean                       @default(true)
-  isSystem        Boolean                       @default(false)
-  audience        NotificationAudience          @default(USER)
-  segmentType     String?
-  segmentId       String?
-  titleTemplate   String
-  bodyTemplate    String                        @db.Text
-  urlTemplate     String?
-  imageUrl        String?
-  createdById     String?
-  createdByName   String?
-  campaigns       NotificationCampaign[]
-  createdAt       DateTime                      @default(now())
-  updatedAt       DateTime                      @updatedAt
+  id            String                        @id @default(cuid())
+  name          String
+  trigger       NotificationAutomationTrigger
+  source        NotificationSource
+  isActive      Boolean                       @default(true)
+  isSystem      Boolean                       @default(false)
+  audience      NotificationAudience          @default(USER)
+  segmentType   String?
+  segmentId     String?
+  titleTemplate String
+  bodyTemplate  String                        @db.Text
+  urlTemplate   String?
+  imageUrl      String?
+  createdById   String?
+  createdByName String?
+  campaigns     NotificationCampaign[]
+  createdAt     DateTime                      @default(now())
+  updatedAt     DateTime                      @updatedAt
 
   @@index([trigger, isActive])
 }
 
 model NotificationDelivery {
-  id               String                     @id @default(cuid())
-  campaignId       String
-  campaign         NotificationCampaign       @relation(fields: [campaignId], references: [id], onDelete: Cascade)
-  userId           String
-  user             User                       @relation(fields: [userId], references: [id], onDelete: Cascade)
-  subscriptionId   String?
-  subscription     PushSubscription?          @relation(fields: [subscriptionId], references: [id], onDelete: SetNull)
-  status           NotificationDeliveryStatus @default(QUEUED)
-  deliveredAt      DateTime?
-  openedAt         DateTime?
-  clickedAt        DateTime?
-  failureReason    String?                    @db.Text
-  createdAt        DateTime                   @default(now())
-  updatedAt        DateTime                   @updatedAt
+  id             String                     @id @default(cuid())
+  campaignId     String
+  campaign       NotificationCampaign       @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  userId         String
+  user           User                       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  subscriptionId String?
+  subscription   PushSubscription?          @relation(fields: [subscriptionId], references: [id], onDelete: SetNull)
+  status         NotificationDeliveryStatus @default(QUEUED)
+  deliveredAt    DateTime?
+  openedAt       DateTime?
+  clickedAt      DateTime?
+  failureReason  String?                    @db.Text
+  createdAt      DateTime                   @default(now())
+  updatedAt      DateTime                   @updatedAt
 
   @@unique([campaignId, subscriptionId])
   @@index([campaignId, status])
   @@index([userId, createdAt])
-}
-
-model UserAddress {
-  id      String @id @default(cuid())
-  userId  String
-  user    User   @relation(fields: [userId], references: [id])
-  country String
-  state   String
-  city    String
-  address String @db.Text
-  zip     String
 }
 
 model UserPlan {
@@ -806,42 +800,11 @@ model PostTag {
   @@unique([postId, tagId])
 }
 
-model Country {
-  id          Int     @id @default(autoincrement())
-  name        String
-  countryCode String
-  capital     String?
-  region      String?
-  currency    String?
-  flag        String?
-  phoneCode   String?
-  states      State[]
-}
-
-model State {
-  id        Int     @id @default(autoincrement())
-  name      String
-  stateCode String
-  country   Country @relation(fields: [countryId], references: [id])
-  countryId Int
-  cities    City[]
-}
-
-model City {
-  id      Int    @id @default(autoincrement())
-  name    String
-  state   State  @relation(fields: [stateId], references: [id])
-  stateId Int
-}
-
 model ContactUsQueries {
   id              String                 @id @default(cuid())
   name            String
   email           String
   phoneNumber     String?
-  country         String?
-  state           String?
-  city            String?
   query           String?                @db.Text
   status          ContactLeadStatus      @default(NEW)
   lastContactedAt DateTime?
@@ -862,17 +825,17 @@ enum ContactLeadStatus {
 }
 
 model ContactQueryActivity {
-  id            String            @id @default(cuid())
-  queryId       String
-  query         ContactUsQueries  @relation(fields: [queryId], references: [id], onDelete: Cascade)
+  id             String             @id @default(cuid())
+  queryId        String
+  query          ContactUsQueries   @relation(fields: [queryId], references: [id], onDelete: Cascade)
   previousStatus ContactLeadStatus?
-  status        ContactLeadStatus
-  contactMethod String?
-  note          String            @db.Text
-  contactedAt   DateTime
-  createdById   String?
-  createdByName String?
-  createdAt     DateTime          @default(now())
+  status         ContactLeadStatus
+  contactMethod  String?
+  note           String             @db.Text
+  contactedAt    DateTime
+  createdById    String?
+  createdByName  String?
+  createdAt      DateTime           @default(now())
 
   @@index([queryId, contactedAt])
 }
@@ -946,12 +909,12 @@ enum RecipeReactionType {
 }
 
 model RecipeReaction {
-  id        String             @id @default(uuid())
-  type      RecipeReactionType
-  user      User               @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId    String
-  recipe    Recipes            @relation(fields: [recipeId], references: [id], onDelete: Cascade)
-  recipeId  String
+  id       String             @id @default(uuid())
+  type     RecipeReactionType
+  user     User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId   String
+  recipe   Recipes            @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+  recipeId String
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

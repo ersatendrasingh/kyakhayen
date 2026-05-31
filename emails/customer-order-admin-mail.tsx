@@ -10,9 +10,6 @@ interface CustomerOrderAdminMailProps {
   currency: string;
   email: string;
   phoneNumber: string;
-  country?: string;
-  state?: string;
-  city?: string;
   paymentMethod: string;
   paymentStatus: "Paid" | "Failed" | "Processing" | "Cancelled";
   orderDetails?: {

@@ -37,13 +37,7 @@ Media uploads use short-lived presigned URLs so the browser uploads directly to 
 
 Before production launch, add the exact production website origin to `AllowedOrigins`, for example `https://www.kyakhayen.com`. Do not use `*` for production origins.
 
-The repository can save this configuration from the app environment. Add production
-origins when deploying:
-
-```bash
-npm run storage:cors -- --apply
-npm run storage:cors -- --apply --origin=https://www.kyakhayen.com
-```
+Add production origins in the S3 console when deploying.
 
 Images use direct presigned uploads. Videos use presigned multipart uploads so large
 files are uploaded in resumable-sized S3 parts instead of passing through Next.js.
@@ -119,49 +113,7 @@ NEXT_PUBLIC_MEDIA_URL=https://your-cloudfront-domain.example
 
 ## Verification
 
-After entering credentials and bucket names:
-
-```bash
-npm run storage:verify
-```
-
-This command uploads and immediately deletes a small health-check object in each bucket. It verifies that application write/delete permissions are correct without retaining test data.
-
-## Allergy Catalog Import
-
-The legacy `8well` allergy catalog and prepared local `.webp` assets are imported
-through a dedicated ETL script, rather than general application seeding:
-
-```bash
-# Optional overrides when the legacy database or image folder is elsewhere:
-SOURCE_8WELL_DATABASE_URL=
-ALLERGY_IMAGE_SOURCE_DIR=/absolute/path/to/tags-image/allergies
-
-npm run import:allergies:dry-run
-npm run import:allergies
-```
-
-The dry run validates source rows, image filename matching, and removable legacy
-placeholder records. The apply command upserts taxonomy rows, uploads each image
-under `allergies/{id}/` in the public media bucket, stores CloudFront URLs, and
-removes only unused legacy placeholder values.
-
-## Ingredient Catalog Import
-
-Ingredients are migrated as a nutrition catalog, along with their categories,
-food units, gram conversion measurements, and recipe form vocabulary:
-
-```bash
-npm run import:ingredients:dry-run
-npm run import:ingredients
-```
-
-Only active legacy ingredients are considered. NIN and USDA sourced nutrition
-rows are eligible for publication after validation; uncertain manually entered
-legacy rows remain drafts for editorial review. NIN micronutrient storage units
-are converted to the display units used by this application, and every imported
-ingredient receives a `Gram = 1` measurement so recipe nutrition calculations
-are consistently based on per-100-gram values.
+After entering credentials and bucket names, verify storage from the app flows that upload media and generate meal-plan JSON. Media uploads should return CloudFront URLs, and meal-plan generation should write/read JSON from the private bucket.
 
 ## Migration Note
 
