@@ -3,7 +3,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 export function WebsitePageLoading() {
   return (
-    <div className="min-h-[calc(100svh-100px)] bg-[#fcf8f0] pb-14 dark:bg-[#091712]">
+    <div className="flex flex-1 bg-[#fcf8f0] pb-14 dark:bg-[#091712]">
       <Container>
         <div className="py-7 sm:py-10">
           <div className="grid items-stretch gap-5 lg:grid-cols-[1.03fr_0.97fr]">
