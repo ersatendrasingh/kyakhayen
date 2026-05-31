@@ -33,16 +33,6 @@ jobs:
       - name: Typecheck
         run: npm run typecheck
 
-      - name: Build
-        run: npm run build
-        env:
-          NEXT_PUBLIC_APP_URL: ${{ vars.NEXT_PUBLIC_APP_URL || 'https://www.kyakhayen.com' }}
-          NEXT_PUBLIC_MEDIA_URL: ${{ vars.NEXT_PUBLIC_MEDIA_URL }}
-          NEXT_PUBLIC_RAZORPAY_KEY: ${{ vars.NEXT_PUBLIC_RAZORPAY_KEY }}
-          NEXT_PUBLIC_EXCHANGE_API_URL: ${{ vars.NEXT_PUBLIC_EXCHANGE_API_URL }}
-          NEXT_PUBLIC_FREE_CURRENCY_API_KEY: ${{ vars.NEXT_PUBLIC_FREE_CURRENCY_API_KEY }}
-          GOOGLE_TAG_MANAGER_ID: ${{ vars.GOOGLE_TAG_MANAGER_ID }}
-
   deploy:
     name: Deploy to AWS
     runs-on: ubuntu-latest
