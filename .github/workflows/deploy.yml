@@ -106,6 +106,8 @@ jobs:
           fs.appendFileSync(process.env.GITHUB_ENV, `DB_REMOTE_HOST=${remoteHost}\nDB_REMOTE_PORT=${remotePort}\n`);
           NODE
 
+      - name: Open production database tunnel
+        run: |
           ssh \
             -fN \
             -i ~/.ssh/kyakhayen_deploy_key \
