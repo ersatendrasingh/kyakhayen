@@ -17,7 +17,7 @@ export const getFoodPreferences = async ({
 }: getFoodPreferencesInput): Promise<FoodPreference[]> => {
   try {
     const allFoodPreferences = await db.recipeCategories.findMany({
-      where: { isPublished: true },
+      where: { isPublished: true, slug: { not: "desserts" } },
       orderBy: [{ position: "asc" }, { name: "asc" }],
     });
 

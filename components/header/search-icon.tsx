@@ -6,6 +6,7 @@ import { useState } from "react";
 import Link from "next/link";
 
 import { SearchInput } from "@/components/header/search-input";
+import { recipeCollectionHref } from "@/lib/recipe-collection-url";
 import {
   Dialog,
   DialogContent,
@@ -39,7 +40,7 @@ export const SearchDialog = ({
           Search by craving, not exact names.
         </DialogTitle>
         <DialogDescription className="mt-2 mb-5 text-sm text-[#78695c] sm:mb-6">
-          Try paneer, breakfast recipes, North Indian dinner or cooling summer drinks.
+          Try paneer, breakfast recipes, quick dinner ideas or cooling summer drinks.
         </DialogDescription>
         <div className="relative">
           <SearchInput onClose={() => setOpen(false)} />
@@ -47,9 +48,9 @@ export const SearchDialog = ({
         <div className="mt-5 flex flex-wrap gap-2 text-xs font-medium text-[#594637]">
           {[
             ["Paneer", "/search?k=paneer"],
-            ["North Indian", "/recipes?k=north-indian&type=cuisine"],
-            ["Summer drinks", "/recipes?k=beveragesmoothie&type=recipeType"],
-            ["Quick snacks", "/recipes?k=snacks&type=recipeType"],
+            ["Quick dinner", "/search?k=quick%20dinner"],
+            ["Summer drinks", recipeCollectionHref("beveragesmoothie")],
+            ["Quick snacks", recipeCollectionHref("snacks")],
           ].map(([label, href]) => (
             <Link
               key={label}

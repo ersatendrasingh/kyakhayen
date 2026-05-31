@@ -5,13 +5,14 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 import Usermenu from "@/components/header/user-menu";
+import { recipeCollectionHref } from "@/lib/recipe-collection-url";
 import { cn } from "@/lib/utils";
 
 const destinations = [
   { label: "Recipes", href: "/recipes", icon: CookingPot },
   {
     label: "Cuisines",
-    href: "/recipes?k=north-indian&type=cuisine",
+    href: recipeCollectionHref("north-indian"),
     icon: Soup,
   },
   { label: "Plan", href: "/meal-plan", icon: CalendarHeart },

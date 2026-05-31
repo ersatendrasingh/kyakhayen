@@ -3,10 +3,10 @@
 import {
   BookOpenText,
   CalendarDays,
+  CupSoda,
   LayoutGrid,
   MapPinned,
   Sparkles,
-  Flame,
   HeartPulse,
 } from "lucide-react";
 import Image from "next/image";
@@ -23,18 +23,22 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { recipeCollectionHref } from "@/lib/recipe-collection-url";
 import type {
   CategoryNavItem,
   CuisineNavItem,
+  MenuLink,
   NavItem,
+  SeasonNavItem,
 } from "@/components/header/navbar";
 
 type DesktopHeaderProps = {
+  currentSeason: SeasonNavItem;
   mealTimes: NavItem[];
   cuisines: CuisineNavItem[];
   categories: CategoryNavItem[];
   recipeTypes: NavItem[];
-  cookingMethods: NavItem[];
+  drinkItems: MenuLink[];
   dietTypes: NavItem[];
 };
 
@@ -43,7 +47,7 @@ type PanelId =
   | "mealtimes"
   | "cuisines"
   | "collections"
-  | "methods"
+  | "drinks"
   | "wellness";
 
 function CatalogueMenu({
@@ -51,7 +55,7 @@ function CatalogueMenu({
   cuisines,
   categories,
   recipeTypes,
-  cookingMethods,
+  drinkItems,
   dietTypes,
   collapsed,
 }: DesktopHeaderProps & { collapsed: boolean }) {
@@ -61,7 +65,7 @@ function CatalogueMenu({
     { id: "mealtimes" as const, label: "Mealtimes", kicker: "Cook by moment", icon: CalendarDays },
     { id: "cuisines" as const, label: "Cuisines", kicker: "Explore regions", icon: MapPinned },
     { id: "collections" as const, label: "Collections", kicker: "Browse cravings", icon: Sparkles },
-    { id: "methods" as const, label: "Cooking Methods", kicker: "Choose technique", icon: Flame },
+    { id: "drinks" as const, label: "Drinks", kicker: "Teas and coolers", icon: CupSoda },
     { id: "wellness" as const, label: "Wellness Goals", kicker: "Eat your way", icon: HeartPulse },
   ];
 
@@ -135,7 +139,7 @@ function CatalogueMenu({
                 {categories.slice(0, 4).map((item) => (
                   <Link
                     key={item.slug}
-                    href={`/recipes?k=${item.slug}&type=category`}
+                    href={recipeCollectionHref(item.slug)}
                     className="relative overflow-hidden rounded-xl bg-[#eee1d0]"
                   >
                     <Image
@@ -163,7 +167,7 @@ function CatalogueMenu({
                 {mealTimes.slice(0, 6).map((item) => (
                   <Link
                     key={item.slug}
-                    href={`/recipes?k=${item.slug}&type=mealTime`}
+                    href={recipeCollectionHref(item.slug)}
                     className="group relative min-h-[143px] overflow-hidden rounded-2xl bg-[#ede1d2]"
                   >
                     <Image
@@ -191,7 +195,7 @@ function CatalogueMenu({
                 {cuisines.slice(0, 6).map((item) => (
                   <Link
                     key={item.slug}
-                    href={`/recipes?k=${item.slug}&type=cuisine`}
+                    href={recipeCollectionHref(item.slug)}
                     className="group relative min-h-[143px] overflow-hidden rounded-2xl bg-[#eee2d5]"
                   >
                     <Image
@@ -219,7 +223,7 @@ function CatalogueMenu({
                 {recipeTypes.slice(0, 6).map((item) => (
                   <Link
                     key={item.slug}
-                    href={`/recipes?k=${item.slug}&type=recipeType`}
+                    href={recipeCollectionHref(item.slug)}
                     className="group relative min-h-[143px] overflow-hidden rounded-2xl"
                   >
                     <Image
@@ -238,20 +242,20 @@ function CatalogueMenu({
               </div>
             </div>
           )}
-          {activePanel === "methods" && (
+          {activePanel === "drinks" && (
             <div className="flex min-h-[344px] flex-col">
               <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[#a2773d]">
-                Cook your way
+                Teas, juices and cooling sips
               </p>
               <div className="mt-4 grid flex-1 grid-cols-3 gap-3">
-                {cookingMethods.slice(0, 6).map((method) => (
+                {drinkItems.slice(0, 6).map((item) => (
                   <Link
-                    key={method.slug}
-                    href={`/recipes?k=${method.slug}&type=cookingMethod`}
+                    key={item.href}
+                    href={item.href}
                     className="group relative min-h-[143px] overflow-hidden rounded-2xl"
                   >
                     <Image
-                      src={method.imageUrl || "/meta-images/recipe-page.jpg"}
+                      src={item.imageUrl || "/assets/images/smoothie.png"}
                       alt=""
                       fill
                       sizes="200px"
@@ -259,7 +263,7 @@ function CatalogueMenu({
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-[#21170f]/88 to-transparent" />
                     <span className="absolute inset-x-3 bottom-3 text-sm font-semibold text-white">
-                      {method.title}
+                      {item.title}
                     </span>
                   </Link>
                 ))}
@@ -275,7 +279,7 @@ function CatalogueMenu({
                 {dietTypes.slice(0, 6).map((dietType) => (
                   <Link
                     key={dietType.slug}
-                    href={`/recipes?k=${dietType.slug}&type=dietType`}
+                    href={recipeCollectionHref(dietType.slug)}
                     className="group relative min-h-[143px] overflow-hidden rounded-2xl"
                   >
                     <Image
@@ -301,11 +305,12 @@ function CatalogueMenu({
 }
 
 export default function DesktopHeader({
+  currentSeason,
   mealTimes,
   cuisines,
   categories,
   recipeTypes,
-  cookingMethods,
+  drinkItems,
   dietTypes,
 }: DesktopHeaderProps) {
   const [collapsed, setCollapsed] = useState(false);
@@ -329,12 +334,13 @@ export default function DesktopHeader({
         <div className="relative z-20 flex h-[58px] items-center justify-between">
           <Logo compact />
           <CatalogueMenu
+            currentSeason={currentSeason}
             collapsed={collapsed}
             mealTimes={mealTimes}
             cuisines={cuisines}
             categories={categories}
             recipeTypes={recipeTypes}
-            cookingMethods={cookingMethods}
+            drinkItems={drinkItems}
             dietTypes={dietTypes}
           />
           <SearchInput
@@ -355,11 +361,12 @@ export default function DesktopHeader({
         <Container>
           <div className="flex h-[42px] items-center justify-center">
             <Navbar
+              currentSeason={currentSeason}
               mealTimes={mealTimes}
               cuisines={cuisines}
               categories={categories}
               recipeTypes={recipeTypes}
-              cookingMethods={cookingMethods}
+              drinkItems={drinkItems}
               dietTypes={dietTypes}
             />
           </div>

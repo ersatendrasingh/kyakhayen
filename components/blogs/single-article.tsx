@@ -17,9 +17,14 @@ import {
 import Container from "@/components/container";
 import HomeMealPlanAction from "@/components/sections/home-meal-plan-action";
 import { db } from "@/lib/db";
-
-const siteUrl =
-  process.env.NEXT_PUBLIC_APP_URL || "https://www.kyakhayen.com";
+import { recipeCollectionHref } from "@/lib/recipe-collection-url";
+import { publishedRecipeWhere } from "@/lib/recipe-publication";
+import {
+  absoluteUrl,
+  breadcrumbJsonLd,
+  jsonLd,
+  seoDescription,
+} from "@/lib/seo";
 
 export default async function SingleArticle({
   articleSlug,
@@ -57,7 +62,7 @@ export default async function SingleArticle({
   });
   const recipeIdeas = await db.recipes.findMany({
     where: {
-      isPublished: true,
+      ...publishedRecipeWhere(),
       imageUrl: { not: null },
     },
     select: {
@@ -67,25 +72,25 @@ export default async function SingleArticle({
       metaSlug: true,
       imageUrl: true,
     },
-    orderBy: [{ views: "desc" }, { updatedAt: "desc" }],
+    orderBy: [{ views: "desc" }, { contentUpdatedAt: "desc" }, { updatedAt: "desc" }],
     take: 2,
   });
   const { html, headings } = prepareArticleBody(article.content);
   const category = article.PostCategory[0]?.category;
-  const articleUrl = `${siteUrl}${articleHref(article)}`;
+  const articleUrl = absoluteUrl(articleHref(article));
   const articleTags = new Set(article.PostTag.map(({ tag }) => tag.title));
   const editorialLinks = [
     articleTags.has("Summer")
-      ? { href: "/recipes?k=summer&type=season", label: "Summer recipes" }
+      ? { href: recipeCollectionHref("summer"), label: "Summer recipes" }
       : null,
     articleTags.has("Breakfast")
-      ? { href: "/recipes?k=breakfast&type=mealTime", label: "Breakfast ideas" }
+      ? { href: recipeCollectionHref("breakfast"), label: "Breakfast ideas" }
       : null,
     articleTags.has("Plant-Based")
-      ? { href: "/recipes?k=vegan&type=category", label: "Plant-based dishes" }
+      ? { href: recipeCollectionHref("vegan"), label: "Plant-based dishes" }
       : null,
     articleTags.has("Weeknight Meals")
-      ? { href: "/recipes?k=dinner&type=mealTime", label: "Weeknight dinners" }
+      ? { href: recipeCollectionHref("dinner"), label: "Weeknight dinners" }
       : null,
     { href: "/recipes", label: "All recipes" },
   ]
@@ -105,23 +110,54 @@ export default async function SingleArticle({
 
   const jsonLdData = {
     "@context": "https://schema.org",
-    "@type": "Article",
+    "@type": "BlogPosting",
+    "@id": `${articleUrl}#article`,
     headline: article.title,
-    description: article.metaDescription,
-    image: article.imageUrl,
+    description: seoDescription(article.metaDescription, article.content),
+    image: article.imageUrl ? [absoluteUrl(article.imageUrl)] : undefined,
     datePublished: article.createdAt,
     dateModified: article.updatedAt,
     author: { "@type": "Organization", name: "Kya Khayen" },
-    publisher: { "@type": "Organization", name: "Kya Khayen, a KASA product" },
-    mainEntityOfPage: articleUrl,
+    publisher: {
+      "@type": "Organization",
+      name: "Kya Khayen",
+      logo: {
+        "@type": "ImageObject",
+        url: absoluteUrl("/pwa/icon-512.png"),
+      },
+    },
+    mainEntityOfPage: {
+      "@type": "WebPage",
+      "@id": articleUrl,
+    },
+    articleSection: category?.title,
+    keywords: [
+      article.title,
+      "cooking tips",
+      "food guide",
+      ...(category ? [category.title] : []),
+      ...article.PostTag.map(({ tag }) => tag.title),
+    ]
+      .filter(Boolean)
+      .join(", "),
+    wordCount: stripArticleHtml(article.content).split(/\s+/).filter(Boolean).length,
+    timeRequired: `PT${articleReadMinutes(article.content)}M`,
   };
+  const breadcrumbSchema = breadcrumbJsonLd([
+    { name: "Home", path: "/" },
+    { name: "Food Stories", path: "/blog" },
+    ...(category
+      ? [{ name: category.title, path: `/blog?k=${category.slug}&type=category` }]
+      : []),
+    { name: article.title, path: articleHref(article) },
+  ]);
 
   return (
     <main className="relative min-h-screen overflow-x-clip bg-[#fbf6ed] pb-20 text-[#30251e] dark:bg-[#091712] dark:text-[#eef2ec]">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify(jsonLdData).replace(/</g, "\\u003c"),
+          __html: jsonLd([jsonLdData, breadcrumbSchema]),
         }}
       />
       <div className="pointer-events-none absolute inset-x-0 top-0 h-[720px] bg-[radial-gradient(circle_at_16%_12%,rgba(210,160,79,0.16),transparent_35%),radial-gradient(circle_at_86%_9%,rgba(184,59,44,0.11),transparent_29%)] dark:bg-[radial-gradient(circle_at_16%_12%,rgba(210,160,79,0.13),transparent_34%),radial-gradient(circle_at_86%_9%,rgba(184,59,44,0.15),transparent_30%)]" />

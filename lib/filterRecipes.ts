@@ -3,6 +3,9 @@ import { RecipeWithCategory } from "@/types/recipe";
 import { GetRecipes } from "@/actions/get-recipes";
 import { db } from "@/lib/db";
 import { filterRecipesBySeason } from "./filterBySeason";
+import { getFoodPreferenceCategoryIds } from "@/lib/recipe-category-compatibility";
+
+const MIN_REVIEWED_RECIPE_POOL = 24;
 
 export const filterRecipesByUserPreferences = async (
   userId: string
@@ -14,6 +17,7 @@ export const filterRecipesByUserPreferences = async (
       include: {
         userCuisines: true,
         UserAllrgies: true,
+        cookingSkill: true,
       },
     });
 
@@ -24,7 +28,12 @@ export const filterRecipesByUserPreferences = async (
     const currentMonth = new Date().getMonth() + 1;
 
     // Fetch all recipes
-    const allRecipes = await GetRecipes({});
+    const allRecipes = (await GetRecipes({})).filter(
+      (recipe) =>
+        !recipe.recipeRecipeType?.some(
+          (item) => item.recipeType.slug === "desserts",
+        ),
+    );
 
     // Fetch all recipe categories and create a category map
     const recipeCategories = await db.recipeCategories.findMany({
@@ -35,6 +44,13 @@ export const filterRecipesByUserPreferences = async (
       if (category.slug === "egg") {
         map.eggetarian = category.id;
       }
+      if (category.slug === "non-veg") {
+        map["non veg"] = category.id;
+      }
+      return map;
+    }, {} as { [key: string]: string });
+    const categorySlugById = recipeCategories.reduce((map, category) => {
+      map[category.id] = category.slug;
       return map;
     }, {} as { [key: string]: string });
 
@@ -65,33 +81,20 @@ export const filterRecipesByUserPreferences = async (
       map[cuisine.recipeId].push(cuisine.cuisineId);
       return map;
     }, {} as { [key: string]: string[] });
+    const selectedPreferenceSlug = userData.foodPreferenceId
+      ? categorySlugById[userData.foodPreferenceId]
+      : undefined;
+    const allowedCategoryIds = selectedPreferenceSlug
+      ? getFoodPreferenceCategoryIds(selectedPreferenceSlug, categoryMap)
+      : [];
 
-    // Filter recipes based on user preferences
-    const filteredRecipes = allRecipes.filter((recipe) => {
+    const preferenceFilteredRecipes = allRecipes.filter((recipe) => {
       // Check if recipe matches user's food preferences
 
-      const matchesFoodPreference = (() => {
-        switch (userData.foodPreferenceId) {
-          case categoryMap["non veg"]:
-            return true; // Non-veg users can eat all types of food
-          case categoryMap["veg"]:
-            return recipe.recipeCategoriesId === categoryMap["veg"];
-          case categoryMap["eggetarian"]:
-            return (
-              recipe.recipeCategoriesId === categoryMap["veg"] ||
-              recipe.recipeCategoriesId === categoryMap["eggetarian"]
-            );
-          case categoryMap["pescetarian"]:
-            return (
-              recipe.recipeCategoriesId === categoryMap["veg"] ||
-              recipe.recipeCategoriesId === categoryMap["pescetarian"]
-            );
-          case categoryMap["vegan"]:
-            return recipe.recipeCategoriesId === categoryMap["vegan"];
-          default:
-            return false;
-        }
-      })();
+      const recipeCategoryId = recipe.recipeCategoriesId;
+      const matchesFoodPreference =
+        typeof recipeCategoryId === "string" &&
+        allowedCategoryIds.includes(recipeCategoryId);
 
       // Check if recipe contains any allergens
       const containsAllergens = recipeAllergyMap[recipe.id]?.some((allergyId) =>
@@ -103,18 +106,6 @@ export const filterRecipesByUserPreferences = async (
         (cuisineId) => userCuisineIds.includes(cuisineId)
       );
 
-      // Check if recipe matches user's cooking skill level   - This will be removed in the future
-      // const matchesCookingSkill =
-      //   !userData.cookingSkillId ||
-      //   recipe.recipeDifficultyId! <= userData.cookingSkillId;
-
-      // return (
-      //   matchesFoodPreference &&
-      //   !containsAllergens &&
-      //   matchesCuisinePreference //&&
-      //   //matchesCookingSkill
-      // );
-
       const matchesAnyPreference =
         matchesFoodPreference &&
         !containsAllergens &&
@@ -122,6 +113,20 @@ export const filterRecipesByUserPreferences = async (
 
       return matchesAnyPreference;
     });
+
+    const userSkillPosition = userData.cookingSkill?.position ?? null;
+    const reviewedDifficultyRecipes = preferenceFilteredRecipes.filter((recipe) => {
+      if (!recipe.recipeDifficulty?.position) return false;
+      if (!userSkillPosition) return true;
+      return recipe.recipeDifficulty.position <= userSkillPosition;
+    });
+    const difficultyFallbackRecipes = preferenceFilteredRecipes.filter(
+      (recipe) => !recipe.recipeDifficulty?.position
+    );
+    const filteredRecipes =
+      reviewedDifficultyRecipes.length >= MIN_REVIEWED_RECIPE_POOL
+        ? reviewedDifficultyRecipes
+        : [...reviewedDifficultyRecipes, ...difficultyFallbackRecipes];
 
     // Filter recipes by season
     const filteredRecipesBySeason = await filterRecipesBySeason(

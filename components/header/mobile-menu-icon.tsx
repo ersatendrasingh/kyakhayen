@@ -14,24 +14,28 @@ import { MobileMenuItems } from "@/components/header/mobile-menu-items";
 import type {
   CategoryNavItem,
   CuisineNavItem,
+  MenuLink,
   NavItem,
+  SeasonNavItem,
 } from "@/components/header/navbar";
 
 type MobileMenuIconProps = {
+  currentSeason: SeasonNavItem;
   mealTimes: NavItem[];
   cuisines: CuisineNavItem[];
   categories: CategoryNavItem[];
   recipeTypes: NavItem[];
-  cookingMethods: NavItem[];
+  drinkItems: MenuLink[];
   dietTypes: NavItem[];
 };
 
 const MobileMenuIcon = ({
+  currentSeason,
   mealTimes,
   cuisines,
   categories,
   recipeTypes,
-  cookingMethods,
+  drinkItems,
   dietTypes,
 }: MobileMenuIconProps) => {
   const [open, setOpen] = useState(false);
@@ -62,11 +66,12 @@ const MobileMenuIcon = ({
             Browse recipes, cuisines, mealtimes and collections.
           </SheetDescription>
           <MobileMenuItems
+            currentSeason={currentSeason}
             mealTimes={mealTimes}
             cuisines={cuisines}
             categories={categories}
             recipeTypes={recipeTypes}
-            cookingMethods={cookingMethods}
+            drinkItems={drinkItems}
             dietTypes={dietTypes}
           />
         </SheetContent>

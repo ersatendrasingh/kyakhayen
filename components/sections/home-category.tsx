@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import Container from "../container";
+import { recipeCollectionHref } from "@/lib/recipe-collection-url";
 
 interface HomeCategoryProps {
   title: string;
@@ -25,7 +26,7 @@ const HomeCategory = ({ title, widgetItems }: HomeCategoryProps) => {
             widgetItems.map((widget) => (
               <Link
                 key={widget.id}
-                href={`/recipes?k=${widget.slug}&type=category`}
+                href={recipeCollectionHref(widget.slug)}
                 className="rounded-full p-2  text-gray-700 text-center hover:text-websecondary hover:border-300 transition duration-300 text-sm font-semibold relative"
               >
                 <div className="relative overflow-hidden group">

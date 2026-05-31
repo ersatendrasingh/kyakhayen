@@ -1,6 +1,7 @@
 "use server";
 import { db } from "@/lib/db";
 import { currentUser } from "@/lib/auth";
+import { publishedRecipeAnd } from "@/lib/recipe-publication";
 import { RecipeWithCategory } from "@/types/recipe";
 
 export const getRecipeBySlug = async ({
@@ -19,13 +20,10 @@ export const getRecipeBySlug = async ({
     const userId: string | undefined = user?.id;
 
     const recipe = await db.recipes.findFirst({
-      where: {
-        isPublished: true,
-        AND: [
-          { slug: recipeSlug },
-          ...(recipeMetaSlug ? [{ metaSlug: recipeMetaSlug }] : []),
-        ],
-      },
+      where: publishedRecipeAnd([
+        { slug: recipeSlug },
+        ...(recipeMetaSlug ? [{ metaSlug: recipeMetaSlug }] : []),
+      ]),
       include: {
         RecipeCategories: true,
         recipeIngredients: {

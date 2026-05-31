@@ -1,5 +1,6 @@
 import { Season } from "@/types/season";
 import { db } from "@/lib/db";
+import { seasonMonthRange } from "@/lib/season-utils";
 
 export const getSeasonById = async (
   seasonId: string
@@ -10,33 +11,7 @@ export const getSeasonById = async (
     });
     if (!season) return null;
 
-    // Determine startMonth and endMonth based on season title
-    let startMonth: number | undefined;
-    let endMonth: number | undefined;
-
-    switch (season.title.toLowerCase()) {
-      case "winter":
-        startMonth = 12; // December
-        endMonth = 2; // February
-        break;
-      case "spring":
-        startMonth = 3; // March
-        endMonth = 5; // May
-        break;
-      case "summer":
-        startMonth = 6; // June
-        endMonth = 8; // August
-        break;
-      case "fall":
-        startMonth = 9; // September
-        endMonth = 11; // November
-        break;
-      default:
-        // For seasons without specific months, assume suitable throughout the year
-        startMonth = 1; // January
-        endMonth = 12; // December
-        break;
-    }
+    const { startMonth, endMonth } = seasonMonthRange(season.title);
 
     return {
       id: season.id,

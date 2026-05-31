@@ -4,13 +4,16 @@ import {
   ChefHat,
   Crown,
   Eye,
+  RotateCcw,
   Search,
   ShieldBan,
+  SlidersHorizontal,
   UserRound,
   UsersRound,
 } from "lucide-react";
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { type FormEvent, useState } from "react";
+import { useRouter } from "next/navigation";
 
 import type { ManagedUser } from "@/components/admin/users/user-types";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -63,33 +66,87 @@ function remainingDays(endDate: Date | null, referenceDate: string) {
   return Math.max(0, Math.ceil((new Date(endDate).getTime() - new Date(referenceDate).getTime()) / 86_400_000));
 }
 
-export function UsersDashboard({ users, referenceDate }: { users: ManagedUser[]; referenceDate: string }) {
-  const [search, setSearch] = useState("");
-  const [segment, setSegment] = useState("all");
+type UserFilters = {
+  search: string;
+  segment: string;
+};
 
-  const personalized = users.filter((user) => user.isPersonalised).length;
-  const activeMembers = users.filter((user) => Boolean(activePlan(user, referenceDate))).length;
-  const verified = users.filter((user) => Boolean(user.emailVerified)).length;
+function buildPageHref(filters: UserFilters, page: number) {
+  const params = new URLSearchParams();
+  if (filters.search) params.set("q", filters.search);
+  if (filters.segment && filters.segment !== "all") params.set("segment", filters.segment);
+  if (page > 1) params.set("page", String(page));
+  const query = params.toString();
+  return query ? `/admin/users?${query}` : "/admin/users";
+}
 
-  const filtered = useMemo(() => {
-    const term = search.trim().toLowerCase();
-    return users.filter((user) => {
-      const membership = activePlan(user, referenceDate);
-      const matchesSearch =
-        !term ||
-        (user.name || "").toLowerCase().includes(term) ||
-        (user.email || "").toLowerCase().includes(term) ||
-        (user.phoneNumber || "").toLowerCase().includes(term) ||
-        (membership?.plan.name || "").toLowerCase().includes(term);
-      const matchesSegment =
-        segment === "all" ||
-        (segment === "member" && Boolean(membership)) ||
-        (segment === "personalized" && user.isPersonalised) ||
-        (segment === "pending" && !user.isPersonalised) ||
-        (segment === "suspended" && !user.isActive);
-      return matchesSearch && matchesSegment;
-    });
-  }, [referenceDate, search, segment, users]);
+function visiblePageNumbers(page: number, pageCount: number) {
+  const candidates = new Set([
+    1,
+    pageCount,
+    page - 2,
+    page - 1,
+    page,
+    page + 1,
+    page + 2,
+  ]);
+
+  return Array.from(candidates)
+    .filter((number) => number >= 1 && number <= pageCount)
+    .sort((left, right) => left - right);
+}
+
+export function UsersDashboard({
+  users,
+  referenceDate,
+  stats,
+  filters,
+  page,
+  pageCount,
+  totalFiltered,
+}: {
+  users: ManagedUser[];
+  referenceDate: string;
+  stats: {
+    total: number;
+    activeMembers: number;
+    personalized: number;
+    verified: number;
+  };
+  filters: UserFilters;
+  page: number;
+  pageCount: number;
+  totalFiltered: number;
+}) {
+  const router = useRouter();
+  const [filterValues, setFilterValues] = useState<UserFilters>({
+    search: filters.search,
+    segment: filters.segment || "all",
+  });
+  const [jumpPage, setJumpPage] = useState(String(page));
+
+  const applyFilters = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    router.replace(buildPageHref(filterValues, 1), { scroll: false });
+  };
+
+  const clearFilters = () => {
+    const cleared = { search: "", segment: "all" };
+    setFilterValues(cleared);
+    router.replace("/admin/users", { scroll: false });
+  };
+
+  const goToPage = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const target = Math.min(
+      Math.max(Number.parseInt(jumpPage, 10) || page, 1),
+      pageCount,
+    );
+    setJumpPage(String(target));
+    router.push(buildPageHref(filters, target), { scroll: false });
+  };
+
+  const pageNumbers = visiblePageNumbers(page, pageCount);
 
   return (
     <TooltipProvider delayDuration={120}>
@@ -106,10 +163,10 @@ export function UsersDashboard({ users, referenceDate }: { users: ManagedUser[];
           </p>
         </div>
         <div className="relative z-[1] mt-7 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-          <Stat icon={UsersRound} label="Registered Users" value={String(users.length)} />
-          <Stat icon={Crown} label="Active Access" value={String(activeMembers)} />
-          <Stat icon={ChefHat} label="Personalized" value={String(personalized)} />
-          <Stat icon={UserRound} label="Email Verified" value={String(verified)} />
+          <Stat icon={UsersRound} label="Registered Users" value={String(stats.total)} />
+          <Stat icon={Crown} label="Active Access" value={String(stats.activeMembers)} />
+          <Stat icon={ChefHat} label="Personalized" value={String(stats.personalized)} />
+          <Stat icon={UserRound} label="Email Verified" value={String(stats.verified)} />
         </div>
       </section>
 
@@ -121,17 +178,24 @@ export function UsersDashboard({ users, referenceDate }: { users: ManagedUser[];
               Plan, preference setup and recent meal-plan status in one view.
             </p>
           </div>
-          <div className="flex flex-col gap-2 sm:flex-row">
+          <form onSubmit={applyFilters} className="flex flex-col gap-2 sm:flex-row">
             <div className="relative min-w-[270px]">
               <Search className="absolute left-4 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
               <Input
-                value={search}
-                onChange={(event) => setSearch(event.target.value)}
+                value={filterValues.search}
+                onChange={(event) =>
+                  setFilterValues((current) => ({ ...current, search: event.target.value }))
+                }
                 placeholder="Search customer or membership"
                 className="h-12 rounded-2xl pl-11"
               />
             </div>
-            <Select value={segment} onValueChange={setSegment}>
+            <Select
+              value={filterValues.segment || "all"}
+              onValueChange={(value) =>
+                setFilterValues((current) => ({ ...current, segment: value }))
+              }
+            >
               <SelectTrigger className="!h-12 w-full rounded-2xl px-4 sm:w-[190px]">
                 <SelectValue />
               </SelectTrigger>
@@ -143,7 +207,23 @@ export function UsersDashboard({ users, referenceDate }: { users: ManagedUser[];
                 <SelectItem value="suspended">Suspended</SelectItem>
               </SelectContent>
             </Select>
-          </div>
+            <div className="grid grid-cols-2 gap-2 sm:flex">
+              <Button type="submit" className="h-12 rounded-2xl sm:size-12" aria-label="Apply filters">
+                <SlidersHorizontal />
+                <span className="sm:sr-only">Apply</span>
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                className="h-12 rounded-2xl sm:size-12"
+                aria-label="Clear filters"
+                onClick={clearFilters}
+              >
+                <RotateCcw />
+                <span className="sm:sr-only">Clear</span>
+              </Button>
+            </div>
+          </form>
         </div>
 
         <div className="mt-5 overflow-x-auto rounded-2xl border">
@@ -160,7 +240,7 @@ export function UsersDashboard({ users, referenceDate }: { users: ManagedUser[];
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filtered.map((user) => {
+              {users.map((user) => {
                 const membership = activePlan(user, referenceDate);
                 const daysLeft = membership ? remainingDays(membership.endDate, referenceDate) : null;
                 return (
@@ -251,7 +331,7 @@ export function UsersDashboard({ users, referenceDate }: { users: ManagedUser[];
                   </TableRow>
                 );
               })}
-              {!filtered.length && (
+              {!users.length && (
                 <TableRow>
                   <TableCell colSpan={7} className="h-28 text-center text-muted-foreground">
                     No customers match this filter.
@@ -260,6 +340,67 @@ export function UsersDashboard({ users, referenceDate }: { users: ManagedUser[];
               )}
             </TableBody>
           </Table>
+          <div className="flex flex-col gap-3 border-t px-4 py-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-center gap-3 text-sm text-muted-foreground">
+              <span>{totalFiltered} matching users</span>
+              <Badge variant="secondary">
+                Page {page} of {pageCount}
+              </Badge>
+            </div>
+            <div className="flex flex-wrap items-center justify-end gap-2">
+              <Button variant="outline" size="sm" disabled={page <= 1} asChild={page > 1}>
+                {page > 1 ? <Link href={buildPageHref(filters, 1)}>First</Link> : "First"}
+              </Button>
+              <Button variant="outline" size="sm" disabled={page <= 1} asChild={page > 1}>
+                {page > 1 ? <Link href={buildPageHref(filters, page - 1)}>Previous</Link> : "Previous"}
+              </Button>
+              <nav className="flex items-center gap-1" aria-label="User pages">
+                {pageNumbers.map((number, index) => (
+                  <span key={number} className="flex items-center gap-1">
+                    {index > 0 && number - pageNumbers[index - 1] > 1 && (
+                      <span className="px-1 text-sm text-muted-foreground">...</span>
+                    )}
+                    <Button
+                      variant={number === page ? "default" : "outline"}
+                      size="sm"
+                      asChild={number !== page}
+                      aria-current={number === page ? "page" : undefined}
+                    >
+                      {number === page ? (
+                        String(number)
+                      ) : (
+                        <Link href={buildPageHref(filters, number)}>{number}</Link>
+                      )}
+                    </Button>
+                  </span>
+                ))}
+              </nav>
+              <Button variant="outline" size="sm" disabled={page >= pageCount} asChild={page < pageCount}>
+                {page < pageCount ? <Link href={buildPageHref(filters, page + 1)}>Next</Link> : "Next"}
+              </Button>
+              <Button variant="outline" size="sm" disabled={page >= pageCount} asChild={page < pageCount}>
+                {page < pageCount ? <Link href={buildPageHref(filters, pageCount)}>Last</Link> : "Last"}
+              </Button>
+              <form onSubmit={goToPage} className="ml-1 flex items-center gap-2">
+                <label htmlFor="user-page-jump" className="sr-only">
+                  Go to page
+                </label>
+                <Input
+                  id="user-page-jump"
+                  type="text"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                  value={jumpPage}
+                  onChange={(event) => setJumpPage(event.target.value)}
+                  className="h-8 w-20 rounded-lg px-2"
+                  aria-label={`Go to page from 1 to ${pageCount}`}
+                />
+                <Button type="submit" variant="outline" size="sm">
+                  Go
+                </Button>
+              </form>
+            </div>
+          </div>
         </div>
       </section>
       </div>

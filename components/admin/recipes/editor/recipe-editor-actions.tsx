@@ -37,7 +37,7 @@ export function RecipeEditorActions({
 
   const updatePublished = async (checked: boolean) => {
     if (checked && !canPublish) {
-      toast.warning("Add a description and cover image before publishing.");
+      toast.warning("Complete description, cover image, difficulty and season use before publishing.");
       return;
     }
     try {
@@ -45,7 +45,10 @@ export function RecipeEditorActions({
       const response = await fetch(`/api/recipes/${recipeId}/${checked ? "publish" : "unpublish"}`, {
         method: "PATCH",
       });
-      if (!response.ok) throw new Error("Unable to update publication status.");
+      if (!response.ok) {
+        const message = await response.text();
+        throw new Error(message || "Unable to update publication status.");
+      }
       toast.success(`${title} ${checked ? "published" : "moved to drafts"}`);
       router.refresh();
     } catch (error) {

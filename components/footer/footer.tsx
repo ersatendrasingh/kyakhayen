@@ -7,11 +7,16 @@ import { ArrowRight, Leaf, SunMedium } from "lucide-react";
 import Container from "@/components/container";
 import Copyrights from "@/components/footer/copyrights";
 import { db } from "@/lib/db";
+import { recipeCollectionHref } from "@/lib/recipe-collection-url";
 
 const Footer = async () => {
   const [categories, mealTimes, cuisineResults, recipeTypes] = await Promise.all([
     db.recipeCategories.findMany({
-      where: { isPublished: true, recipe: { some: { isPublished: true } } },
+      where: {
+        isPublished: true,
+        slug: { not: "desserts" },
+        recipe: { some: { isPublished: true } },
+      },
       orderBy: [{ position: "asc" }, { name: "asc" }],
     }),
     db.mealTimes.findMany({
@@ -71,7 +76,7 @@ const Footer = async () => {
                 <Leaf className="size-3.5" /> Discover your next plate
               </p>
               <h2 className="max-w-[285px] text-2xl font-semibold leading-tight">
-                Indian recipes and beautiful everyday inspiration.
+                Easy recipes, meal ideas and beautiful everyday inspiration.
               </h2>
               <div className="mt-5 flex flex-wrap gap-2.5">
                 <Link
@@ -81,7 +86,7 @@ const Footer = async () => {
                   Explore recipes <ArrowRight className="size-3.5" />
                 </Link>
                 <Link
-                  href="/recipes?k=summer&type=season"
+                  href={recipeCollectionHref("summer")}
                   className="inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/10 px-4 py-2.5 text-xs font-semibold"
                 >
                   <SunMedium className="size-3.5 text-[#f4cf89]" /> Summer
@@ -119,7 +124,7 @@ const Footer = async () => {
               {categories.map((category) => (
                 <Link
                   key={category.id}
-                  href={`/recipes?k=${category.slug}&type=category`}
+                  href={recipeCollectionHref(category.slug)}
                   className="mb-3 block transition-colors hover:text-white"
                 >
                   {category.name}
@@ -135,7 +140,7 @@ const Footer = async () => {
               {mealTimes.map((mealTime) => (
                 <Link
                   key={mealTime.id}
-                  href={`/recipes?k=${mealTime.slug}&type=mealTime`}
+                  href={recipeCollectionHref(mealTime.slug)}
                   className="mb-3 block transition-colors hover:text-white"
                 >
                   {mealTime.title}
@@ -151,7 +156,7 @@ const Footer = async () => {
               {cuisines.map((cuisine) => (
                 <Link
                   key={cuisine.id}
-                  href={`/recipes?k=${cuisine.slug}&type=cuisine`}
+                  href={recipeCollectionHref(cuisine.slug)}
                   className="mb-3 block transition-colors hover:text-white"
                 >
                   {cuisine.title}
@@ -167,7 +172,7 @@ const Footer = async () => {
               {recipeTypes.map((type) => (
                 <Link
                   key={type.id}
-                  href={`/recipes?k=${type.slug}&type=recipeType`}
+                  href={recipeCollectionHref(type.slug)}
                   className="mb-3 block transition-colors hover:text-white"
                 >
                   {type.title}
@@ -182,12 +187,12 @@ const Footer = async () => {
           </p>
           <div className="flex flex-wrap justify-center gap-2.5 md:justify-start">
             {[
-              ["Vegetarian recipe ideas", "/recipes?k=veg&type=category"],
-              ["North Indian dinner ideas", "/recipes?k=north-indian&type=cuisine"],
-              ["South Indian breakfast recipes", "/recipes?k=south-indian&type=cuisine"],
-              ["Cooling summer recipes", "/recipes?k=summer&type=season"],
-              ["Smoothies and beverages", "/recipes?k=beveragesmoothie&type=recipeType"],
-              ["Quick snack recipes", "/recipes?k=snacks&type=recipeType"],
+              ["Vegetarian recipe ideas", recipeCollectionHref("veg")],
+              ["Healthy dinner ideas", "/search?k=healthy%20dinner"],
+              ["Easy breakfast recipes", "/search?k=breakfast%20recipes"],
+              ["Cooling summer recipes", recipeCollectionHref("summer")],
+              ["Smoothies and beverages", recipeCollectionHref("beveragesmoothie")],
+              ["Quick snack recipes", recipeCollectionHref("snacks")],
             ].map(([label, href]) => (
               <Link
                 key={label}

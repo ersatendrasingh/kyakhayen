@@ -3,19 +3,24 @@ import type { Metadata } from "next";
 import MealPlanBuilder from "@/components/meal-plan/meal-plan-builder";
 import { currentUser } from "@/lib/auth";
 import { db } from "@/lib/db";
+import { buildSeoMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = buildSeoMetadata({
   title: "Create Your Meal Plan | Kya Khayen",
   description:
     "Create a seven-day meal plan based on your food style, cuisines, ingredient exclusions and cooking comfort.",
-};
+  path: "/meal-plan/create",
+  image: "/meta-images/meal-plan.png",
+  imageAlt: "Create a Kya Khayen meal plan",
+  noIndex: true,
+});
 
 export default async function CreateMealPlanPage() {
   const user = await currentUser();
   const [foodPreferences, cuisines, exclusions, cookingSkills, savedPreferences] =
     await Promise.all([
       db.recipeCategories.findMany({
-        where: { isPublished: true },
+        where: { isPublished: true, slug: { not: "desserts" } },
         select: { id: true, name: true, imageUrl: true },
         orderBy: [{ position: "asc" }, { name: "asc" }],
       }),

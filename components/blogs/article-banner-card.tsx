@@ -11,13 +11,14 @@ import ArticleBreadcum from "@/components/blogs/article-breadcum";
 import ArticleAuthor from "@/components/blogs/article-author";
 import { PostWithCategory } from "@/types/article";
 import SocialShare from "../social-share";
+import { absoluteUrl, articleHref } from "@/lib/seo";
 
 interface ArticleBannerCardProps {
   article: PostWithCategory;
   className?: string;
 }
 const ArticleBannerCard = ({ article, className }: ArticleBannerCardProps) => {
-  const articleUrl = `${process.env.NEXT_PUBLIC_APP_URL}/blog/${article.slug}`;
+  const articleUrl = absoluteUrl(articleHref(article));
   return (
     <div className={cn("w-full flex items-center", className)}>
       <div className="flex justify-between items-start flex-col lg:flex-row rounded-md">

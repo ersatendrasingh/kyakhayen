@@ -1,8 +1,9 @@
 "use client";
 
-import { ArrowRight, Loader, Search } from "lucide-react";
+import { ArrowRight, ChefHat, Loader, Search } from "lucide-react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState, useTransition } from "react";
+import { useCallback, useEffect, useRef, useState, useTransition } from "react";
 
 import {
   GetRecipeSearchSuggestions,
@@ -26,10 +27,18 @@ const searchPrompts = [
   "Paneer, breakfast, rajma chawal...",
   "Summer kitchen ideas and guides...",
   "Chicken curry, lunch, dinner ideas...",
-  "Chole, North Indian thali...",
+  "Easy lunch, dinner, and snack ideas...",
   "Summer smoothies, juices, coolers...",
   "Quick snacks, evening cravings...",
 ];
+
+function normalizeSearchValue(value: string) {
+  return value
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, " ")
+    .replace(/\s+/g, " ");
+}
 
 export const SearchInput = ({
   onClose,
@@ -45,15 +54,39 @@ export const SearchInput = ({
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
   const [animatedPlaceholder, setAnimatedPlaceholder] = useState(searchPrompts[0]);
+  const [isSuggestionLoading, setIsSuggestionLoading] = useState(false);
   const [isPending, startTransition] = useTransition();
   const debouncedValue = useDebounce(value, 280);
   const router = useRouter();
   const inputRef = useRef<HTMLInputElement>(null);
   const formRef = useRef<HTMLFormElement>(null);
+  const lastSuggestionQueryRef = useRef("");
+  const suggestionRequestIdRef = useRef(0);
+  const hasSearchedRef = useRef(false);
+  const resultsCountRef = useRef(0);
 
   useEffect(() => {
     if (autoFocus) inputRef.current?.focus();
   }, [autoFocus]);
+
+  useEffect(() => {
+    setValue(initialValue);
+    setSearchResults([]);
+    setSelectedResultIndex(-1);
+    setHasSearched(false);
+    setIsSuggestionLoading(false);
+    lastSuggestionQueryRef.current = "";
+    resultsCountRef.current = 0;
+    hasSearchedRef.current = false;
+  }, [initialValue]);
+
+  useEffect(() => {
+    hasSearchedRef.current = hasSearched;
+  }, [hasSearched]);
+
+  useEffect(() => {
+    resultsCountRef.current = searchResults.length;
+  }, [searchResults.length]);
 
   useEffect(() => {
     let promptIndex = 0;
@@ -99,7 +132,9 @@ export const SearchInput = ({
   useEffect(() => {
     const dismissSuggestions = (event: PointerEvent) => {
       if (!formRef.current?.contains(event.target as Node)) {
+        suggestionRequestIdRef.current += 1;
         setShowSuggestions(false);
+        setIsSuggestionLoading(false);
       }
     };
 
@@ -108,44 +143,118 @@ export const SearchInput = ({
     return () => document.removeEventListener("pointerdown", dismissSuggestions);
   }, []);
 
-  useEffect(() => {
-    let active = true;
+  const loadSuggestions = useCallback(
+    (rawQuery: string, options: { force?: boolean } = {}) => {
+      const cleanQuery = rawQuery.trim();
 
-    if (debouncedValue.trim().length < 2) {
-      return;
-    }
-
-    startTransition(async () => {
-      const suggestions = await GetRecipeSearchSuggestions({ k: debouncedValue });
-      if (active) {
-        setSearchResults(suggestions);
+      if (cleanQuery.length < 2) {
+        suggestionRequestIdRef.current += 1;
+        lastSuggestionQueryRef.current = "";
+        resultsCountRef.current = 0;
+        hasSearchedRef.current = false;
+        setSearchResults([]);
         setSelectedResultIndex(-1);
-        setShowSuggestions(true);
-        setHasSearched(true);
+        setShowSuggestions(false);
+        setHasSearched(false);
+        setIsSuggestionLoading(false);
+        return;
       }
-    });
 
-    return () => {
-      active = false;
-    };
-  }, [debouncedValue]);
+      const normalizedQuery = normalizeSearchValue(cleanQuery);
+      const hasFreshResults =
+        lastSuggestionQueryRef.current === normalizedQuery && resultsCountRef.current > 0;
+
+      if (!options.force && hasFreshResults) {
+        setShowSuggestions(true);
+        return;
+      }
+
+      const requestId = suggestionRequestIdRef.current + 1;
+      suggestionRequestIdRef.current = requestId;
+      lastSuggestionQueryRef.current = normalizedQuery;
+      resultsCountRef.current = 0;
+      hasSearchedRef.current = false;
+      setShowSuggestions(true);
+      setSelectedResultIndex(-1);
+      setHasSearched(false);
+      setIsSuggestionLoading(true);
+
+      startTransition(async () => {
+        try {
+          const suggestions = await GetRecipeSearchSuggestions({ k: cleanQuery });
+
+          if (suggestionRequestIdRef.current !== requestId) return;
+
+          resultsCountRef.current = suggestions.length;
+          hasSearchedRef.current = true;
+          setSearchResults(suggestions);
+          setSelectedResultIndex(-1);
+          setShowSuggestions(true);
+          setHasSearched(true);
+        } finally {
+          if (suggestionRequestIdRef.current === requestId) {
+            setIsSuggestionLoading(false);
+          }
+        }
+      });
+    },
+    [startTransition],
+  );
+
+  useEffect(() => {
+    loadSuggestions(debouncedValue);
+  }, [debouncedValue, loadSuggestions]);
 
   const runSearch = (query: string) => {
     const cleanQuery = query.trim();
     if (!cleanQuery) return;
 
+    suggestionRequestIdRef.current += 1;
+    lastSuggestionQueryRef.current = "";
     router.push(`/search?k=${encodeURIComponent(cleanQuery)}`);
     setShowSuggestions(false);
     setSearchResults([]);
+    resultsCountRef.current = 0;
+    hasSearchedRef.current = false;
+    setHasSearched(false);
+    setIsSuggestionLoading(false);
     inputRef.current?.blur();
     onClose?.();
   };
 
+  const exactRecipeResult = (query: string) => {
+    const normalizedQuery = normalizeSearchValue(query);
+
+    return searchResults.find(
+      (result) =>
+        result.kind === "Dish" &&
+        result.href &&
+        (result.isExact || normalizeSearchValue(result.label) === normalizedQuery),
+    );
+  };
+
+  const submitSearch = (query: string) => {
+    const exactRecipe = exactRecipeResult(query);
+
+    if (exactRecipe) {
+      openSuggestion(exactRecipe);
+      return;
+    }
+
+    runSearch(query);
+  };
+
   const openSuggestion = (suggestion: RecipeSearchSuggestion) => {
     if (suggestion.href) {
+      suggestionRequestIdRef.current += 1;
+      lastSuggestionQueryRef.current = "";
       router.push(suggestion.href);
       setShowSuggestions(false);
       setSearchResults([]);
+      resultsCountRef.current = 0;
+      hasSearchedRef.current = false;
+      setHasSearched(false);
+      setIsSuggestionLoading(false);
       inputRef.current?.blur();
       onClose?.();
       return;
@@ -160,10 +269,12 @@ export const SearchInput = ({
       if (selectedResultIndex >= 0) {
         openSuggestion(searchResults[selectedResultIndex]);
       } else {
-        runSearch(value);
+        submitSearch(value);
       }
     } else if (event.key === "Escape") {
+      suggestionRequestIdRef.current += 1;
       setShowSuggestions(false);
+      setIsSuggestionLoading(false);
       setSelectedResultIndex(-1);
       inputRef.current?.blur();
     } else if (event.key === "ArrowDown") {
@@ -183,7 +294,7 @@ export const SearchInput = ({
       className={cn("relative w-full", className)}
       onSubmit={(event) => {
         event.preventDefault();
-        runSearch(value);
+        submitSearch(value);
       }}
     >
       <div className="search-field-shell relative">
@@ -196,14 +307,20 @@ export const SearchInput = ({
         <Input
           ref={inputRef}
           onChange={(event) => {
+            suggestionRequestIdRef.current += 1;
             setValue(event.target.value);
             setSearchResults([]);
+            resultsCountRef.current = 0;
+            hasSearchedRef.current = false;
             setSelectedResultIndex(-1);
             setHasSearched(false);
+            setIsSuggestionLoading(false);
             setShowSuggestions(event.target.value.trim().length >= 2);
           }}
           onFocus={() => {
-            if (value.trim().length >= 2) setShowSuggestions(true);
+            if (value.trim().length >= 2) {
+              loadSuggestions(value, { force: searchResults.length === 0 });
+            }
           }}
           onKeyDown={handleKeyPress}
           value={value}
@@ -242,20 +359,20 @@ export const SearchInput = ({
       </div>
 
       {showSuggestions &&
-        (isPending || hasSearched || searchResults.length > 0) &&
+        (isPending || isSuggestionLoading || hasSearched || searchResults.length > 0) &&
         value.trim().length >= 2 && (
         <div
           role="listbox"
           aria-label="Search suggestions"
           className="search-suggestions absolute top-[calc(100%+0.55rem)] z-[70] flex w-full flex-col overflow-hidden rounded-[1.25rem] border border-[#ead9c2] bg-[#fffdf8] p-2 shadow-[0_24px_62px_-26px_rgba(56,35,19,0.44)]"
         >
-          {isPending && searchResults.length === 0 && (
+          {(isPending || isSuggestionLoading) && searchResults.length === 0 && (
             <div className="search-loading-state flex items-center justify-center gap-3 px-3.5 py-5 text-sm text-[#75675b]">
               <Loader className="size-4 animate-spin" />
               Swaad dhoondh rahe hain...
             </div>
           )}
-          {!isPending && hasSearched && searchResults.length === 0 && (
+          {!isPending && !isSuggestionLoading && hasSearched && searchResults.length === 0 && (
             <div className="search-empty-state px-5 py-6 text-center">
               <p className="search-empty-title text-sm font-semibold text-[#372921]">
                 Let&apos;s try another flavour
@@ -280,15 +397,55 @@ export const SearchInput = ({
                 openSuggestion(result);
               }}
             >
-              <span className="min-w-0">
-                <span className="block truncate text-sm font-medium text-[#372921]">{result.label}</span>
-                <span className="mt-0.5 block text-[10px] font-semibold uppercase tracking-[0.18em] text-[#a7834d]">
-                  {result.kind}
+              <span className="flex min-w-0 items-center gap-3">
+                <span className="relative flex size-12 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-[#f1e5d4] text-[#9c6a2e]">
+                  {result.imageUrl ? (
+                    <Image
+                      src={result.imageUrl}
+                      alt=""
+                      fill
+                      sizes="48px"
+                      className="object-cover"
+                    />
+                  ) : (
+                    <ChefHat className="size-4" />
+                  )}
+                </span>
+                <span className="min-w-0">
+                  <span className="block truncate text-sm font-semibold text-[#372921]">
+                    {result.label}
+                  </span>
+                  <span className="mt-1 flex flex-wrap items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-[#a7834d]">
+                    <span>{result.kind === "Dish" ? "Recipe" : result.kind}</span>
+                    {result.meta && (
+                      <>
+                        <span className="text-[#d4b58b]">•</span>
+                        <span className="max-w-[16rem] truncate normal-case tracking-normal text-[#7c6a5d]">
+                          {result.meta}
+                        </span>
+                      </>
+                    )}
+                    {result.isExact && (
+                      <span className="rounded-full bg-[#eaf2df] px-2 py-0.5 text-[9px] tracking-[0.12em] text-[#315036]">
+                        Exact
+                      </span>
+                    )}
+                  </span>
                 </span>
               </span>
               <ArrowRight className="search-suggestion-arrow size-4 text-[#b38b53]" />
             </button>
           ))}
+          {searchResults.length > 0 && (
+            <button
+              type="button"
+              className="mt-1 flex w-full cursor-pointer items-center justify-between rounded-xl bg-[#f6ecdd] px-3.5 py-3 text-left text-sm font-semibold text-[#5e4938] transition hover:bg-[#efdcbf] hover:text-primary"
+              onClick={() => runSearch(value)}
+            >
+              <span className="truncate">See all results for &quot;{value.trim()}&quot;</span>
+              <ArrowRight className="size-4 shrink-0" />
+            </button>
+          )}
         </div>
       )}
     </form>

@@ -3,6 +3,11 @@
 import type { Prisma } from "@prisma/client";
 
 import { db } from "@/lib/db";
+import {
+  getRecipeCategoryWhereForBrowse,
+  getRecipeCategoryWhereForFoodPreference,
+} from "@/lib/recipe-category-compatibility";
+import { publishedRecipeWhere } from "@/lib/recipe-publication";
 import type { RecipeWithCategory } from "@/types/recipe";
 
 type GetRecipesInput = {
@@ -51,12 +56,22 @@ const recipeInclude = {
   recipeMealTime: true,
   recipeDifficulty: true,
   recipeSeasons: true,
+  recipeSeasonTags: {
+    include: { season: true },
+  },
   Review: true,
   recipeComments: {
     where: { isPublished: true },
     orderBy: { createdAt: "desc" },
   },
 } satisfies Prisma.RecipesInclude;
+
+function excludeDessertsFromCategoryBrowse(where: Prisma.RecipesWhereInput) {
+  where.NOT = [
+    ...((Array.isArray(where.NOT) ? where.NOT : where.NOT ? [where.NOT] : []) as Prisma.RecipesWhereInput[]),
+    { recipeRecipeType: { some: { recipeType: { slug: "desserts" } } } },
+  ];
+}
 
 export const GetRecipes = async ({
   title,
@@ -66,24 +81,18 @@ export const GetRecipes = async ({
 }: GetRecipesInput): Promise<RecipeWithCategory[]> => {
   try {
     const where: Prisma.RecipesWhereInput = {
-      isPublished: true,
+      ...publishedRecipeWhere(),
       ...(title ? { title: { contains: title } } : {}),
     };
 
     if (searchType === "category" && searchSlug) {
-      const category = await db.recipeCategories.findFirst({
-        where: {
-          isPublished: true,
-          slug:
-            searchSlug === "egg"
-              ? { in: ["eggetarian", "egg"] }
-              : searchSlug,
-        },
-        select: { id: true },
-      });
+      const categoryWhere = await getRecipeCategoryWhereForBrowse(searchSlug);
 
-      if (!category) return [];
-      where.recipeCategoriesId = category.id;
+      if (!categoryWhere) return [];
+      Object.assign(where, categoryWhere);
+      if (searchSlug !== "desserts") {
+        excludeDessertsFromCategoryBrowse(where);
+      }
     }
 
     if (searchType === "mealTime" && searchSlug) {
@@ -143,6 +152,7 @@ export const GetRecipes = async ({
       });
 
       if (!season) return [];
+      where.seasonality = "SEASONAL";
       where.OR = [
         { recipeSeasonsId: season.id },
         { recipeSeasonTags: { some: { recipeSeasonsId: season.id } } },
@@ -168,19 +178,17 @@ export const GetRecipes = async ({
     }
 
     if (foodPreferenceSlug && searchType !== "category") {
-      const foodPreference = await db.recipeCategories.findFirst({
-        where: { isPublished: true, slug: foodPreferenceSlug },
-        select: { id: true },
-      });
+      const foodPreferenceWhere =
+        await getRecipeCategoryWhereForFoodPreference(foodPreferenceSlug);
 
-      if (!foodPreference) return [];
-      where.recipeCategoriesId = foodPreference.id;
+      if (!foodPreferenceWhere) return [];
+      Object.assign(where, foodPreferenceWhere);
     }
 
     return await db.recipes.findMany({
       where,
       include: recipeInclude,
-      orderBy: { updatedAt: "desc" },
+      orderBy: [{ contentUpdatedAt: "desc" }, { updatedAt: "desc" }],
     });
   } catch (error) {
     console.error("[GET_RECIPES]", error);

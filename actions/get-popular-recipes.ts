@@ -3,6 +3,8 @@
 import type { Prisma } from "@prisma/client";
 
 import { db } from "@/lib/db";
+import { getRecipeCategoryWhereForBrowse } from "@/lib/recipe-category-compatibility";
+import { publishedRecipeWhere } from "@/lib/recipe-publication";
 import { RecipeWithCategory } from "@/types/recipe";
 
 type GetRecipes = {
@@ -26,7 +28,7 @@ export const getPopularRecipes = async ({
   hasMore: boolean;
 }> => {
   try {
-    const whereClause: Prisma.RecipesWhereInput = { isPublished: true };
+    const whereClause: Prisma.RecipesWhereInput = publishedRecipeWhere();
 
     if (title) {
       whereClause.title = {
@@ -36,15 +38,13 @@ export const getPopularRecipes = async ({
 
     if (searchType && searchSlug) {
       if (searchType === "category") {
-        const category = await db.recipeCategories.findFirst({
-          where: { slug: searchSlug, isPublished: true },
-        });
+        const categoryWhere = await getRecipeCategoryWhereForBrowse(searchSlug);
 
-        if (!category) {
+        if (!categoryWhere) {
           return { recipes: [], hasMore: false };
         }
 
-        whereClause.recipeCategoriesId = category.id;
+        Object.assign(whereClause, categoryWhere);
       } else if (searchType === "mealTime") {
         const mealTime = await db.mealTimes.findFirst({
           where: { slug: searchSlug, isPublished: true },
@@ -146,7 +146,7 @@ export const getPopularRecipes = async ({
         recipeComments: true, // Include recipeComments to match the RecipeWithCategory type
       },
       orderBy: {
-        updatedAt: "desc",
+        contentUpdatedAt: "desc",
       },
       skip: (page - 1) * pageSize,
       take: pageSize,

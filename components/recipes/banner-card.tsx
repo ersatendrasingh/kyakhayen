@@ -26,6 +26,7 @@ import { useCurrentUser } from "@/hooks/use-current-user";
 import { calculateRecipeNutrition } from "@/lib/calculate-recipe-nutrition";
 import { formatDate } from "@/lib/formatDate";
 import { formatTime } from "@/lib/formatTime";
+import { absoluteUrl, recipeHref } from "@/lib/seo";
 import { cn } from "@/lib/utils";
 import type { RecipeWithCategory } from "@/types/recipe";
 
@@ -55,10 +56,7 @@ const BannerCard = ({ recipe, className }: BannerCardProps) => {
   )
     .replace(/\s+/g, " ")
     .trim();
-  const canonicalSlug = recipe.metaSlug
-    ? `${recipe.slug}-${recipe.metaSlug}`
-    : recipe.slug;
-  const recipeUrl = `${process.env.NEXT_PUBLIC_APP_URL || ""}/${canonicalSlug}`;
+  const recipeUrl = absoluteUrl(recipeHref(recipe));
   const cuisineTags = (recipe.recipeCuisine || [])
     .map((entry) => entry.cuisine.title)
     .slice(0, 2);

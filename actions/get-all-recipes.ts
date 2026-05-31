@@ -71,6 +71,9 @@ export const getRecipes = async (): Promise<RecipeWithCategory[]> => {
         recipeMealTime: true,
         recipeDifficulty: true,
         recipeSeasons: true,
+        recipeSeasonTags: {
+          include: { season: true },
+        },
         Review: true,
         recipeComments: {
           where: {

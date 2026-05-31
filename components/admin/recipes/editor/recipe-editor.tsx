@@ -2,6 +2,7 @@ import { Layers3, ListChecks, Tags } from "lucide-react";
 
 import { RecipeDiscoveryCard } from "@/components/admin/recipes/editor/recipe-discovery-card";
 import { RecipeEditorActions } from "@/components/admin/recipes/editor/recipe-editor-actions";
+import { RecipeInfoCard } from "@/components/admin/recipes/editor/recipe-info-card";
 import { RecipeIngredientsCard } from "@/components/admin/recipes/editor/recipe-ingredients-card";
 import { RecipeMediaSettingsCard } from "@/components/admin/recipes/editor/recipe-media-settings-card";
 import { RecipeOverviewCard } from "@/components/admin/recipes/editor/recipe-overview-card";
@@ -27,7 +28,15 @@ export function RecipeEditor({
     recipe.nutrientIds.length +
     recipe.dietTypeIds.length +
     recipe.recipeTypeIds.length +
-    recipe.bodyTypeIds.length;
+    recipe.bodyTypeIds.length +
+    recipe.seasonIds.length;
+  const hasSeasonClassification =
+    recipe.seasonality === "ALL_YEAR" ||
+    (recipe.seasonality === "SEASONAL" && recipe.seasonIds.length > 0);
+  const canPublish =
+    Boolean(recipe.title && recipe.description && recipe.imageUrl) &&
+    Boolean(recipe.recipeDifficultyId) &&
+    hasSeasonClassification;
 
   return (
     <div className="min-w-0 space-y-6">
@@ -56,7 +65,7 @@ export function RecipeEditor({
             recipeId={recipe.id}
             title={recipe.title}
             isPublished={recipe.isPublished}
-            canPublish={Boolean(recipe.title && recipe.description && recipe.imageUrl)}
+            canPublish={canPublish}
           />
         </div>
       </section>
@@ -93,6 +102,7 @@ export function RecipeEditor({
               { title: "Nutrients", key: "nutrientIds", options: options.nutrients },
             ]}
           />
+          <RecipeInfoCard recipe={recipe} />
         </aside>
       </div>
     </div>

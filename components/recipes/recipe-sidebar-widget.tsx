@@ -1,6 +1,8 @@
 import Image from "next/image";
 import Link from "next/link";
 
+import { recipeCollectionHref } from "@/lib/recipe-collection-url";
+
 interface RecipeSidebarWidgetProps {
   title: string;
   eyebrow: string;
@@ -17,7 +19,6 @@ interface RecipeSidebarWidgetProps {
 const RecipeSidebarWidget = ({
   title,
   eyebrow,
-  type,
   widgetItems,
 }: RecipeSidebarWidgetProps) => {
   return (
@@ -32,7 +33,7 @@ const RecipeSidebarWidget = ({
         {(widgetItems || []).slice(0, 8).map((widget) => (
           <Link
             key={widget.id}
-            href={`/recipes?k=${widget.slug}&type=${type}`}
+            href={recipeCollectionHref(widget.slug)}
             className="group flex flex-col overflow-hidden rounded-2xl border border-[#ece0cf] bg-[#fcf7ee] transition hover:-translate-y-0.5 hover:border-[#dcc192] dark:border-white/8 dark:bg-[#142d25] dark:hover:border-[#537062]"
           >
             {widget.imageUrl ? (

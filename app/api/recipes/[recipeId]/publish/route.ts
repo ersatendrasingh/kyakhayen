@@ -1,6 +1,7 @@
 import { currentUser } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { runRecipePublishedAutomations } from "@/lib/notification-automations";
+import { RecipeSeasonality } from "@prisma/client";
 import { NextResponse } from "next/server";
 
 export async function PATCH(req: Request, props: { params: Promise<{ recipeId: string }> }) {
@@ -16,6 +17,9 @@ export async function PATCH(req: Request, props: { params: Promise<{ recipeId: s
       where: {
         id: recipeId,
       },
+      include: {
+        recipeSeasonTags: { select: { recipeSeasonsId: true } },
+      },
     });
 
     if (!recipe) {
@@ -26,12 +30,31 @@ export async function PATCH(req: Request, props: { params: Promise<{ recipeId: s
       return NextResponse.json("Missing required fields", { status: 400 });
     }
 
+    if (!recipe.recipeDifficultyId) {
+      return NextResponse.json("Select recipe difficulty before publishing.", { status: 400 });
+    }
+
+    if (recipe.seasonality === RecipeSeasonality.UNREVIEWED) {
+      return NextResponse.json("Review season use before publishing.", { status: 400 });
+    }
+
+    if (
+      recipe.seasonality === RecipeSeasonality.SEASONAL &&
+      !recipe.recipeSeasonsId &&
+      recipe.recipeSeasonTags.length === 0
+    ) {
+      return NextResponse.json("Select at least one season before publishing.", { status: 400 });
+    }
+
+    const now = new Date();
     const publishedRecipe = await db.recipes.update({
       where: {
         id: recipeId,
       },
       data: {
         isPublished: true,
+        publishedAt: recipe.publishedAt ?? now,
+        contentUpdatedAt: recipe.contentUpdatedAt ?? now,
       },
     });
     if (!recipe.isPublished) {

@@ -1,5 +1,6 @@
 import { currentUser } from "@/lib/auth";
 import { db } from "@/lib/db";
+import { touchRecipeContentUpdatedAt } from "@/lib/touch-recipe-content";
 import { NextResponse } from "next/server";
 
 export async function DELETE(
@@ -27,6 +28,7 @@ export async function DELETE(
         id: ingredientId,
       },
     });
+    await touchRecipeContentUpdatedAt(recipeId);
     return NextResponse.json(deletedIngredient, {
       status: 200,
     });
@@ -65,6 +67,7 @@ export async function PATCH(
           ...values,
         },
       });
+      await touchRecipeContentUpdatedAt(params.recipeId);
       return NextResponse.json(updatedIngredient, { status: 200 });
     }
   } catch (error) {

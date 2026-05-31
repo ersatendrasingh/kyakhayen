@@ -1,5 +1,6 @@
 import { currentUser } from "@/lib/auth";
 import { db } from "@/lib/db";
+import { touchRecipeContentUpdatedAt } from "@/lib/touch-recipe-content";
 import { NextResponse } from "next/server";
 
 export async function POST(req: Request, props: { params: Promise<{ recipeId: string }> }) {
@@ -28,6 +29,7 @@ export async function POST(req: Request, props: { params: Promise<{ recipeId: st
           ...values,
         },
       });
+      await touchRecipeContentUpdatedAt(recipeId);
       return NextResponse.json(ingredient, { status: 200 });
     }
   } catch (error) {

@@ -1,5 +1,6 @@
 import { currentUser } from "@/lib/auth";
 import { db } from "@/lib/db";
+import { touchRecipeContentUpdatedAt } from "@/lib/touch-recipe-content";
 import { NextResponse } from "next/server";
 
 export async function PATCH(
@@ -34,6 +35,7 @@ export async function PATCH(
         isPublished: false,
       },
     });
+    await touchRecipeContentUpdatedAt(recipeId);
     return NextResponse.json(unPublishedMethod, { status: 200 });
   } catch (error) {
     console.log("[METHOD_ID_UNPUBLISH]", error);

@@ -32,6 +32,19 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
+function instructionPreview(value: string) {
+  return value
+    .replace(/<script[\s\S]*?<\/script>/gi, " ")
+    .replace(/<style[\s\S]*?<\/style>/gi, " ")
+    .replace(/<[^>]+>/g, " ")
+    .replace(/&nbsp;/g, " ")
+    .replace(/&amp;/g, "&")
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
 export function RecipeStepsCard({
   recipeId,
   steps,
@@ -163,7 +176,7 @@ export function RecipeStepsCard({
                     </div>
                     {step.description ? (
                       <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">
-                        {step.description}
+                        {instructionPreview(step.description)}
                       </p>
                     ) : (
                       <p className="mt-1 text-sm italic text-muted-foreground">

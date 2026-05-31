@@ -12,6 +12,7 @@ import {
   shouldShowRecipeSteam,
 } from "@/components/recipes/recipe-steam";
 import { useHomePreference } from "@/components/sections/home-preference-context";
+import { recipeCollectionHref } from "@/lib/recipe-collection-url";
 
 import type { DiscoveryRecipe } from "./home-discovery";
 
@@ -100,7 +101,7 @@ export default function HomeFoodPreference({
               </h2>
               <p className="mx-auto mt-4 max-w-2xl text-sm leading-7 text-white/72 sm:text-base">
                 Choose once and recommendation shelves respect your choice.
-                Selecting veg means only vegetarian picks appear here.
+                Selecting veg includes vegetarian and vegan-safe picks.
               </p>
           </div>
 
@@ -152,14 +153,14 @@ export default function HomeFoodPreference({
             <div className="mb-5 flex flex-wrap items-center justify-between gap-4">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#dfeecb]">
-                  Showing only
+                  Showing for
                 </p>
                 <h3 className="mt-1 text-xl font-semibold text-white">
-                  {selectedPreference.name} recipes
+                  {selectedPreference.name} preference
                 </h3>
               </div>
               <Link
-                href={`/recipes?k=${selectedPreference.slug}&type=category`}
+                href={recipeCollectionHref(selectedPreference.slug)}
                 className="inline-flex items-center gap-2 text-sm font-semibold text-[#f5d28c] transition hover:gap-3"
               >
                 Explore all <ArrowRight className="size-4" />

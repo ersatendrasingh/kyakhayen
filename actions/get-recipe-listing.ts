@@ -4,6 +4,11 @@ import type { Prisma } from "@prisma/client";
 
 import { db } from "@/lib/db";
 import type { RecipeCardRecipe } from "@/components/recipes/recipe-card";
+import {
+  getRecipeCategoryWhereForBrowse,
+  getRecipeCategoryWhereForFoodPreference,
+} from "@/lib/recipe-category-compatibility";
+import { publishedRecipeWhere } from "@/lib/recipe-publication";
 
 export type RecipeListingFilters = {
   searchSlug?: string;
@@ -40,30 +45,31 @@ const listingInclude = {
   },
 } satisfies Prisma.RecipesInclude;
 
+function excludeDessertsFromCategoryBrowse(where: Prisma.RecipesWhereInput) {
+  where.NOT = [
+    ...((Array.isArray(where.NOT) ? where.NOT : where.NOT ? [where.NOT] : []) as Prisma.RecipesWhereInput[]),
+    { recipeRecipeType: { some: { recipeType: { slug: "desserts" } } } },
+  ];
+}
+
 async function buildListingWhere({
   searchSlug,
   searchType,
   foodPreferenceSlug,
 }: RecipeListingFilters): Promise<Prisma.RecipesWhereInput | null> {
   const where: Prisma.RecipesWhereInput = {
-    isPublished: true,
+    ...publishedRecipeWhere(),
     imageUrl: { not: null },
   };
 
   if (searchType === "category" && searchSlug) {
-    const category = await db.recipeCategories.findFirst({
-      where: {
-        isPublished: true,
-        slug:
-          searchSlug === "egg"
-            ? { in: ["eggetarian", "egg"] }
-            : searchSlug,
-      },
-      select: { id: true },
-    });
+    const categoryWhere = await getRecipeCategoryWhereForBrowse(searchSlug);
 
-    if (!category) return null;
-    where.recipeCategoriesId = category.id;
+    if (!categoryWhere) return null;
+    Object.assign(where, categoryWhere);
+    if (searchSlug !== "desserts") {
+      excludeDessertsFromCategoryBrowse(where);
+    }
   }
 
   if (searchType === "mealTime" && searchSlug) {
@@ -123,6 +129,7 @@ async function buildListingWhere({
     });
 
     if (!season) return null;
+    where.seasonality = "SEASONAL";
     where.OR = [
       { recipeSeasonsId: season.id },
       { recipeSeasonTags: { some: { recipeSeasonsId: season.id } } },
@@ -146,13 +153,11 @@ async function buildListingWhere({
   }
 
   if (foodPreferenceSlug && searchType !== "category") {
-    const foodPreference = await db.recipeCategories.findFirst({
-      where: { isPublished: true, slug: foodPreferenceSlug },
-      select: { id: true },
-    });
+    const foodPreferenceWhere =
+      await getRecipeCategoryWhereForFoodPreference(foodPreferenceSlug);
 
-    if (!foodPreference) return null;
-    where.recipeCategoriesId = foodPreference.id;
+    if (!foodPreferenceWhere) return null;
+    Object.assign(where, foodPreferenceWhere);
   }
 
   return where;
@@ -170,7 +175,7 @@ export const GetRecipeListingPage = async ({
     const recipes = await db.recipes.findMany({
       where,
       include: listingInclude,
-      orderBy: [{ updatedAt: "desc" }, { id: "desc" }],
+      orderBy: [{ contentUpdatedAt: "desc" }, { updatedAt: "desc" }, { id: "desc" }],
       cursor: cursor ? { id: cursor } : undefined,
       skip: cursor ? 1 : undefined,
       take: limit + 1,

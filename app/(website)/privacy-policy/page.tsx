@@ -9,23 +9,18 @@ import {
   SectionEyebrow,
   TrustHero,
 } from "@/components/trust/trust-page";
+import { buildSeoMetadata } from "@/lib/seo";
 
-const siteUrl = process.env.NEXT_PUBLIC_APP_URL || "https://www.kyakhayen.com";
 const updatedAt = "26 May 2026";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = buildSeoMetadata({
   title: "Privacy Policy | Kya Khayen",
   description:
     "Understand how Kya Khayen handles account details, food choices, saved recipes, meal plans and support requests.",
-  alternates: { canonical: `${siteUrl}/privacy-policy` },
-  openGraph: {
-    title: "Privacy Policy | Kya Khayen",
-    description: "How information is handled while you use Kya Khayen.",
-    url: `${siteUrl}/privacy-policy`,
-    type: "website",
-    images: [{ url: `${siteUrl}/meta-images/privacy-policy.png`, width: 1200, height: 630 }],
-  },
-};
+  path: "/privacy-policy",
+  image: "/meta-images/privacy-policy.png",
+  imageAlt: "Kya Khayen privacy policy",
+});
 
 const navigation = [
   ["scope", "Scope"],

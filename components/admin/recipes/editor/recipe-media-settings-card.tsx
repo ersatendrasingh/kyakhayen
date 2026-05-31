@@ -9,9 +9,11 @@ import { MediaField } from "@/components/admin/media/media-field";
 import type {
   RecipeEditorOption,
   RecipeEditorRecord,
+  RecipeSeasonality,
 } from "@/components/admin/recipes/editor/recipe-editor-types";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 
 const selectClassName =
@@ -31,9 +33,18 @@ export function RecipeMediaSettingsCard({
   const router = useRouter();
   const [categoryId, setCategoryId] = useState(recipe.recipeCategoriesId ?? "");
   const [difficultyId, setDifficultyId] = useState(recipe.recipeDifficultyId ?? "");
-  const [seasonId, setSeasonId] = useState(recipe.recipeSeasonsId ?? "");
+  const [seasonality, setSeasonality] = useState<RecipeSeasonality>(recipe.seasonality);
+  const [seasonIds, setSeasonIds] = useState(recipe.seasonIds);
   const [preview, setPreview] = useState(recipe.imageUrl);
   const [saving, setSaving] = useState(false);
+
+  const toggleSeason = (seasonId: string) => {
+    setSeasonIds((current) =>
+      current.includes(seasonId)
+        ? current.filter((id) => id !== seasonId)
+        : [...current, seasonId],
+    );
+  };
 
   const selectImage = async (imageUrl: string | null) => {
     try {
@@ -56,6 +67,11 @@ export function RecipeMediaSettingsCard({
 
   const saveSettings = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    if (seasonality === "SEASONAL" && seasonIds.length === 0) {
+      toast.warning("Select at least one season for a strict seasonal recipe.");
+      return;
+    }
+
     try {
       setSaving(true);
       const response = await fetch(`/api/recipes/${recipe.id}`, {
@@ -64,7 +80,8 @@ export function RecipeMediaSettingsCard({
         body: JSON.stringify({
           recipeCategoriesId: categoryId || null,
           recipeDifficultyId: difficultyId || null,
-          recipeSeasonsId: seasonId || null,
+          seasonality,
+          seasonIds: seasonality === "SEASONAL" ? seasonIds : [],
         }),
       });
       if (!response.ok) throw new Error("Unable to save recipe classification.");
@@ -107,18 +124,51 @@ export function RecipeMediaSettingsCard({
             <div className="space-y-2">
               <Label htmlFor="recipe-difficulty">Difficulty</Label>
               <select id="recipe-difficulty" value={difficultyId} onChange={(event) => setDifficultyId(event.target.value)} className={selectClassName}>
-                <option value="">Not selected</option>
+                <option value="">Needs review</option>
                 {difficulties.map((option) => <option key={option.id} value={option.id}>{option.label}</option>)}
               </select>
+              {!difficultyId && (
+                <p className="text-xs leading-5 text-amber-700 dark:text-amber-300">
+                  Pick the cooking skill needed before using this recipe in meal plans.
+                </p>
+              )}
             </div>
             <div className="space-y-2">
-              <Label htmlFor="recipe-season">Season</Label>
-              <select id="recipe-season" value={seasonId} onChange={(event) => setSeasonId(event.target.value)} className={selectClassName}>
-                <option value="">All seasons</option>
-                {seasons.map((option) => <option key={option.id} value={option.id}>{option.label}</option>)}
+              <Label htmlFor="recipe-seasonality">Season use</Label>
+              <select
+                id="recipe-seasonality"
+                value={seasonality}
+                onChange={(event) => setSeasonality(event.target.value as RecipeSeasonality)}
+                className={selectClassName}
+              >
+                <option value="UNREVIEWED">Needs review</option>
+                <option value="ALL_YEAR">All year</option>
+                <option value="SEASONAL">Strict seasonal</option>
               </select>
+              <p className="text-xs leading-5 text-muted-foreground">
+                All year recipes can appear any month. Strict seasonal recipes appear only in the selected season.
+              </p>
             </div>
           </div>
+          {seasonality === "SEASONAL" && (
+            <div className="space-y-2 rounded-xl border bg-muted/30 p-3">
+              <Label>Allowed seasons</Label>
+              <div className="grid gap-2">
+                {seasons.map((option) => (
+                  <label
+                    key={option.id}
+                    className="flex cursor-pointer items-center gap-2 rounded-lg px-2 py-1.5 text-sm hover:bg-background"
+                  >
+                    <Checkbox
+                      checked={seasonIds.includes(option.id)}
+                      onCheckedChange={() => toggleSeason(option.id)}
+                    />
+                    <span>{option.label}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+          )}
           <Button disabled={saving} type="submit" variant="outline" className="h-10 w-full rounded-xl">
             {saving ? <LoaderCircle className="size-4 animate-spin" /> : null}
             {saving ? "Saving..." : "Save classification"}

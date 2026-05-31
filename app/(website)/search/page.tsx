@@ -1,8 +1,10 @@
 import { ArrowRight, Search, Sparkles } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 
 import {
+  GetExactRecipeSearchMatch,
   GetRecipeSearchSuggestions,
   GetSearchedArticles,
   GetSearchedRecipePage,
@@ -10,29 +12,23 @@ import {
 import { EditorialStoryRow } from "@/components/blogs/editorial-story-card";
 import Container from "@/components/container";
 import RecipeResultsFeed from "@/components/recipes/recipe-results-feed";
+import { buildSeoMetadata } from "@/lib/seo";
 
-const siteUrl =
-  process.env.NEXT_PUBLIC_APP_URL || "https://www.kyakhayen.com";
-
-export const metadata: Metadata = {
+export const metadata: Metadata = buildSeoMetadata({
   title: "Search Recipes and Food Stories | Kya Khayen",
   description:
     "Search recipes and original food stories using ingredients, meal times, cuisines and kitchen questions.",
-  alternates: { canonical: `${siteUrl}/search` },
-  openGraph: {
-    title: "Search Recipes and Food Stories | Kya Khayen",
-    description: "Discover dishes and original food stories by the words you naturally use.",
-    url: `${siteUrl}/search`,
-    type: "website",
-    images: [{ url: `${siteUrl}/meta-images/recipe-page.jpg`, width: 1200, height: 630 }],
-  },
-};
+  path: "/search",
+  image: "/meta-images/recipe-page.jpg",
+  imageAlt: "Kya Khayen recipe and story search",
+  noIndex: true,
+});
 
 const quickSearches = [
   "Paneer recipes",
   "Breakfast recipes",
-  "Rajma",
-  "North Indian dinner",
+  "High-protein dinner",
+  "Quick lunch ideas",
   "Summer smoothies",
   "Vegetarian snacks",
 ];
@@ -44,6 +40,12 @@ const SearchPage = async ({
 }) => {
   const { k = "" } = await searchParams;
   const query = k.trim();
+  const exactMatch = await GetExactRecipeSearchMatch({ k: query });
+
+  if (exactMatch) {
+    redirect(exactMatch.href);
+  }
+
   const [initialPage, articleMatches, relatedSuggestions] = await Promise.all([
     GetSearchedRecipePage({ k: query }),
     GetSearchedArticles({ k: query }),

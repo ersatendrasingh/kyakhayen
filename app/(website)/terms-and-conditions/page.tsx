@@ -8,23 +8,18 @@ import {
   SectionEyebrow,
   TrustHero,
 } from "@/components/trust/trust-page";
+import { buildSeoMetadata } from "@/lib/seo";
 
-const siteUrl = process.env.NEXT_PUBLIC_APP_URL || "https://www.kyakhayen.com";
 const updatedAt = "26 May 2026";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = buildSeoMetadata({
   title: "Terms and Conditions | Kya Khayen",
   description:
     "Terms governing your use of Kya Khayen recipes, food preference tools and meal-plan information.",
-  alternates: { canonical: `${siteUrl}/terms-and-conditions` },
-  openGraph: {
-    title: "Terms and Conditions | Kya Khayen",
-    description: "Terms for recipe discovery and taste-based meal planning.",
-    url: `${siteUrl}/terms-and-conditions`,
-    type: "website",
-    images: [{ url: `${siteUrl}/meta-images/privacy-policy.png`, width: 1200, height: 630 }],
-  },
-};
+  path: "/terms-and-conditions",
+  image: "/meta-images/privacy-policy.png",
+  imageAlt: "Kya Khayen terms and conditions",
+});
 
 const sections = [
   {

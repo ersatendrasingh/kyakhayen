@@ -23,6 +23,7 @@ import RecipeCard from "@/components/recipes/recipe-card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useCurrentUser } from "@/hooks/use-current-user";
 import { capitalizeName } from "@/lib/formateName";
+import { recipeCollectionHref } from "@/lib/recipe-collection-url";
 import { cn } from "@/lib/utils";
 import { RecipeWithCategory } from "@/types/recipe";
 import AccountPageHeading from "../_components/account-page-heading";
@@ -78,9 +79,9 @@ const UserDashboard = () => {
     { key: "reviewed" as const, label: "Reviewed", icon: MessageSquareMore, count: activity.reviewed.length },
   ];
   const discoveryLinks = [
-    { label: "Breakfast", helper: "Start fresh", href: "/recipes?k=breakfast&type=mealTime", icon: Coffee },
-    { label: "Lunch", helper: "Midday ideas", href: "/recipes?k=lunch&type=mealTime", icon: Sun },
-    { label: "Dinner", helper: "Tonight's table", href: "/recipes?k=dinner&type=mealTime", icon: UtensilsCrossed },
+    { label: "Breakfast", helper: "Start fresh", href: recipeCollectionHref("breakfast"), icon: Coffee },
+    { label: "Lunch", helper: "Midday ideas", href: recipeCollectionHref("lunch"), icon: Sun },
+    { label: "Dinner", helper: "Tonight's table", href: recipeCollectionHref("dinner"), icon: UtensilsCrossed },
   ];
 
   return (
