@@ -7,6 +7,17 @@ import OrderConfirmationMail from "@/emails/customer-order-confirmation";
 import CustomerOrderAdminMail from "@/emails/customer-order-admin-mail";
 import { formatDate } from "@/lib/formatDate";
 import { activatePaidMembership } from "@/lib/activate-paid-membership";
+import { NotificationAutomationTrigger } from "@prisma/client";
+import { runUserAutomationRules } from "@/lib/notification-automations";
+
+type RazorpayPaymentPayload = {
+  payment: {
+    entity: {
+      id: string;
+      order_id: string;
+    };
+  };
+};
 
 export async function POST(req: Request) {
   try {
@@ -16,13 +27,14 @@ export async function POST(req: Request) {
     }
 
     const rawBody = await req.text();
-    const body = JSON.parse(rawBody);
+    const body = JSON.parse(rawBody) as { event?: string; payload?: RazorpayPaymentPayload };
 
     if (!body || !body.event) {
       return NextResponse.json("Invalid request body format", { status: 400 });
     }
 
     const { event, payload } = body;
+    if (!payload) return NextResponse.json("Payment payload is missing", { status: 400 });
     const razorpaySignature = req.headers.get("x-razorpay-signature");
 
     const isValidSignature = validateWebhookSignature(
@@ -59,7 +71,7 @@ export async function POST(req: Request) {
   }
 }
 
-const handlePaymentCaptured = async (payload: any) => {
+const handlePaymentCaptured = async (payload: RazorpayPaymentPayload) => {
   try {
     const paymentEntity = payload.payment.entity;
     const activation = await activatePaidMembership(
@@ -76,7 +88,7 @@ const handlePaymentCaptured = async (payload: any) => {
   }
 };
 
-const handlePaymentFailed = async (payload: any) => {
+const handlePaymentFailed = async (payload: RazorpayPaymentPayload) => {
   try {
     const paymentEntity = payload.payment.entity;
 
@@ -88,8 +100,11 @@ const handlePaymentFailed = async (payload: any) => {
       },
       include: {
         user: {
-          include: {
-            UserAddress: true,
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            phoneNumber: true,
           },
         },
         items: {
@@ -117,11 +132,19 @@ const handlePaymentFailed = async (payload: any) => {
         paymentStatus: "Failed",
       },
     });
+    try {
+      await runUserAutomationRules({
+        trigger: NotificationAutomationTrigger.PAYMENT_FAILED,
+        userId: order.userId,
+        dedupeScope: `payment-failed-${order.id}`,
+      });
+    } catch (notificationError) {
+      console.error("[FAILED_PAYMENT_PUSH]", notificationError);
+    }
 
     const customerEmail = order.user.email;
     const customerName = order.user.name;
     const customerPhoneNumber = order.user.phoneNumber;
-    const userAddress = order.user.UserAddress[0];
 
     await sendEmail({
       to: order.user.email as string,
@@ -142,12 +165,12 @@ const handlePaymentFailed = async (payload: any) => {
             totalAmount: order.totalAmount as number,
             coupon: order.coupon || "",
             discount: order.discount || 0,
-            items: order.items.map((item: any) => ({
-              name: item.plan.name,
+            items: order.items.map((item) => ({
+              name: item.plan?.name || item.itemName,
               quantity: item.quantity,
-              priceInr: item.plan.priceInr,
-              priceUsd: item.plan.priceUsd,
-              durationDays: item.plan.durationDays,
+              priceInr: item.plan?.priceInr || item.priceInr || 0,
+              priceUsd: item.plan?.priceUsd || item.priceUsd || 0,
+              durationDays: item.plan?.durationDays || 0,
             })),
           },
         })
@@ -165,9 +188,6 @@ const handlePaymentFailed = async (payload: any) => {
           currency: order.currency as string,
           email: customerEmail as string,
           phoneNumber: customerPhoneNumber as string,
-          country: userAddress?.country || "",
-          state: userAddress?.state || "",
-          city: userAddress?.city || "",
           paymentMethod: "Razorpay",
           paymentStatus: "Failed",
           orderDetails: {
@@ -178,12 +198,12 @@ const handlePaymentFailed = async (payload: any) => {
             totalAmount: order.totalAmount as number,
             coupon: order.coupon || "",
             discount: order.discount || 0,
-            items: order.items.map((item: any) => ({
-              name: item.plan.name,
+            items: order.items.map((item) => ({
+              name: item.plan?.name || item.itemName,
               quantity: item.quantity,
-              priceInr: item.plan.priceInr,
-              priceUsd: item.plan.priceUsd,
-              durationDays: item.plan.durationDays,
+              priceInr: item.plan?.priceInr || item.priceInr || 0,
+              priceUsd: item.plan?.priceUsd || item.priceUsd || 0,
+              durationDays: item.plan?.durationDays || 0,
             })),
           },
         })

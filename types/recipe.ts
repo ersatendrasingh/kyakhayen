@@ -12,9 +12,11 @@ import {
   RecipeIngredients,
   RecipeMethods,
   RecipeSeasons,
+  RecipeSeasonAssignment,
   Recipes,
   Review,
   Units,
+  User,
   recipeMealTime,
 } from "@prisma/client";
 
@@ -63,6 +65,10 @@ type RecipeNutrient = {
   nutrient: Nutrient;
 };
 
+type RecipeReview = Review & {
+  user?: User | null;
+};
+
 export type RecipeIngredientType = RecipeIngredients & {
   unit?: Units;
   ingredientForm?: IngredientsForm;
@@ -80,10 +86,11 @@ export type RecipeWithCategory = Recipes & {
   recipeRecipeType: RecipeRecipeType[] | null;
   recipeDifficulty: RecipeDifficulty | null;
   recipeSeasons: RecipeSeasons | null;
+  recipeSeasonTags?: (RecipeSeasonAssignment & { season?: RecipeSeasons })[] | null;
   recipeCookingMethods: RecipeCookingMethod[] | null;
   recipeCuisine: RecipeCuisines[] | null;
   recipeNutrient: RecipeNutrient[] | null;
   recipeMealTime: recipeMealTime[] | null;
   recipeComments: Comment[] | null;
-  Review: Review[] | null;
+  Review: RecipeReview[] | null;
 };

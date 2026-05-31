@@ -17,9 +17,16 @@ import HomeEditorialStories from "@/components/sections/home-editorial-stories";
 import { getMealPlanFromS3 } from "@/actions/get-meal-plan-from-s3";
 import { currentUser } from "@/lib/auth";
 import { db } from "@/lib/db";
+import { publishedRecipeAnd, publishedRecipeWhere } from "@/lib/recipe-publication";
+import {
+  buildSeoMetadata,
+  itemListJsonLd,
+  jsonLd,
+  organizationJsonLd,
+  recipeHref,
+  websiteJsonLd,
+} from "@/lib/seo";
 
-const siteUrl =
-  process.env.NEXT_PUBLIC_APP_URL || "https://www.kyakhayen.com";
 const mediaBaseUrl = process.env.NEXT_PUBLIC_MEDIA_URL?.replace(/\/+$/, "");
 const heroVideoKeys = [
   "media/homepage/hero/20260524/hero-breakfast-prep.mp4",
@@ -32,21 +39,82 @@ const seasonalEditorialKey =
   "media/homepage/discovery/20260524/summer-green-smoothie.webp";
 const ingredientEditorialKey =
   "media/homepage/discovery/20260524/paneer-stuffed-cheela.webp";
+const summerDrinkTypeSlugs = [
+  "drink-coolers-sharbat",
+  "drink-smoothies",
+  "drink-juices",
+  "drink-shakes",
+  "drink-lassi-buttermilk",
+  "drink-detox",
+  "drink-infusions",
+] as const;
 
-export const metadata: Metadata = {
-  title: "Kya Khayen | Discover Recipes and Personalized Meal Plans",
-  description:
-    "Discover beautiful Indian and international recipes, explore meals by cuisine and time of day, and create personalized meal plans with Kya Khayen.",
-  alternates: { canonical: siteUrl },
-  openGraph: {
-    title: "Kya Khayen | Discover Recipes and Personalized Meal Plans",
-    description:
-      "Beautiful everyday recipes, cuisines and personalized meal planning inspiration.",
-    url: siteUrl,
-    type: "website",
-    images: [{ url: `${siteUrl}/meta-images/home.png`, width: 1200, height: 630 }],
+function uniqueByRecipeId<T extends { id: string }>(recipes: T[]) {
+  const seen = new Set<string>();
+
+  return recipes.filter((recipe) => {
+    if (seen.has(recipe.id)) return false;
+    seen.add(recipe.id);
+    return true;
+  });
+}
+
+function pickSummerDrinkRecipes<
+  T extends {
+    id: string;
+    recipeRecipeType?: Array<{ recipeType: { slug: string } }>;
   },
-};
+>(recipes: T[], limit = 4) {
+  const picked: T[] = [];
+  const seen = new Set<string>();
+
+  for (const slug of summerDrinkTypeSlugs) {
+    const recipe = recipes.find(
+      (item) =>
+        !seen.has(item.id) &&
+        item.recipeRecipeType?.some(({ recipeType }) => recipeType.slug === slug),
+    );
+
+    if (recipe) {
+      picked.push(recipe);
+      seen.add(recipe.id);
+    }
+
+    if (picked.length >= limit) return picked;
+  }
+
+  for (const recipe of recipes) {
+    if (!seen.has(recipe.id)) {
+      picked.push(recipe);
+      seen.add(recipe.id);
+    }
+
+    if (picked.length >= limit) break;
+  }
+
+  return picked;
+}
+
+export const metadata: Metadata = buildSeoMetadata({
+  title: "Kya Khayen | Easy Recipes, Healthy Meal Ideas and Meal Plans",
+  description:
+    "Discover easy recipes, healthy meal ideas, quick breakfast inspiration, dinner recipes, seasonal dishes and taste-based meal plans with Kya Khayen.",
+  path: "/",
+  image: "/meta-images/home.png",
+  imageAlt: "Kya Khayen recipes and weekly meal planning",
+  keywords: [
+    "easy recipes",
+    "healthy recipes",
+    "meal ideas",
+    "meal planning",
+    "weekly meal plan",
+    "quick recipes",
+    "vegetarian recipes",
+    "vegan recipes",
+    "healthy dinner ideas",
+    "dinner recipes",
+  ],
+});
 
 export default async function Home() {
   const now = new Date();
@@ -78,16 +146,16 @@ export default async function Home() {
   const [
     catalogRecipeCount,
     featuredRecipes,
-    summerRecipes,
+    summerDrinkCandidates,
     cuisineStories,
     paneerRecipes,
     foodPreferenceStories,
     homeArticles,
   ] = await Promise.all([
-      db.recipes.count(),
+      db.recipes.count({ where: publishedRecipeWhere() }),
       db.recipes.findMany({
         where: {
-          isPublished: true,
+          ...publishedRecipeWhere(),
           imageUrl: { not: null },
           RecipeCategories: { slug: { in: ["veg", "vegan"] } },
         },
@@ -111,19 +179,26 @@ export default async function Home() {
             take: 1,
           },
         },
-        orderBy: { updatedAt: "desc" },
+        orderBy: [{ contentUpdatedAt: "desc" }, { updatedAt: "desc" }],
         take: 5,
       }),
       db.recipes.findMany({
-        where: {
-          isPublished: true,
-          imageUrl: { not: null },
-          RecipeCategories: { slug: { in: ["veg", "vegan"] } },
-          OR: [
-            { recipeSeasons: { title: "Summer" } },
-            { recipeSeasonTags: { some: { season: { title: "Summer" } } } },
-          ],
-        },
+        where: publishedRecipeAnd([
+          { imageUrl: { not: null } },
+          { RecipeCategories: { slug: { in: ["veg", "vegan"] } } },
+          { seasonality: "SEASONAL" },
+          {
+            OR: [
+              { recipeSeasons: { title: "Summer" } },
+              { recipeSeasonTags: { some: { season: { title: "Summer" } } } },
+            ],
+          },
+          {
+            recipeRecipeType: {
+              some: { recipeType: { slug: { in: [...summerDrinkTypeSlugs] } } },
+            },
+          },
+        ]),
         select: {
           id: true,
           title: true,
@@ -139,15 +214,23 @@ export default async function Home() {
             select: { nutrient: { select: { title: true } } },
             take: 1,
           },
+          recipeRecipeType: {
+            where: { recipeType: { slug: { in: [...summerDrinkTypeSlugs] } } },
+            select: { recipeType: { select: { slug: true } } },
+          },
         },
-        orderBy: { updatedAt: "desc" },
-        take: 4,
+        orderBy: [
+          { views: "desc" },
+          { contentUpdatedAt: "desc" },
+          { updatedAt: "desc" },
+        ],
+        take: 80,
       }),
       db.cuisines.findMany({
         where: {
           isPublished: true,
           recipeCuisine: {
-            some: { recipe: { isPublished: true, imageUrl: { not: null } } },
+            some: { recipe: { ...publishedRecipeWhere(), imageUrl: { not: null } } },
           },
         },
         select: {
@@ -156,7 +239,7 @@ export default async function Home() {
           slug: true,
           imageUrl: true,
           recipeCuisine: {
-            where: { recipe: { isPublished: true, imageUrl: { not: null } } },
+            where: { recipe: { ...publishedRecipeWhere(), imageUrl: { not: null } } },
             select: {
               recipe: {
                 select: {
@@ -165,7 +248,8 @@ export default async function Home() {
                   slug: true,
                   metaSlug: true,
                   imageUrl: true,
-                  RecipeCategories: { select: { name: true } },
+                  views: true,
+                  RecipeCategories: { select: { name: true, slug: true } },
                   recipeCookingTime: {
                     select: {
                       prepTime: true,
@@ -178,6 +262,18 @@ export default async function Home() {
                     select: { nutrient: { select: { title: true } } },
                     take: 1,
                   },
+                  recipeMealTime: {
+                    where: { mealTime: { isPublished: true } },
+                    select: {
+                      mealTime: { select: { title: true, slug: true } },
+                    },
+                  },
+                  recipeRecipeType: {
+                    where: { recipeType: { isPublished: true } },
+                    select: {
+                      recipeType: { select: { title: true, slug: true } },
+                    },
+                  },
                 },
               },
             },
@@ -187,7 +283,7 @@ export default async function Home() {
       }),
       db.recipes.findMany({
         where: {
-          isPublished: true,
+          ...publishedRecipeWhere(),
           imageUrl: { not: null },
           RecipeCategories: { slug: { in: ["veg", "vegan"] } },
           OR: [
@@ -221,7 +317,8 @@ export default async function Home() {
       db.recipeCategories.findMany({
         where: {
           isPublished: true,
-          recipe: { some: { isPublished: true, imageUrl: { not: null } } },
+          slug: { not: "desserts" },
+          recipe: { some: { ...publishedRecipeWhere(), imageUrl: { not: null } } },
         },
         select: {
           id: true,
@@ -229,7 +326,7 @@ export default async function Home() {
           slug: true,
           imageUrl: true,
           recipe: {
-            where: { isPublished: true, imageUrl: { not: null } },
+            where: { ...publishedRecipeWhere(), imageUrl: { not: null } },
             select: {
               id: true,
               title: true,
@@ -274,6 +371,7 @@ export default async function Home() {
         take: 4,
       }),
     ]);
+  const summerRecipes = pickSummerDrinkRecipes(summerDrinkCandidates);
   let plannedDays: MealPlanDay[] = [];
 
   if (user?.isPersonalised) {
@@ -348,41 +446,27 @@ export default async function Home() {
     }
   }
 
-  const websiteSchema = {
-    "@context": "https://schema.org",
-    "@type": "WebSite",
-    name: "Kya Khayen",
-    url: siteUrl,
-    potentialAction: {
-      "@type": "SearchAction",
-      target: `${siteUrl}/search?k={search_term_string}`,
-      "query-input": "required name=search_term_string",
-    },
-  };
-  const recipeListSchema = {
-    "@context": "https://schema.org",
-    "@type": "ItemList",
-    name: "Featured recipes from Kya Khayen",
-    itemListElement: featuredRecipes.map((recipe, index) => ({
-      "@type": "ListItem",
-      position: index + 1,
-      url: `${siteUrl}/${recipe.metaSlug ? `${recipe.slug}-${recipe.metaSlug}` : recipe.slug}`,
+  const recipeListSchema = itemListJsonLd(
+    "Featured recipes from Kya Khayen",
+    featuredRecipes.map((recipe) => ({
       name: recipe.title,
+      path: recipeHref(recipe),
+      image: recipe.imageUrl,
     })),
-  };
+  );
 
   return (
     <>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify(websiteSchema).replace(/</g, "\\u003c"),
+          __html: jsonLd([organizationJsonLd(), websiteJsonLd()]),
         }}
       />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify(recipeListSchema).replace(/</g, "\\u003c"),
+          __html: jsonLd(recipeListSchema),
         }}
       />
       <PremiumHomeHero
@@ -415,14 +499,23 @@ export default async function Home() {
           />
           <HomeEditorialStories articles={homeArticles} />
           <HomeFoodPreference
-            preferences={foodPreferenceStories.map((preference) => ({
-              id: preference.id,
-              name: preference.name,
-              slug: preference.slug,
-              imageUrl:
-                preference.imageUrl || preference.recipe[0]?.imageUrl || null,
-              recipes: preference.recipe,
-            }))}
+            preferences={foodPreferenceStories.map((preference) => {
+              const veganRecipes =
+                foodPreferenceStories.find((item) => item.slug === "vegan")
+                  ?.recipe ?? [];
+              const recipes =
+                preference.slug === "veg"
+                  ? uniqueByRecipeId([...preference.recipe, ...veganRecipes])
+                  : preference.recipe;
+
+              return {
+                id: preference.id,
+                name: preference.name,
+                slug: preference.slug,
+                imageUrl: preference.imageUrl || recipes[0]?.imageUrl || null,
+                recipes,
+              };
+            })}
           />
           <MealPlanStory
             recipes={paneerRecipes.length > 0 ? paneerRecipes : summerRecipes}

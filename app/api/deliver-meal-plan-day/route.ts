@@ -5,7 +5,9 @@ import { NextResponse } from "next/server";
 import CustomerMealPlanMail from "@/emails/customer-meal-plan-mail";
 import { db } from "@/lib/db";
 import { generateMealPlanPdf } from "@/lib/generate-meal-plan-pdf";
+import { hydrateMealPlanRecipes } from "@/lib/hydrate-meal-plan-recipes";
 import { sendEmail } from "@/lib/mail";
+import type { RecipeWithCategory } from "@/types/recipe";
 
 function getPrivateStorage() {
   const region = process.env.AWS_REGION;
@@ -100,7 +102,10 @@ export async function POST(request: Request) {
         status: 404,
       });
     }
-    const { mealsByTime } = JSON.parse(json);
+    const { mealsByTime = {} } = JSON.parse(json) as {
+      mealsByTime?: Record<string, RecipeWithCategory[]>;
+    };
+    const currentMealsByTime = await hydrateMealPlanRecipes(mealsByTime);
     const attachment = await generateMealPlanPdf(
       {
         name: user.name || "Member",
@@ -123,7 +128,7 @@ export async function POST(request: Request) {
           )
           .map(({ allergy }) => allergy.title),
       },
-      [{ date: planDate, mealsByTime }],
+      [{ date: planDate, mealsByTime: currentMealsByTime }],
       "Tomorrow's delivery",
     );
 

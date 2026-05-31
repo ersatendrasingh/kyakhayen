@@ -41,7 +41,7 @@ export async function PATCH(req: Request) {
     const [foodPreference, cookingSkill, validCuisines, validAllergies] =
       await Promise.all([
         db.recipeCategories.findFirst({
-          where: { id: foodPreferenceId, isPublished: true },
+          where: { id: foodPreferenceId, isPublished: true, slug: { not: "desserts" } },
         }),
         db.recipeDifficulty.findUnique({ where: { id: cookingSkillId } }),
         db.cuisines.findMany({

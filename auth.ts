@@ -37,8 +37,15 @@ export const {
           data: { emailVerified: new Date() },
         });
 
-        // Assign free plan to user
-        await assignFreePlanToUser(user.id);
+        // Existing email/password members linking Google already have access.
+        // Only create launch access when this is a genuinely plan-less account.
+        const hasExistingPlan = await db.userPlan.findFirst({
+          where: { userId: user.id },
+          select: { id: true },
+        });
+        if (!hasExistingPlan) {
+          await assignFreePlanToUser(user.id);
+        }
       } catch (error) {
         console.error("Error in linkAccount event:", error);
         throw new Error("Failed to assign free plan during account link");
@@ -120,7 +127,6 @@ export const {
         session.user.userPlanEndDate = token.userPlanEndDate as Date[];
         session.user.foodPreference = token.foodPreference as string;
         session.user.cookingSkill = token.cookingSkill as string;
-        session.user.firebaseToken = token.firebaseToken as string;
       }
 
       return session;
@@ -153,7 +159,6 @@ export const {
       token.cookingSkill = existingUser.cookingSkill?.title;
       token.createdAt = existingUser.createdAt;
       token.updateAt = existingUser.updateAt;
-      token.firebaseToken = existingUser.firebaseToken;
 
       token.isTwoFactorEnabled = existingUser.isTwoFactorEnabled;
 

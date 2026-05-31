@@ -3,30 +3,22 @@ import type { Metadata } from "next";
 import IntroSection from "@/components/subscription-plans/intro-section";
 import PricingTable from "@/components/subscription-plans/pricing-table";
 import { currentUser } from "@/lib/auth";
+import { buildSeoMetadata } from "@/lib/seo";
 
-const siteUrl = process.env.NEXT_PUBLIC_APP_URL || "https://www.kyakhayen.com";
-
-export const metadata: Metadata = {
+export const metadata: Metadata = buildSeoMetadata({
   title: "Meal Plan Membership | Kya Khayen",
   description:
     "Start with a free taste-based meal plan during launch, or choose membership access for continued meal-planning tools.",
-  alternates: { canonical: `${siteUrl}/subscription-plans` },
-  openGraph: {
-    title: "Meal Plan Membership | Kya Khayen",
-    description:
-      "Free launch access and optional membership plans for everyday food planning.",
-    url: `${siteUrl}/subscription-plans`,
-    type: "website",
-    images: [
-      {
-        url: `${siteUrl}/meta-images/subscription-plans.png`,
-        width: 1200,
-        height: 630,
-        alt: "Kya Khayen membership plans",
-      },
-    ],
-  },
-};
+  path: "/subscription-plans",
+  image: "/meta-images/subscription-plans.png",
+  imageAlt: "Kya Khayen membership plans",
+  keywords: [
+    "meal plan membership",
+    "meal planning tools",
+    "weekly meal planner",
+    "personalized meal plans",
+  ],
+});
 
 export default async function SubscriptionPlansPage() {
   const user = await currentUser();

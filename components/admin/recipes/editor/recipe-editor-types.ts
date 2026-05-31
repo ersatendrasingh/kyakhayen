@@ -3,6 +3,8 @@ export type RecipeEditorOption = {
   label: string;
 };
 
+export type RecipeSeasonality = "UNREVIEWED" | "ALL_YEAR" | "SEASONAL";
+
 export type RecipeEditorIngredient = {
   id: string;
   ingredientId: string;
@@ -28,11 +30,13 @@ export type RecipeEditorStep = {
 export type RecipeEditorRecord = {
   id: string;
   title: string;
+  slug: string;
   description: string | null;
   imageUrl: string | null;
   recipeCategoriesId: string | null;
   recipeDifficultyId: string | null;
   recipeSeasonsId: string | null;
+  seasonality: RecipeSeasonality;
   isPublished: boolean;
   metaTitle: string | null;
   metaDescription: string | null;
@@ -41,7 +45,13 @@ export type RecipeEditorRecord = {
     prepTime: number;
     cookTime: number;
     restTime: number;
+    totalTime?: number;
   } | null;
+  views: number;
+  createdAt: string;
+  updatedAt: string;
+  publishedAt: string | null;
+  contentUpdatedAt: string | null;
   ingredients: RecipeEditorIngredient[];
   steps: RecipeEditorStep[];
   cuisineIds: string[];
@@ -52,6 +62,7 @@ export type RecipeEditorRecord = {
   dietTypeIds: string[];
   recipeTypeIds: string[];
   bodyTypeIds: string[];
+  seasonIds: string[];
 };
 
 export type RecipeEditorOptions = {

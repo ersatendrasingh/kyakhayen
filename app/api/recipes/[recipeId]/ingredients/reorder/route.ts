@@ -1,5 +1,6 @@
 import { currentUser } from "@/lib/auth";
 import { db } from "@/lib/db";
+import { touchRecipeContentUpdatedAt } from "@/lib/touch-recipe-content";
 import { NextResponse } from "next/server";
 
 export async function PUT(
@@ -40,6 +41,7 @@ export async function PUT(
         })
       )
     );
+    await touchRecipeContentUpdatedAt(params.recipeId);
     return NextResponse.json("Recipe ingredients reordered successfully", {
       status: 200,
     });

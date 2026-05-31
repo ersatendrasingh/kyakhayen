@@ -1,0 +1,225 @@
+import type { Metadata } from "next";
+
+export const SITE_NAME = "Kya Khayen";
+export const SITE_TAGLINE = "Easy recipes, meal ideas, and weekly meal plans";
+export const DEFAULT_SITE_URL = "https://www.kyakhayen.com";
+export const DEFAULT_OG_IMAGE = "/meta-images/home.png";
+
+type SeoMetadataInput = {
+  title: string;
+  description: string;
+  path?: string;
+  image?: string | null;
+  imageAlt?: string;
+  type?: "website" | "article";
+  noIndex?: boolean;
+  keywords?: string[];
+  publishedTime?: Date | string | null;
+  modifiedTime?: Date | string | null;
+};
+
+type BreadcrumbItem = {
+  name: string;
+  path: string;
+};
+
+type ItemListEntry = {
+  name: string;
+  path: string;
+  image?: string | null;
+};
+
+function isLocalhost(url: URL) {
+  return ["localhost", "127.0.0.1", "0.0.0.0", "::1"].includes(url.hostname);
+}
+
+export function getSiteUrl() {
+  const configured =
+    process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_APP_URL || DEFAULT_SITE_URL;
+
+  try {
+    const parsed = new URL(configured);
+    return isLocalhost(parsed) ? DEFAULT_SITE_URL : parsed.origin;
+  } catch {
+    return DEFAULT_SITE_URL;
+  }
+}
+
+export function absoluteUrl(path = "/") {
+  if (/^https?:\/\//i.test(path)) return path;
+
+  const normalizedPath = path.startsWith("/") ? path : `/${path}`;
+  return `${getSiteUrl()}${normalizedPath === "/" ? "" : normalizedPath}`;
+}
+
+export function stripHtml(value?: string | null) {
+  return (value || "")
+    .replace(/<script[\s\S]*?<\/script>/gi, " ")
+    .replace(/<style[\s\S]*?<\/style>/gi, " ")
+    .replace(/<[^>]+>/g, " ")
+    .replace(/&nbsp;/g, " ")
+    .replace(/&amp;/g, "&")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+export function truncateText(value: string, maxLength = 158) {
+  const clean = value.replace(/\s+/g, " ").trim();
+  if (clean.length <= maxLength) return clean;
+
+  const truncated = clean.slice(0, maxLength + 1);
+  const lastSpace = truncated.lastIndexOf(" ");
+  return `${truncated.slice(0, lastSpace > 70 ? lastSpace : maxLength).trim()}...`;
+}
+
+export function seoDescription(
+  preferred?: string | null,
+  fallback?: string | null,
+  maxLength = 158,
+) {
+  return truncateText(stripHtml(preferred) || stripHtml(fallback) || SITE_TAGLINE, maxLength);
+}
+
+export function recipeHref(recipe: { slug: string; metaSlug?: string | null }) {
+  return `/${recipe.metaSlug ? `${recipe.slug}-${recipe.metaSlug}` : recipe.slug}`;
+}
+
+export function articleHref(article: { slug: string; metaSlug?: string | null }) {
+  return `/${article.metaSlug ? `${article.slug}-${article.metaSlug}` : article.slug}`;
+}
+
+export function indexRobots(): Metadata["robots"] {
+  return {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  };
+}
+
+export function noIndexRobots(): Metadata["robots"] {
+  return {
+    index: false,
+    follow: true,
+    googleBot: {
+      index: false,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  };
+}
+
+export function buildSeoMetadata({
+  title,
+  description,
+  path = "/",
+  image = DEFAULT_OG_IMAGE,
+  imageAlt = title,
+  type = "website",
+  noIndex = false,
+  keywords,
+  publishedTime,
+  modifiedTime,
+}: SeoMetadataInput): Metadata {
+  const canonical = absoluteUrl(path);
+  const imageUrl = absoluteUrl(image || DEFAULT_OG_IMAGE);
+  const cleanDescription = seoDescription(description);
+  const openGraph: NonNullable<Metadata["openGraph"]> = {
+    title,
+    description: cleanDescription,
+    url: canonical,
+    siteName: SITE_NAME,
+    locale: "en_US",
+    type,
+    images: [{ url: imageUrl, width: 1200, height: 630, alt: imageAlt }],
+    ...(type === "article" && publishedTime
+      ? { publishedTime: new Date(publishedTime).toISOString() }
+      : {}),
+    ...(type === "article" && modifiedTime
+      ? { modifiedTime: new Date(modifiedTime).toISOString() }
+      : {}),
+  };
+
+  return {
+    metadataBase: new URL(getSiteUrl()),
+    title,
+    description: cleanDescription,
+    keywords,
+    applicationName: SITE_NAME,
+    creator: SITE_NAME,
+    publisher: SITE_NAME,
+    robots: noIndex ? noIndexRobots() : indexRobots(),
+    alternates: { canonical },
+    openGraph,
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description: cleanDescription,
+      images: [imageUrl],
+    },
+  };
+}
+
+export function jsonLd(value: unknown) {
+  return JSON.stringify(value).replace(/</g, "\\u003c");
+}
+
+export function organizationJsonLd() {
+  return {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    name: SITE_NAME,
+    url: getSiteUrl(),
+    logo: absoluteUrl("/pwa/icon-512.png"),
+    sameAs: ["https://twitter.com/kyakhayen"],
+  };
+}
+
+export function websiteJsonLd() {
+  return {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    name: SITE_NAME,
+    url: getSiteUrl(),
+    potentialAction: {
+      "@type": "SearchAction",
+      target: `${absoluteUrl("/search")}?k={search_term_string}`,
+      "query-input": "required name=search_term_string",
+    },
+  };
+}
+
+export function breadcrumbJsonLd(items: BreadcrumbItem[]) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: items.map((item, index) => ({
+      "@type": "ListItem",
+      position: index + 1,
+      name: item.name,
+      item: absoluteUrl(item.path),
+    })),
+  };
+}
+
+export function itemListJsonLd(name: string, items: ItemListEntry[]) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    name,
+    itemListElement: items.map((item, index) => ({
+      "@type": "ListItem",
+      position: index + 1,
+      url: absoluteUrl(item.path),
+      name: item.name,
+      ...(item.image ? { image: absoluteUrl(item.image) } : {}),
+    })),
+  };
+}

@@ -21,23 +21,42 @@ const worker = new Worker(
   async (job) => {
     try {
       const isDeliveryJob = job.name === "deliverMealPlanDay";
+      const isPushAutomationJob =
+        job.name === "mealReminder" || job.name === "membershipExpiryReminder";
+      const isCampaignJob = job.name === "sendNotificationCampaign";
       console.log(
-        `Starting job ${job.id}: ${isDeliveryJob ? "Delivering meal plan day" : "Generating meal plan"} for user ${job.data.userId}`
+        `Starting job ${job.id}: ${isDeliveryJob ? "Delivering meal plan day" : isPushAutomationJob ? "Sending automated push" : isCampaignJob ? "Sending scheduled campaign" : "Generating meal plan"}`
       );
 
       // Update progress to 10%
       await job.updateProgress({
         percentage: 5,
-        message: isDeliveryJob
+        message: isCampaignJob
+          ? "Preparing scheduled broadcast"
+          : isPushAutomationJob
+            ? "Preparing reminder notification"
+            : isDeliveryJob
           ? "Preparing daily meal-plan delivery"
           : "Starting your personalized meal plan",
       });
 
+      const endpoint = isCampaignJob
+        ? "/api/push/dispatch"
+        : isPushAutomationJob
+          ? "/api/push/automation"
+          : isDeliveryJob
+            ? "/api/deliver-meal-plan-day"
+            : "/api/generate-meal-plan";
+      const body = isCampaignJob
+        ? { campaignId: job.data.campaignId }
+        : isPushAutomationJob
+          ? { ...job.data, kind: job.name }
+          : isDeliveryJob
+            ? { userId: job.data.userId, date: job.data.date }
+            : { userId: job.data.userId, jobId: job.id };
       const response = await axios.post(
-        `${APP_URL}${isDeliveryJob ? "/api/deliver-meal-plan-day" : "/api/generate-meal-plan"}`,
-        isDeliveryJob
-          ? { userId: job.data.userId, date: job.data.date }
-          : { userId: job.data.userId, jobId: job.id },
+        `${APP_URL}${endpoint}`,
+        body,
         {
           headers: {
             "x-meal-plan-worker-secret": MEAL_PLAN_WORKER_SECRET,
@@ -47,12 +66,16 @@ const worker = new Worker(
 
       await job.updateProgress({
         percentage: 100,
-        message: isDeliveryJob
+        message: isCampaignJob
+          ? "Scheduled broadcast delivered"
+          : isPushAutomationJob
+            ? "Reminder notification delivered"
+            : isDeliveryJob
           ? "Daily meal-plan PDF delivered"
           : "Your meal plan is ready",
       });
       console.log(
-        `Job ${job.id}: Progress 100% - ${isDeliveryJob ? "delivery complete" : "meal plan generation complete"}`
+        `Job ${job.id}: Progress 100% - complete`
       );
 
       return response.data;

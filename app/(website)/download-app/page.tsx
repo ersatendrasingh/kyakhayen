@@ -9,22 +9,16 @@ import {
   SectionEyebrow,
   TrustHero,
 } from "@/components/trust/trust-page";
+import { buildSeoMetadata } from "@/lib/seo";
 
-const siteUrl = process.env.NEXT_PUBLIC_APP_URL || "https://www.kyakhayen.com";
-
-export const metadata: Metadata = {
+export const metadata: Metadata = buildSeoMetadata({
   title: "Install Kya Khayen App | Recipes and Meal Ideas on Mobile",
   description:
     "Install the Kya Khayen web app to explore recipes, save dishes and open your taste-based meal plan from your phone.",
-  alternates: { canonical: `${siteUrl}/download-app` },
-  openGraph: {
-    title: "Install Kya Khayen App | Recipes and Meal Ideas on Mobile",
-    description: "Take everyday recipe discovery and meal planning with you.",
-    url: `${siteUrl}/download-app`,
-    type: "website",
-    images: [{ url: `${siteUrl}/meta-images/download-app.png`, width: 1200, height: 630 }],
-  },
-};
+  path: "/download-app",
+  image: "/meta-images/download-app.png",
+  imageAlt: "Install the Kya Khayen web app",
+});
 
 const features = [
   {

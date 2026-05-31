@@ -12,7 +12,9 @@ import {
   type PdfMealPlanDay,
 } from "@/lib/generate-meal-plan-pdf";
 import type { RecipeWithCategory } from "@/types/recipe";
-import { scheduleMealPlanDeliveries } from "@/lib/meal-plan-queue";
+import { NotificationAutomationTrigger } from "@prisma/client";
+import { scheduleMealPlanDeliveries, scheduleMealReminders } from "@/lib/meal-plan-queue";
+import { runUserAutomationRules } from "@/lib/notification-automations";
 
 const getS3Client = () => {
   const region = process.env.AWS_REGION;
@@ -243,6 +245,19 @@ export const generateMealPlan = async (
     } catch (emailError) {
       console.error("Meal plan created, but ready email could not be sent:", emailError);
     }
+    try {
+      await runUserAutomationRules({
+        trigger: NotificationAutomationTrigger.MEAL_PLAN_READY,
+        userId,
+        dedupeScope: `meal-plan-ready-${userId}-${formatISO(today, { representation: "date" })}`,
+      });
+      await scheduleMealReminders(
+        userId,
+        mealPlanResults.map(({ date }) => date),
+      );
+    } catch (notificationError) {
+      console.error("[MEAL_PLAN_NOTIFICATIONS]", notificationError);
+    }
     await reportProgress?.(97, "Your meal plan is ready");
 
     return mealPlanResults;
@@ -255,7 +270,7 @@ export const generateMealPlan = async (
 // Function to get dates between start and end date inclusive
 const getDatesBetween = (startDate: Date, endDate: Date): Date[] => {
   const dates: Date[] = [];
-  let currentDate = new Date(startDate);
+  const currentDate = new Date(startDate);
 
   while (currentDate <= endDate) {
     dates.push(new Date(currentDate));

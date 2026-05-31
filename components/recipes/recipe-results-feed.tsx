@@ -39,6 +39,11 @@ export default function RecipeResultsFeed({
   const [isPending, startTransition] = useTransition();
   const sentinelRef = useRef<HTMLDivElement>(null);
 
+  useEffect(() => {
+    setRecipes(initialRecipes);
+    setNextCursor(initialCursor);
+  }, [initialCursor, initialRecipes]);
+
   const loadNextPage = useCallback(() => {
     if (!nextCursor || isPending) return;
 

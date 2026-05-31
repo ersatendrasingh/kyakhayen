@@ -12,15 +12,18 @@ import Usermenu from "@/components/header/user-menu";
 import type {
   CategoryNavItem,
   CuisineNavItem,
+  MenuLink,
   NavItem,
+  SeasonNavItem,
 } from "@/components/header/navbar";
 
 type MobileHeaderProps = {
+  currentSeason: SeasonNavItem;
   mealTimes: NavItem[];
   cuisines: CuisineNavItem[];
   categories: CategoryNavItem[];
   recipeTypes: NavItem[];
-  cookingMethods: NavItem[];
+  drinkItems: MenuLink[];
   dietTypes: NavItem[];
 };
 
@@ -32,7 +35,7 @@ function CompactBrandIcon() {
       className="brand-icon-glow relative flex size-[42px] shrink-0 items-center justify-start overflow-hidden rounded-[13px] border border-[#ecd9c1] bg-white pl-0.5 shadow-sm"
     >
       <Image
-        src="/icons-192.png"
+        src="/pwa/icon-192.png"
         alt=""
         width={36}
         height={36}
@@ -43,11 +46,12 @@ function CompactBrandIcon() {
 }
 
 export default function MobileHeader({
+  currentSeason,
   mealTimes,
   cuisines,
   categories,
   recipeTypes,
-  cookingMethods,
+  drinkItems,
   dietTypes,
 }: MobileHeaderProps) {
   const [compact, setCompact] = useState(false);
@@ -71,11 +75,12 @@ export default function MobileHeader({
         >
           <div className="flex items-center justify-between gap-3">
             <MobileMenuIcon
+              currentSeason={currentSeason}
               mealTimes={mealTimes}
               cuisines={cuisines}
               categories={categories}
               recipeTypes={recipeTypes}
-              cookingMethods={cookingMethods}
+              drinkItems={drinkItems}
               dietTypes={dietTypes}
             />
             <Logo />

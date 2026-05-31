@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { GoogleTagManager } from "@next/third-parties/google";
 import { SessionProvider } from "next-auth/react";
 import { Poppins } from "next/font/google";
@@ -11,6 +11,7 @@ import { CartProvider } from "@/context/cart-context";
 import { UserCountryProvider } from "@/context/user-country-context";
 import InstallPrompt from "@/components/install-prompt";
 import { ThemeProvider } from "@/components/theme-provider";
+import { buildSeoMetadata, DEFAULT_OG_IMAGE, SITE_NAME } from "@/lib/seo";
 
 const poppins = Poppins({
   subsets: ["latin"],
@@ -20,54 +21,54 @@ const poppins = Poppins({
 });
 
 const meta = {
-  title: "Kya Khayen | Recipes & Everyday Meal Plans",
+  title: "Kya Khayen | Easy Recipes, Meal Ideas and Meal Plans",
   description:
-    "Explore Indian and international recipes, easy meal plans, vegetarian ideas, snacks for kids, and personalized cooking inspiration.",
-  image: `${process.env.NEXT_PUBLIC_APP_URL}/meta-images/home.png`,
+    "Discover easy recipes, healthy meal ideas, vegetarian and vegan dishes, breakfast inspiration, dinner recipes and weekly meal plans.",
+  image: DEFAULT_OG_IMAGE,
 };
 
 export const metadata: Metadata = {
-  manifest: "/manifest.json",
-  title: meta.title,
-  description: meta.description,
-  robots: {
-    index: true,
-    follow: true,
-    nocache: false,
-    googleBot: {
-      index: true,
-      follow: true,
-      noimageindex: false,
-      "max-video-preview": -1,
-      "max-image-preview": "large",
-      "max-snippet": -1,
-    },
-  },
-  openGraph: {
+  ...buildSeoMetadata({
     title: meta.title,
     description: meta.description,
-    url: process.env.NEXT_PUBLIC_APP_URL,
-    locale: "en-US",
-    siteName: meta.title,
-    type: "website",
-    images: [
-      {
-        url: meta.image,
-        width: 1200,
-        height: 630,
-        alt: meta.title,
-      },
+    path: "/",
+    image: meta.image,
+    imageAlt: "Kya Khayen recipe and meal planning homepage",
+    keywords: [
+      "easy recipes",
+      "healthy recipes",
+      "meal ideas",
+      "weekly meal plan",
+      "meal planning",
+      "vegetarian recipes",
+      "vegan recipes",
+      "breakfast recipes",
+      "dinner ideas",
+      "Kya Khayen",
     ],
+  }),
+  applicationName: SITE_NAME,
+  manifest: "/manifest.json",
+  icons: {
+    icon: [
+      { url: "/pwa/icon-192.png", type: "image/png", sizes: "192x192" },
+      { url: "/pwa/icon-512.png", type: "image/png", sizes: "512x512" },
+    ],
+    apple: [{ url: "/pwa/apple-touch-icon.png", sizes: "180x180", type: "image/png" }],
   },
-  twitter: {
-    title: meta.title,
-    description: meta.description,
-    images: [meta.image],
-    card: "summary_large_image",
+  appleWebApp: {
+    capable: true,
+    title: SITE_NAME,
+    statusBarStyle: "black-translucent",
   },
-  alternates: {
-    canonical: process.env.NEXT_PUBLIC_APP_URL,
+  formatDetection: {
+    telephone: false,
   },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#10231c",
+  colorScheme: "light dark",
 };
 
 export default async function RootLayout({

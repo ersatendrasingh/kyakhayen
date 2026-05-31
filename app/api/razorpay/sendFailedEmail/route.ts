@@ -27,8 +27,10 @@ export async function POST(req: Request) {
       },
       include: {
         user: {
-          include: {
-            UserAddress: true,
+          select: {
+            name: true,
+            email: true,
+            phoneNumber: true,
           },
         },
         items: {
@@ -52,7 +54,6 @@ export async function POST(req: Request) {
       },
     });
 
-    const userAddress = order.user.UserAddress[0];
     const customerName = order.user.name || "Kya Khayen member";
     const customerEmail = order.user.email;
     const customerPhone = order.user.phoneNumber || "";
@@ -102,9 +103,6 @@ export async function POST(req: Request) {
           currency: order.currency as string,
           email: customerEmail as string,
           phoneNumber: customerPhone,
-          country: userAddress?.country || "",
-          state: userAddress?.state || "",
-          city: userAddress?.city || "",
           paymentMethod: "Razorpay",
           paymentStatus: paymentStatus,
           orderDetails: {

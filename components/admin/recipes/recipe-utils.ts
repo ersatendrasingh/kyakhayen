@@ -5,13 +5,25 @@ const escapeCsv = (value: string | number | boolean | null) =>
 
 export function exportRecipes(recipes: RecipeListRecord[], fileName: string) {
   const rows = [
-    ["title", "slug", "category", "ingredients", "steps", "published", "updatedAt"],
+    [
+      "title",
+      "slug",
+      "category",
+      "difficulty",
+      "seasonUse",
+      "seasons",
+      "totalMinutes",
+      "published",
+      "updatedAt",
+    ],
     ...recipes.map((recipe) => [
       recipe.title,
       recipe.slug,
       recipe.category?.name ?? "",
-      recipe.ingredientCount,
-      recipe.methodCount,
+      recipe.difficulty?.title ?? "",
+      recipe.seasonality,
+      recipe.seasons.map((season) => season.title).join("; "),
+      recipe.totalMinutes ?? "",
       recipe.isPublished,
       recipe.updatedAt,
     ]),

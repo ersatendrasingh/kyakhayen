@@ -12,6 +12,7 @@ import {
   RecipeSteam,
   shouldShowRecipeSteam,
 } from "@/components/recipes/recipe-steam";
+import { recipeCollectionHref } from "@/lib/recipe-collection-url";
 
 export type DiscoveryRecipe = {
   id: string;
@@ -19,7 +20,8 @@ export type DiscoveryRecipe = {
   slug: string;
   metaSlug: string | null;
   imageUrl: string | null;
-  RecipeCategories: { name: string } | null;
+  views?: number;
+  RecipeCategories: { name: string; slug?: string | null } | null;
   recipeCookingTime: {
     prepTime: number;
     cookTime: number;
@@ -27,6 +29,12 @@ export type DiscoveryRecipe = {
   } | null;
   recipeNutrient: Array<{
     nutrient: { title: string };
+  }>;
+  recipeMealTime?: Array<{
+    mealTime: { title?: string; slug: string };
+  }>;
+  recipeRecipeType?: Array<{
+    recipeType: { title?: string; slug: string };
   }>;
 };
 
@@ -81,21 +89,21 @@ export function SeasonalSpotlight({
           <div className="mb-8 flex flex-col justify-between gap-5 lg:flex-row lg:items-end">
             <div>
               <p className="mb-3 inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.25em] text-[#d8edc4]">
-                <SunMedium className="size-4" /> Summer table
+                <SunMedium className="size-4" /> Summer sips
               </p>
               <h2 className="max-w-2xl text-3xl font-semibold tracking-tight text-white sm:text-4xl">
-                Fresh, cooling food for warmer days
+                Fresh, cooling drinks for warmer days
               </h2>
               <p className="mt-3 max-w-xl text-sm leading-7 text-white/70 sm:text-base">
-                Greens, cooling bowls and light plates selected for the season
-                you are cooking in right now.
+                Smoothies, juices, sharbat and chilled sips selected for the
+                season you are in right now.
               </p>
             </div>
             <Link
-              href="/recipes?k=summer&type=season"
+              href={recipeCollectionHref("beveragesmoothie")}
               className="inline-flex shrink-0 items-center gap-2 rounded-full bg-white/12 px-5 py-3 text-sm font-semibold text-white transition hover:bg-white/20"
             >
-              See summer recipes <ArrowRight className="size-4" />
+              See cooling drinks <ArrowRight className="size-4" />
             </Link>
           </div>
 
@@ -114,7 +122,7 @@ export function SeasonalSpotlight({
                   <Leaf className="size-3.5" /> Seasonal inspiration
                 </span>
                 <p className="mt-4 max-w-sm text-2xl font-semibold leading-tight">
-                  Sip green. Eat light. Stay refreshed.
+                  Sip fresh. Stay cool. Feel refreshed.
                 </p>
               </div>
             </div>
@@ -194,7 +202,7 @@ export function InterestSpotlight({
             </p>
           </div>
           <Link
-            href="/recipes?k=paneer&type=ingredient"
+            href={recipeCollectionHref("paneer")}
             className="inline-flex items-center gap-2 text-sm font-semibold text-primary transition hover:gap-3"
           >
             All paneer recipes <ArrowRight className="size-4" />
@@ -321,7 +329,7 @@ export function MealPlanStory({
   const plannedMeals = selectedDay?.meals.slice(0, 3) ?? [];
   const signals = hasPersonalizedDay
     ? ["Your saved plan", `${selectedDay.dayLabel}'s meals`, "Personalized"]
-    : ["Vegetarian", "North Indian", "Under 30 min"];
+    : ["Vegetarian", "Quick dinner", "Under 30 min"];
 
   return (
     <section className="home-surface home-meal-story py-16 sm:py-24">

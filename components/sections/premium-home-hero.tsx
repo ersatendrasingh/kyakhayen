@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 
 import Container from "@/components/container";
 import HomeMealPlanAction from "@/components/sections/home-meal-plan-action";
+import { recipeCollectionHref } from "@/lib/recipe-collection-url";
 
 type PremiumHomeHeroProps = {
   catalogRecipeCount: number;
@@ -13,16 +14,16 @@ type PremiumHomeHeroProps = {
 };
 
 const discoveryLinks = [
-  { label: "Comfort food", href: "/recipes?k=comfort&type=recipeType" },
-  { label: "Healthy & tasty", href: "/recipes?k=healthy&type=recipeType" },
-  { label: "North Indian", href: "/recipes?k=north-indian&type=cuisine" },
-  { label: "Protein rich", href: "/recipes?k=protein&type=recipeType" },
+  { label: "Comfort food", href: "/search?k=comfort%20food" },
+  { label: "Healthy & tasty", href: "/search?k=healthy%20recipes" },
+  { label: "Quick dinner", href: "/search?k=quick%20dinner" },
+  { label: "Protein rich", href: recipeCollectionHref("protein") },
 ];
 
 const inspirationCards = [
   {
     label: "Ready in 20 mins",
-    href: "/recipes?k=dinner&type=mealTime",
+    href: recipeCollectionHref("dinner"),
     icon: Flame,
   },
   {

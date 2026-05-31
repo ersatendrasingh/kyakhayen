@@ -3,6 +3,7 @@
 import { UserRole } from "@prisma/client";
 import {
   Ban,
+  BellRing,
   CalendarPlus2,
   ImagePlus,
   Mail,
@@ -18,6 +19,7 @@ import { type ReactNode, useState } from "react";
 import { toast } from "sonner";
 
 import { MediaLibraryDialog } from "@/components/admin/media/media-library-dialog";
+import { TargetedNotificationDialog } from "@/components/admin/notifications/targeted-notification-dialog";
 import type { ManagedUser, UserAdminOptions } from "@/components/admin/users/user-types";
 import {
   AlertDialog,
@@ -29,7 +31,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -81,6 +82,7 @@ export function UserAdminControls({
   const [profileImageOpen, setProfileImageOpen] = useState(false);
   const [preferencesOpen, setPreferencesOpen] = useState(false);
   const [membershipOpen, setMembershipOpen] = useState(false);
+  const [notificationOpen, setNotificationOpen] = useState(false);
   const [deletingAssignmentId, setDeletingAssignmentId] = useState<string | null>(null);
   const [statusOpen, setStatusOpen] = useState(false);
   const [deleteUserOpen, setDeleteUserOpen] = useState(false);
@@ -305,6 +307,11 @@ export function UserAdminControls({
               </Button>
             </ActionIcon>
           )}
+          <ActionIcon label="Send push notification">
+            <Button size="icon" variant="ghost" className="rounded-xl" aria-label="Send push notification" onClick={() => setNotificationOpen(true)}>
+              <BellRing />
+            </Button>
+          </ActionIcon>
           <ActionIcon label="Edit account">
             <Button size="icon" variant="ghost" className="rounded-xl" aria-label="Edit account" onClick={() => setProfileOpen(true)}>
               <Pencil />
@@ -345,6 +352,12 @@ export function UserAdminControls({
           </ActionIcon>
         </div>
       </TooltipProvider>
+
+      <TargetedNotificationDialog
+        open={notificationOpen}
+        onOpenChange={setNotificationOpen}
+        user={{ id: user.id, name: user.name, email: user.email }}
+      />
 
       <Dialog open={profileOpen} onOpenChange={setProfileOpen}>
         <DialogContent className="max-h-[calc(100vh-2rem)] overflow-y-auto rounded-[28px] sm:max-w-xl">

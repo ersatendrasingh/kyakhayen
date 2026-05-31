@@ -14,12 +14,14 @@ import {
 import {
   BookOpen,
   CheckCircle2,
+  Clock3,
   Download,
   FilePenLine,
   Plus,
   RotateCcw,
   Search,
   SlidersHorizontal,
+  Tags,
   Trash2,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -44,7 +46,17 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Table,
   TableBody,
@@ -67,9 +79,72 @@ function buildPageHref(filters: RecipeFilters, page: number) {
   if (filters.cuisineId) params.set("cuisine", filters.cuisineId);
   if (filters.mealTimeId) params.set("mealTime", filters.mealTimeId);
   if (filters.status) params.set("status", filters.status);
+  if (filters.difficultyId) params.set("difficulty", filters.difficultyId);
+  if (filters.seasonality) params.set("seasonality", filters.seasonality);
+  if (filters.seasonId) params.set("season", filters.seasonId);
+  if (filters.cookingMethodId) params.set("cookingMethod", filters.cookingMethodId);
+  if (filters.allergyId) params.set("allergy", filters.allergyId);
+  if (filters.nutrientId) params.set("nutrient", filters.nutrientId);
+  if (filters.dietTypeId) params.set("dietType", filters.dietTypeId);
+  if (filters.recipeTypeId) params.set("recipeType", filters.recipeTypeId);
+  if (filters.bodyTypeId) params.set("bodyType", filters.bodyTypeId);
+  if (filters.ingredientId) params.set("ingredient", filters.ingredientId);
+  if (filters.minTime) params.set("minTime", filters.minTime);
+  if (filters.maxTime) params.set("maxTime", filters.maxTime);
   if (page > 1) params.set("page", String(page));
   const query = params.toString();
   return query ? `/admin/recipes?${query}` : "/admin/recipes";
+}
+
+const emptyFilters: RecipeFilters = {
+  search: "",
+  categoryId: "",
+  cuisineId: "",
+  mealTimeId: "",
+  status: "",
+  difficultyId: "",
+  seasonality: "",
+  seasonId: "",
+  cookingMethodId: "",
+  allergyId: "",
+  nutrientId: "",
+  dietTypeId: "",
+  recipeTypeId: "",
+  bodyTypeId: "",
+  ingredientId: "",
+  minTime: "",
+  maxTime: "",
+};
+
+const advancedFilterKeys = [
+  "difficultyId",
+  "seasonality",
+  "seasonId",
+  "cookingMethodId",
+  "allergyId",
+  "nutrientId",
+  "dietTypeId",
+  "recipeTypeId",
+  "bodyTypeId",
+  "ingredientId",
+  "minTime",
+  "maxTime",
+] satisfies Array<keyof RecipeFilters>;
+
+function visiblePageNumbers(page: number, pageCount: number) {
+  const candidates = new Set([
+    1,
+    pageCount,
+    page - 2,
+    page - 1,
+    page,
+    page + 1,
+    page + 2,
+  ]);
+
+  return Array.from(candidates)
+    .filter((number) => number >= 1 && number <= pageCount)
+    .sort((left, right) => left - right);
 }
 
 export function RecipesDashboard({
@@ -77,6 +152,15 @@ export function RecipesDashboard({
   categories,
   cuisines,
   mealTimes,
+  difficulties,
+  seasons,
+  cookingMethods,
+  allergies,
+  nutrients,
+  dietTypes,
+  recipeTypes,
+  bodyTypes,
+  ingredients,
   stats,
   filters,
   page,
@@ -87,11 +171,20 @@ export function RecipesDashboard({
   categories: RecipeFilterOption[];
   cuisines: RecipeFilterOption[];
   mealTimes: RecipeFilterOption[];
+  difficulties: RecipeFilterOption[];
+  seasons: RecipeFilterOption[];
+  cookingMethods: RecipeFilterOption[];
+  allergies: RecipeFilterOption[];
+  nutrients: RecipeFilterOption[];
+  dietTypes: RecipeFilterOption[];
+  recipeTypes: RecipeFilterOption[];
+  bodyTypes: RecipeFilterOption[];
+  ingredients: RecipeFilterOption[];
   stats: {
     total: number;
     published: number;
     drafts: number;
-    contentReady: number;
+    averageMinutes: number;
   };
   filters: RecipeFilters;
   page: number;
@@ -106,6 +199,13 @@ export function RecipesDashboard({
   const [deleteSelection, setDeleteSelection] = useState<DeleteSelection>(null);
   const [deleting, setDeleting] = useState(false);
   const [publishingId, setPublishingId] = useState<string | null>(null);
+  const [jumpPage, setJumpPage] = useState(String(page));
+  const [bulkTagOpen, setBulkTagOpen] = useState(false);
+  const [bulkTagging, setBulkTagging] = useState(false);
+  const [bulkDifficultyId, setBulkDifficultyId] = useState("__KEEP__");
+  const [bulkSeasonality, setBulkSeasonality] = useState("__KEEP__");
+  const [bulkSeasonIds, setBulkSeasonIds] = useState<string[]>([]);
+  const [advancedOpen, setAdvancedOpen] = useState(false);
 
   const refresh = () => {
     setRowSelection({});
@@ -119,16 +219,19 @@ export function RecipesDashboard({
   };
 
   const clearFilters = () => {
-    const cleared: RecipeFilters = {
-      search: "",
-      categoryId: "",
-      cuisineId: "",
-      mealTimeId: "",
-      status: "",
-    };
-    setFilterValues(cleared);
+    setFilterValues(emptyFilters);
     setRowSelection({});
     router.replace("/admin/recipes", { scroll: false });
+  };
+
+  const goToPage = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const target = Math.min(
+      Math.max(Number.parseInt(jumpPage, 10) || page, 1),
+      pageCount,
+    );
+    setJumpPage(String(target));
+    router.push(buildPageHref(filters, target), { scroll: false });
   };
 
   const updatePublished = async (recipe: RecipeListRecord, checked: boolean) => {
@@ -140,10 +243,12 @@ export function RecipesDashboard({
       );
 
       if (!response.ok) {
+        const message = (await response.text()).replace(/^"|"$/g, "");
         throw new Error(
-          checked
-            ? "Description and cover image are required before publishing."
-            : "Unable to unpublish recipe."
+          message ||
+            (checked
+              ? "Complete content, difficulty and season use before publishing."
+              : "Unable to unpublish recipe.")
         );
       }
 
@@ -181,6 +286,93 @@ export function RecipesDashboard({
     deleteSelection?.type === "single"
       ? [deleteSelection.recipe]
       : deleteSelection?.recipes ?? [];
+  const pageNumbers = visiblePageNumbers(page, pageCount);
+  const activeAdvancedCount = advancedFilterKeys.filter((key) => Boolean(filterValues[key])).length;
+  const advancedSelectFilters: Array<{
+    key: keyof RecipeFilters;
+    label: string;
+    placeholder: string;
+    options: RecipeFilterOption[];
+  }> = [
+    { key: "categoryId", label: "Food category", placeholder: "Any category", options: categories },
+    { key: "difficultyId", label: "Difficulty", placeholder: "Any difficulty", options: difficulties },
+    { key: "seasonId", label: "Season", placeholder: "Any season", options: seasons },
+    { key: "cuisineId", label: "Cuisine", placeholder: "Any cuisine", options: cuisines },
+    { key: "mealTimeId", label: "Meal time", placeholder: "Any meal time", options: mealTimes },
+    { key: "cookingMethodId", label: "Cooking method", placeholder: "Any cooking method", options: cookingMethods },
+    { key: "nutrientId", label: "Nutrient", placeholder: "Any nutrient", options: nutrients },
+    { key: "dietTypeId", label: "Diet type", placeholder: "Any diet type", options: dietTypes },
+    { key: "recipeTypeId", label: "Recipe type", placeholder: "Any recipe type", options: recipeTypes },
+    { key: "bodyTypeId", label: "Body type", placeholder: "Any body type", options: bodyTypes },
+    { key: "allergyId", label: "Allergy", placeholder: "Any allergy", options: allergies },
+    { key: "ingredientId", label: "Ingredient", placeholder: "Any ingredient", options: ingredients },
+  ];
+
+  const toggleBulkSeason = (seasonId: string, checked: boolean) => {
+    setBulkSeasonIds((current) =>
+      checked
+        ? [...new Set([...current, seasonId])]
+        : current.filter((id) => id !== seasonId)
+    );
+  };
+
+  const resetBulkTagForm = () => {
+    setBulkDifficultyId("__KEEP__");
+    setBulkSeasonality("__KEEP__");
+    setBulkSeasonIds([]);
+  };
+
+  const applyBulkTags = async () => {
+    if (!selectedRecipes.length) return;
+
+    if (bulkDifficultyId === "__KEEP__" && bulkSeasonality === "__KEEP__") {
+      toast.error("Choose difficulty or season use before applying.");
+      return;
+    }
+
+    if (bulkSeasonality === "SEASONAL" && bulkSeasonIds.length === 0) {
+      toast.error("Select at least one season for strict seasonal recipes.");
+      return;
+    }
+
+    const payload: Record<string, unknown> = {
+      recipeIds: selectedRecipes.map((recipe) => recipe.id),
+    };
+
+    if (bulkDifficultyId !== "__KEEP__") {
+      payload.recipeDifficultyId =
+        bulkDifficultyId === "__CLEAR__" ? null : bulkDifficultyId;
+    }
+
+    if (bulkSeasonality !== "__KEEP__") {
+      payload.seasonality = bulkSeasonality;
+      payload.seasonIds = bulkSeasonality === "SEASONAL" ? bulkSeasonIds : [];
+    }
+
+    try {
+      setBulkTagging(true);
+      const response = await fetch("/api/recipes/bulk-tags", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        const message = await response.text();
+        throw new Error(message || "Unable to update selected recipes.");
+      }
+
+      const result = (await response.json()) as { updated?: number };
+      toast.success(`${result.updated ?? selectedRecipes.length} recipes updated`);
+      setBulkTagOpen(false);
+      resetBulkTagForm();
+      refresh();
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Unable to update selected recipes.");
+    } finally {
+      setBulkTagging(false);
+    }
+  };
 
   const confirmDelete = async () => {
     if (!deleteItems.length) return;
@@ -240,7 +432,11 @@ export function RecipesDashboard({
             { label: "Total Recipes", value: stats.total, icon: BookOpen },
             { label: "Published", value: stats.published, icon: CheckCircle2 },
             { label: "Drafts", value: stats.drafts, icon: FilePenLine },
-            { label: "Content Ready", value: stats.contentReady, icon: CheckCircle2 },
+            {
+              label: "Avg Total Time",
+              value: stats.averageMinutes ? `${stats.averageMinutes}m` : "0m",
+              icon: Clock3,
+            },
           ].map((stat) => (
             <div key={stat.label} className="admin-taxonomy-stat rounded-3xl px-5 py-5 backdrop-blur">
               <div className="flex items-center justify-between gap-4">
@@ -256,7 +452,7 @@ export function RecipesDashboard({
       <section className="overflow-hidden rounded-[28px] border bg-card p-4 shadow-sm sm:p-5">
         <form
           onSubmit={applyFilters}
-          className="grid gap-3 xl:grid-cols-[minmax(220px,1fr)_minmax(130px,170px)_minmax(130px,170px)_minmax(130px,170px)_minmax(120px,145px)_3rem_3rem]"
+          className="grid gap-3 xl:grid-cols-[minmax(220px,1fr)_minmax(130px,170px)_minmax(130px,170px)_minmax(130px,170px)_minmax(120px,145px)_minmax(130px,150px)_3rem_3rem]"
         >
           <div className="relative">
             <Search className="absolute top-1/2 left-4 size-4 -translate-y-1/2 text-muted-foreground" />
@@ -316,7 +512,25 @@ export function RecipesDashboard({
             <option value="published">Published</option>
             <option value="draft">Draft</option>
             <option value="incomplete">Needs content</option>
+            <option value="needs-tags">Needs tags</option>
+            <option value="missing-difficulty">Missing difficulty</option>
+            <option value="needs-season-review">Needs season review</option>
+            <option value="ready-to-publish">Ready to publish</option>
           </select>
+          <Button
+            type="button"
+            variant="outline"
+            className="h-12 rounded-2xl"
+            onClick={() => setAdvancedOpen(true)}
+          >
+            <SlidersHorizontal />
+            More filters
+            {activeAdvancedCount > 0 && (
+              <Badge variant="secondary" className="ml-1">
+                {activeAdvancedCount}
+              </Badge>
+            )}
+          </Button>
           <div className="grid grid-cols-2 gap-3 xl:contents">
             <Button type="submit" className="h-12 rounded-2xl xl:size-12" aria-label="Apply filters">
               <SlidersHorizontal />
@@ -336,6 +550,15 @@ export function RecipesDashboard({
         </form>
 
         <div className="mt-5 flex flex-wrap justify-end gap-2">
+          <Button
+            variant="outline"
+            className="rounded-2xl"
+            disabled={!selectedRecipes.length}
+            onClick={() => setBulkTagOpen(true)}
+          >
+            <Tags />
+            Tag Selected
+          </Button>
           <Button
             variant="outline"
             className="rounded-2xl"
@@ -366,7 +589,7 @@ export function RecipesDashboard({
                       key={header.id}
                       className={cn(
                         "h-14 px-4",
-                        header.column.id === "coverage" && "hidden lg:table-cell",
+                        header.column.id === "tagging" && "hidden xl:table-cell",
                         header.column.id === "updatedAt" && "hidden xl:table-cell"
                       )}
                     >
@@ -387,7 +610,7 @@ export function RecipesDashboard({
                         key={cell.id}
                         className={cn(
                           "px-4 py-3",
-                          cell.column.id === "coverage" && "hidden lg:table-cell",
+                          cell.column.id === "tagging" && "hidden xl:table-cell",
                           cell.column.id === "updatedAt" && "hidden xl:table-cell"
                         )}
                       >
@@ -412,16 +635,58 @@ export function RecipesDashboard({
                 <Badge variant="secondary">{selectedRecipes.length} selected</Badge>
               )}
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center justify-end gap-2">
+              <Button variant="outline" size="sm" disabled={page <= 1} asChild={page > 1}>
+                {page > 1 ? <Link href={buildPageHref(filters, 1)}>First</Link> : "First"}
+              </Button>
               <Button variant="outline" size="sm" disabled={page <= 1} asChild={page > 1}>
                 {page > 1 ? <Link href={buildPageHref(filters, page - 1)}>Previous</Link> : "Previous"}
               </Button>
-              <span className="px-2 text-sm text-muted-foreground">
-                Page {page} of {pageCount}
-              </span>
+              <nav className="flex items-center gap-1" aria-label="Recipe pages">
+                {pageNumbers.map((number, index) => (
+                  <span key={number} className="flex items-center gap-1">
+                    {index > 0 && number - pageNumbers[index - 1] > 1 && (
+                      <span className="px-1 text-sm text-muted-foreground">...</span>
+                    )}
+                    <Button
+                      variant={number === page ? "default" : "outline"}
+                      size="sm"
+                      asChild={number !== page}
+                      aria-current={number === page ? "page" : undefined}
+                    >
+                      {number === page ? (
+                        String(number)
+                      ) : (
+                        <Link href={buildPageHref(filters, number)}>{number}</Link>
+                      )}
+                    </Button>
+                  </span>
+                ))}
+              </nav>
               <Button variant="outline" size="sm" disabled={page >= pageCount} asChild={page < pageCount}>
                 {page < pageCount ? <Link href={buildPageHref(filters, page + 1)}>Next</Link> : "Next"}
               </Button>
+              <Button variant="outline" size="sm" disabled={page >= pageCount} asChild={page < pageCount}>
+                {page < pageCount ? <Link href={buildPageHref(filters, pageCount)}>Last</Link> : "Last"}
+              </Button>
+              <form onSubmit={goToPage} className="ml-1 flex items-center gap-2">
+                <label htmlFor="recipe-page-jump" className="sr-only">
+                  Go to page
+                </label>
+                <Input
+                  id="recipe-page-jump"
+                  type="text"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                  value={jumpPage}
+                  onChange={(event) => setJumpPage(event.target.value)}
+                  className="h-8 w-20 rounded-lg px-2"
+                  aria-label={`Go to page from 1 to ${pageCount}`}
+                />
+                <Button type="submit" variant="outline" size="sm">
+                  Go
+                </Button>
+              </form>
             </div>
           </div>
         </div>
@@ -433,6 +698,232 @@ export function RecipesDashboard({
         onOpenChange={setCreateOpen}
         categories={categories}
       />
+
+      <Dialog open={advancedOpen} onOpenChange={setAdvancedOpen}>
+        <DialogContent className="max-h-[88vh] overflow-y-auto sm:max-w-5xl">
+          <DialogHeader>
+            <DialogTitle>Advanced recipe filters</DialogTitle>
+            <DialogDescription>
+              Combine discovery tags, recipe type, season, ingredient and total time to find exact recipe sets.
+            </DialogDescription>
+          </DialogHeader>
+
+          <form
+            onSubmit={(event) => {
+              event.preventDefault();
+              setRowSelection({});
+              setAdvancedOpen(false);
+              router.replace(buildPageHref(filterValues, 1), { scroll: false });
+            }}
+            className="space-y-5"
+          >
+            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+              <div className="space-y-2">
+                <Label htmlFor="advanced-search">Search</Label>
+                <Input
+                  id="advanced-search"
+                  value={filterValues.search}
+                  onChange={(event) =>
+                    setFilterValues((current) => ({ ...current, search: event.target.value }))
+                  }
+                  placeholder="Title or slug"
+                  className="h-11 rounded-xl"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="advanced-status">Status</Label>
+                <select
+                  id="advanced-status"
+                  value={filterValues.status}
+                  onChange={(event) =>
+                    setFilterValues((current) => ({ ...current, status: event.target.value }))
+                  }
+                  className="h-11 w-full rounded-xl border border-input bg-background px-3 text-sm"
+                >
+                  <option value="">Any status</option>
+                  <option value="published">Published</option>
+                  <option value="draft">Draft</option>
+                  <option value="incomplete">Needs content</option>
+                  <option value="needs-tags">Needs tags</option>
+                  <option value="missing-difficulty">Missing difficulty</option>
+                  <option value="needs-season-review">Needs season review</option>
+                  <option value="ready-to-publish">Ready to publish</option>
+                </select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="advanced-season-use">Season use</Label>
+                <select
+                  id="advanced-season-use"
+                  value={filterValues.seasonality}
+                  onChange={(event) =>
+                    setFilterValues((current) => ({ ...current, seasonality: event.target.value }))
+                  }
+                  className="h-11 w-full rounded-xl border border-input bg-background px-3 text-sm"
+                >
+                  <option value="">Any season use</option>
+                  <option value="ALL_YEAR">All year</option>
+                  <option value="SEASONAL">Strict seasonal</option>
+                  <option value="UNREVIEWED">Needs review</option>
+                </select>
+              </div>
+
+              {advancedSelectFilters.map((filter) => (
+                <div key={filter.key} className="space-y-2">
+                  <Label htmlFor={`advanced-${filter.key}`}>{filter.label}</Label>
+                  <select
+                    id={`advanced-${filter.key}`}
+                    value={filterValues[filter.key]}
+                    onChange={(event) =>
+                      setFilterValues((current) => ({
+                        ...current,
+                        [filter.key]: event.target.value,
+                      }))
+                    }
+                    className="h-11 w-full rounded-xl border border-input bg-background px-3 text-sm"
+                  >
+                    <option value="">{filter.placeholder}</option>
+                    {filter.options.map((option) => (
+                      <option key={option.id} value={option.id}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              ))}
+
+              <div className="space-y-2">
+                <Label htmlFor="advanced-min-time">Min total time</Label>
+                <Input
+                  id="advanced-min-time"
+                  type="number"
+                  min="0"
+                  inputMode="numeric"
+                  value={filterValues.minTime}
+                  onChange={(event) =>
+                    setFilterValues((current) => ({ ...current, minTime: event.target.value }))
+                  }
+                  placeholder="Minutes"
+                  className="h-11 rounded-xl"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="advanced-max-time">Max total time</Label>
+                <Input
+                  id="advanced-max-time"
+                  type="number"
+                  min="0"
+                  inputMode="numeric"
+                  value={filterValues.maxTime}
+                  onChange={(event) =>
+                    setFilterValues((current) => ({ ...current, maxTime: event.target.value }))
+                  }
+                  placeholder="Minutes"
+                  className="h-11 rounded-xl"
+                />
+              </div>
+            </div>
+
+            <DialogFooter>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => {
+                  setFilterValues(emptyFilters);
+                  setRowSelection({});
+                  setAdvancedOpen(false);
+                  router.replace("/admin/recipes", { scroll: false });
+                }}
+              >
+                Reset filters
+              </Button>
+              <Button type="submit">
+                Apply filters
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={bulkTagOpen} onOpenChange={(open) => {
+        setBulkTagOpen(open);
+        if (!open) resetBulkTagForm();
+      }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Tag selected recipes</DialogTitle>
+            <DialogDescription>
+              Apply common difficulty and season use to {selectedRecipes.length} selected recipes.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-5">
+            <div className="space-y-2">
+              <Label htmlFor="bulk-recipe-difficulty">Difficulty</Label>
+              <select
+                id="bulk-recipe-difficulty"
+                value={bulkDifficultyId}
+                onChange={(event) => setBulkDifficultyId(event.target.value)}
+                className="h-11 w-full rounded-xl border border-input bg-background px-3 text-sm"
+              >
+                <option value="__KEEP__">Keep existing difficulty</option>
+                <option value="__CLEAR__">Needs review</option>
+                {difficulties.map((difficulty) => (
+                  <option key={difficulty.id} value={difficulty.id}>
+                    {difficulty.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="bulk-recipe-seasonality">Season use</Label>
+              <select
+                id="bulk-recipe-seasonality"
+                value={bulkSeasonality}
+                onChange={(event) => {
+                  setBulkSeasonality(event.target.value);
+                  if (event.target.value !== "SEASONAL") setBulkSeasonIds([]);
+                }}
+                className="h-11 w-full rounded-xl border border-input bg-background px-3 text-sm"
+              >
+                <option value="__KEEP__">Keep existing season use</option>
+                <option value="UNREVIEWED">Needs review</option>
+                <option value="ALL_YEAR">All year</option>
+                <option value="SEASONAL">Strict seasonal</option>
+              </select>
+            </div>
+
+            {bulkSeasonality === "SEASONAL" && (
+              <div className="space-y-2 rounded-2xl border bg-muted/20 p-3">
+                <p className="text-sm font-medium">Active seasons</p>
+                <div className="grid gap-2 sm:grid-cols-2">
+                  {seasons.map((season) => (
+                    <label key={season.id} className="flex items-center gap-2 text-sm">
+                      <Checkbox
+                        checked={bulkSeasonIds.includes(season.id)}
+                        onCheckedChange={(checked) => toggleBulkSeason(season.id, Boolean(checked))}
+                      />
+                      <span>{season.label}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setBulkTagOpen(false)} disabled={bulkTagging}>
+              Cancel
+            </Button>
+            <Button onClick={applyBulkTags} disabled={bulkTagging || !selectedRecipes.length}>
+              {bulkTagging ? "Applying..." : "Apply tags"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <AlertDialog open={Boolean(deleteSelection)} onOpenChange={(open) => !open && setDeleteSelection(null)}>
         <AlertDialogContent>

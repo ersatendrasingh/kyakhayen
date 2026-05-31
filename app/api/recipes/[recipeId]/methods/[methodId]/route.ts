@@ -3,6 +3,7 @@ import { db } from "@/lib/db";
 import {
   deleteFolderFromS3,
 } from "@/lib/s3utils";
+import { touchRecipeContentUpdatedAt } from "@/lib/touch-recipe-content";
 import { NextResponse } from "next/server";
 
 export async function DELETE(
@@ -33,6 +34,7 @@ export async function DELETE(
         recipeId: recipeId,
       },
     });
+    await touchRecipeContentUpdatedAt(recipeId);
     return NextResponse.json(deletedMethod, {
       status: 200,
     });
@@ -71,6 +73,7 @@ export async function PATCH(
           ...values,
         },
       });
+      await touchRecipeContentUpdatedAt(params.recipeId);
       return NextResponse.json(updatedMethod, { status: 200 });
     }
   } catch (error) {

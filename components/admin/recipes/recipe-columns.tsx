@@ -5,6 +5,7 @@ import Link from "next/link";
 import type { ColumnDef } from "@tanstack/react-table";
 import {
   ArrowUpDown,
+  Clock3,
   ImageIcon,
   MoreHorizontal,
   Pencil,
@@ -22,6 +23,21 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Switch } from "@/components/ui/switch";
+
+function recipeSeasonLabel(recipe: RecipeListRecord) {
+  if (recipe.seasonality === "ALL_YEAR") return "All year";
+  if (recipe.seasonality === "UNREVIEWED") return "Season review";
+  if (recipe.seasons.length) return recipe.seasons.map((season) => season.title).join(", ");
+  return "Season missing";
+}
+
+function formatMinutes(minutes: number | null) {
+  if (!minutes) return "Not set";
+  if (minutes < 60) return `${minutes} min`;
+  const hours = Math.floor(minutes / 60);
+  const rest = minutes % 60;
+  return rest ? `${hours}h ${rest}m` : `${hours}h`;
+}
 
 export function getRecipeColumns(
   onPublish: (recipe: RecipeListRecord, published: boolean) => void,
@@ -86,45 +102,38 @@ export function getRecipeColumns(
       },
     },
     {
-      id: "coverage",
-      header: "Content",
+      accessorKey: "totalMinutes",
+      header: "Time",
+      cell: ({ row }) => (
+        <span className="inline-flex min-w-[96px] items-center gap-2 text-sm font-medium text-muted-foreground">
+          <Clock3 className="size-4 text-primary" />
+          {formatMinutes(row.original.totalMinutes)}
+        </span>
+      ),
+    },
+    {
+      id: "tagging",
+      header: "Tags",
       cell: ({ row }) => {
         const recipe = row.original;
-        const completed = [
-          Boolean(recipe.description),
-          Boolean(recipe.imageUrl),
-          recipe.ingredientCount > 0,
-          recipe.methodCount > 0,
-        ].filter(Boolean).length;
+        const missingDifficulty = !recipe.difficulty;
+        const missingSeason =
+          recipe.seasonality === "UNREVIEWED" ||
+          (recipe.seasonality === "SEASONAL" && recipe.seasons.length === 0);
+
         return (
-          <div className="min-w-[130px] space-y-1">
-            <p className="text-sm font-medium">{completed}/4 complete</p>
-            <p className="text-xs text-muted-foreground">
-              {recipe.ingredientCount} ingredients, {recipe.methodCount} steps
-            </p>
+          <div className="min-w-[150px] space-y-1.5">
+            <Badge variant={missingDifficulty ? "destructive" : "secondary"}>
+              {recipe.difficulty?.title ?? "No difficulty"}
+            </Badge>
+            <div>
+              <Badge variant={missingSeason ? "destructive" : "outline"}>
+                {recipeSeasonLabel(recipe)}
+              </Badge>
+            </div>
           </div>
         );
       },
-    },
-    {
-      accessorKey: "updatedAt",
-      header: ({ column }) => (
-        <Button
-          variant="ghost"
-          className="h-auto px-0 text-muted-foreground hover:bg-transparent"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Updated
-          <ArrowUpDown className="size-3.5" />
-        </Button>
-      ),
-      cell: ({ row }) => (
-        <span className="whitespace-nowrap text-sm text-muted-foreground">
-          {new Intl.DateTimeFormat("en-IN", { dateStyle: "medium" }).format(
-            new Date(row.original.updatedAt)
-          )}
-        </span>
-      ),
     },
     {
       accessorKey: "isPublished",

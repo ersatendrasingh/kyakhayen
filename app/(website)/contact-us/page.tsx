@@ -10,22 +10,16 @@ import {
   SectionEyebrow,
   TrustHero,
 } from "@/components/trust/trust-page";
+import { buildSeoMetadata } from "@/lib/seo";
 
-const siteUrl = process.env.NEXT_PUBLIC_APP_URL || "https://www.kyakhayen.com";
-
-export const metadata: Metadata = {
+export const metadata: Metadata = buildSeoMetadata({
   title: "Contact Kya Khayen | Recipe and Meal Plan Support",
   description:
     "Contact Kya Khayen for account, recipe, meal-plan or privacy questions.",
-  alternates: { canonical: `${siteUrl}/contact-us` },
-  openGraph: {
-    title: "Contact Kya Khayen | Recipe and Meal Plan Support",
-    description: "Get help with your Kya Khayen experience.",
-    url: `${siteUrl}/contact-us`,
-    type: "website",
-    images: [{ url: `${siteUrl}/meta-images/contact-us.png`, width: 1200, height: 630 }],
-  },
-};
+  path: "/contact-us",
+  image: "/meta-images/contact-us.png",
+  imageAlt: "Contact Kya Khayen support",
+});
 
 export default function ContactUsPage() {
   return (

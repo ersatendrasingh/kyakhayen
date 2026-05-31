@@ -1,3 +1,15 @@
+import type { Metadata } from "next";
+
+import { noIndexRobots } from "@/lib/seo";
+
+export const metadata: Metadata = {
+  title: {
+    default: "Account Access | Kya Khayen",
+    template: "%s | Kya Khayen",
+  },
+  robots: noIndexRobots(),
+};
+
 const AuthLayout = ({ children }: { children: React.ReactNode }) => {
   return (
     <div className="relative min-h-dvh overflow-x-hidden bg-[#fbf7f1] px-3 py-4 dark:bg-[#081411] sm:p-6 lg:h-dvh lg:overflow-hidden lg:p-8">

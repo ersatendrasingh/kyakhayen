@@ -1,6 +1,7 @@
 import {
   BadgeCent,
   BadgeDollarSign,
+  BellRing,
   CookingPot,
   LayoutDashboard,
   MessageSquareCode,
@@ -124,6 +125,11 @@ export const adminNavigation: AdminNavigationGroup[] = [
         title: "Contact Queries",
         href: "/admin/contact-queries",
         icon: SmartphoneNfc,
+      },
+      {
+        title: "Notifications",
+        href: "/admin/notifications",
+        icon: BellRing,
       },
     ],
   },

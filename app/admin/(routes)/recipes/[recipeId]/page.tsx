@@ -41,6 +41,7 @@ const RecipeIdPage = async (props: { params: Promise<{ recipeId: string }> }) =>
         recipeDietType: { select: { dietTypeId: true } },
         recipeRecipeType: { select: { recipeTypeId: true } },
         recipeBodyTypes: { select: { bodyTypeId: true } },
+        recipeSeasonTags: { select: { recipeSeasonsId: true } },
       },
     }),
     db.recipeCategories.findMany({ orderBy: [{ position: "asc" }, { name: "asc" }] }),
@@ -88,16 +89,23 @@ const RecipeIdPage = async (props: { params: Promise<{ recipeId: string }> }) =>
       recipe={{
         id: recipe.id,
         title: recipe.title,
+        slug: recipe.slug,
         description: recipe.description,
         imageUrl: recipe.imageUrl,
         recipeCategoriesId: recipe.recipeCategoriesId,
         recipeDifficultyId: recipe.recipeDifficultyId,
         recipeSeasonsId: recipe.recipeSeasonsId,
+        seasonality: recipe.seasonality,
         isPublished: recipe.isPublished,
         metaTitle: recipe.metaTitle,
         metaDescription: recipe.metaDescription,
         metaSlug: recipe.metaSlug,
         recipeCookingTime: recipe.recipeCookingTime,
+        views: recipe.views,
+        createdAt: recipe.createdAt.toISOString(),
+        updatedAt: recipe.updatedAt.toISOString(),
+        publishedAt: recipe.publishedAt?.toISOString() ?? null,
+        contentUpdatedAt: recipe.contentUpdatedAt?.toISOString() ?? null,
         ingredients: recipe.recipeIngredients.map((ingredient) => ({
           id: ingredient.id,
           ingredientId: ingredient.ingredientId,
@@ -126,6 +134,11 @@ const RecipeIdPage = async (props: { params: Promise<{ recipeId: string }> }) =>
         dietTypeIds: recipe.recipeDietType.map((tag) => tag.dietTypeId),
         recipeTypeIds: recipe.recipeRecipeType.map((tag) => tag.recipeTypeId),
         bodyTypeIds: recipe.recipeBodyTypes.map((tag) => tag.bodyTypeId),
+        seasonIds: recipe.recipeSeasonTags.length
+          ? recipe.recipeSeasonTags.map((tag) => tag.recipeSeasonsId)
+          : recipe.recipeSeasonsId
+            ? [recipe.recipeSeasonsId]
+            : [],
       }}
     />
   );

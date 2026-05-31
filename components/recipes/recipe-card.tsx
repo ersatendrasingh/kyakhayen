@@ -1,6 +1,6 @@
 "use client";
 
-import { Clock3, Star } from "lucide-react";
+import { Clock3, Flame, Star } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -27,7 +27,9 @@ export type RecipeCardRecipe = {
   } | null;
   recipeNutrient?: Array<{ nutrient: { title: string } }> | null;
   recipeCuisine?: Array<{ cuisine: { title: string } }> | null;
+  recipeIngredients?: Array<{ ingredient: { name: string } }> | null;
   Review?: Array<{ rating: number }> | null;
+  fastingFriendly?: boolean;
 };
 
 interface RecipeCardProps {
@@ -45,6 +47,7 @@ const RecipeCard = ({ recipe, layout = "grid" }: RecipeCardProps) => {
       recipe.recipeCookingTime.restTime
     : null;
   const nutritionBenefit = recipe.recipeNutrient?.[0]?.nutrient.title;
+  const fastingFriendly = recipe.fastingFriendly === true;
   const cuisine = recipe.recipeCuisine?.[0]?.cuisine.title;
   const reviews = recipe.Review || [];
   const averageRating =
@@ -94,10 +97,20 @@ const RecipeCard = ({ recipe, layout = "grid" }: RecipeCardProps) => {
           {shouldShowRecipeSteam(recipe.title) && (
             <RecipeSteam className="bottom-[14%] left-1/2" />
           )}
-          {nutritionBenefit && (
-            <span className="absolute left-3 top-3 rounded-full bg-[#fffdf8]/95 px-3 py-1.5 text-[11px] font-semibold text-[#25483b] shadow-sm dark:bg-[#122921]/95 dark:text-[#e9f0ea]">
-              {nutritionBenefit}
-            </span>
+          {(fastingFriendly || nutritionBenefit) && (
+            <div className="absolute left-3 top-3 flex max-w-[calc(100%-4.5rem)] flex-col items-start gap-1.5">
+              {fastingFriendly && (
+                <span className="inline-flex items-center gap-1.5 rounded-full border border-[#f0c46a] bg-[#fff7df]/95 px-3 py-1.5 text-[11px] font-bold text-[#8a4d13] shadow-sm dark:border-[#d9a24b]/45 dark:bg-[#2e2415]/95 dark:text-[#f4d58f]">
+                  <Flame className="size-3.5" />
+                  Vrat friendly
+                </span>
+              )}
+              {nutritionBenefit && (
+                <span className="rounded-full bg-[#fffdf8]/95 px-3 py-1.5 text-[11px] font-semibold text-[#25483b] shadow-sm dark:bg-[#122921]/95 dark:text-[#e9f0ea]">
+                  {nutritionBenefit}
+                </span>
+              )}
+            </div>
           )}
         </div>
       </Link>

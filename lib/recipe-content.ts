@@ -39,9 +39,12 @@ type RecipeFamily =
   | "breakfast"
   | "curry"
   | "dip"
+  | "fresh"
+  | "hotDrink"
   | "pantry"
   | "protein"
   | "salad"
+  | "soaked"
   | "snack"
   | "soup"
   | "sweet"
@@ -71,13 +74,21 @@ function lower(value: string) {
 }
 
 const INGREDIENT_NAMES: Array<[RegExp, string]> = [
+  [/^apple.*$/i, "apple"],
+  [/^banana.*$/i, "banana"],
+  [/^basil leaves.*$/i, "basil leaves"],
   [/^bengal gram,\s*dal$/i, "chana dal"],
   [/^bay leaf.*$/i, "bay leaf"],
   [/^beverages?,\s*almond milk.*$/i, "unsweetened almond milk"],
+  [/^beverages?,\s*coffee,\s*instant.*$/i, "instant coffee"],
   [/^black pepper.*$/i, "black pepper"],
   [/^cheese,\s*cheddar.*$/i, "cheddar cheese"],
+  [/^cheese,\s*parmesan.*$/i, "grated parmesan"],
   [/^chillies?,\s*green.*$/i, "green chillies"],
   [/^onions?,\s*raw.*$/i, "onion"],
+  [/^milk,\s*whole,\s*cow.*$/i, "milk"],
+  [/^organic cane sugar.*$/i, "sugar"],
+  [/^water,\s*tap,\s*drinking.*$/i, "water"],
   [/^seeds,\s*flaxseed.*$/i, "flaxseeds"],
   [/^seeds,\s*pumpkin and squash seed kernels.*$/i, "pumpkin seeds"],
   [/^salt,\s*table.*$/i, "salt"],
@@ -112,7 +123,10 @@ function displayIngredient(value: string) {
   const clean = cleanText(value);
   const mapped = INGREDIENT_NAMES.find(([pattern]) => pattern.test(clean));
   if (mapped) return mapped[1];
-  const display = clean.replace(/,\s*raw$/i, "").replace(/\s*-\s*all varieties$/i, "");
+  const display = clean
+    .replace(/,\s*raw(?:,.*)?$/i, "")
+    .replace(/,\s*(?:big|ripe)(?:,.*)?$/i, "")
+    .replace(/\s*-\s*all varieties$/i, "");
   return display.charAt(0).toLowerCase() + display.slice(1);
 }
 
@@ -128,11 +142,24 @@ function familyOf(recipe: RecipeContentRecord): RecipeFamily {
   const title = lower(recipe.title);
   const types = lower(recipe.recipeTypes.map((type) => type.title).join(" "));
 
-  if (/(drink|juice|smoothie|shake|tea|infusion|sip|beverage)/.test(`${title} ${types}`)) {
+  if (/\b(coffee|tea|chai)\b/.test(title)) {
+    return "hotDrink";
+  }
+  if (/(drink|juice|smoothie|shake|infusion|sip|beverage)/.test(`${title} ${types}`)) {
     return "beverage";
   }
-  if (/(seeds?|nuts?|almonds?|peanuts?)/.test(title) && recipe.steps.length === 0) {
+  if (/\bsoaked\b/.test(title)) {
+    return "soaked";
+  }
+  if (/(seeds?|nuts?|almonds?|peanuts?|cashew)/.test(title)) {
     return "pantry";
+  }
+  if (
+    /\b(apple|apricot|babugosha|banana|berries|black currants|blackberries|blueberries|cherries|coconut water|cranberries|fruit|goosberry|grapefruit|grapes|jamun|kiwi|mulberries|papaya|parsley|passion fruit|peach|pear|pineapple|plums|pomegranate|prunes|raspberries|soya milk|strawberr|sweet lime|toned milk|watermelon|yogurt|curd)\b/.test(
+      title,
+    )
+  ) {
+    return "fresh";
   }
   if (/(chapati|roti|paratha|thepla|dosa|cheela|chilla|pancake|pudla|puttu)/.test(title)) {
     return "bread";
@@ -163,6 +190,18 @@ function familyCopy(family: RecipeFamily) {
           "Use clean, fresh ingredients and chilled water or ice only where the method calls for it.",
           "Adjust consistency at the end so the drink remains lively rather than watery.",
           "Prepare close to serving time for the best colour, aroma and flavour.",
+        ],
+      };
+    case "hotDrink":
+      return {
+        hook: "a comforting freshly brewed homemade drink",
+        texture: "a warm drink with inviting aroma and a smooth freshly prepared finish",
+        cooking: "Measure the ingredients before heating, then brew or simmer gently so the aroma develops without overcooking the milk or flavouring ingredients. Stir and strain only as the method requires.",
+        serving: "Serve hot in a warm cup with a light breakfast dish or snack that complements the drink.",
+        tips: [
+          "Use measured water or milk so the drink keeps a balanced strength.",
+          "Simmer gently instead of boiling aggressively for a smoother cup.",
+          "Serve soon after brewing while its aroma is still fresh.",
         ],
       };
     case "bread":
@@ -223,6 +262,30 @@ function familyCopy(family: RecipeFamily) {
           "Measure a serving into a bowl rather than eating directly from storage.",
           "Keep dry ingredients in a clean, airtight container away from moisture.",
           "Check freshness and aroma before serving, especially for seeds or nuts.",
+        ],
+      };
+    case "fresh":
+      return {
+        hook: "a fresh ready-to-eat serving with natural flavour",
+        texture: "a clean, fresh serving where the ingredient's natural taste and texture stay central",
+        cooking: "This recipe needs careful selection, rinsing and portioning rather than cooking. Prepare only what is needed close to serving time so the natural flavour and texture remain appealing.",
+        serving: "Serve freshly prepared as a simple fruit, dairy, or ingredient-led portion according to the recipe.",
+        tips: [
+          "Select fresh ingredients and discard any damaged portions before serving.",
+          "Wash and prepare with clean hands, utensils and drinking water.",
+          "Cut or portion close to serving time for the freshest texture.",
+        ],
+      };
+    case "soaked":
+      return {
+        hook: "a simple soaked serving prepared with care",
+        texture: "a softly prepared portion where clean soaking supports natural flavour and texture",
+        cooking: "This serving relies on rinsing and soaking rather than heat. Use clean drinking water, allow the ingredients to soften as intended, and drain before serving.",
+        serving: "Serve the soaked portion fresh as a simple breakfast or snack accompaniment.",
+        tips: [
+          "Measure the portion before soaking so nothing is wasted.",
+          "Use a clean bowl and fresh drinking water for soaking.",
+          "Drain before serving and prepare a fresh portion when needed.",
         ],
       };
     case "snack":
@@ -339,6 +402,12 @@ function openingParagraph(family: RecipeFamily, ingredientText: string) {
       return `Its combination of ${ingredientText} creates a colourful bowl with fresh contrast, making each bite feel clear and well defined.`;
     case "beverage":
       return `The combination of ${ingredientText} shapes a freshly prepared drink with clean flavour and an easy homemade finish.`;
+    case "hotDrink":
+      return `The combination of ${ingredientText} creates a warm homemade drink with a pleasant aroma and an easy fresh finish.`;
+    case "fresh":
+      return `Its focus is ${ingredientText}, prepared simply so natural flavour, freshness and texture remain easy to enjoy.`;
+    case "soaked":
+      return `Made with ${ingredientText}, it is gently soaked and served simply so the ingredient remains the focus.`;
     case "snack":
       return `Together, ${ingredientText} form a savoury bite designed for a crisp or well-cooked outside and a flavourful centre.`;
     case "soup":
@@ -360,12 +429,18 @@ function whyParagraph(family: RecipeFamily) {
       return "Here the ingredients matter in their freshest form. Keeping the cuts even and seasoning close to serving preserves contrast, colour and a clean bite from the first forkful to the last.";
     case "beverage":
       return "Fresh preparation makes the difference in a drink like this. Good ingredients, a considered consistency and careful final tasting allow its aroma and natural character to come through clearly.";
+    case "hotDrink":
+      return "A hot drink becomes more enjoyable when its strength, sweetness and aroma are kept in balance. Gentle heating and prompt serving let the freshly brewed character stay clear.";
     case "snack":
       return "The appeal is in shaping and cooking the mixture evenly, so each portion carries similar texture and seasoning. It is the kind of recipe where small handling details noticeably improve the final bite.";
     case "soup":
       return "The flavour develops as ingredients soften and mingle over a gentle simmer. Paying attention to consistency near the end gives the bowl its comforting texture without masking its main ingredients.";
     case "dip":
       return "An accompaniment becomes memorable when fresh notes and seasoning stay in balance. Blend or combine the ingredients until spoonable, then taste at the finish so the dip supports the food served alongside it.";
+    case "fresh":
+      return "This serving is useful because it does not need complicated cooking. Clean handling, an appropriate portion and preparation near serving time keep its natural character clear.";
+    case "soaked":
+      return "This simple serving depends on clean preparation and enough soaking time for a pleasant softened bite. Preparing only the needed portion keeps it fresh and practical.";
     default:
       return "The appeal of this recipe lies in the way familiar ingredients are prepared with care. Follow the stated quantities and method first, then make small seasoning adjustments only at the finish.";
   }
@@ -381,6 +456,12 @@ function servingFinish(family: RecipeFamily) {
       return "Serve soon after assembling so the textures stay fresh and distinct.";
     case "beverage":
       return "Pour and serve soon after preparation so its aroma and freshness remain at their best.";
+    case "hotDrink":
+      return "Pour into cups and serve while warm so its aroma remains inviting.";
+    case "fresh":
+      return "Serve soon after preparing so freshness, colour and texture remain at their best.";
+    case "soaked":
+      return "Serve after draining, while the soaked texture is fresh and pleasant.";
     case "snack":
       return "A freshly served portion will show its texture and seasoning most clearly.";
     case "soup":
@@ -396,10 +477,16 @@ function planningParagraph(family: RecipeFamily) {
       return "Wash and dry fresh components before cutting, and keep them separate until close to serving if you are preparing ahead. This small step protects both crunch and appearance, especially when the salad contains ingredients that can release moisture after seasoning.";
     case "beverage":
       return "Arrange the ingredients and serving glasses before you begin, especially when the drink is intended to be served fresh. If preparation is done in advance, keep it covered and chilled only for as long as the ingredients remain bright and appealing.";
+    case "hotDrink":
+      return "Measure the ingredients before heating so brewing is unhurried. Prepare the drink near serving time and pour it into clean cups while warm, when its aroma and flavour are most enjoyable.";
     case "dip":
       return "For advance preparation, use a clean covered container and keep the accompaniment chilled until it is needed. Stir once before serving and check the texture; a dip should remain spoonable and easy to portion beside the main dish.";
     case "pantry":
       return "Portion only what is required for serving and keep the remainder clean, dry and well covered. A simple ingredient-led recipe is at its best when freshness, aroma and texture have been protected before it reaches the plate.";
+    case "fresh":
+      return "Choose a fresh portion, wash it safely where appropriate, and prepare it shortly before eating. Keeping the process simple protects natural texture and keeps the serving inviting.";
+    case "soaked":
+      return "Rinse the measured portion and soak it in clean drinking water for the intended time. Drain before serving and avoid keeping a prepared portion at room temperature longer than needed.";
     case "soup":
       return "If preparing the bowl ahead, complete the cooking first and cool it safely before covering. When reheating, warm it gently and adjust consistency only at the finish, since soups can thicken slightly as they rest.";
     default:
@@ -414,7 +501,10 @@ function shortMetaDescription(recipe: RecipeContentRecord, family: RecipeFamily)
   );
   const meal = recipe.mealTimes[0]?.title.replace(/^mid morning$/i, "mid-morning");
   const ending = meal ? ` for ${meal.toLowerCase()}` : " for your table";
-  const method = family === "beverage" ? "fresh preparation" : "serving";
+  const method =
+    family === "beverage" || family === "fresh" || family === "hotDrink" || family === "soaked"
+      ? "fresh preparation"
+      : "serving";
   const candidate = `${recipe.title} recipe with ${keyIngredients}. Find practical ${method} ideas${ending}.`;
   return candidate.length <= 155
     ? candidate
@@ -462,8 +552,14 @@ export function generateRecipeContent(
       ? "fresh assembly"
       : family === "beverage"
         ? "blending or infusion"
-        : family === "pantry"
+      : family === "pantry"
           ? "simple assembly and portioning"
+      : family === "fresh"
+          ? "clean preparation and serving"
+        : family === "hotDrink"
+          ? "gentle brewing or simmering"
+        : family === "soaked"
+          ? "rinsing and soaking"
         : family === "bread"
           ? "mixing and griddle cooking"
           : "step-by-step home cooking");

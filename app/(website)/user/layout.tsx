@@ -1,7 +1,18 @@
+import type { Metadata } from "next";
+
 import Container from "@/components/container";
 import { auth } from "@/auth";
 import { ShieldAlert } from "lucide-react";
 import StickySidebar from "./_components/sticky-sidebar";
+import { noIndexRobots } from "@/lib/seo";
+
+export const metadata: Metadata = {
+  title: {
+    default: "Your Kya Khayen Account",
+    template: "%s | Kya Khayen",
+  },
+  robots: noIndexRobots(),
+};
 
 const UserLayout = async ({ children }: { children: React.ReactNode }) => {
   const session = await auth();

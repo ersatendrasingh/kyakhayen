@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 
 import { currentUser } from "@/lib/auth";
 import { db } from "@/lib/db";
+import { touchRecipeContentUpdatedAt } from "@/lib/touch-recipe-content";
 
 export async function POST(
   req: Request,
@@ -43,6 +44,7 @@ export async function POST(
       ),
     ]);
 
+    await touchRecipeContentUpdatedAt(params.recipeId);
     return NextResponse.json("Recipe body types updated", { status: 200 });
   } catch (error) {
     console.log("[RECIPE_BODY_TYPES]", error);

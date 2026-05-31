@@ -18,6 +18,7 @@ import {
   shouldShowRecipeSteam,
 } from "@/components/recipes/recipe-steam";
 import { useHomePreference } from "@/components/sections/home-preference-context";
+import { recipeCollectionHref } from "@/lib/recipe-collection-url";
 
 import type { DiscoveryRecipe } from "./home-discovery";
 
@@ -61,6 +62,348 @@ function uniqueRecipes(recipes: DiscoveryRecipe[]) {
   });
 }
 
+const famousRecipeKeywordsByCuisine: Record<string, string[]> = {
+  "north-indian": [
+    "rajma chawal",
+    "chole bhature",
+    "punjabi chole",
+    "dal makhani",
+    "paneer butter masala",
+    "butter chicken",
+    "kadhi chawal",
+    "chana masala",
+    "palak paneer",
+    "shahi paneer",
+    "kadhai paneer",
+    "malai kofta",
+    "dum aloo",
+    "chole kulche",
+  ],
+  punjabi: [
+    "sarson da saag",
+    "chole bhature",
+    "rajma chawal",
+    "dal makhani",
+    "paneer butter masala",
+    "punjabi chole",
+    "chole kulche",
+    "amritsari chole",
+    "kadhi pakora",
+    "palak paneer",
+  ],
+  "south-indian": [
+    "masala dosa",
+    "idli sambar",
+    "sambar rice",
+    "bisi bele bath",
+    "pongal",
+    "uttapam",
+    "avial",
+    "hyderabadi biryani",
+    "kerala stew",
+    "rasam rice",
+  ],
+  "east-indian": [
+    "macher jhol",
+    "shorshe ilish",
+    "kosha mangsho",
+    "dalma",
+    "luchi alur dom",
+    "cholar dal",
+    "ghugni",
+    "momo",
+    "doi maach",
+    "aloo posto",
+  ],
+  gujarati: [
+    "undhiyu",
+    "dal dhokli",
+    "gujarati kadhi",
+    "khichdi kadhi",
+    "sev tameta",
+    "handvo",
+    "fafda jalebi",
+    "patra",
+  ],
+  "west-indian": [
+    "pav bhaji",
+    "misal pav",
+    "goan fish curry",
+    "bharli vangi",
+    "varan bhaat",
+    "usal",
+    "kolhapuri",
+    "xacuti",
+  ],
+  "international-mediterranean": [
+    "shakshuka",
+    "moussaka",
+    "falafel bowl",
+    "ratatouille",
+    "paella",
+    "risotto",
+    "pasta",
+    "lasagna",
+  ],
+  american: [
+    "mac and cheese",
+    "burger",
+    "chili",
+    "bbq chicken",
+    "fried chicken",
+    "meatloaf",
+    "jambalaya",
+    "taco bowl",
+  ],
+  rajasthani: [
+    "dal baati churma",
+    "gatte ki sabzi",
+    "ker sangri",
+    "laal maas",
+    "safed maas",
+    "papad ki sabzi",
+    "mangodi ki sabzi",
+    "sev tamatar",
+  ],
+  bihari: [
+    "litti chokha",
+    "litti chokha thali",
+    "bihari kadhi badi",
+    "lauki chana dal",
+    "parwal aloo sabzi",
+    "bihari khichdi",
+    "makhana curry",
+  ],
+  mughlai: [
+    "biryani",
+    "nihari",
+    "korma",
+    "kofta",
+    "mughlai chicken",
+    "mutton curry",
+    "paneer pasanda",
+  ],
+  chinese: [
+    "veg hakka noodles",
+    "chilli paneer",
+    "veg manchurian",
+    "veg fried rice",
+    "schezwan noodles",
+    "schezwan fried rice",
+    "veg momos",
+    "paneer momos",
+    "spring rolls",
+    "chilli potato",
+    "honey chilli potato",
+    "manchow soup",
+    "hot and sour soup",
+    "sweet corn soup",
+    "chilli chicken",
+    "chicken manchurian",
+    "chicken hakka noodles",
+    "chicken fried rice",
+    "chicken momos",
+    "chicken lollipop",
+  ],
+};
+
+const fallbackMainDishKeywords = [
+  "thali",
+  "biryani",
+  "curry",
+  "sabzi",
+  "dal",
+  "chole",
+  "rajma",
+  "khichdi",
+  "pulao",
+  "korma",
+  "kofta",
+  "paneer",
+  "noodles",
+  "fried rice",
+  "manchurian",
+  "momos",
+  "chowmein",
+  "spring roll",
+  "chicken",
+  "mutton",
+  "fish",
+];
+
+const completePlateTitlePattern =
+  /\b(chole bhature|chole kulche|rajma chawal|kadhi chawal|dal baati churma|litti chokha|bedmi poori with aloo sabzi|pav bhaji|misal pav|idli sambar|sambar rice|khichdi|biryani|thali|papad ki sabzi|hakka noodles|schezwan noodles|chowmein|fried rice|chilli paneer|manchurian|momos|spring rolls|chilli potato|honey chilli potato|chilli chicken|chicken lollipop)\b/i;
+const sideOnlyTitlePattern =
+  /\b(roti|chapati|phulka|naan|kulcha|paratha|bhature|poori|puri|thepla|bread)\b/i;
+const nonMainTitlePattern =
+  /\b(shake|smoothie|juice|lassi|sharbat|drink|salad|raita|chutney|pickle|soup|cutlet|pakora|samosa|kachori|halwa|kheer|laddu|ladoo|barfi|burfi|cake|cookie|muffin)\b/i;
+
+const mainRecipeTypeSlugs = new Set([
+  "meal",
+  "protein",
+  "cooked-vegetable",
+  "grains",
+]);
+
+const mealTimeSlugs = new Set(["breakfast", "lunch", "dinner"]);
+
+function normalizeText(value: string) {
+  return value
+    .trim()
+    .toLowerCase()
+    .replaceAll("&", "and")
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim();
+}
+
+function categorySlug(recipe: DiscoveryRecipe) {
+  return normalizeText(
+    recipe.RecipeCategories?.slug || recipe.RecipeCategories?.name || "",
+  ).replaceAll(" ", "-");
+}
+
+function categoryMatchesPreference(recipe: DiscoveryRecipe, preference: string) {
+  const slug = categorySlug(recipe);
+
+  if (preference === "veg") return ["veg", "vegan"].includes(slug);
+  if (preference === "egg" || preference === "eggetarian") {
+    return ["eggetarian", "egg", "veg", "vegan"].includes(slug);
+  }
+  if (preference === "pescetarian") {
+    return ["pescetarian", "veg", "vegan"].includes(slug);
+  }
+  if (preference === "non-veg" || preference === "non veg") {
+    return [
+      "non-veg",
+      "pescetarian",
+      "eggetarian",
+      "egg",
+      "veg",
+      "vegan",
+    ].includes(slug);
+  }
+
+  return slug === preference;
+}
+
+function isNonMainTypeSlug(slug: string) {
+  return (
+    slug.startsWith("drink-") ||
+    slug.includes("smoothie") ||
+    slug.includes("juice") ||
+    slug.includes("shake") ||
+    slug.includes("snack") ||
+    slug.includes("dessert") ||
+    slug.includes("raita") ||
+    slug.includes("chutney") ||
+    slug.includes("salad") ||
+    slug.includes("soup")
+  );
+}
+
+function isMainDishRecipe(recipe: DiscoveryRecipe) {
+  const title = recipe.title.trim();
+  const isCompletePlate = completePlateTitlePattern.test(title);
+
+  if (!isCompletePlate && sideOnlyTitlePattern.test(title)) return false;
+  if (!isCompletePlate && nonMainTitlePattern.test(title)) return false;
+
+  const typeSlugs =
+    recipe.recipeRecipeType?.map(({ recipeType }) => recipeType.slug) ?? [];
+  const hasMainType = typeSlugs.some((slug) => mainRecipeTypeSlugs.has(slug));
+  const hasNonMainType = typeSlugs.some(isNonMainTypeSlug);
+
+  if (hasNonMainType && !hasMainType && !isCompletePlate) return false;
+  if (hasMainType || isCompletePlate) return true;
+
+  const visibleMealTime =
+    recipe.recipeMealTime?.some(({ mealTime }) =>
+      mealTimeSlugs.has(mealTime.slug),
+    ) ?? false;
+
+  return visibleMealTime || typeSlugs.length === 0;
+}
+
+function cuisineFameScore(recipe: DiscoveryRecipe, cuisineSlug: string) {
+  const title = normalizeText(recipe.title);
+  const famousKeywords = famousRecipeKeywordsByCuisine[cuisineSlug] ?? [];
+  const famousIndex = famousKeywords.findIndex((keyword) =>
+    title.includes(normalizeText(keyword)),
+  );
+
+  if (famousIndex >= 0) return 1_000 - famousIndex * 25;
+
+  const fallbackIndex = fallbackMainDishKeywords.findIndex((keyword) =>
+    title.includes(normalizeText(keyword)),
+  );
+
+  return fallbackIndex >= 0 ? 250 - fallbackIndex * 8 : 0;
+}
+
+function matchedFamousKeyword(recipe: DiscoveryRecipe, cuisineSlug: string) {
+  const title = normalizeText(recipe.title);
+  const famousKeywords = famousRecipeKeywordsByCuisine[cuisineSlug] ?? [];
+  const matchedKeyword = famousKeywords.find((keyword) =>
+    title.includes(normalizeText(keyword)),
+  );
+
+  return matchedKeyword ? normalizeText(matchedKeyword) : null;
+}
+
+function curateCuisineRecipes(
+  recipes: DiscoveryRecipe[],
+  cuisineSlug: string,
+  preference: string,
+) {
+  const mainRecipes = uniqueRecipes(recipes).filter(
+    (recipe) =>
+      categoryMatchesPreference(recipe, preference) && isMainDishRecipe(recipe),
+  );
+  const picked = new Map<string, DiscoveryRecipe>();
+  const rankedFamousRecipes = mainRecipes
+    .map((recipe) => ({
+      recipe,
+      score: cuisineFameScore(recipe, cuisineSlug),
+    }))
+    .filter(({ score }) => score > 0)
+    .sort(
+      (left, right) =>
+        right.score - left.score ||
+        (right.recipe.views ?? 0) - (left.recipe.views ?? 0) ||
+        left.recipe.title.localeCompare(right.recipe.title),
+    );
+  const deferredDuplicateFamousRecipes: DiscoveryRecipe[] = [];
+  const usedFamousKeywords = new Set<string>();
+
+  for (const { recipe } of rankedFamousRecipes) {
+    const famousKeyword = matchedFamousKeyword(recipe, cuisineSlug);
+
+    if (famousKeyword && usedFamousKeywords.has(famousKeyword)) {
+      deferredDuplicateFamousRecipes.push(recipe);
+      continue;
+    }
+
+    if (famousKeyword) usedFamousKeywords.add(famousKeyword);
+    picked.set(recipe.id, recipe);
+  }
+
+  for (const recipe of deferredDuplicateFamousRecipes) {
+    picked.set(recipe.id, recipe);
+  }
+
+  if (picked.size < 4) {
+    [...mainRecipes]
+      .sort(
+        (left, right) =>
+          (right.views ?? 0) - (left.views ?? 0) ||
+          left.title.localeCompare(right.title),
+      )
+      .forEach((recipe) => picked.set(recipe.id, recipe));
+  }
+
+  return [...picked.values()];
+}
+
 export default function HomeCuisineExplorer({
   cuisines,
 }: HomeCuisineExplorerProps) {
@@ -76,11 +419,10 @@ export default function HomeCuisineExplorer({
       cuisines
         .map((cuisine) => ({
           cuisine,
-          recipeCount: uniqueRecipes(cuisine.recipes).filter(
-            (recipe) =>
-              recipe.RecipeCategories?.name
-                .toLowerCase()
-                .replaceAll(" ", "-") === preference,
+          recipeCount: curateCuisineRecipes(
+            cuisine.recipes,
+            cuisine.slug,
+            preference,
           ).length,
         }))
         .filter(({ recipeCount }) => recipeCount > 0)
@@ -105,10 +447,10 @@ export default function HomeCuisineExplorer({
   const selectedRecipes = useMemo(
     () =>
       selectedCuisine
-        ? uniqueRecipes(selectedCuisine.recipes).filter(
-            (recipe) => recipe.RecipeCategories?.name
-              .toLowerCase()
-              .replaceAll(" ", "-") === preference,
+        ? curateCuisineRecipes(
+            selectedCuisine.recipes,
+            selectedCuisine.slug,
+            preference,
           )
         : [],
     [preference, selectedCuisine],
@@ -124,28 +466,28 @@ export default function HomeCuisineExplorer({
   if (!selectedCuisine) return null;
 
   return (
-    <section className="home-surface home-cuisine-explorer py-16 sm:py-20">
+    <section className="home-surface home-cuisine-explorer py-12 sm:py-14">
       <Container>
-        <div className="home-cuisine-panel overflow-hidden rounded-[2rem] px-4 py-8 sm:px-8 sm:py-10 lg:px-12">
+        <div className="home-cuisine-panel overflow-hidden rounded-[1.65rem] px-4 py-6 sm:px-7 sm:py-8 lg:px-10">
           <div className="mx-auto max-w-3xl text-center">
-            <p className="mb-3 inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.25em] text-primary">
+            <p className="mb-2 inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.25em] text-primary">
               <UtensilsCrossed className="size-4" /> Make home yours
             </p>
             <h2 className="text-3xl font-semibold tracking-tight sm:text-4xl">
               What is your favourite cuisine?
             </h2>
-            <p className="mx-auto mt-3 max-w-2xl text-sm leading-7 text-muted-foreground sm:text-base">
+            <p className="mx-auto mt-2 max-w-2xl text-sm leading-7 text-muted-foreground sm:text-base">
               Pick your taste and this shelf instantly changes with recipes
               inspired by your choice.
             </p>
           </div>
 
-          <div className="relative mt-9">
+          <div className="relative mt-6">
             <button
               type="button"
               aria-label="Scroll cuisines left"
               onClick={() => scrollCuisines("left")}
-              className="home-cuisine-arrow absolute -left-1 top-[38px] z-10 hidden size-11 items-center justify-center rounded-full bg-white text-foreground shadow-md transition hover:text-primary md:flex"
+              className="home-cuisine-arrow absolute -left-1 top-[32px] z-10 hidden size-10 items-center justify-center rounded-full bg-white text-foreground shadow-md transition hover:text-primary md:flex"
             >
               <ChevronLeft className="size-5" />
             </button>
@@ -153,13 +495,13 @@ export default function HomeCuisineExplorer({
               type="button"
               aria-label="Scroll cuisines right"
               onClick={() => scrollCuisines("right")}
-              className="home-cuisine-arrow absolute -right-1 top-[38px] z-10 hidden size-11 items-center justify-center rounded-full bg-white text-foreground shadow-md transition hover:text-primary md:flex"
+              className="home-cuisine-arrow absolute -right-1 top-[32px] z-10 hidden size-10 items-center justify-center rounded-full bg-white text-foreground shadow-md transition hover:text-primary md:flex"
             >
               <ChevronRight className="size-5" />
             </button>
             <div
               ref={carouselRef}
-              className="home-cuisine-slider home-hide-scrollbar flex snap-x snap-mandatory gap-5 overflow-x-auto px-1 pb-4 md:px-12"
+              className="home-cuisine-slider home-hide-scrollbar flex snap-x snap-mandatory gap-4 overflow-x-auto px-1 pb-2 md:px-10"
             >
             {availableCuisines.map((cuisine) => {
               const isSelected = cuisine.slug === selectedCuisine.slug;
@@ -171,10 +513,10 @@ export default function HomeCuisineExplorer({
                   aria-label={`Choose ${cuisine.title}`}
                   aria-pressed={isSelected}
                   onClick={() => setSelectedSlug(cuisine.slug)}
-                  className="group flex min-w-[114px] snap-start flex-col items-center gap-3 text-center sm:min-w-[126px]"
+                  className="group flex min-w-[104px] snap-start flex-col items-center gap-2 text-center sm:min-w-[112px]"
                 >
                   <span
-                    className={`relative block size-[106px] overflow-hidden rounded-full border-[3px] bg-white p-1.5 transition duration-300 sm:size-[116px] ${
+                    className={`relative block size-[94px] overflow-hidden rounded-full border-[3px] bg-white p-1.5 transition duration-300 sm:size-[104px] ${
                       isSelected
                         ? "border-primary shadow-[0_12px_28px_-12px_rgba(190,55,35,0.65)]"
                         : "border-white/90 shadow-sm group-hover:border-[#dba34f]"
@@ -185,7 +527,7 @@ export default function HomeCuisineExplorer({
                         src={cuisine.imageUrl || "/meta-images/recipe-page.jpg"}
                         alt=""
                         fill
-                        sizes="116px"
+                        sizes="104px"
                         className="object-cover transition duration-500 group-hover:scale-105"
                       />
                     </span>
@@ -203,13 +545,13 @@ export default function HomeCuisineExplorer({
             </div>
           </div>
 
-          <div className="mt-9 border-t border-[#eddec9] pt-7">
-            <div className="mb-5 flex flex-wrap items-center justify-between gap-4">
+          <div className="mt-5 border-t border-[#eddec9] pt-5">
+            <div className="mb-4 flex flex-wrap items-center justify-between gap-4">
               <h3 className="text-lg font-semibold sm:text-xl">
                 Recipes inspired by {selectedCuisine.title}
               </h3>
               <Link
-                href={`/recipes?k=${selectedCuisine.slug}&type=cuisine&food=${preference}`}
+                href={`${recipeCollectionHref(selectedCuisine.slug)}?food=${preference}`}
                 className="inline-flex items-center gap-2 text-sm font-semibold text-primary transition hover:gap-3"
               >
                 Explore {selectedCuisine.title} <ArrowRight className="size-4" />

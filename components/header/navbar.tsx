@@ -1,6 +1,15 @@
 "use client";
 
-import { ArrowRight, Flame, HeartPulse, Leaf, Sparkles, SunMedium } from "lucide-react";
+import {
+  ArrowRight,
+  CloudRain,
+  CupSoda,
+  HeartPulse,
+  Leaf,
+  Snowflake,
+  Sparkles,
+  SunMedium,
+} from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -11,6 +20,7 @@ import {
   NavigationMenuList,
   NavigationMenuTrigger,
 } from "@/components/ui/navigation-menu";
+import { recipeCollectionHref } from "@/lib/recipe-collection-url";
 
 export type NavItem = {
   title: string;
@@ -28,33 +38,63 @@ export type CategoryNavItem = {
   imageUrl: string | null;
 };
 
+export type MenuLink = {
+  title: string;
+  href: string;
+  imageUrl: string | null;
+  description?: string;
+  count?: number;
+};
+
+export type SeasonNavItem = MenuLink & {
+  slug: "summer" | "rainy" | "winter";
+};
+
 type NavbarProps = {
+  currentSeason: SeasonNavItem;
   mealTimes: NavItem[];
   cuisines: CuisineNavItem[];
   categories: CategoryNavItem[];
   recipeTypes: NavItem[];
-  cookingMethods: NavItem[];
+  drinkItems: MenuLink[];
   dietTypes: NavItem[];
 };
 
+function SeasonIcon({ slug }: { slug: SeasonNavItem["slug"] }) {
+  const Icon = slug === "rainy" ? CloudRain : slug === "winter" ? Snowflake : SunMedium;
+
+  return (
+    <span className="relative inline-flex size-5 items-center justify-center rounded-full bg-[#fff1d4] text-[#b63325]">
+      <span className="absolute inline-flex size-5 animate-ping rounded-full bg-[#e7a93f]/35 motion-reduce:animate-none" />
+      <Icon className="relative size-3.5" aria-hidden="true" />
+    </span>
+  );
+}
+
 export const Navbar = ({
+  currentSeason,
   mealTimes,
   cuisines,
   categories,
   recipeTypes,
-  cookingMethods,
+  drinkItems,
   dietTypes,
 }: NavbarProps) => {
   const navControlClass =
     "site-nav-control inline-flex h-9 w-max cursor-pointer items-center justify-center rounded-full !bg-transparent px-3.5 py-1.5 text-[13px] font-semibold text-[#493b31] transition-colors hover:!bg-transparent hover:!text-primary focus:!bg-transparent focus:!text-primary data-[state=open]:!bg-transparent data-[state=open]:!text-primary";
+  const featuredDrink = drinkItems[0];
 
   return (
     <nav className="site-navigation">
       <NavigationMenu viewport={false}>
         <NavigationMenuList className="gap-0 xl:gap-1">
           <NavigationMenuItem>
-            <Link href="/recipes?k=summer&type=season" className={navControlClass}>
-              Summer
+            <Link
+              href={currentSeason.href}
+              className={`${navControlClass} gap-1.5 text-primary`}
+            >
+              <SeasonIcon slug={currentSeason.slug} />
+              {currentSeason.title}
             </Link>
           </NavigationMenuItem>
           <NavigationMenuItem>
@@ -104,7 +144,7 @@ export const Navbar = ({
                     {categories.map((category) => (
                       <Link
                         key={category.slug}
-                        href={`/recipes?k=${category.slug}&type=category`}
+                        href={recipeCollectionHref(category.slug)}
                         className="mega-small-card group relative h-[112px] overflow-hidden rounded-2xl"
                       >
                         <Image
@@ -147,7 +187,7 @@ export const Navbar = ({
                     </p>
                   </div>
                   <Link
-                    href="/recipes?k=summer&type=season"
+                    href={recipeCollectionHref("summer")}
                     className="inline-flex items-center gap-2 rounded-full bg-[#edf3df] px-4 py-2 text-xs font-semibold text-[#2f5132]"
                   >
                     <SunMedium className="size-4" /> Summer fresh
@@ -157,7 +197,7 @@ export const Navbar = ({
                   {mealTimes.map((mealTime) => (
                     <Link
                       key={mealTime.slug}
-                      href={`/recipes?k=${mealTime.slug}&type=mealTime`}
+                      href={recipeCollectionHref(mealTime.slug)}
                       className="group"
                     >
                       <span className="relative block h-[134px] overflow-hidden rounded-2xl">
@@ -191,7 +231,7 @@ export const Navbar = ({
             >
               <div className="grid grid-cols-[250px_minmax(0,1fr)] gap-6 p-6">
                 <Link
-                  href="/recipes?k=north-indian&type=cuisine"
+                  href={recipeCollectionHref("north-indian")}
                   className="group relative min-h-[315px] overflow-hidden rounded-[1.35rem]"
                 >
                   <Image
@@ -223,7 +263,7 @@ export const Navbar = ({
                     {cuisines.slice(1, 10).map((cuisine) => (
                       <Link
                         key={cuisine.slug}
-                        href={`/recipes?k=${cuisine.slug}&type=cuisine`}
+                        href={recipeCollectionHref(cuisine.slug)}
                         className="group flex min-w-0 items-center gap-2 rounded-xl border border-[#f0e3d1] bg-[#fffdf8] p-2.5 hover:border-[#dfb36a]"
                       >
                         <span className="relative size-10 shrink-0 overflow-hidden rounded-full">
@@ -242,10 +282,10 @@ export const Navbar = ({
                     ))}
                   </div>
                   <Link
-                    href="/recipes?k=north-indian&type=cuisine"
+                    href={recipeCollectionHref("north-indian")}
                     className="mega-menu-action mt-4 inline-flex items-center gap-2 text-sm font-semibold text-primary"
                   >
-                    Begin with Indian favourites <ArrowRight className="size-4" />
+                    Begin with regional favourites <ArrowRight className="size-4" />
                   </Link>
                 </div>
               </div>
@@ -271,10 +311,10 @@ export const Navbar = ({
                     <p className="mt-1 text-lg font-semibold">Recipe styles</p>
                   </div>
                   <div className="flex gap-2">
-                    <Link href="/recipes?k=summer&type=season" className="mega-chip">
+                    <Link href={recipeCollectionHref("summer")} className="mega-chip">
                       <SunMedium className="size-3.5" /> Summer
                     </Link>
-                    <Link href="/recipes?k=veg&type=category" className="mega-chip">
+                    <Link href={recipeCollectionHref("veg")} className="mega-chip">
                       <Leaf className="size-3.5" /> Vegetarian
                     </Link>
                   </div>
@@ -283,7 +323,7 @@ export const Navbar = ({
                   {recipeTypes.map((type) => (
                     <Link
                       key={type.slug}
-                      href={`/recipes?k=${type.slug}&type=recipeType`}
+                      href={recipeCollectionHref(type.slug)}
                       className="group relative h-[125px] overflow-hidden rounded-2xl"
                     >
                       <Image
@@ -305,75 +345,12 @@ export const Navbar = ({
           </NavigationMenuItem>
           <NavigationMenuItem>
             <NavigationMenuTrigger className={navControlClass}>
-              Cooking Methods
-            </NavigationMenuTrigger>
-            <NavigationMenuContent
-              className="mega-menu"
-              style={{
-                left: "-566px",
-                width: "min(780px, calc(100vw - 48px))",
-              }}
-            >
-              <div className="grid grid-cols-[245px_minmax(0,1fr)] gap-5 p-6">
-                <Link
-                  href={`/recipes?k=${cookingMethods[0]?.slug || "roasting"}&type=cookingMethod`}
-                  className="group relative min-h-[270px] overflow-hidden rounded-[1.35rem] bg-[#1c352b]"
-                >
-                  <Image
-                    src={cookingMethods[0]?.imageUrl || "/meta-images/recipe-page.jpg"}
-                    alt=""
-                    fill
-                    sizes="245px"
-                    className="object-cover transition duration-500 group-hover:scale-105"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#15271f]/94 via-transparent to-transparent" />
-                  <div className="absolute inset-x-0 bottom-0 p-4 text-white">
-                    <p className="inline-flex items-center gap-1.5 text-xs uppercase tracking-[0.18em] text-[#f0cd87]">
-                      <Flame className="size-3.5" /> Kitchen craft
-                    </p>
-                    <p className="mt-2 text-xl font-semibold">
-                      {cookingMethods[0]?.title || "Cook with care"}
-                    </p>
-                  </div>
-                </Link>
-                <div>
-                  <p className="mb-4 text-xs font-semibold uppercase tracking-[0.2em] text-[#9a6a33]">
-                    Choose a cooking style
-                  </p>
-                  <div className="grid grid-cols-2 gap-3">
-                    {cookingMethods.slice(1).map((method) => (
-                      <Link
-                        key={method.slug}
-                        href={`/recipes?k=${method.slug}&type=cookingMethod`}
-                        className="group flex items-center gap-3 rounded-2xl border border-[#f0e2cf] bg-[#fffdf8] p-2.5 transition hover:border-[#dfb36a]"
-                      >
-                        <span className="relative size-12 shrink-0 overflow-hidden rounded-xl bg-[#efe4d5]">
-                          <Image
-                            src={method.imageUrl || "/meta-images/recipe-page.jpg"}
-                            alt=""
-                            fill
-                            sizes="48px"
-                            className="object-cover"
-                          />
-                        </span>
-                        <span className="text-sm font-semibold text-[#45352a] group-hover:text-primary">
-                          {method.title}
-                        </span>
-                      </Link>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </NavigationMenuContent>
-          </NavigationMenuItem>
-          <NavigationMenuItem>
-            <NavigationMenuTrigger className={navControlClass}>
               Wellness Goals
             </NavigationMenuTrigger>
             <NavigationMenuContent
               className="mega-menu"
               style={{
-                left: "-684px",
+                left: "-552px",
                 width: "min(790px, calc(100vw - 48px))",
               }}
             >
@@ -388,7 +365,7 @@ export const Navbar = ({
                     </p>
                   </div>
                   <Link
-                    href={`/recipes?k=${dietTypes[0]?.slug || "high-protein"}&type=dietType`}
+                    href={recipeCollectionHref(dietTypes[0]?.slug || "gluten-free")}
                     className="mega-chip whitespace-nowrap"
                   >
                     Explore wellness
@@ -398,7 +375,7 @@ export const Navbar = ({
                   {dietTypes.map((dietType) => (
                     <Link
                       key={dietType.slug}
-                      href={`/recipes?k=${dietType.slug}&type=dietType`}
+                      href={recipeCollectionHref(dietType.slug)}
                       className="group relative h-[126px] overflow-hidden rounded-2xl bg-[#f1e6d6]"
                     >
                       <Image
@@ -419,27 +396,88 @@ export const Navbar = ({
             </NavigationMenuContent>
           </NavigationMenuItem>
           <NavigationMenuItem>
-            <Link href="/recipes?k=snacks&type=recipeType" className={navControlClass}>
-              Quick Bites
-            </Link>
-          </NavigationMenuItem>
-          <NavigationMenuItem>
-            <Link href="/search?k=healthy%20everyday%20meals" className={navControlClass}>
+            <Link href={recipeCollectionHref("healthy")} className={navControlClass}>
               Healthy
             </Link>
           </NavigationMenuItem>
           <NavigationMenuItem>
-            <Link href="/search?k=protein%20rich%20meals" className={navControlClass}>
-              Protein Rich
-            </Link>
-          </NavigationMenuItem>
-          <NavigationMenuItem>
-            <Link href="/recipes?k=beveragesmoothie&type=recipeType" className={navControlClass}>
+            <NavigationMenuTrigger className={navControlClass}>
               Drinks
-            </Link>
+            </NavigationMenuTrigger>
+            <NavigationMenuContent
+              className="mega-menu"
+              style={{
+                left: "-636px",
+                width: "min(720px, calc(100vw - 48px))",
+              }}
+            >
+              <div className="grid grid-cols-[245px_minmax(0,1fr)] gap-5 p-6">
+                <Link
+                  href={featuredDrink?.href || recipeCollectionHref("beveragesmoothie")}
+                  className="group relative min-h-[270px] overflow-hidden rounded-[1.35rem] bg-[#17372b]"
+                >
+                  <Image
+                    src={
+                      featuredDrink?.imageUrl ||
+                      "/assets/images/smoothie.png"
+                    }
+                    alt=""
+                    fill
+                    sizes="245px"
+                    className="object-cover transition duration-500 group-hover:scale-105"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#11251d]/94 via-[#11251d]/16 to-transparent" />
+                  <div className="absolute inset-x-0 bottom-0 p-4 text-white">
+                    <p className="inline-flex items-center gap-1.5 text-xs uppercase tracking-[0.18em] text-[#f0cd87]">
+                      <CupSoda className="size-3.5" /> Drinks counter
+                    </p>
+                    <p className="mt-2 text-xl font-semibold">
+                      {featuredDrink?.title || "Smoothies and beverages"}
+                    </p>
+                    {featuredDrink?.count ? (
+                      <p className="mt-1 text-xs text-white/78">
+                        {featuredDrink.count} drink recipes
+                      </p>
+                    ) : null}
+                  </div>
+                </Link>
+                <div>
+                  <p className="mb-4 text-xs font-semibold uppercase tracking-[0.2em] text-[#9a6a33]">
+                    Teas, juices, smoothies and sips
+                  </p>
+                  <div className="grid grid-cols-2 gap-3">
+                    {drinkItems.slice(1).map((item) => (
+                      <Link
+                        key={item.href}
+                        href={item.href}
+                        className="group flex min-h-[74px] items-center gap-3 rounded-2xl border border-[#f0e2cf] bg-[#fffdf8] p-2.5 transition hover:border-[#dfb36a]"
+                      >
+                        <span className="relative size-12 shrink-0 overflow-hidden rounded-xl bg-[#efe4d5]">
+                          <Image
+                            src={item.imageUrl || "/assets/images/smoothie.png"}
+                            alt=""
+                            fill
+                            sizes="48px"
+                            className="object-cover"
+                          />
+                        </span>
+                        <span className="min-w-0">
+                          <span className="block text-sm font-semibold text-[#45352a] group-hover:text-primary">
+                            {item.title}
+                          </span>
+                          <span className="mt-0.5 block truncate text-[11px] text-[#8a7767]">
+                            {item.count ? `${item.count} recipes` : item.description}
+                          </span>
+                        </span>
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </NavigationMenuContent>
           </NavigationMenuItem>
           <NavigationMenuItem>
-            <Link href="/search?k=desserts%20and%20sweets" className={navControlClass}>
+            <Link href={recipeCollectionHref("desserts")} className={navControlClass}>
               Desserts
             </Link>
           </NavigationMenuItem>

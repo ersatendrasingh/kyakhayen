@@ -3,8 +3,8 @@
 import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { redirect, useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useState, useTransition } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useState, useTransition } from "react";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
 
@@ -42,7 +42,7 @@ export const LoginForm = ({ callBackUrl, mode }: LoginFormProps) => {
     : searchParams.get("callbackUrl");
   const urlError =
     searchParams.get("error") === "OAuthAccountNotLinked"
-      ? "Email already in use with different provider!"
+      ? "We could not connect this Google sign-in to your existing account. Please try again or contact support."
       : searchParams.get("error") === "AccountSuspended"
         ? "Your account is temporarily suspended. Please contact support."
         : "";

@@ -9,27 +9,16 @@ import {
   SectionEyebrow,
   TrustHero,
 } from "@/components/trust/trust-page";
+import { buildSeoMetadata } from "@/lib/seo";
 
-const siteUrl = process.env.NEXT_PUBLIC_APP_URL || "https://www.kyakhayen.com";
-
-export const metadata: Metadata = {
+export const metadata: Metadata = buildSeoMetadata({
   title: "About Kya Khayen | Everyday Recipe Ideas and Meal Planning",
   description:
     "Learn how Kya Khayen helps people explore recipes and build taste-based meal plans without medical or health profiling.",
-  alternates: { canonical: `${siteUrl}/about-us` },
-  openGraph: {
-    title: "About Kya Khayen | Everyday Recipe Ideas and Meal Planning",
-    description:
-      "Recipe inspiration and taste-based weekly planning for everyday kitchens.",
-    url: `${siteUrl}/about-us`,
-    type: "website",
-    images: [{ url: `${siteUrl}/meta-images/about-us.png`, width: 1200, height: 630 }],
-  },
-  twitter: {
-    card: "summary_large_image",
-    images: [`${siteUrl}/meta-images/about-us.png`],
-  },
-};
+  path: "/about-us",
+  image: "/meta-images/about-us.png",
+  imageAlt: "About Kya Khayen recipe discovery and meal planning",
+});
 
 const waysWeHelp = [
   {

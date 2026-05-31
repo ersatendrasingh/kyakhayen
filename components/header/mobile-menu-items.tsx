@@ -1,6 +1,14 @@
 "use client";
 
-import { ChevronDown, Leaf, Sparkles, SunMedium } from "lucide-react";
+import {
+  ChevronDown,
+  CloudRain,
+  CakeSlice,
+  Leaf,
+  Snowflake,
+  Sparkles,
+  SunMedium,
+} from "lucide-react";
 import Link from "next/link";
 
 import Logo from "@/components/logo";
@@ -10,15 +18,19 @@ import { SheetClose } from "@/components/ui/sheet";
 import type {
   CategoryNavItem,
   CuisineNavItem,
+  MenuLink,
   NavItem,
+  SeasonNavItem,
 } from "@/components/header/navbar";
+import { recipeCollectionHref } from "@/lib/recipe-collection-url";
 
 type MobileMenuItemsProps = {
+  currentSeason: SeasonNavItem;
   mealTimes: NavItem[];
   cuisines: CuisineNavItem[];
   categories: CategoryNavItem[];
   recipeTypes: NavItem[];
-  cookingMethods: NavItem[];
+  drinkItems: MenuLink[];
   dietTypes: NavItem[];
 };
 
@@ -63,12 +75,24 @@ function DrawerGroup({
   );
 }
 
+function MobileSeasonIcon({ slug }: { slug: SeasonNavItem["slug"] }) {
+  const Icon = slug === "rainy" ? CloudRain : slug === "winter" ? Snowflake : SunMedium;
+
+  return (
+    <span className="relative inline-flex size-5 items-center justify-center rounded-full bg-white/70">
+      <span className="absolute inline-flex size-5 animate-ping rounded-full bg-[#e7a93f]/35 motion-reduce:animate-none" />
+      <Icon className="relative size-4" />
+    </span>
+  );
+}
+
 export const MobileMenuItems = ({
+  currentSeason,
   mealTimes,
   cuisines,
   categories,
   recipeTypes,
-  cookingMethods,
+  drinkItems,
   dietTypes,
 }: MobileMenuItemsProps) => {
   return (
@@ -83,33 +107,21 @@ export const MobileMenuItems = ({
       <div className="grid grid-cols-2 gap-2 border-b border-[#eadbc8] p-4">
         <SheetClose asChild>
           <Link
-            href="/recipes?k=summer&type=season"
+            href={currentSeason.href}
             className="flex cursor-pointer items-center gap-2 rounded-xl bg-[#edf3df] px-3 py-3 text-xs font-semibold text-[#315036]"
           >
-            <SunMedium className="size-4" /> Summer
+            <MobileSeasonIcon slug={currentSeason.slug} /> {currentSeason.title}
           </Link>
         </SheetClose>
         <SheetClose asChild>
           <Link
-            href="/recipes?k=snacks&type=recipeType"
+            href="/blog"
             className="flex cursor-pointer items-center gap-2 rounded-xl bg-[#f7e9db] px-3 py-3 text-xs font-semibold text-primary"
           >
-            <Sparkles className="size-4" /> Quick Bites
+            <Sparkles className="size-4" /> Journal
           </Link>
         </SheetClose>
       </div>
-
-      <SheetClose asChild>
-        <Link
-          href="/blog"
-          className="mx-4 mt-4 flex cursor-pointer items-center justify-between rounded-2xl border border-[#eadbc8] bg-white px-4 py-4 text-sm font-semibold text-[#45362c]"
-        >
-          <span className="inline-flex items-center gap-2">
-            <Sparkles className="size-4 text-[#bd8030]" /> Food journal
-          </span>
-          <span aria-hidden="true">-&gt;</span>
-        </Link>
-      </SheetClose>
 
       <DrawerGroup
         label="Recipes"
@@ -118,7 +130,7 @@ export const MobileMenuItems = ({
           { label: "All recipes", href: "/recipes" },
           ...categories.slice(0, 5).map((category) => ({
             label: category.name,
-            href: `/recipes?k=${category.slug}&type=category`,
+            href: recipeCollectionHref(category.slug),
           })),
         ]}
       />
@@ -127,15 +139,15 @@ export const MobileMenuItems = ({
         kicker="Cook by moment"
         links={mealTimes.slice(0, 6).map((mealTime) => ({
           label: mealTime.title,
-          href: `/recipes?k=${mealTime.slug}&type=mealTime`,
+          href: recipeCollectionHref(mealTime.slug),
         }))}
       />
       <DrawerGroup
         label="Cuisines"
-        kicker="Taste across India"
+        kicker="Taste across regions"
         links={cuisines.slice(0, 8).map((cuisine) => ({
           label: cuisine.title,
-          href: `/recipes?k=${cuisine.slug}&type=cuisine`,
+          href: recipeCollectionHref(cuisine.slug),
         }))}
       />
       <DrawerGroup
@@ -144,34 +156,46 @@ export const MobileMenuItems = ({
         links={[
           {
             label: "Vegetarian",
-            href: "/recipes?k=veg&type=category",
+            href: recipeCollectionHref("veg"),
           },
           ...recipeTypes.slice(0, 5).map((type) => ({
             label: type.title,
-            href: `/recipes?k=${type.slug}&type=recipeType`,
+            href: recipeCollectionHref(type.slug),
           })),
         ]}
-      />
-      <DrawerGroup
-        label="Cooking Methods"
-        kicker="Choose technique"
-        links={cookingMethods.slice(0, 6).map((method) => ({
-          label: method.title,
-          href: `/recipes?k=${method.slug}&type=cookingMethod`,
-        }))}
       />
       <DrawerGroup
         label="Wellness Goals"
         kicker="Eat your way"
         links={dietTypes.slice(0, 6).map((dietType) => ({
           label: dietType.title,
-          href: `/recipes?k=${dietType.slug}&type=dietType`,
+          href: recipeCollectionHref(dietType.slug),
+        }))}
+      />
+      <DrawerGroup
+        label="Drinks"
+        kicker="Teas and coolers"
+        links={drinkItems.map((item) => ({
+          label: item.count ? `${item.title} (${item.count})` : item.title,
+          href: item.href,
         }))}
       />
 
       <SheetClose asChild>
         <Link
-          href="/recipes?k=veg&type=category"
+          href={recipeCollectionHref("desserts")}
+          className="mx-4 mt-4 flex cursor-pointer items-center justify-between rounded-2xl border border-[#eadbc8] bg-white px-4 py-4 text-sm font-semibold text-[#45362c]"
+        >
+          <span className="inline-flex items-center gap-2">
+            <CakeSlice className="size-4 text-[#bd8030]" /> Desserts
+          </span>
+          <span aria-hidden="true">-&gt;</span>
+        </Link>
+      </SheetClose>
+
+      <SheetClose asChild>
+        <Link
+          href={recipeCollectionHref("veg")}
           className="mx-4 mt-4 flex cursor-pointer items-center justify-between rounded-2xl bg-[#17372b] px-4 py-4 text-sm font-semibold text-white"
         >
           <span className="inline-flex items-center gap-2">

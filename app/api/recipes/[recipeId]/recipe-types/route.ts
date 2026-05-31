@@ -1,5 +1,6 @@
 import { currentUser } from "@/lib/auth";
 import { db } from "@/lib/db";
+import { touchRecipeContentUpdatedAt } from "@/lib/touch-recipe-content";
 import { NextResponse } from "next/server";
 
 export async function POST(req: Request, props: { params: Promise<{ recipeId: string }> }) {
@@ -54,6 +55,7 @@ export async function POST(req: Request, props: { params: Promise<{ recipeId: st
       })
     );
 
+    await touchRecipeContentUpdatedAt(recipeId);
     return NextResponse.json("Recipe types updated", { status: 200 });
   } catch (error) {
     console.log("[RECIPE_TYPE]", error);

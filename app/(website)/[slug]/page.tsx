@@ -1,11 +1,13 @@
 import { notFound } from "next/navigation";
-import { Metadata, ResolvingMetadata } from "next";
+import { Metadata } from "next";
 import { getArticles } from "@/actions/get-articles";
 import { GetRecipes } from "@/actions/get-recipes";
 import SingleRecipe from "@/components/recipes/single-recipe";
 import SingleArticle from "@/components/blogs/single-article";
+import { articleHref, buildSeoMetadata, recipeHref, seoDescription } from "@/lib/seo";
+import { recipeContentUpdatedAt, recipePublishedAt } from "@/lib/recipe-publication";
 
-export async function generateMetadata(props: { params: Promise<{ slug: string }> }, parent: ResolvingMetadata): Promise<Metadata> {
+export async function generateMetadata(props: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const params = await props.params;
   const { slug } = params;
 
@@ -18,56 +20,32 @@ export async function generateMetadata(props: { params: Promise<{ slug: string }
   });
 
   if (recipe) {
-    const previousImages = (await parent).openGraph?.images || [];
-    const plainTextDescription = recipe.description?.replace(/<[^>]*>/g, "");
-    const metaDescription = plainTextDescription!.substring(0, 160);
+    const description = seoDescription(
+      recipe.metaDescription,
+      recipe.description || `${recipe.title} recipe with ingredients and cooking steps.`,
+    );
+    const recipeKeywords = [
+      recipe.title,
+      `${recipe.title} recipe`,
+      "easy recipe",
+      "homemade recipe",
+      recipe.RecipeCategories?.name,
+      ...(recipe.recipeCuisine ?? []).map(({ cuisine }) => cuisine.title),
+      ...(recipe.recipeDietType ?? []).map(({ dietType }) => dietType.title),
+      ...(recipe.recipeRecipeType ?? []).map(({ recipeType }) => recipeType.title),
+    ].filter((value): value is string => Boolean(value));
 
-    return {
-      title: recipe.metaTitle || `${recipe.title} - Kya Khayen`,
-      description: recipe.metaDescription || metaDescription,
-      robots: {
-        index: true,
-        follow: true,
-        nocache: false,
-        googleBot: {
-          index: true,
-          follow: true,
-          noimageindex: false,
-          "max-video-preview": -1,
-          "max-image-preview": "large",
-          "max-snippet": -1,
-        },
-      },
-      openGraph: {
-        title: recipe.metaTitle || recipe.title,
-        description: recipe.metaDescription || metaDescription,
-        url: `${process.env.NEXT_PUBLIC_APP_URL}/${slug}`,
-        type: "article",
-        images: [
-          {
-            url: String(recipe.imageUrl || previousImages[0]),
-            width: 1200,
-            height: 630,
-            alt: String(recipe.metaTitle ?? recipe.title),
-          },
-          ...previousImages.slice(1).map((img) => ({
-            url: String(img),
-            width: 1200,
-            height: 630,
-            alt: "Additional Image",
-          })),
-        ],
-      },
-      twitter: {
-        title: recipe.metaTitle || recipe.title,
-        description: recipe.metaDescription || metaDescription,
-        images: [recipe.imageUrl!, ...previousImages],
-        card: "summary_large_image",
-      },
-      alternates: {
-        canonical: `${process.env.NEXT_PUBLIC_APP_URL}/${slug}`,
-      },
-    };
+    return buildSeoMetadata({
+      title: recipe.metaTitle || `${recipe.title} Recipe | Kya Khayen`,
+      description,
+      path: recipeHref(recipe),
+      image: recipe.imageUrl,
+      imageAlt: `${recipe.title} recipe`,
+      type: "article",
+      publishedTime: recipePublishedAt(recipe),
+      modifiedTime: recipeContentUpdatedAt(recipe),
+      keywords: recipeKeywords,
+    });
   }
 
   const blog = blogs.find((b) => {
@@ -75,51 +53,37 @@ export async function generateMetadata(props: { params: Promise<{ slug: string }
     return combinedSlug === slug;
   });
   if (blog) {
-    const previousImages = (await parent).openGraph?.images || [];
-    const plainTextDescription = blog.content?.replace(/<[^>]*>/g, "");
-    const metaDescription = plainTextDescription!.substring(0, 160);
+    const description = seoDescription(
+      blog.metaDescription,
+      blog.content || `${blog.title} from Kya Khayen.`,
+    );
+    const articleKeywords = [
+      blog.title,
+      "cooking tips",
+      "food guide",
+      ...blog.PostCategory.map(({ category }) => category.title),
+      ...blog.PostTag.map(({ tag }) => tag.title),
+    ].filter((value): value is string => Boolean(value));
 
-    return {
-      title: blog.metaTitle || `${blog.title} - KyaKhayen`,
-      description: blog.metaDescription || metaDescription,
-      openGraph: {
-        title: blog.metaTitle || blog.title,
-        description: blog.metaDescription || metaDescription,
-        url: `${process.env.NEXT_PUBLIC_APP_URL}/${slug}`,
-        type: "article",
-        images: [blog.imageUrl!, ...previousImages],
-      },
-      twitter: {
-        title: blog.metaTitle || blog.title,
-        description: blog.metaDescription || metaDescription,
-        images: [blog.imageUrl!, ...previousImages],
-        card: "summary_large_image",
-      },
-      alternates: {
-        canonical: `${process.env.NEXT_PUBLIC_APP_URL}/${slug}`,
-      },
-    };
+    return buildSeoMetadata({
+      title: blog.metaTitle || `${blog.title} | Kya Khayen`,
+      description,
+      path: articleHref(blog),
+      image: blog.imageUrl,
+      imageAlt: blog.title,
+      type: "article",
+      publishedTime: blog.createdAt,
+      modifiedTime: blog.updatedAt,
+      keywords: articleKeywords,
+    });
   }
 
-  return {
-    title: "Page Not Found - KyaKhayen",
-    description: "The page you are looking for does not exist.",
-    openGraph: {
-      title: "Page Not Found - KyaKhayen",
-      description: "The page you are looking for does not exist.",
-      url: `${process.env.NEXT_PUBLIC_APP_URL}/404`,
-      type: "website",
-      images: [],
-    },
-    twitter: {
-      title: "Page Not Found - KyaKhayen",
-      description: "The page you are looking for does not exist.",
-      card: "summary_large_image",
-    },
-    alternates: {
-      canonical: `${process.env.NEXT_PUBLIC_APP_URL}/404`,
-    },
-  };
+  return buildSeoMetadata({
+    title: "Page Not Found | Kya Khayen",
+    description: "The Kya Khayen page you are looking for does not exist.",
+    path: "/404",
+    noIndex: true,
+  });
 }
 
 export default async function SlugPage(

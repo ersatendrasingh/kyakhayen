@@ -24,27 +24,61 @@ import type {
 import HomeMealPlanAction from "@/components/sections/home-meal-plan-action";
 import { currentUser } from "@/lib/auth";
 import { db } from "@/lib/db";
-
-const siteUrl =
-  process.env.NEXT_PUBLIC_APP_URL || "https://www.kyakhayen.com";
-
-export const metadata: Metadata = {
-  title: "Food Stories, Kitchen Guides and Everyday Ideas | Kya Khayen",
-  description:
-    "Read original food stories, kitchen guides, seasonal ideas and practical meal inspiration from Kya Khayen.",
-  alternates: { canonical: `${siteUrl}/blog` },
-  openGraph: {
-    title: "Food Stories and Kitchen Guides | Kya Khayen",
-    description:
-      "Original articles for cooking with more confidence and less guesswork.",
-    url: `${siteUrl}/blog`,
-    type: "website",
-  },
-};
+import { publishedRecipeWhere } from "@/lib/recipe-publication";
+import {
+  breadcrumbJsonLd,
+  buildSeoMetadata,
+  itemListJsonLd,
+  jsonLd,
+} from "@/lib/seo";
 
 type BlogPageProps = {
   searchParams: Promise<{ k?: string; type?: string }>;
 };
+
+function collectionLabel(slug?: string) {
+  if (!slug) return null;
+
+  return slug
+    .split("-")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
+}
+
+export async function generateMetadata({
+  searchParams,
+}: BlogPageProps): Promise<Metadata> {
+  const filters = await searchParams;
+  const label = collectionLabel(filters.k);
+  const title = label
+    ? `${label} Food Stories and Kitchen Guides | Kya Khayen`
+    : "Food Stories, Kitchen Guides and Everyday Ideas | Kya Khayen";
+  const description = label
+    ? `Read ${label.toLowerCase()} food stories, kitchen guides and practical cooking ideas from Kya Khayen.`
+    : "Read original food stories, kitchen guides, seasonal ideas and practical meal inspiration from Kya Khayen.";
+  const queryString = new URLSearchParams();
+
+  if (filters.k) queryString.set("k", filters.k);
+  if (filters.type) queryString.set("type", filters.type);
+
+  return buildSeoMetadata({
+    title,
+    description,
+    path: `/blog${queryString.size ? `?${queryString.toString()}` : ""}`,
+    image: "/meta-images/home.png",
+    imageAlt: "Kya Khayen food stories and kitchen guides",
+    noIndex: Boolean(filters.k && !filters.type),
+    keywords: [
+      "food stories",
+      "kitchen guides",
+      "cooking tips",
+      "healthy meal ideas",
+      "recipe inspiration",
+      "meal planning ideas",
+      ...(label ? [label] : []),
+    ],
+  });
+}
 
 export default async function BlogPage({ searchParams }: BlogPageProps) {
   const filters = await searchParams;
@@ -83,7 +117,7 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
     }),
     db.recipes.findMany({
       where: {
-        isPublished: true,
+        ...publishedRecipeWhere(),
         imageUrl: { not: null },
         RecipeCategories: { slug: { in: ["veg", "vegan"] } },
       },
@@ -103,7 +137,7 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
           take: 1,
         },
       },
-      orderBy: [{ views: "desc" }, { updatedAt: "desc" }],
+      orderBy: [{ views: "desc" }, { contentUpdatedAt: "desc" }, { updatedAt: "desc" }],
       take: 6,
     }),
   ]);
@@ -188,9 +222,30 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
     filters.type === "category"
       ? categories.find((category) => category.slug === filters.k)?.title
       : tags.find((tag) => tag.slug === filters.k)?.title;
+  const queryString = new URLSearchParams();
+  if (filters.k) queryString.set("k", filters.k);
+  if (filters.type) queryString.set("type", filters.type);
+  const blogPath = `/blog${queryString.size ? `?${queryString.toString()}` : ""}`;
+  const listingSchema = itemListJsonLd(
+    filterLabel ? `${filterLabel} food stories` : "Food stories from Kya Khayen",
+    articles.map((article) => ({
+      name: article.title,
+      path: articleHref(article),
+      image: article.imageUrl,
+    })),
+  );
+  const breadcrumbSchema = breadcrumbJsonLd([
+    { name: "Home", path: "/" },
+    { name: "Food Stories", path: "/blog" },
+    ...(filterLabel ? [{ name: filterLabel, path: blogPath }] : []),
+  ]);
 
   return (
     <main className="relative min-h-screen overflow-x-clip bg-[#fbf6ed] pb-20 text-[#30251e] dark:bg-[#091712] dark:text-[#eef2ec]">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: jsonLd([listingSchema, breadcrumbSchema]) }}
+      />
       <div className="pointer-events-none absolute inset-x-0 top-0 h-[620px] bg-[radial-gradient(circle_at_10%_12%,rgba(210,157,76,0.18),transparent_37%),radial-gradient(circle_at_88%_8%,rgba(187,57,43,0.10),transparent_32%)] dark:bg-[radial-gradient(circle_at_12%_8%,rgba(208,166,88,0.13),transparent_33%),radial-gradient(circle_at_90%_4%,rgba(178,60,43,0.16),transparent_27%)]" />
       <Container>
         <div className="relative mx-auto max-w-[1420px] pt-12 sm:pt-16 lg:pt-20">
