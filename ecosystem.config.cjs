@@ -1,4 +1,5 @@
-const cwd = process.env.KYAKHAYEN_DEPLOY_PATH || "/opt/kasa/kyakhayen";
+const cwd =
+  process.env.KYAKHAYEN_DEPLOY_PATH || "/opt/kasa/kyakhayen-current";
 const port = process.env.PORT || "3002";
 const internalAppUrl =
   process.env.INTERNAL_APP_URL || `http://127.0.0.1:${port}`;

@@ -212,9 +212,8 @@ jobs:
           ln -sfn "$release_dir" "$DEPLOY_CURRENT_LINK"
           export KYAKHAYEN_DEPLOY_PATH="$DEPLOY_CURRENT_LINK"
 
-          if ! pm2 reload "$DEPLOY_CURRENT_LINK/ecosystem.config.cjs" --update-env; then
-            pm2 start "$DEPLOY_CURRENT_LINK/ecosystem.config.cjs" --update-env
-          fi
+          pm2 delete kyakhayen-recipe-view-worker >/dev/null 2>&1 || true
+          pm2 startOrReload "$DEPLOY_CURRENT_LINK/ecosystem.config.cjs" --update-env
 
           sleep 8
           if ! curl -fsS --max-time 15 "$DEPLOY_HEALTHCHECK_URL" >/dev/null; then
