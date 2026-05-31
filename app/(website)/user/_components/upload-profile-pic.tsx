@@ -116,7 +116,7 @@ const UploadProfilePic = ({
           duration: 5000,
         });
       }
-    } catch (error) {
+    } catch {
       setIsUploading(false);
       toast.error("Something went wrong while uploading file", {
         duration: 5000,

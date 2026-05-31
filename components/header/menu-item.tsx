@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { IoIosArrowForward } from "react-icons/io";
 
 import { cn } from "@/lib/utils";
@@ -22,7 +22,6 @@ interface MenuItemProps {
 const MenuItem = ({ label, href, subItems }: MenuItemProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const pathname = usePathname();
-  const router = useRouter();
 
   const isActive =
     (pathname === "/" && href === "/") ||

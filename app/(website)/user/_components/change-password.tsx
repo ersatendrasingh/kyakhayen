@@ -15,7 +15,7 @@ import { changePasswordSchema } from "@/schemas";
 import { useForm } from "react-hook-form";
 import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
-import axios, { AxiosError } from "axios";
+import axios from "axios";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -37,15 +37,23 @@ const ChangePassword = () => {
       toast.success(response.data, {
         duration: 5000,
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       if (axios.isAxiosError(error)) {
-        console.error("Axios Error:", error.response?.data || error.message);
-        toast.error(error.response?.data || error.message, {
+        const message =
+          typeof error.response?.data === "string"
+            ? error.response.data
+            : error.message;
+        console.error("Axios Error:", message);
+        toast.error(message, {
+          duration: 5000,
+        });
+      } else if (error instanceof Error) {
+        console.error("Error:", error.message);
+        toast.error(error.message, {
           duration: 5000,
         });
       } else {
-        console.error("Error:", error.message);
-        toast.error(error.message, {
+        toast.error("Unable to update password.", {
           duration: 5000,
         });
       }

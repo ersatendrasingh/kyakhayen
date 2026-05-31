@@ -36,13 +36,11 @@ export default function SuccessPage() {
   const { userCurrency } = useUserCountry();
   const { data: session, update } = useSession();
   const [order, setOrder] = useState<Order | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [unavailable, setUnavailable] = useState(false);
+  const [loading, setLoading] = useState(() => Boolean(providerOrderId));
+  const [unavailable, setUnavailable] = useState(() => !providerOrderId);
 
   useEffect(() => {
     if (!providerOrderId) {
-      setUnavailable(true);
-      setLoading(false);
       return;
     }
     let active = true;

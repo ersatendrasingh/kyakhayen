@@ -50,15 +50,19 @@ export default function PricingTable({
 
   useEffect(() => {
     let active = true;
-    setLoading(true);
-    getSubscriptionPlans(userCurrency).then((fetchedPlans) => {
-      if (active) {
-        setPlans(fetchedPlans);
-        setLoading(false);
-      }
-    });
+    const timer = window.setTimeout(() => {
+      setLoading(true);
+      getSubscriptionPlans(userCurrency).then((fetchedPlans) => {
+        if (active) {
+          setPlans(fetchedPlans);
+          setLoading(false);
+        }
+      });
+    }, 0);
+
     return () => {
       active = false;
+      window.clearTimeout(timer);
     };
   }, [userCurrency]);
 

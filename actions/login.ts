@@ -120,9 +120,11 @@ export const login = async (
       email,
       password,
       redirect: false,
-      // redirectTo: callbackUrl || DEFAULT_LOGIN_REDIRECT,
     });
-    return { success: "Login success. Redirecting..." };
+    return {
+      success: "Login success. Redirecting...",
+      redirectTo: callbackUrl || DEFAULT_LOGIN_REDIRECT,
+    };
   } catch (error) {
     if (error instanceof AuthError) {
       switch (error.type) {

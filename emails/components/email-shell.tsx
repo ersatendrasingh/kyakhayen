@@ -41,6 +41,8 @@ const copyStyle: CSSProperties = {
   fontSize: "15px",
   lineHeight: "24px",
 };
+const EmailHead = "head" as const;
+const EmailImage = "img" as const;
 
 type EmailShellProps = {
   preview: string;
@@ -57,10 +59,10 @@ export function EmailShell({
 }: EmailShellProps) {
   return (
     <html lang="en">
-      <head>
+      <EmailHead>
         <meta content={preview} name="x-apple-disable-message-reformatting" />
         <meta content="width=device-width, initial-scale=1" name="viewport" />
-      </head>
+      </EmailHead>
       <body style={bodyStyle}>
         <div
           style={{
@@ -105,7 +107,7 @@ export function EmailShell({
                             <tr>
                               <td>
                                 <a href={emailLinks.home}>
-                                  <img
+                                  <EmailImage
                                     alt="Kya Khayen"
                                     height="45"
                                     src="cid:kyakhayen-logo"

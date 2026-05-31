@@ -3,7 +3,6 @@
 import { cn } from "@/lib/utils";
 
 import guestAuthor from "@/public/assets/images/guest-user.webp";
-import RecipeRatingDetails from "@/components/recipes/recipe-rating-details";
 
 import Image from "next/image";
 

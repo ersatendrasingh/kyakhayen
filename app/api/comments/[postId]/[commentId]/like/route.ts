@@ -3,15 +3,12 @@ import { db } from "@/lib/db";
 import { NextResponse } from "next/server";
 
 export async function POST(
-  req: Request,
+  _req: Request,
   props: { params: Promise<{ postId: string; commentId: string }> }
 ) {
   const params = await props.params;
 
-  const {
-    postId,
-    commentId
-  } = params;
+  const { commentId } = params;
 
   try {
     const user = await currentUser();
@@ -33,7 +30,7 @@ export async function POST(
       });
     }
 
-    const newLike = await db.commentLikes.create({
+    await db.commentLikes.create({
       data: {
         commentId,
         userId: user.id,

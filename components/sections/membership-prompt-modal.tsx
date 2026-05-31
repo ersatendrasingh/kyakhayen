@@ -47,11 +47,12 @@ const benefits = [
 export default function MembershipPromptModal() {
   const { data: session, status } = useSession();
   const [open, setOpen] = useState(false);
+  const [nowMs] = useState(() => Date.now());
   const paidMember = session?.user?.userPlan?.some((plan, index) => {
     const endDate = session.user.userPlanEndDate?.[index];
     return (
       plan !== "Freemium" &&
-      (!endDate || new Date(endDate).getTime() >= Date.now())
+      (!endDate || new Date(endDate).getTime() >= nowMs)
     );
   });
   const alreadyHasMealPlan = Boolean(session?.user?.isPersonalised);

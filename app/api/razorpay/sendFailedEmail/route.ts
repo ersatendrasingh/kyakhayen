@@ -1,12 +1,25 @@
 import { db } from "@/lib/db";
 import { NextResponse } from "next/server";
 import { currentUser } from "@/lib/auth";
+import type { Prisma } from "@prisma/client";
 
 import { render } from "react-email";
 import { sendEmail } from "@/lib/mail";
 import OrderConfirmationMail from "@/emails/customer-order-confirmation";
 import CustomerOrderAdminMail from "@/emails/customer-order-admin-mail";
 import { formatDate } from "@/lib/formatDate";
+
+type FailedOrderItem = Prisma.ItemGetPayload<{ include: { plan: true } }>;
+
+function orderItemPayload(item: FailedOrderItem) {
+  return {
+    name: item.plan?.name || item.itemName,
+    quantity: item.quantity,
+    priceInr: item.plan?.priceInr ?? item.priceInr ?? 0,
+    priceUsd: item.plan?.priceUsd ?? item.priceUsd ?? 0,
+    durationDays: item.plan?.durationDays ?? 0,
+  };
+}
 
 export async function POST(req: Request) {
   try {
@@ -80,13 +93,7 @@ export async function POST(req: Request) {
             totalAmount: order.totalAmount as number,
             coupon: order.coupon || "",
             discount: order.discount || 0,
-            items: order.items.map((item: any) => ({
-              name: item.plan.name,
-              quantity: item.quantity,
-              priceInr: item.plan.priceInr,
-              priceUsd: item.plan.priceUsd,
-              durationDays: item.plan.durationDays,
-            })),
+            items: order.items.map(orderItemPayload),
           },
         })
       ),
@@ -113,13 +120,7 @@ export async function POST(req: Request) {
             totalAmount: order.totalAmount as number,
             coupon: order.coupon || "",
             discount: order.discount || 0,
-            items: order.items.map((item: any) => ({
-              name: item.plan.name,
-              quantity: item.quantity,
-              priceInr: item.plan.priceInr,
-              priceUsd: item.plan.priceUsd,
-              durationDays: item.plan.durationDays,
-            })),
+            items: order.items.map(orderItemPayload),
           },
         })
       ),

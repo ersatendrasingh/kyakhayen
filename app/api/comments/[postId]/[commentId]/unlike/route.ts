@@ -3,15 +3,12 @@ import { db } from "@/lib/db";
 import { NextResponse } from "next/server";
 
 export async function DELETE(
-  req: Request,
+  _req: Request,
   props: { params: Promise<{ postId: string; commentId: string }> }
 ) {
   const params = await props.params;
 
-  const {
-    postId,
-    commentId
-  } = params;
+  const { commentId } = params;
 
   try {
     const user = await currentUser();

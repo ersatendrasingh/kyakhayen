@@ -81,17 +81,18 @@ export default function PersonalizationForm({
 
   useEffect(() => {
     localStorage.setItem("currentStep", JSON.stringify(step));
-    setIsFormValid(false);
   }, [step]);
 
   const nextStep = () => {
     if (!isFormValid) return;
     setDirection("next");
+    setIsFormValid(false);
     setStep((previousStep) => previousStep + 1);
   };
 
   const prevStep = () => {
     setDirection("prev");
+    setIsFormValid(false);
     setStep((previousStep) => previousStep - 1);
   };
 

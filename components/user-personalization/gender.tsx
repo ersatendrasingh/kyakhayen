@@ -10,7 +10,6 @@ import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
 import { Navigation, Mousewheel, Keyboard } from "swiper/modules";
-import { PersonalizationSkelton } from "@/components/user-personalization/personalization-skelton";
 import useWindowSize from "@/hooks/use-window-size";
 
 interface GenderProps {
@@ -36,13 +35,7 @@ const Gender = ({ genders, title, setIsFormValid }: GenderProps) => {
   const [selectedGender, setSelectedGender] = useState<string | null>(() =>
     getSavedGender()
   );
-  const [loading, setLoading] = useState(true);
   const { width } = useWindowSize();
-  useEffect(() => {
-    const savedGender = getSavedGender();
-    setSelectedGender(savedGender);
-    setLoading(false);
-  }, []);
 
   useEffect(() => {
     const existingUserData = JSON.parse(
@@ -68,10 +61,6 @@ const Gender = ({ genders, title, setIsFormValid }: GenderProps) => {
 
   const isGenderSelected = (genderId: string) => selectedGender === genderId;
   const isMobile = width !== undefined && width <= 767;
-
-  if (loading) {
-    return <PersonalizationSkelton />;
-  }
 
   return (
     <div>

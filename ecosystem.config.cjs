@@ -1,7 +1,3 @@
-const { loadEnvConfig } = require("@next/env");
-
-loadEnvConfig(__dirname);
-
 const cwd = process.env.KYAKHAYEN_DEPLOY_PATH || "/opt/kasa/kyakhayen";
 const port = process.env.PORT || "3002";
 const internalAppUrl =
@@ -26,7 +22,7 @@ module.exports = {
     {
       name: "kyakhayen-meal-plan-worker",
       script: "node",
-      args: "workers/mealPlan.js",
+      args: "workers/mealPlan.mjs",
       cwd,
       env: baseEnv,
       max_memory_restart: "512M",
@@ -35,7 +31,7 @@ module.exports = {
     {
       name: "kyakhayen-recipe-view-worker",
       script: "node",
-      args: "workers/recipeAddView.js",
+      args: "workers/recipeAddView.mjs",
       cwd,
       env: baseEnv,
       max_memory_restart: "384M",

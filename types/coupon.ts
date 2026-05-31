@@ -1,5 +1,3 @@
-import { Feature, PlanOnCoupon } from "@prisma/client";
-
 export type CouponType = {
   id: string;
   code: string;

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { ArrowRight, CalendarDays, PlayCircle } from "lucide-react";
 import { useSession } from "next-auth/react";
+import { useState } from "react";
 
 import { cn } from "@/lib/utils";
 
@@ -15,12 +16,13 @@ export default function HomeMealPlanAction({
 }: HomeMealPlanActionProps) {
   const { data: session, status } = useSession();
   const hasMealPlan = Boolean(session?.user?.isPersonalised);
+  const [nowMs] = useState(() => Date.now());
   const hasPaidAccess = Boolean(
     session?.user?.userPlan?.some((plan, index) => {
       const endDate = session.user.userPlanEndDate?.[index];
       return (
         plan !== "Freemium" &&
-        (!endDate || new Date(endDate).getTime() >= Date.now())
+        (!endDate || new Date(endDate).getTime() >= nowMs)
       );
     }),
   );

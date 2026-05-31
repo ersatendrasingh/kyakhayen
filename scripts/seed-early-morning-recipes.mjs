@@ -1,8 +1,14 @@
-const { PrismaClient } = require("@prisma/client");
+import fs from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+import { PrismaClient } from "@prisma/client";
 
 const db = new PrismaClient();
-const catalog = require("../data/meal-plan/early-morning-recipes.json");
-const imageManifest = require("../data/meal-plan/early-morning-image-manifest.json");
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const readJson = (relativePath) =>
+  JSON.parse(fs.readFileSync(path.resolve(__dirname, relativePath), "utf8"));
+const catalog = readJson("../data/meal-plan/early-morning-recipes.json");
+const imageManifest = readJson("../data/meal-plan/early-morning-image-manifest.json");
 
 function slugify(value) {
   return value

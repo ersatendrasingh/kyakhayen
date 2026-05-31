@@ -3,7 +3,6 @@
 import Image from "next/image";
 import { useInView } from "react-intersection-observer";
 import Link from "next/link";
-import { useEffect, useState } from "react";
 
 import { PostWithCategory } from "@/types/article";
 
@@ -12,21 +11,16 @@ interface ArticleCardProps {
 }
 
 const ArticleCard = ({ article }: ArticleCardProps) => {
-  const [isInView, setIsInView] = useState(false);
   const { ref, inView } = useInView({
     triggerOnce: true,
     threshold: 0.5,
   });
 
-  useEffect(() => {
-    setIsInView(inView);
-  }, [inView]);
-
   return (
     <div
       ref={ref}
       className={`max-w-sm min-h-[348px] rounded-md overflow-hidden shadow-lg transform transition-transform hover:shadow-xl hover:-translate-y-1 ${
-        isInView ? "animate-slide-up" : ""
+        inView ? "animate-slide-up" : ""
       }`}
     >
       <Link

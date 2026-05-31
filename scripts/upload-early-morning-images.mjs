@@ -1,13 +1,17 @@
-const fs = require("node:fs");
-const path = require("node:path");
-const { PutObjectCommand, S3Client } = require("@aws-sdk/client-s3");
-const { PrismaClient } = require("@prisma/client");
+import fs from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import { PrismaClient } from "@prisma/client";
 
 const db = new PrismaClient();
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(__dirname, "..");
 const envPath = path.join(root, ".env");
-const catalog = require("../data/meal-plan/early-morning-recipes.json");
-const imageManifest = require("../data/meal-plan/early-morning-image-manifest.json");
+const readJson = (relativePath) =>
+  JSON.parse(fs.readFileSync(path.resolve(__dirname, relativePath), "utf8"));
+const catalog = readJson("../data/meal-plan/early-morning-recipes.json");
+const imageManifest = readJson("../data/meal-plan/early-morning-image-manifest.json");
 const imageDirectory =
   process.env.EARLY_MORNING_IMAGE_DIR || imageManifest.baseDirectory;
 

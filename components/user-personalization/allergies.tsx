@@ -10,7 +10,6 @@ import { Navigation, Mousewheel, Keyboard } from "swiper/modules";
 
 import { cn } from "@/lib/utils";
 import { Allergies as AllergyType } from "@prisma/client";
-import { PersonalizationSkelton } from "@/components/user-personalization/personalization-skelton";
 import useWindowSize from "@/hooks/use-window-size";
 
 interface AllergiesProps {
@@ -36,12 +35,8 @@ const Allergies = ({ allergies, title, setIsFormValid }: AllergiesProps) => {
   const [selectedAllergies, setSelectedAllergies] = useState<string[]>(() =>
     getSavedAllergies()
   );
-  const [loading, setLoading] = useState(true);
   const { width } = useWindowSize();
 
-  useEffect(() => {
-    setLoading(false); // Set loading state to false after loading
-  }, []);
   useEffect(() => {
     const existingUserData = JSON.parse(
       localStorage.getItem("userData") || "{}"
@@ -66,9 +61,6 @@ const Allergies = ({ allergies, title, setIsFormValid }: AllergiesProps) => {
   };
   const isAllergySelected = (allergyId: string) =>
     selectedAllergies.includes(allergyId);
-  if (loading) {
-    return <PersonalizationSkelton />;
-  }
   const isMobile = width !== undefined && width <= 767;
   return (
     <div>

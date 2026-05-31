@@ -14,7 +14,6 @@ import {
 import { collectPersonalizationData } from "@/hooks/use-user-personalization";
 import axios from "axios";
 import { useRouter } from "next/navigation";
-import { Loader2 } from "lucide-react";
 import { Session } from "next-auth";
 import OverlayLoader from "../loader/overlay-loader";
 

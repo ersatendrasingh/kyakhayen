@@ -70,14 +70,18 @@ export const SearchInput = ({
   }, [autoFocus]);
 
   useEffect(() => {
-    setValue(initialValue);
-    setSearchResults([]);
-    setSelectedResultIndex(-1);
-    setHasSearched(false);
-    setIsSuggestionLoading(false);
-    lastSuggestionQueryRef.current = "";
-    resultsCountRef.current = 0;
-    hasSearchedRef.current = false;
+    const timer = window.setTimeout(() => {
+      setValue(initialValue);
+      setSearchResults([]);
+      setSelectedResultIndex(-1);
+      setHasSearched(false);
+      setIsSuggestionLoading(false);
+      lastSuggestionQueryRef.current = "";
+      resultsCountRef.current = 0;
+      hasSearchedRef.current = false;
+    }, 0);
+
+    return () => window.clearTimeout(timer);
   }, [initialValue]);
 
   useEffect(() => {
@@ -202,7 +206,11 @@ export const SearchInput = ({
   );
 
   useEffect(() => {
-    loadSuggestions(debouncedValue);
+    const timer = window.setTimeout(() => {
+      loadSuggestions(debouncedValue);
+    }, 0);
+
+    return () => window.clearTimeout(timer);
   }, [debouncedValue, loadSuggestions]);
 
   const runSearch = (query: string) => {

@@ -1,8 +1,8 @@
-const { spawn } = require("child_process");
-const fs = require("fs");
-const path = require("path");
-const { loadEnvConfig } = require("@next/env");
-const { PutObjectCommand, S3Client } = require("@aws-sdk/client-s3");
+import { spawn } from "node:child_process";
+import fs from "node:fs";
+import path from "node:path";
+import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import { loadEnvConfig } from "@next/env";
 
 loadEnvConfig(process.cwd());
 
@@ -172,7 +172,8 @@ async function createBackup() {
       console.log("[db-backup] S3 upload complete");
     } catch (error) {
       if (requireS3Backup) throw error;
-      console.warn(`[db-backup] S3 upload skipped: ${error.message}`);
+      const message = error instanceof Error ? error.message : String(error);
+      console.warn(`[db-backup] S3 upload skipped: ${message}`);
       console.warn("[db-backup] Local backup was kept successfully.");
     }
   }
@@ -181,5 +182,5 @@ async function createBackup() {
 }
 
 createBackup().catch((error) => {
-  fail(error.message);
+  fail(error instanceof Error ? error.message : String(error));
 });

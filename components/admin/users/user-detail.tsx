@@ -8,6 +8,7 @@ import {
   Sparkles,
   Star,
 } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 
 import { UserAdminControls } from "@/components/admin/users/user-admin-controls";
@@ -49,7 +50,6 @@ export function UserDetail({ user, options }: { user: ManagedUser; options: User
   const activeAccess = user.UserPlan.find(
     (assignment) => !assignment.endDate || new Date(assignment.endDate) >= now,
   );
-  const latestPlan = user.UserMealPlan[0];
   const paidOrders = user.Order.filter(
     (order) => order.paymentStatus === "Paid" || order.paymentStatus === "Success",
   );
@@ -265,7 +265,11 @@ function Choice({ label, value, image }: { label: string; value: string; image?:
   return (
     <div className="flex items-center gap-3 rounded-2xl border p-4">
       <div className="flex size-12 shrink-0 items-center justify-center overflow-hidden rounded-full bg-muted">
-        {image ? <img src={image} alt="" className="size-full object-cover" /> : <ChefHat className="size-5 text-webprimary" />}
+        {image ? (
+          <Image src={image} alt="" width={48} height={48} className="size-full object-cover" />
+        ) : (
+          <ChefHat className="size-5 text-webprimary" />
+        )}
       </div>
       <div>
         <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">{label}</p>
@@ -291,7 +295,7 @@ function VisualChoices({
             <div key={value.title} className="flex items-center gap-3 rounded-2xl border bg-muted/15 p-3">
               <div className="flex size-12 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-muted">
                 {value.imageUrl ? (
-                  <img src={value.imageUrl} alt="" className="size-full object-cover" />
+                  <Image src={value.imageUrl} alt="" width={48} height={48} className="size-full object-cover" />
                 ) : (
                   <ChefHat className="size-5 text-webprimary" />
                 )}

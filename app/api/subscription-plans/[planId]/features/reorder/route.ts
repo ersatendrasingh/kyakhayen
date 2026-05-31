@@ -9,8 +9,10 @@ export async function PUT(req: Request, props: { params: Promise<{ planId: strin
     if (!user || user.role !== "ADMIN") {
       return NextResponse.json("Unauthorized", { status: 401 });
     }
-    const { list } = await req.json();
-    for (let item of list) {
+    const { list } = (await req.json()) as {
+      list: Array<{ id: string; position: number }>;
+    };
+    for (const item of list) {
       await db.feature.update({
         where: {
           id: item.id,

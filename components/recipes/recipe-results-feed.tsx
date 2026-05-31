@@ -40,8 +40,12 @@ export default function RecipeResultsFeed({
   const sentinelRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    setRecipes(initialRecipes);
-    setNextCursor(initialCursor);
+    const timer = window.setTimeout(() => {
+      setRecipes(initialRecipes);
+      setNextCursor(initialCursor);
+    }, 0);
+
+    return () => window.clearTimeout(timer);
   }, [initialCursor, initialRecipes]);
 
   const loadNextPage = useCallback(() => {

@@ -37,8 +37,12 @@ export function ArticleCategoryDrawer({
 
   useEffect(() => {
     if (!open) return;
-    setTitle(category?.title ?? "");
-    setImageUrl(category?.imageUrl ?? null);
+    const timer = window.setTimeout(() => {
+      setTitle(category?.title ?? "");
+      setImageUrl(category?.imageUrl ?? null);
+    }, 0);
+
+    return () => window.clearTimeout(timer);
   }, [category, open]);
 
   const onSubmit = async (event: React.FormEvent<HTMLFormElement>) => {

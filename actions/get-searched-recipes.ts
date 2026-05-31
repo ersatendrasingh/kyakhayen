@@ -376,28 +376,6 @@ function singularizeToken(token: string) {
   return token;
 }
 
-function searchTokens(query: string) {
-  const normalized = normalize(query);
-  const baseTokens = normalized
-    .split(/[^a-z0-9]+/)
-    .filter(Boolean)
-    .filter((token) => !stopWords.has(token));
-  const expanded = baseTokens.flatMap((token) => {
-    const singular = singularizeToken(token);
-
-    return [
-      token,
-      singular,
-      ...(tokenAliases[token] || []),
-      ...(tokenAliases[singular] || []),
-    ];
-  });
-
-  return Array.from(
-    new Set(expanded.length > 0 ? expanded : [normalized]),
-  ).filter(Boolean);
-}
-
 function queryTokens(query: string) {
   return normalize(query)
     .split(/[^a-z0-9]+/)

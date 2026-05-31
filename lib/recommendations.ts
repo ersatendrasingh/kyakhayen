@@ -1,4 +1,3 @@
-import _ from "lodash";
 import { RecipeWithCategory } from "@/types/recipe";
 
 // Function to create TF-IDF vectors

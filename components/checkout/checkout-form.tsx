@@ -69,10 +69,14 @@ export default function CheckoutForm() {
   }, [user]);
 
   useEffect(() => {
-    const savedCoupon = localStorage.getItem("appliedCoupon");
-    if (savedCoupon) {
-      setAppliedCoupon(JSON.parse(savedCoupon));
-    }
+    const timer = window.setTimeout(() => {
+      const savedCoupon = localStorage.getItem("appliedCoupon");
+      if (savedCoupon) {
+        setAppliedCoupon(JSON.parse(savedCoupon) as AppliedCouponValue);
+      }
+    }, 0);
+
+    return () => window.clearTimeout(timer);
   }, []);
 
   const checkoutItems = useMemo(

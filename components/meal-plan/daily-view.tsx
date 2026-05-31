@@ -49,8 +49,12 @@ const DailyView = ({ date, onSelectDate }: DailyViewProps) => {
   };
 
   useEffect(() => {
-    setPlanStartWarning(false);
-    setPlanEndWarning(false);
+    let active = true;
+    const timer = window.setTimeout(() => {
+      if (!active) return;
+      setPlanStartWarning(false);
+      setPlanEndWarning(false);
+    }, 0);
 
     const fetchUserPlanDates = async () => {
       try {
@@ -60,6 +64,7 @@ const DailyView = ({ date, onSelectDate }: DailyViewProps) => {
         const userPlanEndDate = normalizeDate(new Date(endDate));
 
         const selectedDate = normalizeDate(new Date(date));
+        if (!active) return;
         setMealPlanStartDate(userPlanStartDate);
         setMealPlanEndDate(userPlanEndDate);
 
@@ -75,10 +80,15 @@ const DailyView = ({ date, onSelectDate }: DailyViewProps) => {
       }
     };
 
-    fetchUserPlanDates();
+    void fetchUserPlanDates();
+    return () => {
+      active = false;
+      window.clearTimeout(timer);
+    };
   }, [date]);
 
   useEffect(() => {
+    let active = true;
     const fetchMealPlan = async () => {
       setLoading(true);
       setPlanUnavailable(false);
@@ -89,6 +99,7 @@ const DailyView = ({ date, onSelectDate }: DailyViewProps) => {
 
         const mealPlanResult = await getMealPlanFromS3({ date: formattedDate });
 
+        if (!active) return;
         if (mealPlanResult && mealPlanResult.mealTimes.length > 0) {
           const { mealTimes, mealsByTime, routineSlots } = mealPlanResult;
           setMealsByTime(mealsByTime || {});
@@ -99,17 +110,31 @@ const DailyView = ({ date, onSelectDate }: DailyViewProps) => {
           setRoutineSlots([]);
         }
       } catch (error) {
+        if (!active) return;
         console.error("Error fetching or generating meal plan:", error);
         setPlanLoadError(true);
         setRoutineSlots([]);
       }
 
-      setLoading(false);
+      if (active) {
+        setLoading(false);
+      }
     };
 
     if (date) {
-      fetchMealPlan();
+      const timer = window.setTimeout(() => {
+        void fetchMealPlan();
+      }, 0);
+
+      return () => {
+        active = false;
+        window.clearTimeout(timer);
+      };
     }
+
+    return () => {
+      active = false;
+    };
   }, [date, refreshCount]);
 
   const areAllMealsEmpty = () => {

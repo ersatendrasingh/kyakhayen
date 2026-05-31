@@ -55,8 +55,8 @@ type ManagedCoupon = Coupon & {
 type CouponState = "live" | "expired" | "inactive";
 type DeleteSelection = ManagedCoupon[] | null;
 
-const stateOf = (coupon: Coupon): CouponState =>
-  coupon.expiryDate && coupon.expiryDate < new Date()
+const stateOf = (coupon: Coupon, nowMs: number): CouponState =>
+  coupon.expiryDate && coupon.expiryDate.getTime() < nowMs
     ? "expired"
     : coupon.isActive
       ? "live"
@@ -81,6 +81,7 @@ export function CouponsDashboard({ coupons }: { coupons: ManagedCoupon[] }) {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [deleteSelection, setDeleteSelection] = useState<DeleteSelection>(null);
   const [deleting, setDeleting] = useState(false);
+  const [nowMs] = useState(() => Date.now());
   const filteredCoupons = useMemo(() => {
     const term = search.trim().toLowerCase();
     return coupons.filter(
@@ -88,19 +89,19 @@ export function CouponsDashboard({ coupons }: { coupons: ManagedCoupon[] }) {
         (!term ||
           coupon.code.toLowerCase().includes(term) ||
           coupon.PlanOnCoupon.some(({ plan }) => plan.name.toLowerCase().includes(term))) &&
-        (status === "all" || stateOf(coupon) === status)
+        (status === "all" || stateOf(coupon, nowMs) === status)
     );
-  }, [coupons, search, status]);
+  }, [coupons, nowMs, search, status]);
   const selectedCoupons = coupons.filter((coupon) => selected.includes(coupon.id));
   const allVisibleSelected =
     filteredCoupons.length > 0 &&
     filteredCoupons.every((coupon) => selected.includes(coupon.id));
-  const live = coupons.filter((coupon) => stateOf(coupon) === "live").length;
+  const live = coupons.filter((coupon) => stateOf(coupon, nowMs) === "live").length;
   const endingSoon = coupons.filter(
     (coupon) =>
       coupon.expiryDate &&
-      stateOf(coupon) === "live" &&
-      (coupon.expiryDate.getTime() - Date.now()) / 86400000 <= 7
+      stateOf(coupon, nowMs) === "live" &&
+      (coupon.expiryDate.getTime() - nowMs) / 86400000 <= 7
   ).length;
   const uses = coupons.reduce((sum, coupon) => sum + coupon._count.UserCoupon, 0);
 
@@ -129,7 +130,7 @@ export function CouponsDashboard({ coupons }: { coupons: ManagedCoupon[] }) {
         coupon.PlanOnCoupon.map(({ plan }) => plan.name).join("; ") || "All plans",
         dateText(coupon.expiryDate),
         String(coupon._count.UserCoupon),
-        stateOf(coupon),
+        stateOf(coupon, nowMs),
       ]),
     ]
       .map((line) => line.map((cell) => `"${cell.replaceAll('"', '""')}"`).join(","))
@@ -142,7 +143,7 @@ export function CouponsDashboard({ coupons }: { coupons: ManagedCoupon[] }) {
   }
 
   async function setActive(coupon: ManagedCoupon, checked: boolean) {
-    if (checked && stateOf(coupon) === "expired") {
+    if (checked && stateOf(coupon, nowMs) === "expired") {
       toast.error("Update the expiry date before enabling this coupon");
       return;
     }
@@ -294,7 +295,7 @@ export function CouponsDashboard({ coupons }: { coupons: ManagedCoupon[] }) {
             </TableHeader>
             <TableBody>
               {filteredCoupons.map((coupon) => {
-                const state = stateOf(coupon);
+                const state = stateOf(coupon, nowMs);
                 return (
                   <TableRow key={coupon.id}>
                     <TableCell className="px-4">

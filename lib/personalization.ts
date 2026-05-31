@@ -1,21 +1,16 @@
-export function isPersonalizationComplete(user: any): boolean {
-  const requiredFields = [
-    "foodPreferenceId",
-    "cookingSkillId",
-  ];
+type PersonalizationCandidate = {
+  foodPreferenceId?: string | null;
+  cookingSkillId?: string | null;
+  userCuisines?: unknown[] | null;
+};
 
-  for (const field of requiredFields) {
-    if (!user[field]) {
-      return false;
-    }
-  }
-
-  const requiredArrays = ["userCuisines"];
-  for (const arrayField of requiredArrays) {
-    if (!user[arrayField] || user[arrayField].length === 0) {
-      return false;
-    }
-  }
-
-  return true;
+export function isPersonalizationComplete(
+  user: PersonalizationCandidate | null | undefined,
+): boolean {
+  return Boolean(
+    user?.foodPreferenceId &&
+      user.cookingSkillId &&
+      Array.isArray(user.userCuisines) &&
+      user.userCuisines.length > 0,
+  );
 }

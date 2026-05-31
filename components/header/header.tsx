@@ -1,6 +1,6 @@
 import MobileHeader from "@/components/header/mobile-header";
 import DesktopHeader from "@/components/header/desktop-header";
-import type { MenuLink, NavItem, SeasonNavItem } from "@/components/header/navbar";
+import type { MenuLink, SeasonNavItem } from "@/components/header/navbar";
 import { db } from "@/lib/db";
 import { recipeCollectionHref } from "@/lib/recipe-collection-url";
 

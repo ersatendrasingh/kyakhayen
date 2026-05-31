@@ -36,22 +36,26 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({
   const [isHydrated, setIsHydrated] = useState(false);
 
   useEffect(() => {
-    try {
-      const localStorageCartItems = localStorage.getItem("cartItems");
-      if (localStorageCartItems) {
-        const persistedCart = JSON.parse(localStorageCartItems);
-        if (Array.isArray(persistedCart)) {
-          setCartItems(persistedCart);
-        } else {
-          localStorage.removeItem("cartItems");
+    const timer = window.setTimeout(() => {
+      try {
+        const localStorageCartItems = localStorage.getItem("cartItems");
+        if (localStorageCartItems) {
+          const persistedCart = JSON.parse(localStorageCartItems);
+          if (Array.isArray(persistedCart)) {
+            setCartItems(persistedCart);
+          } else {
+            localStorage.removeItem("cartItems");
+          }
         }
+      } catch {
+        localStorage.removeItem("cartItems");
+      } finally {
+        setIsHydrated(true);
       }
-    } catch {
-      localStorage.removeItem("cartItems");
-    } finally {
-      setIsHydrated(true);
-    }
-  }, [setCartItems]);
+    }, 0);
+
+    return () => window.clearTimeout(timer);
+  }, []);
 
   const addToCart = (item: CartItem) => {
     // Replace the entire cart with the new item

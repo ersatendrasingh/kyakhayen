@@ -1,6 +1,6 @@
-const { Worker, Queue } = require("bullmq");
-const axios = require("axios");
-const { loadEnvConfig } = require("@next/env");
+import axios from "axios";
+import { Worker } from "bullmq";
+import { loadEnvConfig } from "@next/env";
 
 loadEnvConfig(process.cwd());
 
@@ -14,9 +14,6 @@ const APP_URL =
   process.env.INTERNAL_APP_URL ||
   process.env.NEXT_PUBLIC_APP_URL ||
   "http://localhost:3000";
-
-// Create a new queue
-const recipeAddView = new Queue("recipeAddView", { connection });
 
 // Define the worker to process the queue
 const worker = new Worker(
@@ -59,9 +56,10 @@ const worker = new Worker(
       console.log(`Job ${job.id}: Progress 100% - View addition complete`);
 
       return response.data;
-    } catch (err) {
-      console.error(`Job ${job.id} failed during processing: ${err.message}`);
-      throw err; // Re-throw the error to mark the job as failed
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      console.error(`Job ${job.id} failed during processing: ${message}`);
+      throw error; // Re-throw the error to mark the job as failed
     }
   },
   { connection }
@@ -75,13 +73,15 @@ worker.on("completed", (job, returnvalue) => {
 });
 
 // Event listener for when the job fails
-worker.on("failed", (job, err) => {
-  console.error(`Job ${job.id} failed: ${err.message}`);
+worker.on("failed", (job, error) => {
+  const message = error instanceof Error ? error.message : String(error);
+  console.error(`Job ${job?.id} failed: ${message}`);
 });
 
 // Event listener for logging worker errors
-worker.on("error", (err) => {
-  console.error(`Worker encountered an error: ${err.message}`);
+worker.on("error", (error) => {
+  const message = error instanceof Error ? error.message : String(error);
+  console.error(`Worker encountered an error: ${message}`);
 });
 
 console.log("Recipe View Add Worker started");

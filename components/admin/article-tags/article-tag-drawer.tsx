@@ -15,7 +15,15 @@ export function ArticleTagDrawer({ open, onOpenChange, tag, onSaved }: { open: b
   const [title, setTitle] = useState("");
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
-  useEffect(() => { if (open) { setTitle(tag?.title ?? ""); setImageUrl(tag?.imageUrl ?? null); } }, [tag, open]);
+  useEffect(() => {
+    if (!open) return;
+    const timer = window.setTimeout(() => {
+      setTitle(tag?.title ?? "");
+      setImageUrl(tag?.imageUrl ?? null);
+    }, 0);
+
+    return () => window.clearTimeout(timer);
+  }, [tag, open]);
   const submit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!title.trim()) return toast.error("Tag title is required");

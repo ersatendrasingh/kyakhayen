@@ -11,7 +11,6 @@ import { Navigation, Mousewheel, Keyboard } from "swiper/modules";
 import { cn } from "@/lib/utils";
 import { RecipeDifficulty } from "@prisma/client";
 
-import { PersonalizationSkelton } from "@/components/user-personalization/personalization-skelton";
 import useWindowSize from "@/hooks/use-window-size";
 
 interface CookingSkillsProps {
@@ -41,11 +40,7 @@ const CookingSkills = ({
   const [selectedCookingSkill, setSelectedCookingSkill] = useState<
     string | null
   >(() => getSavedCookingSkills());
-  const [loading, setLoading] = useState(true);
   const { width } = useWindowSize();
-  useEffect(() => {
-    setLoading(false);
-  }, []);
   useEffect(() => {
     const existingUserData = JSON.parse(
       localStorage.getItem("userData") || "{}"
@@ -69,9 +64,6 @@ const CookingSkills = ({
   const isCookingSkillSelected = (cookingSkillId: string) =>
     selectedCookingSkill === cookingSkillId;
 
-  if (loading) {
-    return <PersonalizationSkelton />;
-  }
   const isMobile = width !== undefined && width <= 767;
   return (
     <div>

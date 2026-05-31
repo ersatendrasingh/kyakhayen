@@ -7,7 +7,6 @@ import {
   ArrowUp,
   CalendarDays,
   Check,
-  IndianRupee,
   ListChecks,
   LoaderCircle,
   Pencil,
@@ -19,7 +18,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { type FormEvent, useEffect, useMemo, useState } from "react";
+import { type FormEvent, useMemo, useState } from "react";
 import { toast } from "sonner";
 
 import {
@@ -113,7 +112,11 @@ export function PlanEditor({ plan }: { plan: EditablePlan }) {
       <div className="grid min-w-0 items-start gap-6 xl:grid-cols-[420px_minmax(0,1fr)]">
         <PlanConfigurationCard plan={plan} />
         <div className="min-w-0 space-y-6">
-          <PlanBenefitsCard planId={plan.id} features={plan.features} />
+          <PlanBenefitsCard
+            key={plan.features.map((feature) => `${feature.id}:${feature.position}:${feature.name}`).join("|")}
+            planId={plan.id}
+            features={plan.features}
+          />
           <CustomerPreviewCard plan={plan} />
         </div>
       </div>
@@ -325,8 +328,6 @@ function PlanBenefitsCard({ planId, features }: { planId: string; features: Feat
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editValue, setEditValue] = useState("");
   const [loading, setLoading] = useState(false);
-
-  useEffect(() => setItems(features), [features]);
 
   async function addBenefit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();

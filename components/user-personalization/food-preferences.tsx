@@ -13,8 +13,6 @@ import { Navigation, Mousewheel, Keyboard } from "swiper/modules";
 import { RecipeCategories as FoodPreferencesType } from "@prisma/client";
 import useWindowSize from "@/hooks/use-window-size";
 
-import { PersonalizationSkelton } from "@/components/user-personalization/personalization-skelton";
-
 interface FoodPreferencesProps {
   foodPreferences: FoodPreferencesType[];
   title: string;
@@ -42,13 +40,7 @@ const FoodPreferences = ({
   const [selectedFoodPreference, setSelectedFoodPreference] = useState<
     string | null
   >(() => getSavedFoodPreference());
-  const [loading, setLoading] = useState(true);
   const { width } = useWindowSize();
-  useEffect(() => {
-    const savedFoodPreference = getSavedFoodPreference();
-    setSelectedFoodPreference(savedFoodPreference);
-    setLoading(false);
-  }, []);
 
   useEffect(() => {
     const existingUserData = JSON.parse(
@@ -75,9 +67,6 @@ const FoodPreferences = ({
   const isFoodPreferenceSelected = (foodPreferenceId: string) =>
     selectedFoodPreference === foodPreferenceId;
 
-  if (loading) {
-    return <PersonalizationSkelton />;
-  }
   const isMobile = width !== undefined && width <= 767;
   return (
     <div>

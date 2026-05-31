@@ -44,7 +44,11 @@ export const NewVerificationForm = () => {
 
   useEffect(() => {
     if (linkedToken) {
-      void submitCode(linkedToken);
+      const timer = window.setTimeout(() => {
+        void submitCode(linkedToken);
+      }, 0);
+
+      return () => window.clearTimeout(timer);
     }
   }, [linkedToken, submitCode]);
 

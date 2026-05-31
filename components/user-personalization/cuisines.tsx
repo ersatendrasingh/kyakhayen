@@ -11,7 +11,6 @@ import { Navigation, Mousewheel, Keyboard } from "swiper/modules";
 import { Cuisines as CuisinesType } from "@prisma/client";
 import useWindowSize from "@/hooks/use-window-size";
 import { cn } from "@/lib/utils";
-import { PersonalizationSkelton } from "@/components/user-personalization/personalization-skelton";
 
 interface CuisinesProps {
   cuisines: CuisinesType[];
@@ -39,12 +38,7 @@ const Cuisines = ({ cuisines, title, setIsFormValid }: CuisinesProps) => {
   const [selectedCuisines, setSelectedCuisines] = useState<string[]>(() =>
     getSavedCuisines()
   );
-  const [loading, setLoading] = useState(true);
   const { width } = useWindowSize();
-
-  useEffect(() => {
-    setLoading(false);
-  }, []);
 
   useEffect(() => {
     const existingUserData = JSON.parse(
@@ -68,10 +62,6 @@ const Cuisines = ({ cuisines, title, setIsFormValid }: CuisinesProps) => {
 
   const isCuisineSelected = (cuisineId: string) =>
     selectedCuisines.includes(cuisineId);
-
-  if (loading) {
-    return <PersonalizationSkelton />;
-  }
 
   const isMobile = width !== undefined && width <= 767;
 

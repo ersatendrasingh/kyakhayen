@@ -32,6 +32,9 @@ export const getRecommendations = (
   const endIndex = page * pageSize;
   const paginatedRecipes = orderedRecipes.slice(startIndex, endIndex);
 
-  // Remove similarity property before returning
-  return paginatedRecipes.map(({ similarity, ...rest }) => rest);
+  return paginatedRecipes.map((recipe) => {
+    const recommendation: Partial<RecipeWithSimilarity> = { ...recipe };
+    delete recommendation.similarity;
+    return recommendation as RecipeWithCategory;
+  });
 };

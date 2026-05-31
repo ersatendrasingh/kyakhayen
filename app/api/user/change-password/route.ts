@@ -1,6 +1,5 @@
 import { currentUser } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { changePasswordSchema } from "@/schemas";
 import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 

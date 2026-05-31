@@ -77,10 +77,6 @@ function inputDate(value = new Date()) {
   return local.toISOString().slice(0, 16);
 }
 
-function daysAgo(value: Date) {
-  return Math.floor((Date.now() - new Date(value).getTime()) / (1000 * 60 * 60 * 24));
-}
-
 function statusLabel(status: ContactLeadStatus) {
   return {
     NEW: "New lead",

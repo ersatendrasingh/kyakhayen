@@ -1,6 +1,5 @@
 import { db } from "@/lib/db";
 import { assignPlanToUser } from "@/lib/assignPlanToUser";
-import { Queue } from "bullmq";
 
 export async function assignFreePlanToUser(userId: string) {
   try {

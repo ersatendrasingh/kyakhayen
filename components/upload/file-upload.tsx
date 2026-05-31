@@ -119,7 +119,7 @@ const FileUpload = ({
         }
       }
       setIsUploading(false);
-    } catch (error) {
+    } catch {
       setIsUploading(false);
       toast.error("Something went wrong while uploading file", {
         duration: 5000,

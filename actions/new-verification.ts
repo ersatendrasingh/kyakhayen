@@ -43,7 +43,7 @@ export const newVerification = async (token: string) => {
   // Assign free plan to user
   try {
     await assignFreePlanToUser(existingUser.id);
-  } catch (error) {
+  } catch {
     return { error: "Failed to assign free plan" };
   }
 

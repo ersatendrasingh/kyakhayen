@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { flexRender, getCoreRowModel, getPaginationRowModel, getSortedRowModel, type RowSelectionState, type SortingState, useReactTable } from "@tanstack/react-table";
-import { BookOpen, Download, FolderTree, Link2, Search, Sparkles, Trash2, Upload } from "lucide-react";
+import { BookOpen, Download, FileText, FolderTree, Search, Sparkles, Trash2, Upload } from "lucide-react";
 import { toast } from "sonner";
 
 import { ArticleCategoryDrawer } from "@/components/admin/article-categories/article-category-drawer";
@@ -86,7 +86,6 @@ export function ArticleCategoriesDashboard({ categories, totalArticles, uncatego
   const table = useReactTable({ data: filteredCategories, columns, getRowId: (row) => row.id, enableRowSelection: true, onSortingChange: setSorting, onRowSelectionChange: setRowSelection, getCoreRowModel: getCoreRowModel(), getSortedRowModel: getSortedRowModel(), getPaginationRowModel: getPaginationRowModel(), initialState: { pagination: { pageSize: 8 } }, state: { sorting, rowSelection } });
   const selectedCategories = orderedCategories.filter((category) => rowSelection[category.id]);
   const deleteItems = deleteSelection?.type === "single" ? [deleteSelection.category] : deleteSelection?.categories ?? [];
-  const categoryLinks = categories.reduce((total, item) => total + item.articleCount, 0);
   const liveCategories = categories.filter((item) => item.isPublished).length;
   const confirmDelete = async () => {
     try {
@@ -114,7 +113,7 @@ export function ArticleCategoriesDashboard({ categories, totalArticles, uncatego
       <div className="relative z-[1] mt-7 grid gap-4 md:grid-cols-2 xl:grid-cols-4">{[
         { label: "Total Categories", value: categories.length, icon: FolderTree },
         { label: "Published", value: liveCategories, icon: Sparkles },
-        { label: "Linked Articles", value: categoryLinks, icon: Link2 },
+        { label: "Total Articles", value: totalArticles, icon: FileText },
         { label: "Uncategorized", value: uncategorizedArticles, icon: BookOpen },
       ].map((stat) => <div key={stat.label} className="admin-taxonomy-stat rounded-3xl px-5 py-5 backdrop-blur"><div className="flex items-center justify-between gap-4"><p className="admin-taxonomy-stat-label text-sm font-medium">{stat.label}</p><stat.icon className="admin-taxonomy-stat-icon size-5" /></div><p className="admin-taxonomy-stat-value mt-3 text-3xl font-semibold">{stat.value}</p></div>)}</div>
     </section>

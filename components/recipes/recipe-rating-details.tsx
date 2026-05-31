@@ -1,7 +1,5 @@
 "use client";
 
-import Image from "next/image";
-import { useState, useEffect } from "react";
 import { FaEye } from "react-icons/fa";
 import RatingStars from "@/components/recipes/rating-star";
 import { cn } from "@/lib/utils";
@@ -18,21 +16,6 @@ const RecipeRatingDetails = ({
   reviews,
   totalViewsCount,
 }: RecipeRatingDetailsProps) => {
-  const [isMobile, setIsMobile] = useState(false);
-
-  useEffect(() => {
-    const handleResize = () => {
-      setIsMobile(window.innerWidth < 768); // Set breakpoint as per your design
-    };
-
-    handleResize(); // Call handleResize initially to set isMobile state
-    window.addEventListener("resize", handleResize);
-
-    return () => {
-      window.removeEventListener("resize", handleResize);
-    };
-  }, []);
-
   return (
     <div className="flex flex-col md:flex-row items-center md:my-2">
       {rating > 0 && (

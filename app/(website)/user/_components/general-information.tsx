@@ -70,7 +70,7 @@ const GeneralInformation = () => {
           });
           form.clearErrors("phoneNumber");
           setIsChecking(false);
-        } catch (error) {
+        } catch {
           form.setError("phoneNumber", {
             type: "manual",
             message: "Phone number already exists",

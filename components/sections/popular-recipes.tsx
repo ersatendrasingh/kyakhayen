@@ -59,11 +59,6 @@ const PopularRecipes = () => {
     fetchRecipes();
   }, []);
 
-  useEffect(() => {
-    if (allLoaded) {
-      setLoading(false);
-    }
-  }, [allLoaded]);
   return (
     <div className="w-full flex flex-col items-center justify-center pt-12 pb-10 mt-10 mb-10 bg-[#f9f9ff]">
       <Container>

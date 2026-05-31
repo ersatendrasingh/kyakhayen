@@ -143,10 +143,14 @@ export default function MealPlanBuilder({
   const { data: session, update } = useSession();
 
   useEffect(() => {
-    const savedWizard = readWizardState(initialDraft);
-    setDraft(savedWizard.draft);
-    setStep(savedWizard.step);
-    setHydrated(true);
+    const timer = window.setTimeout(() => {
+      const savedWizard = readWizardState(initialDraft);
+      setDraft(savedWizard.draft);
+      setStep(savedWizard.step);
+      setHydrated(true);
+    }, 0);
+
+    return () => window.clearTimeout(timer);
   }, [initialDraft]);
 
   useEffect(() => {
@@ -157,10 +161,6 @@ export default function MealPlanBuilder({
       );
     }
   }, [draft, hydrated, step]);
-
-  useEffect(() => {
-    setSearchQuery("");
-  }, [step]);
 
   useEffect(() => {
     choiceRailRef.current?.scrollTo({ left: 0, behavior: "smooth" });
@@ -272,7 +272,11 @@ export default function MealPlanBuilder({
     if (window.localStorage.getItem(pendingGenerationKey) !== "true") return;
 
     resumedGenerationRef.current = true;
-    void submit();
+    const timer = window.setTimeout(() => {
+      void submit();
+    }, 0);
+
+    return () => window.clearTimeout(timer);
   }, [hydrated, session?.user, submit]);
 
   const options =
@@ -321,6 +325,10 @@ export default function MealPlanBuilder({
       left: direction === "left" ? -460 : 460,
       behavior: "smooth",
     });
+  };
+  const changeStep = (nextStep: number) => {
+    setSearchQuery("");
+    setStep(nextStep);
   };
 
   return (
@@ -625,7 +633,7 @@ export default function MealPlanBuilder({
                 type="button"
                 variant="ghost"
                 className={cn(step === 0 && "invisible")}
-                onClick={() => setStep((current) => current - 1)}
+                onClick={() => changeStep(step - 1)}
               >
                 <ArrowLeft className="size-4" /> Back
               </Button>
@@ -635,7 +643,7 @@ export default function MealPlanBuilder({
                   size="lg"
                   className="rounded-full px-7"
                   disabled={!isValid}
-                  onClick={() => setStep((current) => current + 1)}
+                  onClick={() => changeStep(step + 1)}
                 >
                   Continue <ArrowRight className="size-4" />
                 </Button>
