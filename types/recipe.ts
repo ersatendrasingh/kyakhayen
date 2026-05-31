@@ -16,9 +16,9 @@ import {
   Recipes,
   Review,
   Units,
-  User,
   recipeMealTime,
 } from "@prisma/client";
+import type { PublicCommentUser } from "@/types/comment";
 
 type RecipeCookingMethod = {
   id: string;
@@ -66,7 +66,7 @@ type RecipeNutrient = {
 };
 
 type RecipeReview = Review & {
-  user?: User | null;
+  user?: PublicCommentUser | null;
 };
 
 export type RecipeIngredientType = RecipeIngredients & {

@@ -5,8 +5,6 @@ import { ArrowRight, CalendarDays, PlayCircle } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useState } from "react";
 
-import { cn } from "@/lib/utils";
-
 type HomeMealPlanActionProps = {
   variant: "hero" | "story" | "rail" | "article";
 };
@@ -14,7 +12,7 @@ type HomeMealPlanActionProps = {
 export default function HomeMealPlanAction({
   variant,
 }: HomeMealPlanActionProps) {
-  const { data: session, status } = useSession();
+  const { data: session } = useSession();
   const hasMealPlan = Boolean(session?.user?.isPersonalised);
   const [nowMs] = useState(() => Date.now());
   const hasPaidAccess = Boolean(
@@ -32,21 +30,6 @@ export default function HomeMealPlanAction({
       ? "Set up my meal plan"
       : "Build my meal plan";
   const href = hasMealPlan ? "/meal-plan" : "/meal-plan/create";
-
-  if (status === "loading") {
-    return (
-      <span
-        aria-hidden="true"
-        className={cn(
-          variant === "hero"
-            ? "home-hero-secondary-action inline-flex h-12 w-44 animate-pulse items-center rounded-full bg-white/10"
-            : variant === "rail"
-              ? "mt-5 block h-40 animate-pulse rounded-[1.45rem] bg-[#17382d]/70"
-              : "h-[50px] w-48 animate-pulse rounded-full bg-white/12",
-        )}
-      />
-    );
-  }
 
   if (variant === "hero") {
     return (

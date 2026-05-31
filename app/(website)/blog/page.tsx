@@ -3,8 +3,6 @@ import { ArrowRight, BookOpen, ChefHat, Sparkles } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 
-import { getMealPlanFromS3 } from "@/actions/get-meal-plan-from-s3";
-import { getArticles } from "@/actions/get-articles";
 import {
   EditorialMiniStory,
   EditorialStoryRow,
@@ -17,12 +15,7 @@ import {
 } from "@/components/blogs/editorial-utils";
 import JournalDayBoard from "@/components/blogs/journal-day-board";
 import Container from "@/components/container";
-import type {
-  MealPlanDay,
-  MealPlanMoment,
-} from "@/components/sections/home-discovery";
 import HomeMealPlanAction from "@/components/sections/home-meal-plan-action";
-import { currentUser } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { publishedRecipeWhere } from "@/lib/recipe-publication";
 import {
@@ -35,6 +28,8 @@ import {
 type BlogPageProps = {
   searchParams: Promise<{ k?: string; type?: string }>;
 };
+
+export const revalidate = 900;
 
 function collectionLabel(slug?: string) {
   if (!slug) return null;
@@ -87,22 +82,47 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
     weekday: "long",
     timeZone: "Asia/Kolkata",
   }).format(now);
-  const todayDate = new Intl.DateTimeFormat("en-CA", {
-    timeZone: "Asia/Kolkata",
-  }).format(now);
   const tomorrow = new Date(now.getTime() + 24 * 60 * 60 * 1000);
-  const tomorrowDate = new Intl.DateTimeFormat("en-CA", {
-    timeZone: "Asia/Kolkata",
-  }).format(tomorrow);
   const tomorrowLabel = new Intl.DateTimeFormat("en-IN", {
     weekday: "long",
     timeZone: "Asia/Kolkata",
   }).format(tomorrow);
-  const [user, articles, categories, tags, previewRecipes] = await Promise.all([
-    currentUser(),
-    getArticles({
-      searchSlug: filters.k || undefined,
-      searchType: filters.type || undefined,
+  const [articles, categories, tags, previewRecipes] = await Promise.all([
+    db.post.findMany({
+      where: {
+        isPublished: true,
+        ...(filters.type === "category" && filters.k
+          ? {
+              PostCategory: {
+                some: { category: { slug: filters.k, isPublished: true } },
+              },
+            }
+          : {}),
+        ...(filters.type === "tag" && filters.k
+          ? {
+              PostTag: {
+                some: { tag: { slug: filters.k, isPublished: true } },
+              },
+            }
+          : {}),
+      },
+      select: {
+        id: true,
+        title: true,
+        metaDescription: true,
+        imageUrl: true,
+        slug: true,
+        metaSlug: true,
+        updatedAt: true,
+        PostCategory: {
+          select: { category: { select: { title: true, slug: true } } },
+        },
+        PostTag: {
+          select: { tag: { select: { title: true, slug: true } } },
+        },
+      },
+      orderBy: { updatedAt: "desc" },
+      take: 24,
     }),
     db.category.findMany({
       where: { isPublished: true, PostCategory: { some: { post: { isPublished: true } } } },
@@ -141,79 +161,6 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
       take: 6,
     }),
   ]);
-  let plannedDays: MealPlanDay[] = [];
-
-  if (user?.isPersonalised) {
-    try {
-      const featuredMoments = ["Breakfast", "Lunch", "Dinner"];
-      const sideOnlyTitle = /\b(roti|chapati|paratha|naan|puri|poori)\b/i;
-      const selectFeaturedMeals = (
-        mealPlan: Awaited<ReturnType<typeof getMealPlanFromS3>>,
-      ): MealPlanMoment[] => {
-        const mealTimeByTitle = new Map(
-          (mealPlan?.mealTimes ?? []).map((mealTime) => [mealTime.title, mealTime]),
-        );
-
-        return featuredMoments.flatMap((label) => {
-          const mealTime = mealTimeByTitle.get(label);
-          const recipes = mealTime
-            ? mealPlan?.mealsByTime[mealTime.slug] ?? []
-            : [];
-          const recipe =
-            label === "Breakfast"
-              ? recipes.find((item) => !sideOnlyTitle.test(item.title))
-              : recipes.find((item) =>
-                  item.recipeRecipeType?.some(
-                    ({ recipeType }) => recipeType.title === "Cooked Vegetable",
-                  ),
-                ) ??
-                recipes.find((item) =>
-                  item.recipeRecipeType?.some(({ recipeType }) =>
-                    ["Protein", "Vegetable Salad"].includes(recipeType.title),
-                  ),
-                );
-
-          return recipe
-            ? [
-                {
-                  label,
-                  recipe: {
-                    id: recipe.id,
-                    title: recipe.title,
-                    slug: recipe.slug,
-                    metaSlug: recipe.metaSlug,
-                    imageUrl: recipe.imageUrl,
-                    RecipeCategories: recipe.RecipeCategories,
-                    recipeCookingTime: recipe.recipeCookingTime,
-                    recipeNutrient: recipe.recipeNutrient ?? [],
-                  },
-                },
-              ]
-            : [];
-        });
-      };
-      const [todayPlan, tomorrowPlan] = await Promise.all([
-        getMealPlanFromS3({ date: todayDate }),
-        getMealPlanFromS3({ date: tomorrowDate }),
-      ]);
-      plannedDays = [
-        {
-          key: "today",
-          tabLabel: "Today",
-          dayLabel,
-          meals: selectFeaturedMeals(todayPlan),
-        },
-        {
-          key: "tomorrow",
-          tabLabel: "Tomorrow",
-          dayLabel: tomorrowLabel,
-          meals: selectFeaturedMeals(tomorrowPlan),
-        },
-      ];
-    } catch (error) {
-      console.error("[JOURNAL_PLANNED_MEALS]", error);
-    }
-  }
 
   const lead = articles[0];
   const supporting = articles.slice(1, 3);
@@ -348,7 +295,7 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
                     </p>
                     <div className="mt-6 flex items-center gap-4 text-sm text-white/72">
                       <span>{formatArticleDate(lead.updatedAt)}</span>
-                      <span>{articleReadMinutes(lead.content)} min read</span>
+                      <span>{articleReadMinutes()} min read</span>
                       <ArrowRight className="size-4 text-white transition group-hover:translate-x-1" />
                     </div>
                   </div>
@@ -394,7 +341,6 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
                     </p>
                     <JournalDayBoard
                       recipes={previewRecipes}
-                      plannedDays={plannedDays}
                       fallbackDayLabel={dayLabel}
                       fallbackTomorrowLabel={tomorrowLabel}
                     />

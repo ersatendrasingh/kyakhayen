@@ -2,6 +2,7 @@
 
 import { FaUser } from "react-icons/fa";
 import { ExitIcon } from "@radix-ui/react-icons";
+import { useSession } from "next-auth/react";
 import {
   CircleDollarSign,
   CircleUserRound,
@@ -18,7 +19,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { useCurrentUser } from "@/hooks/use-current-user";
 import { LogoutButton } from "@/components/auth/logout-button";
 
 import { usePathname } from "next/navigation";
@@ -26,9 +26,20 @@ import Link from "next/link";
 import { LoginButton } from "@/components/auth/login-button";
 
 export const UserButton = () => {
-  const user = useCurrentUser();
+  const { data: session, status } = useSession();
+  const user = session?.user;
   const pathname = usePathname();
   const imageUrl = user?.image || undefined;
+
+  if (status === "loading") {
+    return (
+      <div
+        aria-hidden="true"
+        className="h-10 w-10 rounded-full border-[1px] border-websecondary/60 bg-websecondary/10"
+      />
+    );
+  }
+
   if (!user) {
     return (
       <LoginButton>

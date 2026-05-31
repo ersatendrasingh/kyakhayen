@@ -1,23 +1,18 @@
 import { notFound } from "next/navigation";
 import { Metadata } from "next";
-import { getArticles } from "@/actions/get-articles";
-import { GetRecipes } from "@/actions/get-recipes";
 import SingleRecipe from "@/components/recipes/single-recipe";
 import SingleArticle from "@/components/blogs/single-article";
 import { articleHref, buildSeoMetadata, recipeHref, seoDescription } from "@/lib/seo";
 import { recipeContentUpdatedAt, recipePublishedAt } from "@/lib/recipe-publication";
+import { getPublicArticleByRouteSlug, getPublicRecipeByRouteSlug } from "@/lib/public-content";
+
+export const revalidate = 900;
 
 export async function generateMetadata(props: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const params = await props.params;
   const { slug } = params;
 
-  const recipes = await GetRecipes({});
-  const blogs = await getArticles({});
-
-  const recipe = recipes.find((r) => {
-    const combinedSlug = r.metaSlug ? `${r.slug}-${r.metaSlug}` : r.slug;
-    return combinedSlug === slug;
-  });
+  const recipe = await getPublicRecipeByRouteSlug(slug);
 
   if (recipe) {
     const description = seoDescription(
@@ -48,10 +43,8 @@ export async function generateMetadata(props: { params: Promise<{ slug: string }
     });
   }
 
-  const blog = blogs.find((b) => {
-    const combinedSlug = b.metaSlug ? `${b.slug}-${b.metaSlug}` : b.slug;
-    return combinedSlug === slug;
-  });
+  const blog = await getPublicArticleByRouteSlug(slug);
+
   if (blog) {
     const description = seoDescription(
       blog.metaDescription,
@@ -94,26 +87,16 @@ export default async function SlugPage(
   const params = await props.params;
   const { slug } = params;
 
-  const recipes = await GetRecipes({});
-  const blogs = await getArticles({});
-  const recipe = recipes.find((r) => {
-    const combinedSlug = r.metaSlug ? `${r.slug}-${r.metaSlug}` : r.slug;
-    return combinedSlug === slug;
-  });
+  const recipe = await getPublicRecipeByRouteSlug(slug);
+
   if (recipe) {
-    return (
-      <SingleRecipe recipeSlug={recipe.slug} recipeMetaSlug={recipe.metaSlug} />
-    );
+    return <SingleRecipe recipe={recipe} />;
   }
 
-  const blog = blogs.find((b) => {
-    const combinedSlug = b.metaSlug ? `${b.slug}-${b.metaSlug}` : b.slug;
-    return combinedSlug === slug;
-  });
+  const blog = await getPublicArticleByRouteSlug(slug);
+
   if (blog) {
-    return (
-      <SingleArticle articleSlug={blog.slug} articleMetaSlug={blog.metaSlug} />
-    );
+    return <SingleArticle article={blog} />;
   }
 
   return notFound();

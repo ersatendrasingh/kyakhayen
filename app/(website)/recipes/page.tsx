@@ -8,6 +8,8 @@ import {
 } from "@/app/(website)/recipes/recipe-listing-content";
 import { recipeCollectionHref } from "@/lib/recipe-collection-url";
 
+export const revalidate = 900;
+
 export async function generateMetadata({
   searchParams,
 }: {

@@ -2,7 +2,6 @@ import { ArrowLeft, ArrowRight, BookMarked, Clock3, Newspaper, ShieldCheck, Spar
 import Image from "next/image";
 import Link from "next/link";
 
-import { getArticleBySlug } from "@/actions/get-article";
 import ArticleComments from "@/components/blogs/article-comments";
 import ArticleNotFound from "@/components/blogs/article-not-found";
 import { EditorialStoryRow } from "@/components/blogs/editorial-story-card";
@@ -25,19 +24,13 @@ import {
   jsonLd,
   seoDescription,
 } from "@/lib/seo";
+import type { PostWithCategory } from "@/types/article";
 
 export default async function SingleArticle({
-  articleSlug,
-  articleMetaSlug,
+  article,
 }: {
-  articleSlug: string;
-  articleMetaSlug?: string | null;
+  article: PostWithCategory;
 }) {
-  const article = await getArticleBySlug({
-    blogSlug: articleSlug,
-    blogMetaSlug: articleMetaSlug,
-  });
-
   if (!article) {
     return <ArticleNotFound />;
   }

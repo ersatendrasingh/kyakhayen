@@ -3,6 +3,7 @@ import DesktopHeader from "@/components/header/desktop-header";
 import type { MenuLink, SeasonNavItem } from "@/components/header/navbar";
 import { db } from "@/lib/db";
 import { recipeCollectionHref } from "@/lib/recipe-collection-url";
+import { unstable_cache } from "next/cache";
 
 type DrinkRecipe = {
   imageUrl: string | null;
@@ -139,127 +140,155 @@ function buildDrinkItems(drinkRecipeTypes: DrinkRecipeType[]): MenuLink[] {
   ];
 }
 
-export const Header = async () => {
-  const [mealTimes, cuisines, categories, recipeTypes, dietTypes, drinkRecipeTypes] = await Promise.all([
-    db.mealTimes.findMany({
-      where: {
-        isPublished: true,
-        recipeMealTime: {
-          some: { recipe: { isPublished: true, imageUrl: { not: null } } },
-        },
-      },
-      select: { title: true, slug: true, imageUrl: true },
-      orderBy: { position: "asc" },
-    }),
-    db.cuisines.findMany({
-      where: {
-        isPublished: true,
-        recipeCuisine: {
-          some: { recipe: { isPublished: true, imageUrl: { not: null } } },
-        },
-      },
-      select: {
-        title: true,
-        slug: true,
-        imageUrl: true,
-        _count: { select: { recipeCuisine: true } },
-      },
-      orderBy: { title: "asc" },
-    }),
-    db.recipeCategories.findMany({
-      where: {
-        isPublished: true,
-        slug: { not: "desserts" },
-        recipe: { some: { isPublished: true, imageUrl: { not: null } } },
-      },
-      select: { name: true, slug: true, imageUrl: true },
-      orderBy: { position: "asc" },
-    }),
-    db.recipeTypes.findMany({
-      where: {
-        isPublished: true,
-        slug: { notIn: drinkTypeSlugs },
-        recipeRecipeType: {
-          some: { recipe: { isPublished: true, imageUrl: { not: null } } },
-        },
-      },
-      select: {
-        title: true,
-        slug: true,
-        imageUrl: true,
-        recipeRecipeType: {
-          where: { recipe: { isPublished: true, imageUrl: { not: null } } },
-          select: { recipe: { select: { imageUrl: true } } },
-          take: 1,
-        },
-      },
-      orderBy: { position: "asc" },
-      take: 8,
-    }),
-    db.dietTypes.findMany({
-      where: {
-        isPublished: true,
-        recipeDietType: {
-          some: { recipe: { isPublished: true, imageUrl: { not: null } } },
-        },
-      },
-      select: { title: true, slug: true, imageUrl: true },
-      orderBy: { position: "asc" },
-      take: 8,
-    }),
-    db.recipeTypes.findMany({
-      where: {
-        isPublished: true,
-        slug: { in: drinkTypeSlugs },
-      },
-      select: {
-        title: true,
-        slug: true,
-        imageUrl: true,
-        recipeRecipeType: {
-          where: { recipe: { isPublished: true, imageUrl: { not: null } } },
-          select: { recipe: { select: { imageUrl: true } } },
-          orderBy: { recipe: { contentUpdatedAt: "desc" } },
-        },
-      },
-      orderBy: { position: "asc" },
-    }),
-  ]);
-  const orderedCuisines = [...cuisines].sort((left, right) => {
-    if (left.slug === "north-indian") return -1;
-    if (right.slug === "north-indian") return 1;
+const getHeaderNavigationData = unstable_cache(
+  async () => {
+    const [mealTimes, cuisines, categories, recipeTypes, dietTypes, drinkRecipeTypes] =
+      await Promise.all([
+        db.mealTimes.findMany({
+          where: {
+            isPublished: true,
+            recipeMealTime: {
+              some: { recipe: { isPublished: true, imageUrl: { not: null } } },
+            },
+          },
+          select: { title: true, slug: true, imageUrl: true },
+          orderBy: { position: "asc" },
+        }),
+        db.cuisines.findMany({
+          where: {
+            isPublished: true,
+            recipeCuisine: {
+              some: { recipe: { isPublished: true, imageUrl: { not: null } } },
+            },
+          },
+          select: {
+            title: true,
+            slug: true,
+            imageUrl: true,
+            _count: { select: { recipeCuisine: true } },
+          },
+          orderBy: { title: "asc" },
+        }),
+        db.recipeCategories.findMany({
+          where: {
+            isPublished: true,
+            slug: { not: "desserts" },
+            recipe: { some: { isPublished: true, imageUrl: { not: null } } },
+          },
+          select: { name: true, slug: true, imageUrl: true },
+          orderBy: { position: "asc" },
+        }),
+        db.recipeTypes.findMany({
+          where: {
+            isPublished: true,
+            slug: { notIn: drinkTypeSlugs },
+            recipeRecipeType: {
+              some: { recipe: { isPublished: true, imageUrl: { not: null } } },
+            },
+          },
+          select: {
+            title: true,
+            slug: true,
+            imageUrl: true,
+            recipeRecipeType: {
+              where: { recipe: { isPublished: true, imageUrl: { not: null } } },
+              select: { recipe: { select: { imageUrl: true } } },
+              take: 1,
+            },
+          },
+          orderBy: { position: "asc" },
+          take: 8,
+        }),
+        db.dietTypes.findMany({
+          where: {
+            isPublished: true,
+            recipeDietType: {
+              some: { recipe: { isPublished: true, imageUrl: { not: null } } },
+            },
+          },
+          select: { title: true, slug: true, imageUrl: true },
+          orderBy: { position: "asc" },
+          take: 8,
+        }),
+        db.recipeTypes.findMany({
+          where: {
+            isPublished: true,
+            slug: { in: drinkTypeSlugs },
+          },
+          select: {
+            title: true,
+            slug: true,
+            imageUrl: true,
+            recipeRecipeType: {
+              where: { recipe: { isPublished: true, imageUrl: { not: null } } },
+              select: { recipe: { select: { imageUrl: true } } },
+              orderBy: { recipe: { contentUpdatedAt: "desc" } },
+            },
+          },
+          orderBy: { position: "asc" },
+        }),
+      ]);
 
-    return (
-      right._count.recipeCuisine - left._count.recipeCuisine ||
-      left.title.localeCompare(right.title)
-    );
-  });
-  const mappedRecipeTypes = recipeTypes.map((type) => ({
-    title: type.title,
-    slug: type.slug,
-    imageUrl:
-      type.imageUrl || type.recipeRecipeType[0]?.recipe.imageUrl || null,
-  }));
+    const orderedCuisines = [...cuisines].sort((left, right) => {
+      if (left.slug === "north-indian") return -1;
+      if (right.slug === "north-indian") return 1;
+
+      return (
+        right._count.recipeCuisine - left._count.recipeCuisine ||
+        left.title.localeCompare(right.title)
+      );
+    });
+    const mappedRecipeTypes = recipeTypes.map((type) => ({
+      title: type.title,
+      slug: type.slug,
+      imageUrl: type.imageUrl || type.recipeRecipeType[0]?.recipe.imageUrl || null,
+    }));
+    const drinkItems = buildDrinkItems(drinkRecipeTypes);
+
+    return {
+      mealTimes,
+      cuisines: orderedCuisines,
+      categories,
+      recipeTypes: mappedRecipeTypes,
+      drinkItems,
+      dietTypes,
+    };
+  },
+  ["website-header-navigation-v1"],
+  {
+    revalidate: 60 * 60,
+    tags: ["navigation", "recipes"],
+  },
+);
+
+export const Header = async () => {
+  const {
+    mealTimes,
+    cuisines,
+    categories,
+    recipeTypes,
+    drinkItems,
+    dietTypes,
+  } = await getHeaderNavigationData();
   const currentSeason = getCurrentSeason();
-  const drinkItems = buildDrinkItems(drinkRecipeTypes);
 
   return (
     <>
       <DesktopHeader
         currentSeason={currentSeason}
         mealTimes={mealTimes}
-        cuisines={orderedCuisines}
+        cuisines={cuisines}
         categories={categories}
-        recipeTypes={mappedRecipeTypes}
+        recipeTypes={recipeTypes}
         drinkItems={drinkItems}
         dietTypes={dietTypes}
       />
       <MobileHeader
         currentSeason={currentSeason}
         mealTimes={mealTimes}
-        cuisines={orderedCuisines}
+        cuisines={cuisines}
         categories={categories}
-        recipeTypes={mappedRecipeTypes}
+        recipeTypes={recipeTypes}
         drinkItems={drinkItems}
         dietTypes={dietTypes}
       />

@@ -1,19 +1,15 @@
 // types.ts
 import { Comment } from "@prisma/client";
 
+export type PublicCommentUser = {
+  id: string;
+  name: string | null;
+  email: string | null;
+  image: string | null;
+};
+
 export interface CommentWithRelations extends Comment {
-  user?: {
-    id: string;
-    name: string | null;
-    email: string | null;
-    phoneNumber: string | null;
-    emailVerified: Date | null;
-    image: string | null;
-    password: string | null;
-    bio: string | null;
-    createdAt: Date;
-    updateAt: Date;
-  } | null;
+  user?: PublicCommentUser | null;
   recipe?: {
     id: string;
     title: string;

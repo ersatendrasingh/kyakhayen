@@ -12,7 +12,7 @@ const WebsiteLayout = ({ children }: { children: React.ReactNode }) => {
       <div className="fixed bottom-7 left-7 z-40 hidden lg:block">
         <ModeToggle />
       </div>
-      <main className="h-full pt-[108px] lg:pt-[100px]">{children}</main>
+      <main className="flex-1 pt-[108px] lg:pt-[100px]">{children}</main>
       <ScrollToTopButton />
       <Footer />
     </div>

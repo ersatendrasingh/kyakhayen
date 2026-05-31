@@ -53,7 +53,7 @@ export type SearchedArticle = {
   id: string;
   title: string;
   metaDescription: string | null;
-  content: string | null;
+  content?: string | null;
   imageUrl: string | null;
   slug: string;
   metaSlug: string | null;
@@ -1127,7 +1127,6 @@ export const GetSearchedArticles = async ({
         id: true,
         title: true,
         metaDescription: true,
-        content: true,
         imageUrl: true,
         slug: true,
         metaSlug: true,

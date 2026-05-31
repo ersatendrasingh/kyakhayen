@@ -1,18 +1,8 @@
 import { Review } from "@prisma/client";
+import type { PublicCommentUser } from "@/types/comment";
 
 export interface ReviewWithRelations extends Review {
-  user?: {
-    id: string;
-    name: string | null;
-    email: string | null;
-    phoneNumber: string | null;
-    emailVerified: Date | null;
-    image: string | null;
-    password: string | null;
-    bio: string | null;
-    createdAt: Date;
-    updateAt: Date;
-  } | null;
+  user?: PublicCommentUser | null;
   recipe?: {
     id: string;
     title: string;

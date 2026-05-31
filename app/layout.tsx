@@ -4,7 +4,6 @@ import { SessionProvider } from "next-auth/react";
 import { Poppins } from "next/font/google";
 import NextTopLoader from "nextjs-toploader";
 import "./globals.css";
-import { auth } from "@/auth";
 import { ConfettiProvider } from "@/components/providers/confetti-provider";
 import { Toaster } from "@/components/ui/sonner";
 import { CartProvider } from "@/context/cart-context";
@@ -74,18 +73,16 @@ export const viewport: Viewport = {
   colorScheme: "light dark",
 };
 
-export default async function RootLayout({
+export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const session = await auth();
-
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${poppins.variable}`}>
         <GoogleTagManager gtmId={googleTagManagerId} />
-        <SessionProvider session={session}>
+        <SessionProvider>
           <ThemeProvider
             attribute="class"
             defaultTheme="system"

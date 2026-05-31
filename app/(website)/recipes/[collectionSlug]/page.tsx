@@ -12,6 +12,8 @@ type RecipeCollectionPageProps = {
   searchParams?: Promise<{ food?: string }>;
 };
 
+export const revalidate = 900;
+
 export async function generateMetadata({
   params,
 }: RecipeCollectionPageProps): Promise<Metadata> {

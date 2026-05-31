@@ -11,6 +11,7 @@ import {
   CircleUserRound,
   UserRound,
 } from "lucide-react";
+import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -26,7 +27,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useCurrentUser } from "@/hooks/use-current-user";
 import { cn } from "@/lib/utils";
 
 type WebsiteNavUserProps = {
@@ -46,10 +46,23 @@ function getInitials(name?: string | null) {
 
 const Usermenu = ({ variant = "header" }: WebsiteNavUserProps) => {
   const pathname = usePathname();
-  const user = useCurrentUser();
+  const { data: session, status } = useSession();
+  const user = session?.user;
   const name = user?.name ?? "Kya Khayen account";
   const email = user?.email ?? "Sign in for personalised recipes";
   const compact = variant !== "header";
+
+  if (status === "loading") {
+    return (
+      <div
+        aria-hidden="true"
+        className={cn(
+          "website-user-trigger rounded-full border border-[#e7d6c2] bg-white shadow-sm",
+          compact ? "size-10" : "h-12 w-[128px]",
+        )}
+      />
+    );
+  }
 
   const trigger = (
     <button

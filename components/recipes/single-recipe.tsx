@@ -1,4 +1,3 @@
-import { getRecipeBySlug } from "@/actions/get-recipe";
 import { calculateRecipeNutrition } from "@/lib/calculate-recipe-nutrition";
 
 import BannerCard from "@/components/recipes/banner-card";
@@ -6,7 +5,6 @@ import RecipeDetails from "@/components/recipes/recipe-details";
 
 import RelatedRecipeSlider from "@/components/recipes/related-recipe-slider";
 import RecipeSidebar from "@/components/recipes/recipe-sidebar";
-import { db } from "@/lib/db";
 
 import Container from "@/components/container";
 
@@ -15,6 +13,7 @@ import RecipeReviewsSection from "@/components/recipes/recipe-reviews-section";
 import RecipeNotFound from "@/components/recipes/recipe-not-found";
 import RecipeReactions from "@/components/recipes/recipe-reactions";
 import RecipeCookingDock from "@/components/recipes/recipe-cooking-dock";
+import { getPublicRelatedRecipes, getRecipeSidebarTaxonomy } from "@/lib/public-content";
 import { recipeCollectionHref } from "@/lib/recipe-collection-url";
 import { recipeContentUpdatedAt, recipePublishedAt } from "@/lib/recipe-publication";
 import {
@@ -25,36 +24,20 @@ import {
   seoDescription,
   stripHtml,
 } from "@/lib/seo";
+import type { RecipeWithCategory } from "@/types/recipe";
 
 interface SingleRecipeProps {
-  recipeSlug: string;
-  recipeMetaSlug: string | null;
+  recipe: RecipeWithCategory;
 }
 
-const SingleRecipe = async ({
-  recipeSlug,
-  recipeMetaSlug,
-}: SingleRecipeProps) => {
-  const recipe = await getRecipeBySlug({ recipeSlug, recipeMetaSlug });
+const SingleRecipe = async ({ recipe }: SingleRecipeProps) => {
+  if (!recipe) return <RecipeNotFound />;
 
-  if (!recipe) {
-    return <RecipeNotFound />;
-  }
-
-  const recipeCategories = await db.recipeCategories.findMany({
-    where: { isPublished: true },
-    orderBy: [{ position: "asc" }, { name: "asc" }],
-  });
-  const recipeMealTimes = await db.mealTimes.findMany({
-    where: { isPublished: true },
-    orderBy: {
-      title: "asc",
-    },
-  });
-  const recipeTypes = await db.recipeTypes.findMany({
-    where: { isPublished: true },
-    orderBy: [{ position: "asc" }, { title: "asc" }],
-  });
+  const [{ recipeCategories, recipeMealTimes, recipeTypes }, relatedRecipes] =
+    await Promise.all([
+      getRecipeSidebarTaxonomy(),
+      getPublicRelatedRecipes(recipe.id, recipe.recipeCategoriesId),
+    ]);
 
   const totalMinutes =
     (recipe.recipeCookingTime?.prepTime || 0) +
@@ -209,7 +192,7 @@ const SingleRecipe = async ({
         </div>
 
         <div id="recipe-related-recipes" className="mt-12">
-          <RelatedRecipeSlider recipeId={recipe.id} />
+          <RelatedRecipeSlider recipes={relatedRecipes} />
         </div>
       </Container>
       <RecipeCookingDock

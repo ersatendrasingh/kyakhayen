@@ -2,8 +2,6 @@ import type { Metadata } from "next";
 
 import {
   InterestSpotlight,
-  type MealPlanDay,
-  type MealPlanMoment,
   MealPlanStory,
   SeasonalSpotlight,
 } from "@/components/sections/home-discovery";
@@ -14,8 +12,6 @@ import { HomePreferenceProvider } from "@/components/sections/home-preference-co
 import PremiumHomeHero from "@/components/sections/premium-home-hero";
 import MembershipPromptModal from "@/components/sections/membership-prompt-modal";
 import HomeEditorialStories from "@/components/sections/home-editorial-stories";
-import { getMealPlanFromS3 } from "@/actions/get-meal-plan-from-s3";
-import { currentUser } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { publishedRecipeAnd, publishedRecipeWhere } from "@/lib/recipe-publication";
 import {
@@ -116,24 +112,19 @@ export const metadata: Metadata = buildSeoMetadata({
   ],
 });
 
+export const revalidate = 900;
+
 export default async function Home() {
   const now = new Date();
   const dayLabel = new Intl.DateTimeFormat("en-IN", {
     weekday: "long",
     timeZone: "Asia/Kolkata",
   }).format(now);
-  const todayDate = new Intl.DateTimeFormat("en-CA", {
-    timeZone: "Asia/Kolkata",
-  }).format(now);
   const tomorrow = new Date(now.getTime() + 24 * 60 * 60 * 1000);
-  const tomorrowDate = new Intl.DateTimeFormat("en-CA", {
-    timeZone: "Asia/Kolkata",
-  }).format(tomorrow);
   const tomorrowLabel = new Intl.DateTimeFormat("en-IN", {
     weekday: "long",
     timeZone: "Asia/Kolkata",
   }).format(tomorrow);
-  const user = await currentUser();
   const heroVideoUrls = mediaBaseUrl
     ? heroVideoKeys.map((key) => `${mediaBaseUrl}/${key}`)
     : [];
@@ -277,6 +268,8 @@ export default async function Home() {
                 },
               },
             },
+            orderBy: { recipe: { views: "desc" } },
+            take: 36,
           },
         },
         orderBy: { position: "asc" },
@@ -355,7 +348,6 @@ export default async function Home() {
           id: true,
           title: true,
           metaDescription: true,
-          content: true,
           imageUrl: true,
           slug: true,
           metaSlug: true,
@@ -372,79 +364,6 @@ export default async function Home() {
       }),
     ]);
   const summerRecipes = pickSummerDrinkRecipes(summerDrinkCandidates);
-  let plannedDays: MealPlanDay[] = [];
-
-  if (user?.isPersonalised) {
-    try {
-      const featuredMoments = ["Breakfast", "Lunch", "Dinner"];
-      const sideOnlyTitle = /\b(roti|chapati|paratha|naan|puri|poori)\b/i;
-      const selectFeaturedMeals = (
-        mealPlan: Awaited<ReturnType<typeof getMealPlanFromS3>>,
-      ): MealPlanMoment[] => {
-        const mealTimeByTitle = new Map(
-          (mealPlan?.mealTimes ?? []).map((mealTime) => [mealTime.title, mealTime]),
-        );
-
-        return featuredMoments.flatMap((label) => {
-            const mealTime = mealTimeByTitle.get(label);
-            const recipes = mealTime
-              ? mealPlan?.mealsByTime[mealTime.slug] ?? []
-              : [];
-            const recipe =
-              label === "Breakfast"
-                ? recipes.find((item) => !sideOnlyTitle.test(item.title))
-                : recipes.find((item) =>
-                      item.recipeRecipeType?.some(
-                        ({ recipeType }) => recipeType.title === "Cooked Vegetable",
-                      ),
-                    ) ??
-                  recipes.find((item) =>
-                    item.recipeRecipeType?.some(({ recipeType }) =>
-                      ["Protein", "Vegetable Salad"].includes(recipeType.title),
-                    ),
-                  );
-            return recipe
-              ? [
-                  {
-                    label,
-                    recipe: {
-                      id: recipe.id,
-                      title: recipe.title,
-                      slug: recipe.slug,
-                      metaSlug: recipe.metaSlug,
-                      imageUrl: recipe.imageUrl,
-                      RecipeCategories: recipe.RecipeCategories,
-                      recipeCookingTime: recipe.recipeCookingTime,
-                      recipeNutrient: recipe.recipeNutrient ?? [],
-                    },
-                  },
-                ]
-              : [];
-          });
-      };
-      const [todayPlan, tomorrowPlan] = await Promise.all([
-        getMealPlanFromS3({ date: todayDate }),
-        getMealPlanFromS3({ date: tomorrowDate }),
-      ]);
-
-      plannedDays = [
-        {
-          key: "today",
-          tabLabel: "Today",
-          dayLabel,
-          meals: selectFeaturedMeals(todayPlan),
-        },
-        {
-          key: "tomorrow",
-          tabLabel: "Tomorrow",
-          dayLabel: tomorrowLabel,
-          meals: selectFeaturedMeals(tomorrowPlan),
-        },
-      ];
-    } catch (error) {
-      console.error("[HOME_PLANNED_MEALS]", error);
-    }
-  }
 
   const recipeListSchema = itemListJsonLd(
     "Featured recipes from Kya Khayen",
@@ -519,7 +438,6 @@ export default async function Home() {
           />
           <MealPlanStory
             recipes={paneerRecipes.length > 0 ? paneerRecipes : summerRecipes}
-            plannedDays={plannedDays}
             fallbackDayLabel={dayLabel}
             fallbackTomorrowLabel={tomorrowLabel}
           />

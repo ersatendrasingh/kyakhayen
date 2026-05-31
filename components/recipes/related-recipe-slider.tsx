@@ -8,52 +8,14 @@ import {
   CarouselPrevious,
 } from "@/components/ui/carousel";
 
-import { RecipeWithCategory } from "@/types/recipe";
-import { useEffect, useState } from "react";
-import { getRelatedRecipes } from "@/actions/get-related-recipe";
-import { useCurrentUser } from "@/hooks/use-current-user";
-import Loader from "@/components/loader";
 import HomeRecipeCard from "@/components/recipes/home-recipe-card";
+import type { HomeRecipeCardRecipe } from "@/components/recipes/home-recipe-card";
 
 interface RelatedCourseProps {
-  recipeId: string;
+  recipes: HomeRecipeCardRecipe[];
 }
 
-const RelatedRecipeSlider = ({ recipeId }: RelatedCourseProps) => {
-  const user = useCurrentUser();
-  const userId = user?.id;
-
-  const [relatedRecipes, setRelatedRecipes] = useState<RecipeWithCategory[]>(
-    []
-  );
-  const [loading, setLoading] = useState<boolean>(true);
-
-  useEffect(() => {
-    const fetchRelatedRecipes = async () => {
-      try {
-        const behaviorData = JSON.parse(
-          localStorage.getItem("behaviorData") || "{}"
-        );
-        const categoryData = JSON.parse(
-          localStorage.getItem("categoryData") || "{}"
-        );
-
-        const response = await getRelatedRecipes({
-          recipeId,
-          userId,
-          behaviorData,
-          categoryData,
-        });
-        setRelatedRecipes(response);
-      } catch (error) {
-        console.error("Failed to fetch related recipes:", error);
-      } finally {
-        setLoading(false); // Set loading to false after data is fetched or an error occurs
-      }
-    };
-    fetchRelatedRecipes();
-  }, [recipeId, userId]);
-
+const RelatedRecipeSlider = ({ recipes }: RelatedCourseProps) => {
   return (
     <section className="w-full">
       <div className="mb-6 flex flex-col justify-between gap-3 sm:flex-row sm:items-end">
@@ -67,11 +29,7 @@ const RelatedRecipeSlider = ({ recipeId }: RelatedCourseProps) => {
         </div>
       </div>
 
-      {loading ? (
-        <div className="recipe-related-panel flex min-h-40 w-full items-center justify-center rounded-[1.75rem] border border-[#eadcc8] bg-[#fffdf8]/70 p-3 shadow-sm sm:p-5 dark:border-white/10 dark:bg-[#10221d]/75">
-          <Loader />
-        </div>
-      ) : relatedRecipes.length > 0 ? (
+      {recipes.length > 0 ? (
         <div className="recipe-related-panel w-full rounded-[1.75rem] border border-[#eadcc8] bg-[#fffdf8]/70 p-3 shadow-sm sm:p-5 dark:border-white/10 dark:bg-[#10221d]/75">
             <Carousel
               opts={{
@@ -80,7 +38,7 @@ const RelatedRecipeSlider = ({ recipeId }: RelatedCourseProps) => {
               className="w-full"
             >
               <CarouselContent>
-                {relatedRecipes.slice(0, 10).map((recipe) => {
+                {recipes.slice(0, 10).map((recipe) => {
                   return (
                     <CarouselItem
                       key={recipe.id}
