@@ -1,4 +1,3 @@
-import { Preview } from "@/components/preview";
 import { hasInternalSeoCopy } from "@/lib/seo";
 import type { RecipeWithCategory } from "@/types/recipe";
 
@@ -16,19 +15,25 @@ function demoteEmbeddedHeadings(value: string) {
   );
 }
 
+function sanitizeOverviewHtml(value: string) {
+  return demoteEmbeddedHeadings(value)
+    .replace(/<script[\s\S]*?<\/script>/gi, "")
+    .replace(/<style[\s\S]*?<\/style>/gi, "")
+    .replace(/\s+on[a-z]+\s*=\s*(["'])[\s\S]*?\1/gi, "")
+    .replace(/\s+href\s*=\s*(["'])\s*javascript:[\s\S]*?\1/gi, ' href="#"');
+}
+
 const RecipeOverview = ({ recipe }: RecipeOverviewProps) => {
   const description =
     recipe.description && !hasInternalSeoCopy(recipe.description)
-      ? demoteEmbeddedHeadings(recipe.description)
+      ? sanitizeOverviewHtml(recipe.description)
       : "";
 
   return description ? (
-    <div className="recipe-rich-content recipe-overview-copy rounded-2xl border border-[#eee2d1] bg-[#fbf5ea] p-5 sm:p-7 dark:border-white/8 dark:bg-[#162e27]">
-      <Preview
-        value={description}
-        className="text-[15px] leading-8 text-[#5e5146] dark:text-[#b3c0b9]"
-      />
-    </div>
+    <div
+      className="rich-content recipe-rich-content recipe-overview-copy rounded-2xl border border-[#eee2d1] bg-[#fbf5ea] p-5 text-[15px] leading-8 text-[#5e5146] sm:p-7 dark:border-white/8 dark:bg-[#162e27] dark:text-[#b3c0b9]"
+      dangerouslySetInnerHTML={{ __html: description }}
+    />
   ) : (
     <p className="rounded-2xl border border-dashed border-[#dfccb0] bg-[#fbf5ea] p-6 text-sm leading-7 text-[#75685c] dark:border-white/10 dark:bg-[#162e27] dark:text-[#b1bdb7]">
       This recipe story is being prepared. Ingredients and steps below are
