@@ -144,9 +144,9 @@ const BannerCard = ({ recipe, className }: BannerCardProps) => {
         <FavoriteButton
           actionId="recipe-save-toggle"
           recipeId={recipe.id}
-          classNames="absolute right-4 top-4 z-10"
+          classNames="absolute right-4 top-4 z-10 sm:right-5 sm:top-5"
           initialIsFavorited={isFavorited}
-          variant="save"
+          variant="card"
         />
         <div className="absolute inset-x-0 bottom-0 p-5 sm:p-7">
           <div className="mb-4 flex flex-wrap items-center gap-2">

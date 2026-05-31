@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
@@ -32,16 +31,8 @@ function CompactBrandIcon() {
     <Link
       href="/"
       aria-label="Kya Khayen home"
-      className="brand-icon-glow relative flex size-[42px] shrink-0 items-center justify-start overflow-hidden rounded-[13px] border border-[#ecd9c1] bg-white pl-0.5 shadow-sm"
-    >
-      <Image
-        src="/pwa/icon-192.png"
-        alt=""
-        width={36}
-        height={36}
-        className="size-[36px] object-contain"
-      />
-    </Link>
+      className="brand-icon-glow relative flex size-[42px] shrink-0 items-center justify-center overflow-hidden rounded-[13px] border border-[#ead8bd] bg-white shadow-sm"
+    />
   );
 }
 
