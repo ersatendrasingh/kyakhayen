@@ -10,10 +10,23 @@ concurrency:
   group: deploy-kyakhayen
   cancel-in-progress: true
 
+env:
+  NEXT_TELEMETRY_DISABLED: "1"
+
 jobs:
   check:
     name: Check
     runs-on: ubuntu-latest
+    env:
+      NEXT_PUBLIC_APP_URL: ${{ secrets.NEXT_PUBLIC_APP_URL || vars.NEXT_PUBLIC_APP_URL || 'https://www.kyakhayen.com' }}
+      NEXT_PUBLIC_SITE_URL: ${{ secrets.NEXT_PUBLIC_SITE_URL || vars.NEXT_PUBLIC_SITE_URL || 'https://www.kyakhayen.com' }}
+      NEXT_PUBLIC_MEDIA_URL: ${{ secrets.NEXT_PUBLIC_MEDIA_URL || vars.NEXT_PUBLIC_MEDIA_URL || 'https://d2211nhxa294e1.cloudfront.net' }}
+      NEXT_PUBLIC_GTM_ID: ${{ secrets.NEXT_PUBLIC_GTM_ID || vars.NEXT_PUBLIC_GTM_ID || 'GTM-N99FLD9B' }}
+      NEXT_PUBLIC_RAZORPAY_KEY: ${{ secrets.NEXT_PUBLIC_RAZORPAY_KEY || vars.NEXT_PUBLIC_RAZORPAY_KEY }}
+      NEXT_PUBLIC_DEFAULT_COUNTRY: ${{ secrets.NEXT_PUBLIC_DEFAULT_COUNTRY || vars.NEXT_PUBLIC_DEFAULT_COUNTRY || 'IN' }}
+      NEXT_PUBLIC_DEFAULT_CURRENCY: ${{ secrets.NEXT_PUBLIC_DEFAULT_CURRENCY || vars.NEXT_PUBLIC_DEFAULT_CURRENCY || 'INR' }}
+      NEXT_PUBLIC_EXCHANGE_API_URL: ${{ secrets.NEXT_PUBLIC_EXCHANGE_API_URL || vars.NEXT_PUBLIC_EXCHANGE_API_URL }}
+      NEXT_PUBLIC_FREE_CURRENCY_API_KEY: ${{ secrets.NEXT_PUBLIC_FREE_CURRENCY_API_KEY || vars.NEXT_PUBLIC_FREE_CURRENCY_API_KEY }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -26,17 +39,50 @@ jobs:
       - name: Install dependencies
         run: npm ci || npm install
 
+      - name: Validate public build inputs
+        run: |
+          test -n "$NEXT_PUBLIC_RAZORPAY_KEY" || { echo "NEXT_PUBLIC_RAZORPAY_KEY is required for checkout builds"; exit 1; }
+
       - name: Lint report
         run: npm run lint
 
       - name: Typecheck
         run: npm run typecheck
 
+      - name: Build production bundle
+        run: |
+          export NEXT_PRIVATE_BUILD_WORKER_COUNT=1
+          npm run build
+
+      - name: Package release artifact
+        run: |
+          tar \
+            --exclude='.next/cache' \
+            --exclude='.next/dev' \
+            -czf kyakhayen-release.tgz \
+            .next \
+            public \
+            prisma \
+            scripts \
+            workers \
+            package.json \
+            package-lock.json \
+            next.config.mjs \
+            ecosystem.config.cjs
+
+      - name: Upload release artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: kyakhayen-release
+          path: kyakhayen-release.tgz
+          retention-days: 3
+
   deploy:
     name: Deploy to AWS
     runs-on: ubuntu-latest
     needs: check
     environment: KYAKHAYEN_DEPLOYMENT
+    timeout-minutes: 20
     permissions:
       contents: read
     env:
@@ -44,7 +90,9 @@ jobs:
       DEPLOY_USER: ${{ secrets.DEPLOY_USER || vars.DEPLOY_USER || 'ubuntu' }}
       DEPLOY_PORT: ${{ secrets.DEPLOY_PORT || vars.DEPLOY_PORT || '22' }}
       DEPLOY_PATH: ${{ secrets.DEPLOY_PATH || vars.DEPLOY_PATH || '/opt/kasa/kyakhayen' }}
-      DEPLOY_BRANCH: ${{ secrets.DEPLOY_BRANCH || vars.DEPLOY_BRANCH || 'master' }}
+      DEPLOY_RELEASES_DIR: ${{ secrets.DEPLOY_RELEASES_DIR || vars.DEPLOY_RELEASES_DIR || '/opt/kasa/kyakhayen-releases' }}
+      DEPLOY_CURRENT_LINK: ${{ secrets.DEPLOY_CURRENT_LINK || vars.DEPLOY_CURRENT_LINK || '/opt/kasa/kyakhayen-current' }}
+      DEPLOY_HEALTHCHECK_URL: ${{ secrets.DEPLOY_HEALTHCHECK_URL || vars.DEPLOY_HEALTHCHECK_URL || 'http://127.0.0.1:3002/' }}
       DB_BACKUP_DIR: ${{ secrets.DB_BACKUP_DIR || vars.DB_BACKUP_DIR || '/opt/kasa/backups/kyakhayen-db' }}
       DB_BACKUP_RETENTION_DAYS: ${{ secrets.DB_BACKUP_RETENTION_DAYS || vars.DB_BACKUP_RETENTION_DAYS || '30' }}
       DB_BACKUP_S3_BUCKET: ${{ secrets.DB_BACKUP_S3_BUCKET || vars.DB_BACKUP_S3_BUCKET }}
@@ -57,29 +105,87 @@ jobs:
           test -n "$DEPLOY_USER" || { echo "DEPLOY_USER is empty"; exit 1; }
           test -n "$DEPLOY_PORT" || { echo "DEPLOY_PORT is empty"; exit 1; }
           test -n "$DEPLOY_PATH" || { echo "DEPLOY_PATH is empty"; exit 1; }
-          test -n "$DEPLOY_BRANCH" || { echo "DEPLOY_BRANCH is empty"; exit 1; }
           test "$DEPLOY_SSH_KEY_PRESENT" = "true" || { echo "DEPLOY_SSH_KEY secret is empty"; exit 1; }
 
-      - name: Deploy over SSH
-        uses: appleboy/ssh-action@v1.2.0
+      - name: Download release artifact
+        uses: actions/download-artifact@v4
         with:
-          host: ${{ env.DEPLOY_HOST }}
-          username: ${{ env.DEPLOY_USER }}
-          key: ${{ secrets.DEPLOY_SSH_KEY }}
-          port: ${{ env.DEPLOY_PORT }}
-          command_timeout: 30m
-          envs: DEPLOY_PATH,DEPLOY_BRANCH,DB_BACKUP_DIR,DB_BACKUP_RETENTION_DAYS,DB_BACKUP_S3_BUCKET,DB_BACKUP_S3_PREFIX
-          script: |
-            set -e
-            cd "$DEPLOY_PATH"
-            test -f .env || { echo ".env file missing in $DEPLOY_PATH"; exit 1; }
-            git fetch origin "$DEPLOY_BRANCH"
-            git reset --hard "origin/$DEPLOY_BRANCH"
-            git clean -fd
-            npm ci || npm install
-            export NODE_ENV=production
-            npm run backup:db -- predeploy
-            npx prisma migrate deploy
-            npm run build
-            pm2 reload ecosystem.config.cjs --update-env || pm2 start ecosystem.config.cjs
-            pm2 save
+          name: kyakhayen-release
+
+      - name: Configure SSH
+        run: |
+          mkdir -p ~/.ssh
+          printf '%s\n' "${{ secrets.DEPLOY_SSH_KEY }}" > ~/.ssh/kyakhayen_deploy_key
+          chmod 600 ~/.ssh/kyakhayen_deploy_key
+          ssh-keyscan -p "$DEPLOY_PORT" "$DEPLOY_HOST" >> ~/.ssh/known_hosts
+
+      - name: Upload release bundle
+        run: |
+          scp \
+            -i ~/.ssh/kyakhayen_deploy_key \
+            -P "$DEPLOY_PORT" \
+            -o ConnectTimeout=20 \
+            kyakhayen-release.tgz \
+            "$DEPLOY_USER@$DEPLOY_HOST:/tmp/kyakhayen-${GITHUB_SHA}.tgz"
+
+      - name: Deploy release
+        run: |
+          ssh \
+            -i ~/.ssh/kyakhayen_deploy_key \
+            -p "$DEPLOY_PORT" \
+            -o ConnectTimeout=20 \
+            "$DEPLOY_USER@$DEPLOY_HOST" \
+            "DEPLOY_PATH='$DEPLOY_PATH' DEPLOY_RELEASES_DIR='$DEPLOY_RELEASES_DIR' DEPLOY_CURRENT_LINK='$DEPLOY_CURRENT_LINK' DEPLOY_HEALTHCHECK_URL='$DEPLOY_HEALTHCHECK_URL' DB_BACKUP_DIR='$DB_BACKUP_DIR' DB_BACKUP_RETENTION_DAYS='$DB_BACKUP_RETENTION_DAYS' DB_BACKUP_S3_BUCKET='$DB_BACKUP_S3_BUCKET' DB_BACKUP_S3_PREFIX='$DB_BACKUP_S3_PREFIX' RELEASE_ID='$GITHUB_SHA' bash -s" <<'EOF'
+          set -Eeuo pipefail
+
+          release_dir="$DEPLOY_RELEASES_DIR/$RELEASE_ID"
+          bundle="/tmp/kyakhayen-${RELEASE_ID}.tgz"
+          previous_target=""
+
+          if [ -L "$DEPLOY_CURRENT_LINK" ]; then
+            previous_target="$(readlink -f "$DEPLOY_CURRENT_LINK")"
+          elif [ -d "$DEPLOY_PATH" ]; then
+            previous_target="$(readlink -f "$DEPLOY_PATH")"
+          fi
+
+          mkdir -p "$DEPLOY_RELEASES_DIR" "$release_dir"
+          tar -xzf "$bundle" -C "$release_dir"
+
+          if [ -f "$DEPLOY_PATH/.env" ]; then
+            cp "$DEPLOY_PATH/.env" "$release_dir/.env"
+          elif [ -n "$previous_target" ] && [ -f "$previous_target/.env" ]; then
+            cp "$previous_target/.env" "$release_dir/.env"
+          else
+            echo ".env file missing in $DEPLOY_PATH and previous release"
+            exit 1
+          fi
+
+          cd "$release_dir"
+          npm ci --omit=dev || npm install --omit=dev
+
+          export NODE_ENV=production
+          node scripts/backup-database.mjs predeploy
+          npx prisma migrate deploy
+
+          ln -sfn "$release_dir" "$DEPLOY_CURRENT_LINK"
+          export KYAKHAYEN_DEPLOY_PATH="$DEPLOY_CURRENT_LINK"
+
+          if ! pm2 reload "$DEPLOY_CURRENT_LINK/ecosystem.config.cjs" --update-env; then
+            pm2 start "$DEPLOY_CURRENT_LINK/ecosystem.config.cjs" --update-env
+          fi
+
+          sleep 8
+          if ! curl -fsS --max-time 15 "$DEPLOY_HEALTHCHECK_URL" >/dev/null; then
+            echo "Health check failed for $RELEASE_ID"
+            if [ -n "$previous_target" ] && [ -d "$previous_target" ]; then
+              ln -sfn "$previous_target" "$DEPLOY_CURRENT_LINK"
+              export KYAKHAYEN_DEPLOY_PATH="$DEPLOY_CURRENT_LINK"
+              pm2 reload "$DEPLOY_CURRENT_LINK/ecosystem.config.cjs" --update-env || true
+            fi
+            exit 1
+          fi
+
+          pm2 save
+          find "$DEPLOY_RELEASES_DIR" -mindepth 1 -maxdepth 1 -type d | sort | head -n -5 | xargs -r rm -rf
+          rm -f "$bundle"
+          EOF

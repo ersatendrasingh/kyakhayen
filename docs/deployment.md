@@ -5,7 +5,9 @@ Kyakhayen follows the same AWS + GitHub Actions + PM2 pattern as the KASA site, 
 ## Runtime Layout
 
 - AWS host: same instance used by KASA.
-- App path: `/opt/kasa/kyakhayen`.
+- Source/env path: `/opt/kasa/kyakhayen`.
+- Release path: `/opt/kasa/kyakhayen-releases/<commit-sha>`.
+- Current release symlink: `/opt/kasa/kyakhayen-current`.
 - PM2 apps:
   - `kyakhayen-web` on port `3002`
   - `kyakhayen-meal-plan-worker`
@@ -52,7 +54,9 @@ Optional variables/secrets:
 - `DEPLOY_USER`: defaults to `ubuntu`
 - `DEPLOY_PORT`: defaults to `22`
 - `DEPLOY_PATH`: defaults to `/opt/kasa/kyakhayen`
-- `DEPLOY_BRANCH`: defaults to `master`
+- `DEPLOY_RELEASES_DIR`: defaults to `/opt/kasa/kyakhayen-releases`
+- `DEPLOY_CURRENT_LINK`: defaults to `/opt/kasa/kyakhayen-current`
+- `DEPLOY_HEALTHCHECK_URL`: defaults to `http://127.0.0.1:3002/`
 - `DB_BACKUP_DIR`: defaults to `/opt/kasa/backups/kyakhayen-db`
 - `DB_BACKUP_RETENTION_DAYS`: defaults to `30`
 - `DB_BACKUP_S3_BUCKET`: optional S3 bucket for off-server backups
@@ -62,25 +66,35 @@ Optional variables/secrets:
 Useful production variables:
 
 - `NEXT_PUBLIC_APP_URL`: `https://www.kyakhayen.com`
+- `NEXT_PUBLIC_SITE_URL`: `https://www.kyakhayen.com`
 - `NEXT_PUBLIC_MEDIA_URL`: CloudFront/media base URL
 - `NEXT_PUBLIC_RAZORPAY_KEY`: public Razorpay key
+- `NEXT_PUBLIC_DEFAULT_COUNTRY`: defaults to `IN`
+- `NEXT_PUBLIC_DEFAULT_CURRENCY`: defaults to `INR`
 - `NEXT_PUBLIC_EXCHANGE_API_URL`: optional
 - `NEXT_PUBLIC_FREE_CURRENCY_API_KEY`: optional
 - `NEXT_PUBLIC_GTM_ID`: Google Tag Manager container ID, for example `GTM-N99FLD9B`
+
+Because production builds run on GitHub Actions, public `NEXT_PUBLIC_*` values must be available to the workflow as repository or environment variables/secrets. Server-only values still live in `/opt/kasa/kyakhayen/.env` and are copied into each release on deploy.
 
 ## Deploy Flow
 
 On every push to `master`:
 
 1. GitHub Actions installs dependencies.
-2. It reports lint output, then gates deploy on typecheck and production build.
-3. It SSHs into the AWS instance.
-4. It resets the server checkout to `origin/master`.
-5. It installs dependencies.
-6. It creates a pre-deploy DB backup.
-7. It runs `npx prisma migrate deploy`.
-8. It builds the app.
-9. It reloads PM2 with `ecosystem.config.cjs`.
+2. It gates deploy on strict lint, typecheck, and a production build on the GitHub runner.
+3. It packages the built `.next` output without `.next/cache` or `.next/dev`.
+4. It uploads the release archive to the AWS instance.
+5. It extracts the archive into a commit-specific release directory.
+6. It copies the server-only `.env` from `DEPLOY_PATH`.
+7. It installs production dependencies in the new release directory.
+8. It creates a pre-deploy DB backup.
+9. It runs `npx prisma migrate deploy`.
+10. It switches `/opt/kasa/kyakhayen-current` to the new release.
+11. It reloads PM2 and runs an internal health check.
+12. If the health check fails, it switches the symlink back to the previous release and reloads PM2.
+
+The live server does not run `next build`; builds happen on GitHub Actions to avoid taking down the shared instance.
 
 ## Database Backup Flow
 
