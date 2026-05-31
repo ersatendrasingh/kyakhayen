@@ -1,7 +1,6 @@
 "use server";
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 import { db } from "@/lib/db";
-import { generateRecipesForDate } from "@/lib/assignDiet";
 
 import { addDays, formatISO, startOfDay } from "date-fns";
 import { sendEmail } from "@/lib/mail";
@@ -15,6 +14,12 @@ import type { RecipeWithCategory } from "@/types/recipe";
 import { NotificationAutomationTrigger } from "@prisma/client";
 import { scheduleMealPlanDeliveries, scheduleMealReminders } from "@/lib/meal-plan-queue";
 import { runUserAutomationRules } from "@/lib/notification-automations";
+import {
+  generateWeeklyMealPlan,
+  toStoredMealPlanDay,
+  toStoredWeeklyManifest,
+} from "@/lib/meal-plan-planner";
+import type { MealPlanRoutineSlot } from "@/lib/meal-plan-routine";
 
 const getS3Client = () => {
   const region = process.env.AWS_REGION;
@@ -36,12 +41,19 @@ type MealPlanResult = {
   date: Date;
   s3Url: string;
   mealsByTime: Record<string, RecipeWithCategory[]>;
+  routineSlots: MealPlanRoutineSlot[];
 };
 
 type MealPlanProgressReporter = (
   percentage: number,
   message: string,
 ) => Promise<void> | void;
+
+const planDateKey = (date: Date) =>
+  formatISO(date, { representation: "date" });
+
+const maxPlanStartDate = (candidate: Date, cutoff: Date) =>
+  planDateKey(candidate) < planDateKey(cutoff) ? cutoff : candidate;
 
 // Helper function to upload data to S3
 const uploadToS3 = async (fileName: string, fileContent: string) => {
@@ -69,6 +81,8 @@ export const generateMealPlan = async (
   try {
     const now = new Date();
     const today = startOfDay(now);
+    const historyCutoffDate = today;
+    const historyCutoffDateKey = planDateKey(historyCutoffDate);
     await reportProgress?.(10, "Understanding your food preferences");
 
     // Fetch user's details
@@ -136,9 +150,9 @@ export const generateMealPlan = async (
         : launchEndDate;
 
     if (userMealPlan) {
-      // Preferences only affect today onward. Earlier S3 date keys stay
-      // untouched so the member can return to meals shown on past days.
-      startDate = today;
+      // Regeneration is allowed to rewrite only the current date onward.
+      // Past S3 date keys are immutable history for the member.
+      startDate = maxPlanStartDate(today, historyCutoffDate);
 
       // Update the meal plan's end date to match the current user plan's end date
       await db.userMealPlan.update({
@@ -149,7 +163,7 @@ export const generateMealPlan = async (
       });
     } else {
       // Launch access always provides a fresh seven-day plan without purchase.
-      startDate = today;
+      startDate = maxPlanStartDate(today, historyCutoffDate);
       userMealPlan = await db.userMealPlan.create({
         data: {
           userId,
@@ -159,30 +173,50 @@ export const generateMealPlan = async (
       });
     }
 
-    // Generate meal plans for each date between start and end date
-    const dates = getDatesBetween(startDate, endDate);
+    // Generate meal plans only from the current date onward. This prevents
+    // preference edits or regeneration from overwriting historical meal days.
+    const dates = getDatesBetween(startDate, endDate).filter(
+      (date) => planDateKey(date) >= historyCutoffDateKey,
+    );
+    if (dates.length === 0) {
+      throw new Error("Meal plan generation has no current or future dates.");
+    }
+    const weeklyPlan = await generateWeeklyMealPlan(userId, dates);
     const mealPlanResults: MealPlanResult[] = [];
 
-    for (const [index, date] of dates.entries()) {
-      const mealsByTime = await generateRecipesForDate(userId, date);
-      if (!mealsByTime) {
-        throw new Error(`Unable to generate meals for ${date.toISOString()}.`);
+    for (const [index, day] of weeklyPlan.days.entries()) {
+      const mealPlanJson = JSON.stringify(
+        toStoredMealPlanDay(userId, weeklyPlan, day),
+      );
+      const formattedDate = day.dateKey;
+      if (formattedDate < historyCutoffDateKey) {
+        console.warn(
+          `[MEAL_PLAN_HISTORY_GUARD] Skipping historical date ${formattedDate} for user ${userId}`,
+        );
+        continue;
       }
-      const mealPlanJson = JSON.stringify({ mealsByTime });
-      const formattedDate = formatISO(date, { representation: "date" });
 
       const s3Key = `usersMealPlans/${userId}/${formattedDate}/diet.json`;
 
       // Upload meal plan JSON to S3
       await uploadToS3(s3Key, mealPlanJson);
 
-      mealPlanResults.push({ date, s3Url: s3Key, mealsByTime });
-      const percentage = Math.round(18 + ((index + 1) / dates.length) * 66);
+      mealPlanResults.push({
+        date: day.date,
+        s3Url: s3Key,
+        mealsByTime: day.mealsByTime,
+        routineSlots: day.routineSlots,
+      });
+      const percentage = Math.round(18 + ((index + 1) / weeklyPlan.days.length) * 60);
       await reportProgress?.(
         percentage,
-        `Curating day ${index + 1} of ${dates.length}`,
+        `Curating day ${index + 1} of ${weeklyPlan.days.length}`,
       );
     }
+    await uploadToS3(
+      `usersMealPlans/${userId}/weeks/${weeklyPlan.planStartDate}.json`,
+      JSON.stringify(toStoredWeeklyManifest(userId, weeklyPlan)),
+    );
 
     await reportProgress?.(88, "Designing your meal-plan PDF");
     try {
@@ -193,7 +227,11 @@ export const generateMealPlan = async (
       );
       const deliveryDays: PdfMealPlanDay[] = (
         isPaidAccess ? mealPlanResults.slice(0, 1) : mealPlanResults
-      ).map(({ date, mealsByTime }) => ({ date, mealsByTime }));
+      ).map(({ date, mealsByTime, routineSlots }) => ({
+        date,
+        mealsByTime,
+        routineSlots,
+      }));
       const mealPlanAttachment = await generateMealPlanPdf(
         {
           name: user.name || "Member",

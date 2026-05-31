@@ -1,0 +1,96 @@
+name: Deploy Kyakhayen
+
+on:
+  push:
+    branches:
+      - master
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-kyakhayen
+  cancel-in-progress: true
+
+jobs:
+  check:
+    name: Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install dependencies
+        run: npm ci || npm install
+
+      - name: Lint report
+        continue-on-error: true
+        run: npm run lint
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Build
+        run: npm run build
+        env:
+          NEXT_PUBLIC_APP_URL: ${{ vars.NEXT_PUBLIC_APP_URL || 'https://www.kyakhayen.com' }}
+          NEXT_PUBLIC_MEDIA_URL: ${{ vars.NEXT_PUBLIC_MEDIA_URL }}
+          NEXT_PUBLIC_RAZORPAY_KEY: ${{ vars.NEXT_PUBLIC_RAZORPAY_KEY }}
+          NEXT_PUBLIC_EXCHANGE_API_URL: ${{ vars.NEXT_PUBLIC_EXCHANGE_API_URL }}
+          NEXT_PUBLIC_FREE_CURRENCY_API_KEY: ${{ vars.NEXT_PUBLIC_FREE_CURRENCY_API_KEY }}
+          GOOGLE_TAG_MANAGER_ID: ${{ vars.GOOGLE_TAG_MANAGER_ID }}
+
+  deploy:
+    name: Deploy to AWS
+    runs-on: ubuntu-latest
+    needs: check
+    environment: KYAKHAYEN_DEPLOYMENT
+    permissions:
+      contents: read
+    env:
+      DEPLOY_HOST: ${{ secrets.DEPLOY_HOST || vars.DEPLOY_HOST || '13.206.210.16' }}
+      DEPLOY_USER: ${{ secrets.DEPLOY_USER || vars.DEPLOY_USER || 'ubuntu' }}
+      DEPLOY_PORT: ${{ secrets.DEPLOY_PORT || vars.DEPLOY_PORT || '22' }}
+      DEPLOY_PATH: ${{ secrets.DEPLOY_PATH || vars.DEPLOY_PATH || '/opt/kasa/kyakhayen' }}
+      DEPLOY_BRANCH: ${{ secrets.DEPLOY_BRANCH || vars.DEPLOY_BRANCH || 'master' }}
+      DB_BACKUP_DIR: ${{ secrets.DB_BACKUP_DIR || vars.DB_BACKUP_DIR || '/opt/kasa/backups/kyakhayen-db' }}
+      DB_BACKUP_RETENTION_DAYS: ${{ secrets.DB_BACKUP_RETENTION_DAYS || vars.DB_BACKUP_RETENTION_DAYS || '30' }}
+      DB_BACKUP_S3_BUCKET: ${{ secrets.DB_BACKUP_S3_BUCKET || vars.DB_BACKUP_S3_BUCKET }}
+      DB_BACKUP_S3_PREFIX: ${{ secrets.DB_BACKUP_S3_PREFIX || vars.DB_BACKUP_S3_PREFIX || 'kyakhayen/mysql' }}
+      DEPLOY_SSH_KEY_PRESENT: ${{ secrets.DEPLOY_SSH_KEY != '' }}
+    steps:
+      - name: Validate deploy inputs
+        run: |
+          test -n "$DEPLOY_HOST" || { echo "DEPLOY_HOST is empty"; exit 1; }
+          test -n "$DEPLOY_USER" || { echo "DEPLOY_USER is empty"; exit 1; }
+          test -n "$DEPLOY_PORT" || { echo "DEPLOY_PORT is empty"; exit 1; }
+          test -n "$DEPLOY_PATH" || { echo "DEPLOY_PATH is empty"; exit 1; }
+          test -n "$DEPLOY_BRANCH" || { echo "DEPLOY_BRANCH is empty"; exit 1; }
+          test "$DEPLOY_SSH_KEY_PRESENT" = "true" || { echo "DEPLOY_SSH_KEY secret is empty"; exit 1; }
+
+      - name: Deploy over SSH
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ env.DEPLOY_HOST }}
+          username: ${{ env.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          port: ${{ env.DEPLOY_PORT }}
+          command_timeout: 30m
+          envs: DEPLOY_PATH,DEPLOY_BRANCH,DB_BACKUP_DIR,DB_BACKUP_RETENTION_DAYS,DB_BACKUP_S3_BUCKET,DB_BACKUP_S3_PREFIX
+          script: |
+            set -e
+            cd "$DEPLOY_PATH"
+            test -f .env || { echo ".env file missing in $DEPLOY_PATH"; exit 1; }
+            git fetch origin "$DEPLOY_BRANCH"
+            git reset --hard "origin/$DEPLOY_BRANCH"
+            git clean -fd
+            npm ci || npm install
+            export NODE_ENV=production
+            npm run backup:db -- predeploy
+            npx prisma migrate deploy
+            npm run build
+            pm2 reload ecosystem.config.cjs --update-env || pm2 start ecosystem.config.cjs
+            pm2 save

@@ -8,10 +8,14 @@
     "build": "next build --webpack",
     "start": "next start",
     "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
     "postinstall": "prisma generate",
     "email": "email dev",
-    "worker:mealPlan": "ts-node workers/mealPlan.js",
-    "worker:recipeAddView": "ts-node workers/recipeAddView.js",
+    "seed:early-morning": "node scripts/seed-early-morning-recipes.js",
+    "upload:early-morning-images": "node scripts/upload-early-morning-images.js",
+    "backup:db": "node scripts/backup-database.js",
+    "worker:mealPlan": "node workers/mealPlan.js",
+    "worker:recipeAddView": "node workers/recipeAddView.js",
     "worker": "npm-run-all -p worker:mealPlan worker:recipeAddView"
   },
   "dependencies": {

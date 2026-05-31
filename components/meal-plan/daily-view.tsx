@@ -5,6 +5,10 @@ import { useEffect, useState } from "react";
 
 import { getMealPlanFromS3 } from "@/actions/get-meal-plan-from-s3";
 import { formatDate } from "@/lib/formatDate";
+import {
+  buildFallbackRoutineSlots,
+  type MealPlanRoutineSlot,
+} from "@/lib/meal-plan-routine";
 import { format, formatISO } from "date-fns";
 import { getUserLatestPlanDates } from "@/actions/get-user-meal-plan-dates";
 import {
@@ -28,6 +32,7 @@ const DailyView = ({ date, onSelectDate }: DailyViewProps) => {
     [key: string]: RecipeWithCategory[];
   }>({});
   const [mealTimes, setMealTimes] = useState<MealTimes[]>([]);
+  const [routineSlots, setRoutineSlots] = useState<MealPlanRoutineSlot[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [planStartWarning, setPlanStartWarning] = useState<boolean>(false);
   const [planEndWarning, setPlanEndWarning] = useState<boolean>(false);
@@ -85,15 +90,18 @@ const DailyView = ({ date, onSelectDate }: DailyViewProps) => {
         const mealPlanResult = await getMealPlanFromS3({ date: formattedDate });
 
         if (mealPlanResult && mealPlanResult.mealTimes.length > 0) {
-          const { mealTimes, mealsByTime } = mealPlanResult;
+          const { mealTimes, mealsByTime, routineSlots } = mealPlanResult;
           setMealsByTime(mealsByTime || {});
           setMealTimes(mealTimes);
+          setRoutineSlots(routineSlots || []);
         } else {
           setPlanUnavailable(true);
+          setRoutineSlots([]);
         }
       } catch (error) {
         console.error("Error fetching or generating meal plan:", error);
         setPlanLoadError(true);
+        setRoutineSlots([]);
       }
 
       setLoading(false);
@@ -273,6 +281,10 @@ const DailyView = ({ date, onSelectDate }: DailyViewProps) => {
     (count, recipes) => count + recipes.length,
     0,
   );
+  const displaySlots =
+    routineSlots.length > 0
+      ? routineSlots
+      : buildFallbackRoutineSlots({ mealTimes, mealsByTime });
 
   return (
     <section className="-mx-4 border-y border-[#eadcc8] bg-[#fffaf2] p-4 sm:mx-0 sm:rounded-2xl sm:border sm:bg-white sm:p-5 sm:shadow-sm">
@@ -289,34 +301,71 @@ const DailyView = ({ date, onSelectDate }: DailyViewProps) => {
           {mealCount} {mealCount === 1 ? "dish" : "dishes"}
         </p>
       </div>
-      <div className="grid items-start gap-3 lg:grid-cols-2">
-        {mealTimes.map((mealTime) => {
-          const recipes = mealsByTime[mealTime.slug] || [];
+      <div className="hidden border-b border-[#f0e5d6] px-4 pb-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-[#9a6b42] lg:grid lg:grid-cols-[8rem_9rem_minmax(16rem,1fr)_minmax(22rem,1.25fr)] lg:gap-4">
+        <span>Schedule</span>
+        <span>Meal</span>
+        <span>Plan Focus</span>
+        <span>Selected Recipes</span>
+      </div>
+      <div className="divide-y divide-[#f0e5d6]">
+        {displaySlots.map((slot) => {
+          const recipes = mealsByTime[slot.slug] || [];
           return (
             <div
-              key={mealTime.id}
-              className="rounded-2xl border border-[#f0e5d6] bg-white p-3 shadow-sm sm:rounded-xl sm:bg-[#fffdf9] sm:p-4 sm:shadow-none"
+              key={`${slot.slug}-${slot.key}`}
+              className="py-5 first:pt-3 last:pb-1"
             >
-              <div className="mb-3 flex items-center gap-2.5">
-                <h3 className="text-sm font-semibold text-[#2c2118]">
-                  {mealTime.title}
-                </h3>
-                <span className="h-px flex-1 bg-[#f0e5d6]" />
-                <span className="text-[11px] font-medium text-[#8b7a69]">
-                  {recipes.length || "-"}
-                </span>
-              </div>
-              <div className="space-y-2">
-                {recipes.length > 0 ? recipes.map((recipe) => (
-                  <MealPlanCard
-                    key={recipe.id}
-                    recipe={recipe}
-                  />
-                )) : (
-                  <p className="rounded-lg border border-dashed border-[#eadcc8] px-3 py-4 text-xs text-[#8b7a69]">
-                    Regenerate your plan to fill this slot.
+              <div className="grid gap-4 lg:grid-cols-[8rem_9rem_minmax(16rem,1fr)_minmax(22rem,1.25fr)] lg:items-start">
+                <div className="flex items-center justify-between gap-3 lg:block">
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[#9a6b42] lg:hidden">
+                    Schedule
                   </p>
-                )}
+                  <p className="rounded-full bg-[#fff7eb] px-3 py-1.5 text-sm font-semibold text-[#2c2118] lg:inline-block">
+                    {slot.timeRange || "-"}
+                  </p>
+                </div>
+                <div className="flex items-center justify-between gap-3 lg:block">
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[#9a6b42] lg:hidden">
+                    Meal
+                  </p>
+                  <h3 className="text-base font-semibold text-[#2c2118] lg:text-sm">
+                    {slot.title}
+                    {slot.optional ? (
+                      <span className="ml-1 font-medium text-[#8b7a69]">
+                        (Optional)
+                      </span>
+                    ) : null}
+                  </h3>
+                </div>
+                <div>
+                  <p className="mb-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-[#9a6b42] lg:hidden">
+                    Plan Focus
+                  </p>
+                  <p className="max-w-2xl text-sm leading-6 text-[#4b4037]">
+                    {slot.guidance}
+                  </p>
+                </div>
+                <div>
+                  <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-[#9a6b42] lg:hidden">
+                    Selected Recipes
+                  </p>
+                  <div className="grid gap-2">
+                    {recipes.length > 0 ? recipes.map((recipe) => (
+                      <MealPlanCard
+                        key={recipe.id}
+                        recipe={recipe}
+                      />
+                    )) : slot.optional ? (
+                      <p className="rounded-xl border border-dashed border-[#eadcc8] px-3 py-4 text-xs text-[#8b7a69]">
+                        Optional slot. Skip it when you are not hungry.
+                      </p>
+                    ) : (
+                      <p className="rounded-xl border border-dashed border-[#eadcc8] px-3 py-4 text-xs text-[#8b7a69]">
+                        Regenerate your plan to fill this slot.
+                      </p>
+                    )}
+                  </div>
+                </div>
               </div>
             </div>
           );

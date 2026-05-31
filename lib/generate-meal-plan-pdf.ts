@@ -6,10 +6,15 @@ import { jsPDF } from "jspdf";
 
 import type { RecipeWithCategory } from "@/types/recipe";
 import { pdfColours, pdfToAttachment } from "@/lib/pdf-brand";
+import {
+  sortRoutineSlots,
+  type MealPlanRoutineSlot,
+} from "@/lib/meal-plan-routine";
 
 export type PdfMealPlanDay = {
   date: Date;
   mealsByTime: Record<string, RecipeWithCategory[]>;
+  routineSlots?: MealPlanRoutineSlot[];
 };
 
 export type PdfMealPlanProfile = {
@@ -398,14 +403,23 @@ function addProfilePage(
 }
 
 function orderedMeals(day: PdfMealPlanDay) {
+  if (day.routineSlots?.length) {
+    return sortRoutineSlots(day.routineSlots).flatMap((slot) => {
+      const recipes = day.mealsByTime[slot.slug] || [];
+      return recipes.length || slot.optional
+        ? [[slot.slug, recipes, slot] as const]
+        : [];
+    });
+  }
+
   const used = new Set<string>();
   const ordered = mealTimeOrder.flatMap((slug) => {
     used.add(slug);
     const recipes = day.mealsByTime[slug] || [];
-    return recipes.length ? [[slug, recipes] as const] : [];
+    return recipes.length ? [[slug, recipes, null] as const] : [];
   });
   Object.entries(day.mealsByTime).forEach(([slug, recipes]) => {
-    if (!used.has(slug) && recipes.length) ordered.push([slug, recipes]);
+    if (!used.has(slug) && recipes.length) ordered.push([slug, recipes, null]);
   });
   return ordered;
 }
@@ -494,8 +508,12 @@ function addDayPages(
 
   startPage();
 
-  groups.forEach(([slug, recipes]) => {
-    const requiredHeight = 12 + recipes.length * 25 + 5;
+  groups.forEach(([slug, recipes, slot]) => {
+    const guidanceLines = slot?.guidance
+      ? document.splitTextToSize(slot.guidance, columnWidth - 2).slice(0, 3)
+      : [];
+    const headerHeight = slot ? 18 + guidanceLines.length * 4 : 12;
+    const requiredHeight = headerHeight + recipes.length * 25 + 5;
     let column = columnsY[0] <= columnsY[1] ? 0 : 1;
     if (columnsY[column] + requiredHeight > 268) {
       const alternative = column === 0 ? 1 : 0;
@@ -513,11 +531,23 @@ function addDayPages(
     document.setFontSize(9);
     document.setCharSpace(0.7);
     document.setTextColor(...pdfColours.accent);
-    document.text(displayMealTime(slug).toUpperCase(), x, y + 6);
+    document.text((slot?.title || displayMealTime(slug)).toUpperCase(), x, y + 6);
     document.setCharSpace(0);
     document.setDrawColor(...pdfColours.line);
     document.line(x + 32, y + 4.5, x + columnWidth, y + 4.5);
-    y += 11;
+    if (slot?.timeRange) {
+      document.setFont("helvetica", "normal");
+      document.setFontSize(7.2);
+      document.setTextColor(...pdfColours.copy);
+      document.text(slot.timeRange, x, y + 11);
+    }
+    if (guidanceLines.length > 0) {
+      document.setFont("helvetica", "normal");
+      document.setFontSize(7.3);
+      document.setTextColor(...pdfColours.copy);
+      document.text(guidanceLines, x, y + 16);
+    }
+    y += headerHeight;
 
     recipes.forEach((recipe) => {
       drawRecipeCard(

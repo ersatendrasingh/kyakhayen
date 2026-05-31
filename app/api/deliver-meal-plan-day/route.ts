@@ -7,7 +7,10 @@ import { db } from "@/lib/db";
 import { generateMealPlanPdf } from "@/lib/generate-meal-plan-pdf";
 import { hydrateMealPlanRecipes } from "@/lib/hydrate-meal-plan-recipes";
 import { sendEmail } from "@/lib/mail";
+import type { MealPlanRoutineSlot } from "@/lib/meal-plan-routine";
 import type { RecipeWithCategory } from "@/types/recipe";
+
+type StoredMealPlanRecipe = RecipeWithCategory | { recipeId: string };
 
 function getPrivateStorage() {
   const region = process.env.AWS_REGION;
@@ -102,8 +105,9 @@ export async function POST(request: Request) {
         status: 404,
       });
     }
-    const { mealsByTime = {} } = JSON.parse(json) as {
-      mealsByTime?: Record<string, RecipeWithCategory[]>;
+    const { mealsByTime = {}, routineSlots } = JSON.parse(json) as {
+      mealsByTime?: Record<string, StoredMealPlanRecipe[]>;
+      routineSlots?: MealPlanRoutineSlot[];
     };
     const currentMealsByTime = await hydrateMealPlanRecipes(mealsByTime);
     const attachment = await generateMealPlanPdf(
@@ -128,7 +132,7 @@ export async function POST(request: Request) {
           )
           .map(({ allergy }) => allergy.title),
       },
-      [{ date: planDate, mealsByTime: currentMealsByTime }],
+      [{ date: planDate, mealsByTime: currentMealsByTime, routineSlots }],
       "Tomorrow's delivery",
     );
 

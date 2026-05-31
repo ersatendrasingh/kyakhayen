@@ -6,6 +6,12 @@ import { MealTimes } from "@prisma/client";
 import { currentUser } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { hydrateMealPlanRecipes } from "@/lib/hydrate-meal-plan-recipes";
+import {
+  buildFallbackRoutineSlots,
+  mealRoutineKeyFromMealTime,
+  sortByMealRoutine,
+  type MealPlanRoutineSlot,
+} from "@/lib/meal-plan-routine";
 
 type GetMealPlanParams = {
   date: string; // Corrected to lowercase 'string'
@@ -14,11 +20,19 @@ type GetMealPlanParams = {
 type MealPlanResult = {
   mealTimes: MealTimes[];
   mealsByTime: { [key: string]: RecipeWithCategory[] };
+  routineSlots: MealPlanRoutineSlot[];
 };
+
+type StoredMealPlanRecipe = RecipeWithCategory | { recipeId: string };
 
 type S3LookupError = Error & {
   $metadata?: { httpStatusCode?: number };
 };
+
+const legacyEarlyMorningRejectPattern =
+  /\b(juice|shake|smoothie|milkshake|frappe|lassi|sherbet|sharbat)\b/i;
+const legacyBreakfastRejectPattern =
+  /\b(juice|shake|smoothie|milkshake|frappe|lassi|sherbet|sharbat|water)\b/i;
 
 const getS3Client = () => {
   const region = process.env.AWS_REGION;
@@ -36,6 +50,106 @@ const getS3Client = () => {
   });
 };
 
+function deterministicIndex(value: string, length: number) {
+  const total = value
+    .split("")
+    .reduce((sum, char) => sum + char.charCodeAt(0), 0);
+  return total % length;
+}
+
+async function fallbackMorningHydrationRecipe(date: string) {
+  const recipes = await db.recipes.findMany({
+    where: {
+      isPublished: true,
+      recipeMealTime: {
+        some: {
+          mealTime: {
+            slug: "early-morning",
+          },
+        },
+      },
+      recipeRecipeType: {
+        some: {
+          recipeType: {
+            slug: "morning-hydration",
+          },
+        },
+      },
+    },
+    orderBy: { title: "asc" },
+    select: {
+      id: true,
+      title: true,
+      slug: true,
+      metaSlug: true,
+      imageUrl: true,
+      RecipeCategories: true,
+      recipeCookingTime: true,
+      recipeRecipeType: {
+        take: 1,
+        include: { recipeType: true },
+      },
+      recipeNutrient: {
+        take: 1,
+        include: { nutrient: true },
+      },
+    },
+  });
+
+  if (recipes.length === 0) return null;
+  return recipes[deterministicIndex(date, recipes.length)] as unknown as RecipeWithCategory;
+}
+
+async function sanitizeEarlyMorningMeals(params: {
+  date: string;
+  mealTimes: MealTimes[];
+  mealsByTime: Record<string, RecipeWithCategory[]>;
+}) {
+  const earlyMorningSlugs = params.mealTimes
+    .filter((mealTime) => mealRoutineKeyFromMealTime(mealTime) === "early-morning")
+    .map((mealTime) => mealTime.slug);
+
+  if (earlyMorningSlugs.length === 0) return params.mealsByTime;
+
+  let fallbackRecipe: RecipeWithCategory | null = null;
+  const sanitizedMealsByTime = { ...params.mealsByTime };
+
+  for (const slug of earlyMorningSlugs) {
+    const recipes = sanitizedMealsByTime[slug] ?? [];
+    const hasLegacyDrink = recipes.some((recipe) =>
+      legacyEarlyMorningRejectPattern.test(recipe.title || ""),
+    );
+
+    if (recipes.length > 0 && !hasLegacyDrink) continue;
+
+    fallbackRecipe ||= await fallbackMorningHydrationRecipe(params.date);
+    sanitizedMealsByTime[slug] = fallbackRecipe ? [fallbackRecipe] : [];
+  }
+
+  return sanitizedMealsByTime;
+}
+
+function sanitizeLegacyBreakfastMeals(params: {
+  mealTimes: MealTimes[];
+  mealsByTime: Record<string, RecipeWithCategory[]>;
+}) {
+  const breakfastSlugs = params.mealTimes
+    .filter((mealTime) => mealRoutineKeyFromMealTime(mealTime) === "breakfast")
+    .map((mealTime) => mealTime.slug);
+
+  if (breakfastSlugs.length === 0) return params.mealsByTime;
+
+  const sanitizedMealsByTime = { ...params.mealsByTime };
+
+  for (const slug of breakfastSlugs) {
+    sanitizedMealsByTime[slug] = (sanitizedMealsByTime[slug] ?? []).filter(
+      (recipe) => !legacyBreakfastRejectPattern.test(recipe.title || ""),
+    );
+  }
+
+  return sanitizedMealsByTime;
+}
+
 export const getMealPlanFromS3 = async ({
   date,
 }: GetMealPlanParams): Promise<MealPlanResult | null> => {
@@ -46,9 +160,7 @@ export const getMealPlanFromS3 = async ({
     const mealTimes = await db.mealTimes.findMany({
       where: { isPublished: true },
     });
-    // Sort meal times according to the specified order
-    const order = ["Breakfast", "Mid Morning", "Lunch", "Evening", "Dinner"];
-    mealTimes.sort((a, b) => order.indexOf(a.title) - order.indexOf(b.title));
+    const sortedMealTimes = sortByMealRoutine(mealTimes);
 
     // Construct the S3 key based on the date
     const dateFromClient = new Date(date);
@@ -75,14 +187,35 @@ export const getMealPlanFromS3 = async ({
     const body = Buffer.concat(chunks).toString("utf-8");
 
     // Parse the JSON content
-    const { mealsByTime = {} } = JSON.parse(body) as {
-      mealsByTime?: Record<string, RecipeWithCategory[]>;
+    const {
+      version = 1,
+      mealsByTime = {},
+      routineSlots,
+    } = JSON.parse(body) as {
+      version?: number;
+      mealsByTime?: Record<string, StoredMealPlanRecipe[]>;
+      routineSlots?: MealPlanRoutineSlot[];
     };
+    const hydratedMealsByTime = sanitizeLegacyBreakfastMeals({
+      mealTimes: sortedMealTimes,
+      mealsByTime: await sanitizeEarlyMorningMeals({
+        date: formattedDate,
+        mealTimes: sortedMealTimes,
+        mealsByTime: await hydrateMealPlanRecipes(mealsByTime),
+      }),
+    });
 
     // Preserve the saved selections, but render current recipe titles, media and URLs.
     return {
-      mealTimes,
-      mealsByTime: await hydrateMealPlanRecipes(mealsByTime),
+      mealTimes: sortedMealTimes,
+      mealsByTime: hydratedMealsByTime,
+      routineSlots:
+        version >= 3 && routineSlots?.length
+          ? routineSlots
+          : buildFallbackRoutineSlots({
+              mealTimes: sortedMealTimes,
+              mealsByTime: hydratedMealsByTime,
+            }),
     };
   } catch (error) {
     const s3Error = error as S3LookupError;

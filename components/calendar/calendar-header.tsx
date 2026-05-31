@@ -39,7 +39,7 @@ const CalendarHeader = ({
           <button
             type="button"
             onClick={onPrevDay}
-            aria-label="Previous week"
+            aria-label="Previous day"
             className="flex size-8 cursor-pointer items-center justify-center rounded-full border border-[#eadcc8] bg-[#fffaf2] text-[#4c3c2f] transition hover:border-primary hover:text-primary"
           >
             <ChevronLeft className="size-4" />
@@ -47,7 +47,7 @@ const CalendarHeader = ({
           <button
             type="button"
             onClick={onNextDay}
-            aria-label="Next week"
+            aria-label="Next day"
             className="flex size-8 cursor-pointer items-center justify-center rounded-full border border-[#eadcc8] bg-[#fffaf2] text-[#4c3c2f] transition hover:border-primary hover:text-primary"
           >
             <ChevronRight className="size-4" />

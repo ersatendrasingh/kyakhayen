@@ -1,0 +1,212 @@
+{
+  "taxonomy": {
+    "mealTime": {
+      "title": "Early Morning",
+      "slug": "early-morning"
+    },
+    "recipeType": {
+      "title": "Morning Hydration",
+      "slug": "morning-hydration"
+    },
+    "recipeTypes": [
+      {
+        "title": "Beverage/Smoothie",
+        "slug": "beveragesmoothie"
+      },
+      {
+        "title": "Infusions",
+        "slug": "drink-infusions"
+      },
+      {
+        "title": "Morning Hydration",
+        "slug": "morning-hydration"
+      }
+    ],
+    "categorySlug": null,
+    "cuisineSlug": "north-indian",
+    "difficultyTitle": "Easy"
+  },
+  "recipes": [
+    {
+      "title": "Plain Water",
+      "slug": "plain-water-early-morning",
+      "description": "A simple early morning hydration choice for starting the day gently.",
+      "seasonality": "ALL_YEAR",
+      "frequency": "default",
+      "dietTypes": ["healthy", "vegan", "gluten-free", "lactose-free"],
+      "nutrients": ["low-calories"],
+      "prepTime": 1,
+      "ingredients": [
+        { "name": "Water", "quantity": 250, "unit": "ml", "form": "Plain" }
+      ],
+      "method": "Drink a glass of clean room-temperature water soon after waking.",
+      "imageKey": "early-morning/plain-water.webp"
+    },
+    {
+      "title": "Warm Water",
+      "slug": "warm-water-early-morning",
+      "description": "A gentle warm-water option for mornings when the body prefers something soothing.",
+      "seasonality": "ALL_YEAR",
+      "frequency": "default",
+      "dietTypes": ["healthy", "vegan", "gluten-free", "lactose-free"],
+      "nutrients": ["low-calories"],
+      "prepTime": 2,
+      "ingredients": [
+        { "name": "Water", "quantity": 250, "unit": "ml", "form": "Warm" }
+      ],
+      "method": "Warm the water until comfortable to sip. Do not make it very hot.",
+      "imageKey": "early-morning/warm-water.webp"
+    },
+    {
+      "title": "Unsweetened Lemon Water",
+      "slug": "unsweetened-lemon-water",
+      "description": "Light lemon water without sugar for a fresh early morning start.",
+      "seasonality": "ALL_YEAR",
+      "frequency": "regular",
+      "dietTypes": ["healthy", "vegan", "gluten-free", "lactose-free"],
+      "nutrients": ["low-calories", "vitamin-c-rich"],
+      "prepTime": 3,
+      "ingredients": [
+        { "name": "Water", "quantity": 250, "unit": "ml", "form": "Plain" },
+        { "name": "Lemon", "quantity": 0.5, "unit": "pc", "form": "Fresh" }
+      ],
+      "method": "Squeeze lemon into water and stir. Keep it unsweetened.",
+      "imageKey": "early-morning/unsweetened-lemon-water.webp"
+    },
+    {
+      "title": "Jeera Water",
+      "slug": "jeera-water",
+      "description": "A light cumin-infused water for early morning hydration.",
+      "seasonality": "ALL_YEAR",
+      "frequency": "regular",
+      "dietTypes": ["healthy", "vegan", "gluten-free", "lactose-free"],
+      "nutrients": ["low-calories"],
+      "prepTime": 5,
+      "ingredients": [
+        { "name": "Water", "quantity": 250, "unit": "ml", "form": "Warm" },
+        { "name": "Cumin Seeds", "quantity": 0.5, "unit": "tsp", "form": "Whole" }
+      ],
+      "method": "Steep cumin seeds in warm water for a few minutes, then sip. Strain if preferred.",
+      "imageKey": "early-morning/jeera-water.webp"
+    },
+    {
+      "title": "Saunf Water",
+      "slug": "saunf-water",
+      "description": "A mild fennel-infused water for a calm start to the morning.",
+      "seasonality": "ALL_YEAR",
+      "frequency": "regular",
+      "dietTypes": ["healthy", "vegan", "gluten-free", "lactose-free"],
+      "nutrients": ["low-calories"],
+      "prepTime": 5,
+      "ingredients": [
+        { "name": "Water", "quantity": 250, "unit": "ml", "form": "Plain" },
+        { "name": "Fennel Seeds", "quantity": 0.5, "unit": "tsp", "form": "Whole" }
+      ],
+      "method": "Soak or steep fennel seeds in water briefly and sip. Strain if preferred.",
+      "imageKey": "early-morning/saunf-water.webp"
+    },
+    {
+      "title": "Ajwain Water",
+      "slug": "ajwain-water",
+      "description": "A stronger carom-seed infusion intended as an occasional early morning option.",
+      "seasonality": "ALL_YEAR",
+      "frequency": "occasional",
+      "dietTypes": ["healthy", "vegan", "gluten-free", "lactose-free"],
+      "nutrients": ["low-calories"],
+      "prepTime": 5,
+      "ingredients": [
+        { "name": "Water", "quantity": 250, "unit": "ml", "form": "Warm" },
+        { "name": "Ajwain", "quantity": 0.25, "unit": "tsp", "form": "Whole" }
+      ],
+      "method": "Steep ajwain in warm water, strain, and sip slowly. Keep this as an occasional option.",
+      "imageKey": "early-morning/ajwain-water.webp"
+    },
+    {
+      "title": "Tulsi Ginger Warm Water",
+      "slug": "tulsi-ginger-warm-water",
+      "description": "A warm tulsi and ginger infusion suited especially to monsoon and winter mornings.",
+      "seasonality": "SEASONAL",
+      "seasons": ["Monsoon", "Winter"],
+      "frequency": "seasonal",
+      "dietTypes": ["healthy", "vegan", "gluten-free", "lactose-free"],
+      "nutrients": ["low-calories", "antioxidants-rich"],
+      "prepTime": 6,
+      "ingredients": [
+        { "name": "Water", "quantity": 250, "unit": "ml", "form": "Warm" },
+        { "name": "Tulsi Leaves", "quantity": 4, "unit": "pc", "form": "Fresh" },
+        { "name": "Ginger", "quantity": 0.5, "unit": "tsp", "form": "Fresh" }
+      ],
+      "method": "Steep tulsi and crushed ginger in warm water for a few minutes, then strain and sip.",
+      "imageKey": "early-morning/tulsi-ginger-warm-water.webp"
+    },
+    {
+      "title": "Coriander Fennel Infused Water",
+      "slug": "coriander-fennel-infused-water",
+      "description": "A gentle coriander and fennel infusion for light early morning hydration.",
+      "seasonality": "ALL_YEAR",
+      "frequency": "regular",
+      "dietTypes": ["healthy", "vegan", "gluten-free", "lactose-free"],
+      "nutrients": ["low-calories"],
+      "prepTime": 5,
+      "ingredients": [
+        { "name": "Water", "quantity": 250, "unit": "ml", "form": "Plain" },
+        { "name": "Coriander Seeds", "quantity": 0.5, "unit": "tsp", "form": "Whole" },
+        { "name": "Fennel Seeds", "quantity": 0.5, "unit": "tsp", "form": "Whole" }
+      ],
+      "method": "Steep or soak coriander and fennel in water. Strain before drinking if desired.",
+      "imageKey": "early-morning/coriander-fennel-infused-water.webp"
+    },
+    {
+      "title": "Mint Cucumber Infused Water",
+      "slug": "mint-cucumber-infused-water",
+      "description": "A cooling summer early morning water with mint and cucumber.",
+      "seasonality": "SEASONAL",
+      "seasons": ["Summer"],
+      "frequency": "seasonal",
+      "dietTypes": ["healthy", "vegan", "gluten-free", "lactose-free"],
+      "nutrients": ["low-calories", "antioxidants-rich"],
+      "prepTime": 5,
+      "ingredients": [
+        { "name": "Water", "quantity": 250, "unit": "ml", "form": "Plain" },
+        { "name": "Mint Leaves", "quantity": 5, "unit": "pc", "form": "Fresh" },
+        { "name": "Cucumber", "quantity": 4, "unit": "slices", "form": "Fresh" }
+      ],
+      "method": "Add mint and cucumber slices to water and let them infuse briefly before sipping.",
+      "imageKey": "early-morning/mint-cucumber-infused-water.webp"
+    },
+    {
+      "title": "Coconut Water",
+      "slug": "coconut-water-early-morning",
+      "description": "A cooling summer hydration option to use occasionally, not as a daily default.",
+      "seasonality": "SEASONAL",
+      "seasons": ["Summer"],
+      "frequency": "occasional",
+      "dietTypes": ["healthy", "vegan", "gluten-free", "lactose-free"],
+      "nutrients": ["potassium-rich"],
+      "prepTime": 1,
+      "ingredients": [
+        { "name": "Coconut Water", "quantity": 200, "unit": "ml", "form": "Fresh" }
+      ],
+      "method": "Serve fresh coconut water plain, without added sugar or salt.",
+      "imageKey": "early-morning/coconut-water.webp"
+    },
+    {
+      "title": "Cinnamon Fennel Warm Infusion",
+      "slug": "cinnamon-fennel-warm-infusion",
+      "description": "A warm cinnamon and fennel infusion for winter early mornings.",
+      "seasonality": "SEASONAL",
+      "seasons": ["Winter"],
+      "frequency": "seasonal",
+      "dietTypes": ["healthy", "vegan", "gluten-free", "lactose-free"],
+      "nutrients": ["low-calories", "antioxidants-rich"],
+      "prepTime": 6,
+      "ingredients": [
+        { "name": "Water", "quantity": 250, "unit": "ml", "form": "Warm" },
+        { "name": "Cinnamon", "quantity": 1, "unit": "pinch", "form": "Whole" },
+        { "name": "Fennel Seeds", "quantity": 0.5, "unit": "tsp", "form": "Whole" }
+      ],
+      "method": "Steep cinnamon and fennel in warm water for a few minutes, strain, and sip.",
+      "imageKey": "early-morning/cinnamon-fennel-warm-infusion.webp"
+    }
+  ]
+}

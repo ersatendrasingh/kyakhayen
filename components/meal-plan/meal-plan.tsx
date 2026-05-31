@@ -28,11 +28,11 @@ const MealPlan = () => {
   };
 
   const handlePrevDay = () => {
-    setSelectedDate((prevDate) => subDays(prevDate, 7));
+    setSelectedDate((prevDate) => subDays(prevDate, 1));
   };
 
   const handleNextDay = () => {
-    setSelectedDate((prevDate) => addDays(prevDate, 7));
+    setSelectedDate((prevDate) => addDays(prevDate, 1));
   };
 
   const currentPlanIndex =

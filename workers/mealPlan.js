@@ -1,5 +1,8 @@
 const { Worker, Queue } = require("bullmq");
 const axios = require("axios");
+const { loadEnvConfig } = require("@next/env");
+
+loadEnvConfig(process.cwd());
 
 // Define Redis connection options
 const connection = {
@@ -7,7 +10,10 @@ const connection = {
   port: parseInt(process.env.REDIS_SERVER_PORT || "6379"),
 };
 
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+const APP_URL =
+  process.env.INTERNAL_APP_URL ||
+  process.env.NEXT_PUBLIC_APP_URL ||
+  "http://localhost:3000";
 const MEAL_PLAN_WORKER_SECRET =
   process.env.MEAL_PLAN_WORKER_SECRET ||
   (process.env.NODE_ENV !== "production" ? "local-meal-plan-worker" : "");
