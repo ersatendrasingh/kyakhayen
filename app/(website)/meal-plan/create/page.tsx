@@ -15,6 +15,8 @@ export const metadata: Metadata = buildSeoMetadata({
   noIndex: true,
 });
 
+export const dynamic = "force-dynamic";
+
 export default async function CreateMealPlanPage() {
   const user = await currentUser();
   const [foodPreferences, cuisines, exclusions, cookingSkills, savedPreferences] =

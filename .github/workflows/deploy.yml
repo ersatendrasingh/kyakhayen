@@ -27,6 +27,7 @@ jobs:
       NEXT_PUBLIC_DEFAULT_CURRENCY: ${{ secrets.NEXT_PUBLIC_DEFAULT_CURRENCY || vars.NEXT_PUBLIC_DEFAULT_CURRENCY || 'INR' }}
       NEXT_PUBLIC_EXCHANGE_API_URL: ${{ secrets.NEXT_PUBLIC_EXCHANGE_API_URL || vars.NEXT_PUBLIC_EXCHANGE_API_URL }}
       NEXT_PUBLIC_FREE_CURRENCY_API_KEY: ${{ secrets.NEXT_PUBLIC_FREE_CURRENCY_API_KEY || vars.NEXT_PUBLIC_FREE_CURRENCY_API_KEY }}
+      DATABASE_URL: ${{ secrets.DATABASE_URL || vars.DATABASE_URL }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -44,6 +45,10 @@ jobs:
 
       - name: Typecheck
         run: npm run typecheck
+
+      - name: Validate production build inputs
+        run: |
+          test -n "$DATABASE_URL" || { echo "DATABASE_URL is required because public ISR pages and sitemap are built from database content"; exit 1; }
 
       - name: Build production bundle
         run: |

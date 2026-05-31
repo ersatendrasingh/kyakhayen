@@ -1,8 +1,8 @@
 import { MetadataRoute } from "next";
-import { getArticles } from "@/actions/get-articles";
-import { GetRecipes } from "@/actions/get-recipes";
+
+import { db } from "@/lib/db";
 import { getPublishedRecipeCollectionRoutes } from "@/lib/recipe-collection-resolver";
-import { recipeContentUpdatedAt } from "@/lib/recipe-publication";
+import { publishedRecipeWhere, recipeContentUpdatedAt } from "@/lib/recipe-publication";
 import { absoluteUrl, articleHref, recipeHref } from "@/lib/seo";
 
 type ChangeFrequency =
@@ -14,12 +14,31 @@ type ChangeFrequency =
   | "yearly"
   | "never";
 
+export const revalidate = 3600;
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const changeFrequency: ChangeFrequency = "daily";
 
-  const recipes = await GetRecipes({});
-  const articles = await getArticles({});
-  const recipeCollections = await getPublishedRecipeCollectionRoutes();
+  const [recipes, articles, recipeCollections] = await Promise.all([
+    db.recipes.findMany({
+      where: publishedRecipeWhere(),
+      select: {
+        slug: true,
+        metaSlug: true,
+        createdAt: true,
+        updatedAt: true,
+        publishedAt: true,
+        contentUpdatedAt: true,
+      },
+      orderBy: [{ contentUpdatedAt: "desc" }, { updatedAt: "desc" }],
+    }),
+    db.post.findMany({
+      where: { isPublished: true },
+      select: { slug: true, metaSlug: true, updatedAt: true },
+      orderBy: { updatedAt: "desc" },
+    }),
+    getPublishedRecipeCollectionRoutes(),
+  ]);
 
   const staticRoutes = [
     { url: "/", lastModified: "2026-05-30", changeFrequency: "daily" },
