@@ -3,7 +3,7 @@
 import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
@@ -26,33 +26,29 @@ import { login } from "@/actions/login";
 import { newVerification } from "@/actions/new-verification";
 import { SubmitButton } from "@/components/submit-button";
 import { DEFAULT_LOGIN_REDIRECT } from "@/routes";
-import { AuthTransitionOverlay } from "@/components/auth/auth-transition-overlay";
 
 interface LoginFormProps {
   callBackUrl?: string;
+  callbackUrl?: string | null;
+  urlError?: string;
   mode?: "modal" | "redirect";
 }
 
-export const LoginForm = ({ callBackUrl, mode }: LoginFormProps) => {
+export const LoginForm = ({
+  callBackUrl,
+  callbackUrl: callbackUrlProp,
+  mode,
+  urlError = "",
+}: LoginFormProps) => {
   const router = useRouter();
   const { update } = useSession();
-  const searchParams = useSearchParams();
-  const callbackUrl = callBackUrl
-    ? callBackUrl
-    : searchParams.get("callbackUrl");
-  const urlError =
-    searchParams.get("error") === "OAuthAccountNotLinked"
-      ? "We could not connect this Google sign-in to your existing account. Please try again or contact support."
-      : searchParams.get("error") === "AccountSuspended"
-        ? "Your account is temporarily suspended. Please contact support."
-        : "";
+  const callbackUrl = callbackUrlProp || callBackUrl || null;
   const [showTwoFactor, setShowTwoFactor] = useState(false);
   const [showEmailVerification, setShowEmailVerification] = useState(false);
   const [error, setError] = useState<string | undefined>("");
   const [success, setSuccess] = useState<string | undefined>("");
   const [isPending, startTransition] = useTransition();
-  const [isloading, setIsLoading] = useState(false);
-  const [isRedirecting, setIsRedirecting] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const form = useForm<z.infer<typeof LoginSchema>>({
     resolver: zodResolver(LoginSchema),
@@ -98,7 +94,6 @@ export const LoginForm = ({ callBackUrl, mode }: LoginFormProps) => {
               return;
             }
 
-            setIsRedirecting(true);
             await update();
             router.push(callbackUrl || DEFAULT_LOGIN_REDIRECT);
             router.refresh();
@@ -116,6 +111,7 @@ export const LoginForm = ({ callBackUrl, mode }: LoginFormProps) => {
           if (data?.error) {
             setError(data.error);
             setIsLoading(false);
+            return;
           }
 
           if (data?.verificationRequired) {
@@ -128,18 +124,18 @@ export const LoginForm = ({ callBackUrl, mode }: LoginFormProps) => {
           if (data?.success) {
             form.reset();
             setSuccess(data.success);
-            setIsLoading(false);
 
             localStorage.setItem("toastDisplayed", "false");
-            setIsRedirecting(true);
             await update();
             router.push(callbackUrl || DEFAULT_LOGIN_REDIRECT);
             router.refresh();
+            return;
           }
 
           if (data?.twoFactor) {
             setShowTwoFactor(true);
             setIsLoading(false);
+            return;
           }
         })
         .catch(() => {
@@ -150,8 +146,6 @@ export const LoginForm = ({ callBackUrl, mode }: LoginFormProps) => {
   };
 
   return (
-    <>
-    {isRedirecting && <AuthTransitionOverlay message="Signing you in" />}
     <CardWrapper
       headerLabel={showEmailVerification ? "Verify your email" : "Welcome back"}
       description={
@@ -165,6 +159,7 @@ export const LoginForm = ({ callBackUrl, mode }: LoginFormProps) => {
       }`}
       showSocial
       compact={mode === "modal"}
+      callbackUrl={callbackUrl}
     >
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
@@ -250,9 +245,9 @@ export const LoginForm = ({ callBackUrl, mode }: LoginFormProps) => {
             )}
           </div>
           <FormError message={error || urlError} />
-          <FormSuccess message={isloading ? "" : success} />
+          <FormSuccess message={isLoading ? "" : success} />
           <SubmitButton
-            isPending={isPending || isloading}
+            isPending={isPending || isLoading}
             submitText={
               showEmailVerification
                 ? "Verify & continue"
@@ -264,6 +259,5 @@ export const LoginForm = ({ callBackUrl, mode }: LoginFormProps) => {
         </form>
       </Form>
     </CardWrapper>
-    </>
   );
 };

@@ -29,7 +29,7 @@ export default function ContentNotFound({ kind }: ContentNotFoundProps) {
   const Icon = content.icon;
 
   return (
-    <section className="flex min-h-[calc(100vh-240px)] items-center justify-center bg-[#fcf8f0] px-4 py-10 dark:bg-[#091712]">
+    <section className="flex min-h-[calc(100svh-108px)] items-center justify-center bg-[#fcf8f0] px-4 py-10 dark:bg-[#091712] lg:min-h-[calc(100svh-100px)]">
       <div className="w-full max-w-2xl rounded-[2rem] border border-[#eadbc6] bg-[#fffdf9] p-8 text-center shadow-[0_24px_70px_rgba(66,46,27,0.08)] sm:p-12 dark:border-white/8 dark:bg-[#10241e]">
         <div className="mx-auto flex size-14 items-center justify-center rounded-2xl bg-[#f5e8d5] text-[#b83c2e] dark:bg-[#17362e] dark:text-[#e5b367]">
           <SearchX className="size-7" />

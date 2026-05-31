@@ -7,14 +7,15 @@ interface MealPlanLoaderProps {
 const MealPlanLoader = ({ isLoading }: MealPlanLoaderProps) => {
   return (
     <div
-      className={`fixed top-0 left-0 w-full h-full z-10 flex items-center justify-center ${
+      aria-busy={isLoading}
+      className={`fixed inset-0 z-[100] flex items-center justify-center px-4 ${
         isLoading ? "" : "hidden"
       }`}
     >
-      <div className="bg-gray-900 bg-opacity-50 absolute inset-0"></div>
-      <div className="inset-0 flex flex-col items-center justify-center bg-white bg-opacity-100 p-10 rounded-md z-10">
-        <Loader className="size-6 animate-spin" />
-        <p className="mt-2 font-semibold animate-bounce text-websecondary">
+      <div className="absolute inset-0 bg-[#160f0a]/60 backdrop-blur-md" />
+      <div className="z-10 flex max-w-sm flex-col items-center justify-center rounded-2xl bg-white p-8 text-center shadow-xl dark:bg-[#10241e]">
+        <Loader className="size-6 animate-spin text-primary" />
+        <p className="mt-3 text-sm font-semibold leading-6 text-websecondary dark:text-[#dfb36c]">
           Your meal plan is being generated. Please wait...
         </p>
       </div>

@@ -16,6 +16,7 @@ interface CardWrapperProps {
   visualAlt?: string;
   visualPosition?: string;
   visualHeadline?: string;
+  callbackUrl?: string | null;
 }
 
 export const CardWrapper = ({
@@ -30,6 +31,7 @@ export const CardWrapper = ({
   visualAlt = "Woman preparing fresh ingredients in her kitchen",
   visualPosition = "object-[68%_center]",
   visualHeadline = "Fresh meals begin with one good idea.",
+  callbackUrl,
 }: CardWrapperProps) => {
   if (compact) {
     return (
@@ -43,7 +45,7 @@ export const CardWrapper = ({
         <div className="mt-6 [&_input]:h-11 [&_input]:rounded-xl [&_button[type=submit]]:h-11 [&_button[type=submit]]:rounded-xl">
           {children}
         </div>
-        {showSocial && <Social />}
+        {showSocial && <Social callbackUrl={callbackUrl} />}
         <BackButton label={backButtonLabel} href={backButtonHref} />
       </div>
     );
@@ -64,7 +66,7 @@ export const CardWrapper = ({
           </div>
           {showSocial && (
             <div className="mt-6">
-              <Social />
+              <Social callbackUrl={callbackUrl} />
             </div>
           )}
           <div className="mt-6">

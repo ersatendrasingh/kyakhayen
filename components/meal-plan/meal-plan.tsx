@@ -49,7 +49,7 @@ const MealPlan = () => {
 
   if (status === "loading") {
     return (
-      <main className="flex min-h-[calc(100vh-180px)] items-center justify-center bg-[#fffaf2]">
+      <main className="flex min-h-[calc(100svh-108px)] items-center justify-center bg-[#fffaf2] lg:min-h-[calc(100svh-100px)]">
         <Loader2 className="size-7 animate-spin text-primary" />
       </main>
     );

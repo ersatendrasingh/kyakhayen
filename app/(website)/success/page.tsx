@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import axios from "axios";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
@@ -30,7 +30,7 @@ type Order = {
   items: { id: string; itemName: string }[];
 };
 
-export default function SuccessPage() {
+function SuccessPageContent() {
   const providerOrderId = useSearchParams().get("orderId");
   const { emptyCart } = useCart();
   const { userCurrency } = useUserCountry();
@@ -109,7 +109,7 @@ export default function SuccessPage() {
     : "Set up meal plan";
 
   return (
-    <div className="min-h-[calc(100vh-180px)] bg-[#fcf8f0] py-12 dark:bg-[#091712]">
+    <div className="min-h-[calc(100svh-108px)] bg-[#fcf8f0] py-12 dark:bg-[#091712] lg:min-h-[calc(100svh-100px)]">
       <Container>
         <div className="mx-auto max-w-2xl rounded-[2rem] border border-[#eadbc6] bg-[#fffdf9] p-6 shadow-[0_24px_70px_rgba(62,43,24,0.08)] sm:p-10 dark:border-white/8 dark:bg-[#10241e]">
           {loading ? (
@@ -193,6 +193,27 @@ export default function SuccessPage() {
               {status === "Paid" ? "Membership details" : "Check payment status"}
             </Link>
           </div>
+        </div>
+      </Container>
+    </div>
+  );
+}
+
+export default function SuccessPage() {
+  return (
+    <Suspense fallback={<PaymentStatusFallback />}>
+      <SuccessPageContent />
+    </Suspense>
+  );
+}
+
+function PaymentStatusFallback() {
+  return (
+    <div className="min-h-[calc(100svh-108px)] bg-[#fcf8f0] py-12 dark:bg-[#091712] lg:min-h-[calc(100svh-100px)]">
+      <Container>
+        <div className="mx-auto flex min-h-[360px] max-w-2xl flex-col items-center justify-center rounded-[2rem] border border-[#eadbc6] bg-[#fffdf9] p-6 text-[#716358] shadow-[0_24px_70px_rgba(62,43,24,0.08)] sm:p-10 dark:border-white/8 dark:bg-[#10241e] dark:text-[#aab8b0]">
+          <Loader2 className="size-8 animate-spin text-[#b83c2e] dark:text-[#dfb36c]" />
+          <p className="mt-5 text-sm">Opening payment status...</p>
         </div>
       </Container>
     </div>

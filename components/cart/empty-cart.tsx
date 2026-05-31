@@ -19,7 +19,7 @@ export default function EmptyCart() {
   const hasPaidAccess = Boolean(activePlanName && activePlanName !== "Freemium");
 
   return (
-    <section className="flex min-h-[calc(100vh-180px)] items-center justify-center bg-[#fcf8f0] px-4 py-14 dark:bg-[#091712]">
+    <section className="flex min-h-[calc(100svh-108px)] items-center justify-center bg-[#fcf8f0] px-4 py-14 dark:bg-[#091712] lg:min-h-[calc(100svh-100px)]">
       <div className="max-w-xl rounded-[2rem] border border-[#eadbc6] bg-[#fffdf9] p-8 text-center shadow-[0_22px_65px_rgba(68,45,25,0.08)] sm:p-12 dark:border-white/8 dark:bg-[#10241e]">
         <div className="mx-auto flex size-14 items-center justify-center rounded-2xl bg-[#f5e8d5] text-[#b83c2e] dark:bg-[#17362e] dark:text-[#e5b367]">
           <CreditCard className="size-7" />

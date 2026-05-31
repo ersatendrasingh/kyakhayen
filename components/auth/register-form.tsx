@@ -4,7 +4,7 @@ import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { useState, useTransition } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 
 import { CardWrapper } from "@/components/auth/card-wrapper";
@@ -27,18 +27,18 @@ import { SubmitButton } from "@/components/submit-button";
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
 import { DEFAULT_LOGIN_REDIRECT } from "@/routes";
-import { AuthTransitionOverlay } from "@/components/auth/auth-transition-overlay";
 
-export const RegisterForm = () => {
+type RegisterFormProps = {
+  callbackUrl?: string | null;
+};
+
+export const RegisterForm = ({ callbackUrl = null }: RegisterFormProps) => {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const callbackUrl = searchParams.get("callbackUrl");
   const { update } = useSession();
   const [error, setError] = useState<string | undefined>("");
   const [success, setSuccess] = useState<string | undefined>("");
   const [verificationCode, setVerificationCode] = useState("");
   const [awaitingVerification, setAwaitingVerification] = useState(false);
-  const [isRedirecting, setIsRedirecting] = useState(false);
   const [isPending, startTransition] = useTransition();
 
   const form = useForm<z.infer<typeof RegisterSchema>>({
@@ -99,7 +99,6 @@ export const RegisterForm = () => {
             return;
           }
 
-          setIsRedirecting(true);
           await update();
           router.push(callbackUrl || DEFAULT_LOGIN_REDIRECT);
           router.refresh();
@@ -113,10 +112,6 @@ export const RegisterForm = () => {
   }`;
 
   return (
-    <>
-    {isRedirecting && (
-      <AuthTransitionOverlay message="Setting up your account" />
-    )}
     <CardWrapper
       headerLabel={awaitingVerification ? "Verify your email" : "Create your account"}
       description={
@@ -131,6 +126,7 @@ export const RegisterForm = () => {
       visualAlt="Woman preparing fresh fruit in a bright kitchen"
       visualPosition="object-[60%_center]"
       visualHeadline="Make everyday meals feel effortless."
+      callbackUrl={callbackUrl}
     >
       {awaitingVerification ? (
         <div className="space-y-5">
@@ -167,90 +163,89 @@ export const RegisterForm = () => {
           </Button>
         </div>
       ) : (
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-          <div className="space-y-4">
-            <FormField
-              control={form.control}
-              name="name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Name</FormLabel>
-                  <FormControl>
-                    <Input
-                      disabled={isPending}
-                      placeholder="John Doe"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            <div className="space-y-4">
+              <FormField
+                control={form.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Name</FormLabel>
+                    <FormControl>
+                      <Input
+                        disabled={isPending}
+                        placeholder="John Doe"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-            <FormField
-              control={form.control}
-              name="email"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Email</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="email"
-                      disabled={isPending}
-                      placeholder="john.doe@example.com"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="phoneNumber"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Phone number</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="tel"
-                      disabled={isPending}
-                      placeholder="9876543210"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+              <FormField
+                control={form.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Email</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="email"
+                        disabled={isPending}
+                        placeholder="john.doe@example.com"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="phoneNumber"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Phone number</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="tel"
+                        disabled={isPending}
+                        placeholder="9876543210"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-            <FormField
-              control={form.control}
-              name="password"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Password</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="password"
-                      disabled={isPending}
-                      placeholder="******"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
-          <FormError message={error} />
-          <FormSuccess message={success} />
-          <SubmitButton isPending={isPending} submitText="Create account" />
-        </form>
-      </Form>
+              <FormField
+                control={form.control}
+                name="password"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Password</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="password"
+                        disabled={isPending}
+                        placeholder="******"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+            <FormError message={error} />
+            <FormSuccess message={success} />
+            <SubmitButton isPending={isPending} submitText="Create account" />
+          </form>
+        </Form>
       )}
     </CardWrapper>
-    </>
   );
 };

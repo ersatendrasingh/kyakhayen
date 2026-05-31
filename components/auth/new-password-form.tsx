@@ -3,7 +3,6 @@
 import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { useSearchParams } from "next/navigation";
 import { useState, useTransition } from "react";
 
 import { CardWrapper } from "@/components/auth/card-wrapper";
@@ -24,10 +23,11 @@ import { NewPasswordSchema } from "@/schemas";
 import { newPassword } from "@/actions/new-password";
 import { SubmitButton } from "@/components/submit-button";
 
-export const NewPasswordForm = () => {
-  const searchParams = useSearchParams();
-  const token = searchParams.get("token");
+type NewPasswordFormProps = {
+  token?: string | null;
+};
 
+export const NewPasswordForm = ({ token = null }: NewPasswordFormProps) => {
   const [error, setError] = useState<string | undefined>("");
   const [success, setSuccess] = useState<string | undefined>("");
   const [isPending, startTransition] = useTransition();

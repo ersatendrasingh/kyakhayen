@@ -16,9 +16,7 @@ import { useCurrentUser } from "@/hooks/use-current-user";
 import { collectPersonalizationData } from "@/hooks/use-user-personalization";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
 import Container from "@/components/container";
-import OverlayLoader from "@/components/loader/overlay-loader";
 import MealPlanLoader from "@/components/loader/meal-plan-loader";
 import Cuisines from "@/components/user-personalization/cuisines";
 import Allergies from "@/components/user-personalization/allergies";
@@ -63,7 +61,6 @@ export default function PersonalizationForm({
   const [step, setStep] = useState(getSavedStep);
   const [direction, setDirection] = useState("next");
   const [isFormValid, setIsFormValid] = useState(false);
-  const [loading, setLoading] = useState(true);
   const [mealPlanLoading, setMealPlanLoading] = useState(false);
   const cuisinesRef = useRef<HTMLDivElement>(null);
   const foodPreferenceRef = useRef<HTMLDivElement>(null);
@@ -73,11 +70,6 @@ export default function PersonalizationForm({
   const pathname = usePathname();
   const user = useCurrentUser();
   const stepCount = 4;
-
-  useEffect(() => {
-    const timer = setTimeout(() => setLoading(false), 500);
-    return () => clearTimeout(timer);
-  }, []);
 
   useEffect(() => {
     localStorage.setItem("currentStep", JSON.stringify(step));
@@ -104,7 +96,6 @@ export default function PersonalizationForm({
     }
 
     try {
-      setLoading(true);
       setMealPlanLoading(true);
       const response = await axios.patch(
         "/api/user/personalization",
@@ -120,7 +111,6 @@ export default function PersonalizationForm({
       console.error("Failed to save recipe preferences:", error);
     } finally {
       setMealPlanLoading(false);
-      setLoading(false);
     }
   };
 
@@ -140,7 +130,6 @@ export default function PersonalizationForm({
           priority
           quality={90}
         />
-        {loading && <OverlayLoader isLoading={loading} />}
         {mealPlanLoading && <MealPlanLoader isLoading={mealPlanLoading} />}
 
         <Container>
@@ -184,20 +173,34 @@ export default function PersonalizationForm({
               </TransitionGroup>
             </div>
             <div className="w-full flex items-center justify-center mt-5 space-x-4 z-10">
-              {loading ? (
-                <>
-                  <Skeleton className="h-10 w-32 bg-red-100 rounded-full" />
-                  <Skeleton className="h-10 w-28 bg-red-100 rounded-full" />
-                </>
+              {step > 1 && (
+                <Button
+                  variant="outline"
+                  size="main"
+                  onClick={prevStep}
+                  disabled={mealPlanLoading}
+                >
+                  Back
+                </Button>
+              )}
+              {step === stepCount ? (
+                <Button
+                  variant="main"
+                  size="main"
+                  disabled={!isFormValid || mealPlanLoading}
+                  onClick={handleDoneButtonClick}
+                >
+                  Done
+                </Button>
               ) : (
-                <>
-                  {step > 1 && <Button variant="outline" size="main" onClick={prevStep}>Back</Button>}
-                  {step === stepCount ? (
-                    <Button variant="main" size="main" disabled={!isFormValid} onClick={handleDoneButtonClick}>Done</Button>
-                  ) : (
-                    <Button variant="main" size="main" disabled={!isFormValid} onClick={nextStep}>Next</Button>
-                  )}
-                </>
+                <Button
+                  variant="main"
+                  size="main"
+                  disabled={!isFormValid || mealPlanLoading}
+                  onClick={nextStep}
+                >
+                  Next
+                </Button>
               )}
             </div>
           </div>

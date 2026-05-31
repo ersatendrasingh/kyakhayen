@@ -1,7 +1,6 @@
 "use client";
 
 import { FormEvent, useCallback, useEffect, useState } from "react";
-import { useSearchParams } from "next/navigation";
 import { Loader2 } from "lucide-react";
 
 import { newVerification } from "@/actions/new-verification";
@@ -11,9 +10,13 @@ import { FormSuccess } from "@/components/form-success";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
-export const NewVerificationForm = () => {
-  const searchParams = useSearchParams();
-  const linkedToken = searchParams.get("token");
+type NewVerificationFormProps = {
+  token?: string | null;
+};
+
+export const NewVerificationForm = ({
+  token: linkedToken = null,
+}: NewVerificationFormProps) => {
   const [code, setCode] = useState("");
   const [error, setError] = useState<string | undefined>();
   const [success, setSuccess] = useState<string | undefined>();

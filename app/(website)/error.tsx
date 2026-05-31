@@ -18,7 +18,7 @@ export default function WebsiteError({
   }, [error]);
 
   return (
-    <div className="min-h-[calc(100vh-180px)] bg-[#fcf8f0] py-12 dark:bg-[#091712] sm:py-20">
+    <div className="min-h-[calc(100svh-108px)] bg-[#fcf8f0] py-12 dark:bg-[#091712] sm:py-20 lg:min-h-[calc(100svh-100px)]">
       <Container>
         <div className="mx-auto max-w-3xl rounded-[2rem] border border-[#eadbc6] bg-[#fffdf9] p-7 text-center shadow-[0_25px_70px_rgba(72,48,26,0.07)] sm:p-12 dark:border-white/8 dark:bg-[#10241e]">
           <div className="mx-auto flex size-14 items-center justify-center rounded-2xl bg-[#f5e8d5] text-[#b83c2e] dark:bg-[#17362e] dark:text-[#e5b367]">

@@ -10,7 +10,7 @@ export default function CheckoutPage() {
   const { cartItems, isHydrated } = useCart();
   if (!isHydrated) {
     return (
-      <div className="min-h-[calc(100vh-100px)] bg-[#fcf8f0] px-4 py-12 dark:bg-[#091712]">
+      <div className="min-h-[calc(100svh-108px)] bg-[#fcf8f0] px-4 py-12 dark:bg-[#091712] lg:min-h-[calc(100svh-100px)]">
         <div className="mx-auto max-w-6xl space-y-6">
           <Skeleton className="h-10 w-80 bg-[#eee2d2] dark:bg-white/8" />
           <Skeleton className="h-5 w-[520px] max-w-full bg-[#eee2d2] dark:bg-white/8" />
@@ -24,7 +24,7 @@ export default function CheckoutPage() {
   }
 
   return (
-    <div className="min-h-[calc(100vh-100px)] bg-[#fcf8f0] pb-16 dark:bg-[#091712]">
+    <div className="min-h-[calc(100svh-108px)] bg-[#fcf8f0] pb-16 dark:bg-[#091712] lg:min-h-[calc(100svh-100px)]">
       <Container>
         <header className="mx-auto max-w-6xl pt-10 sm:pt-14">
           <p className="text-xs font-semibold uppercase tracking-[0.3em] text-[#a77838] dark:text-[#d6aa60]">
