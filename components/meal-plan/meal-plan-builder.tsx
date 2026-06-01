@@ -55,6 +55,12 @@ const emptyDraft: Draft = {
 const storageKey = "mealPlanBuilderDraft";
 const pendingGenerationKey = "mealPlanPendingGeneration";
 const storageVersion = 2;
+const genericOptionImage = "/assets/images/meal-plan-choice-fallback.svg";
+const fallbackOptionImages: Record<string, string> = {
+  mustard: "/assets/images/allergies/mustard.svg",
+  sesame: "/assets/images/allergies/sesame.svg",
+  shellfish: "/assets/images/allergies/shellfish.svg",
+};
 
 type SavedWizard = {
   version: number;
@@ -112,6 +118,18 @@ function readWizardState(initialDraft: Draft): { draft: Draft; step: number } {
     return { draft: initialDraft, step: 0 };
   }
 }
+
+const optionImageSrc = (option: Option) => {
+  if (option.imageUrl) return option.imageUrl;
+
+  const key = option.title
+    .toLowerCase()
+    .replace(/&/g, "and")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
+
+  return fallbackOptionImages[key] ?? genericOptionImage;
+};
 
 export default function MealPlanBuilder({
   foodPreferences,
@@ -482,10 +500,7 @@ export default function MealPlanBuilder({
                           )}
                         >
                           <Image
-                            src={
-                              option.imageUrl ||
-                              "/assets/images/default-category.jpg"
-                            }
+                            src={optionImageSrc(option)}
                             alt=""
                             fill
                             sizes="(max-width: 640px) 80px, 96px"
@@ -540,19 +555,21 @@ export default function MealPlanBuilder({
               </div>
             ) : (
               <div className="mt-7">
-                <div className="rounded-[1.6rem] bg-[#2c2118] px-5 py-5 text-white sm:px-7">
-                  <div className="flex items-start justify-between gap-4">
-                    <div>
-                      <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#f7cf8a]">
-                        {hasPaidAccess ? "Your meal palette" : "Your weekly palette"}
+                <div className="rounded-[1.35rem] bg-[#2c2118] px-5 py-5 text-white sm:rounded-[1.6rem] sm:px-7 sm:py-6">
+                  <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                    <div className="min-w-0">
+                      <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#f7cf8a] sm:text-xs">
+                        {hasPaidAccess
+                          ? "Your meal palette"
+                          : "Your weekly palette"}
                       </p>
-                      <h3 className="mt-2 text-xl font-semibold">
+                      <h3 className="mt-2 max-w-[19rem] text-[1.45rem] font-semibold leading-[1.18] sm:text-2xl">
                         {hasPaidAccess
                           ? "Planned meals shaped around your table"
                           : "Seven days shaped around your table"}
                       </h3>
                     </div>
-                    <span className="shrink-0 rounded-full bg-white/10 px-3 py-2 text-xs font-semibold text-[#f7cf8a]">
+                    <span className="w-fit shrink-0 rounded-full bg-white/10 px-3 py-1.5 text-[11px] font-semibold text-[#f7cf8a] sm:py-2 sm:text-xs">
                       {accessLabel}
                     </span>
                   </div>
@@ -596,10 +613,7 @@ export default function MealPlanBuilder({
                                 className="relative block size-10 overflow-hidden rounded-full border-2 border-white bg-[#f6eadb] dark:border-[#142b23] dark:bg-[#20382f]"
                               >
                                 <Image
-                                  src={
-                                    option.imageUrl ||
-                                    "/assets/images/default-category.jpg"
-                                  }
+                                  src={optionImageSrc(option)}
                                   alt=""
                                   fill
                                   sizes="40px"
@@ -628,56 +642,68 @@ export default function MealPlanBuilder({
               </div>
             )}
 
-            <div className="mt-8 flex items-center justify-between border-t border-[#f0e5d6] pt-6 dark:border-white/8">
-              <Button
-                type="button"
-                variant="ghost"
-                className={cn(step === 0 && "invisible")}
-                onClick={() => changeStep(step - 1)}
-              >
-                <ArrowLeft className="size-4" /> Back
-              </Button>
+            <div className="mt-8 border-t border-[#f0e5d6] pt-6 dark:border-white/8">
               {step < 4 ? (
-                <Button
-                  type="button"
-                  size="lg"
-                  className="rounded-full px-7"
-                  disabled={!isValid}
-                  onClick={() => changeStep(step + 1)}
-                >
-                  Continue <ArrowRight className="size-4" />
-                </Button>
-              ) : (
-                <div className="flex flex-col items-end gap-2">
+                <div className="flex items-center justify-between gap-3">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    className={cn(step === 0 && "invisible")}
+                    onClick={() => changeStep(step - 1)}
+                  >
+                    <ArrowLeft className="size-4" /> Back
+                  </Button>
                   <Button
                     type="button"
                     size="lg"
                     className="rounded-full px-7"
-                    disabled={saving}
-                    onClick={submit}
+                    disabled={!isValid}
+                    onClick={() => changeStep(step + 1)}
                   >
-                    {saving && <Loader2 className="size-4 animate-spin" />}
-                    {session?.user
-                      ? "Generate my meal plan"
-                      : "Create account & generate"}
+                    Continue <ArrowRight className="size-4" />
                   </Button>
-                  {!session?.user && (
-                    <button
+                </div>
+              ) : (
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    className="h-10 w-fit px-2 text-sm"
+                    onClick={() => changeStep(step - 1)}
+                  >
+                    <ArrowLeft className="size-4" /> Back
+                  </Button>
+                  <div className="flex w-full flex-col items-stretch gap-1.5 sm:w-auto sm:items-end">
+                    <Button
                       type="button"
-                      onClick={() => {
-                        window.localStorage.setItem(
-                          pendingGenerationKey,
-                          "true",
-                        );
-                        router.push(
-                          "/auth/login?callbackUrl=%2Fmeal-plan%2Fcreate",
-                        );
-                      }}
-                      className="cursor-pointer text-xs font-medium text-primary underline decoration-primary/30 underline-offset-4"
+                      size="lg"
+                      className="h-11 rounded-full px-5 text-[13px] sm:h-12 sm:px-7 sm:text-sm"
+                      disabled={saving}
+                      onClick={submit}
                     >
-                      Already have an account? Sign in
-                    </button>
-                  )}
+                      {saving && <Loader2 className="size-4 animate-spin" />}
+                      {session?.user
+                        ? "Generate my meal plan"
+                        : "Create account & generate"}
+                    </Button>
+                    {!session?.user && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          window.localStorage.setItem(
+                            pendingGenerationKey,
+                            "true",
+                          );
+                          router.push(
+                            "/auth/login?callbackUrl=%2Fmeal-plan%2Fcreate",
+                          );
+                        }}
+                        className="cursor-pointer self-center text-[11px] font-medium leading-5 text-primary underline decoration-primary/30 underline-offset-4 sm:self-end sm:text-xs"
+                      >
+                        Already have an account? Sign in
+                      </button>
+                    )}
+                  </div>
                 </div>
               )}
             </div>

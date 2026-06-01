@@ -17,27 +17,45 @@ export const metadata: Metadata = buildSeoMetadata({
 
 export const dynamic = "force-dynamic";
 
+const sortPositionedOptions = <
+  T extends { position: number | null; title?: string; name?: string },
+>(
+  items: T[],
+) =>
+  [...items].sort((first, second) => {
+    const firstPosition = first.position ?? Number.MAX_SAFE_INTEGER;
+    const secondPosition = second.position ?? Number.MAX_SAFE_INTEGER;
+
+    if (firstPosition !== secondPosition) {
+      return firstPosition - secondPosition;
+    }
+
+    return (first.title ?? first.name ?? "").localeCompare(
+      second.title ?? second.name ?? "",
+    );
+  });
+
 export default async function CreateMealPlanPage() {
   const user = await currentUser();
   const [foodPreferences, cuisines, exclusions, cookingSkills, savedPreferences] =
     await Promise.all([
       db.recipeCategories.findMany({
         where: { isPublished: true, slug: { not: "desserts" } },
-        select: { id: true, name: true, imageUrl: true },
+        select: { id: true, name: true, imageUrl: true, position: true },
         orderBy: [{ position: "asc" }, { name: "asc" }],
       }),
       db.cuisines.findMany({
         where: { isPublished: true },
-        select: { id: true, title: true, imageUrl: true },
+        select: { id: true, title: true, imageUrl: true, position: true },
         orderBy: [{ position: "asc" }, { title: "asc" }],
       }),
       db.allergies.findMany({
         where: { isPublished: true, title: { not: "None" } },
-        select: { id: true, title: true, imageUrl: true },
+        select: { id: true, title: true, imageUrl: true, position: true },
         orderBy: [{ position: "asc" }, { title: "asc" }],
       }),
       db.recipeDifficulty.findMany({
-        select: { id: true, title: true, imageUrl: true },
+        select: { id: true, title: true, imageUrl: true, position: true },
         orderBy: [{ position: "asc" }, { title: "asc" }],
       }),
       user
@@ -66,14 +84,16 @@ export default async function CreateMealPlanPage() {
 
   return (
     <MealPlanBuilder
-      foodPreferences={foodPreferences.map((preference) => ({
-        id: preference.id,
-        title: preference.name,
-        imageUrl: preference.imageUrl,
-      }))}
-      cuisines={cuisines}
-      exclusions={exclusions}
-      cookingSkills={cookingSkills}
+      foodPreferences={sortPositionedOptions(foodPreferences).map(
+        (preference) => ({
+          id: preference.id,
+          title: preference.name,
+          imageUrl: preference.imageUrl,
+        }),
+      )}
+      cuisines={sortPositionedOptions(cuisines)}
+      exclusions={sortPositionedOptions(exclusions)}
+      cookingSkills={sortPositionedOptions(cookingSkills)}
       activePlanName={activePlan?.name}
       hasPaidAccess={hasPaidAccess}
       initialDraft={{
