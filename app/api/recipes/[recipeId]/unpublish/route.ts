@@ -1,5 +1,6 @@
 import { currentUser } from "@/lib/auth";
 import { db } from "@/lib/db";
+import { revalidatePath } from "next/cache";
 import { NextResponse } from "next/server";
 
 export async function PATCH(req: Request, props: { params: Promise<{ recipeId: string }> }) {
@@ -29,6 +30,7 @@ export async function PATCH(req: Request, props: { params: Promise<{ recipeId: s
         isPublished: false,
       },
     });
+    revalidatePath("/sitemap.xml");
     return NextResponse.json(unPublishedRecipe, { status: 200 });
   } catch (error) {
     console.log("[RECIPE_ID_UNPUBLISH]", error);

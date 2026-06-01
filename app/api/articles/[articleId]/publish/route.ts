@@ -1,5 +1,6 @@
 import { currentUser } from "@/lib/auth";
 import { db } from "@/lib/db";
+import { revalidatePath } from "next/cache";
 import { NextResponse } from "next/server";
 
 export async function PATCH(req: Request, props: { params: Promise<{ articleId: string }> }) {
@@ -33,6 +34,7 @@ export async function PATCH(req: Request, props: { params: Promise<{ articleId: 
         isPublished: true,
       },
     });
+    revalidatePath("/sitemap.xml");
     return NextResponse.json(publishedArticle, { status: 200 });
   } catch (error) {
     console.log("[ARTICLE_ID_PUBLISH]", error);

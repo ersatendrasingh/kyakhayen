@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { RecipeSeasonality } from "@prisma/client";
 
 import { db } from "@/lib/db";
@@ -34,6 +35,9 @@ export async function DELETE(req: Request, props: { params: Promise<{ recipeId: 
         id: recipeId,
       },
     });
+    if (recipe.isPublished) {
+      revalidatePath("/sitemap.xml");
+    }
     return NextResponse.json(deletedRecipe, { status: 200 });
   } catch (error) {
     console.log("[RECIPE_ID_DELETE]", error);
@@ -202,6 +206,9 @@ export async function PATCH(req: Request, props: { params: Promise<{ recipeId: s
 
       return updatedRecipe;
     });
+    if (recipe.isPublished) {
+      revalidatePath("/sitemap.xml");
+    }
     return NextResponse.json(recipe, { status: 200 });
   } catch (error) {
     console.log("[RECIPE_ID]", error);

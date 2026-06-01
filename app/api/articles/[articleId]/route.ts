@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 
 import { currentUser } from "@/lib/auth";
 import { db } from "@/lib/db";
@@ -43,12 +44,18 @@ export async function DELETE(
       return NextResponse.json("Unauthorized", { status: 401 });
     }
 
-    const post = await db.post.findUnique({ where: { id: articleId }, select: { id: true } });
+    const post = await db.post.findUnique({
+      where: { id: articleId },
+      select: { id: true, isPublished: true },
+    });
     if (!post) {
       return NextResponse.json("Article not found", { status: 404 });
     }
 
     const deletedArticle = await db.post.delete({ where: { id: articleId } });
+    if (post.isPublished) {
+      revalidatePath("/sitemap.xml");
+    }
     try {
       await deleteFolderFromS3(`articles/${articleId}`);
     } catch (storageError) {
@@ -107,6 +114,9 @@ export async function PATCH(
     }
 
     const post = await db.post.update({ where: { id: articleId }, data });
+    if (post.isPublished) {
+      revalidatePath("/sitemap.xml");
+    }
     return NextResponse.json(post);
   } catch (error) {
     console.log("[ARTICLE_ID]", error);
