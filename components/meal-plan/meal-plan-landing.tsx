@@ -62,14 +62,14 @@ export default function MealPlanLanding({
     : benefits[2].description;
 
   return (
-    <main className="bg-[#fffaf2] text-[#2c2118]">
-      <section className="relative overflow-hidden border-b border-[#eadcc8] py-12 sm:py-16 lg:py-20">
+    <main className="bg-[#fffaf2] text-[#2c2118] dark:bg-[#091712] dark:text-[#eef2ec]">
+      <section className="relative overflow-hidden border-b border-[#eadcc8] py-12 dark:border-white/10 sm:py-16 lg:py-20">
         <div className="absolute -right-24 top-10 size-80 rounded-full bg-[#d8893d]/10 blur-3xl" />
         <div className="absolute -left-24 bottom-0 size-72 rounded-full bg-[#b83324]/10 blur-3xl" />
         <Container>
           <div className="relative grid items-center gap-10 lg:grid-cols-[0.95fr_1.05fr]">
             <div>
-              <Badge className="mb-5 bg-[#f7e7c5] px-4 py-2 text-[#7d4d1c] hover:bg-[#f7e7c5]">
+              <Badge className="mb-5 bg-[#f7e7c5] px-4 py-2 text-[#7d4d1c] hover:bg-[#f7e7c5] dark:bg-[#17362d] dark:text-[#e1b366] dark:hover:bg-[#17362d]">
                 <Sparkles className="size-3.5" />
                 {accessLabel}
               </Badge>
@@ -78,12 +78,12 @@ export default function MealPlanLanding({
                   ? "Meals planned around your taste."
                   : "A 7-day meal plan made around your taste."}
               </h1>
-              <p className="mt-5 max-w-xl text-base leading-7 text-[#625447] sm:text-lg">
+              <p className="mt-5 max-w-xl text-base leading-7 text-[#625447] dark:text-[#b5c1bb] sm:text-lg">
                 Pick what you like to cook and eat. We will create a practical
                 weekly plan around your food style, cuisines, exclusions and
                 kitchen comfort.
               </p>
-              <p className="mt-4 text-sm font-medium text-[#8b5530]">
+              <p className="mt-4 text-sm font-medium text-[#8b5530] dark:text-[#e0b36c]">
                 {hasPaidAccess
                   ? "Your membership is ready. Complete food choices to build your plan."
                   : "No medical questions. Everyday food choices only."}
@@ -91,7 +91,9 @@ export default function MealPlanLanding({
               <div className="mt-8 flex flex-wrap gap-3">
                 <Button asChild size="lg" className="h-12 rounded-full px-7">
                   <Link href="/meal-plan/create">
-                    {hasPaidAccess ? "Set up my meal plan" : "Create my 7-day plan"}{" "}
+                    {hasPaidAccess
+                      ? "Set up my meal plan"
+                      : "Create my 7-day plan"}{" "}
                     <ArrowRight className="size-4" />
                   </Link>
                 </Button>
@@ -100,7 +102,7 @@ export default function MealPlanLanding({
                     asChild
                     size="lg"
                     variant="outline"
-                    className="h-12 rounded-full border-[#d9c7b0] bg-white px-7"
+                    className="h-12 rounded-full border-[#d9c7b0] bg-white px-7 dark:border-white/10 dark:bg-[#142b23] dark:text-[#eef2ec] dark:hover:border-[#d9a556]"
                   >
                     <Link href="/auth/login?callbackUrl=%2Fmeal-plan%2Fcreate">
                       I already have an account
@@ -110,15 +112,16 @@ export default function MealPlanLanding({
               </div>
             </div>
             <div className="relative mx-auto w-full max-w-[620px]">
-              <div className="overflow-hidden rounded-[2rem] border border-[#eadcc8] bg-[radial-gradient(circle_at_50%_14%,#fff0d5,transparent_44%),white] px-4 py-6 shadow-xl shadow-[#5c3618]/10 sm:p-7">
+              <div className="overflow-hidden rounded-[2rem] border border-[#eadcc8] bg-[radial-gradient(circle_at_50%_14%,#fff0d5,transparent_44%),white] px-4 py-6 shadow-xl shadow-[#5c3618]/10 dark:border-white/10 dark:bg-[#10241e] dark:shadow-none sm:p-7">
                 <DevicePreview />
               </div>
-              <div className="absolute -bottom-5 left-5 rounded-2xl border border-[#eadcc8] bg-white px-4 py-3 shadow-lg sm:left-10">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#9a6b42]">
+              <div className="absolute -bottom-5 left-5 rounded-2xl border border-[#eadcc8] bg-white px-4 py-3 shadow-lg dark:border-white/10 dark:bg-[#142b23] dark:shadow-none sm:left-10">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#9a6b42] dark:text-[#d7a45d]">
                   {hasPaidAccess ? "Included in membership" : "Plan preview"}
                 </p>
                 <p className="mt-1 flex items-center gap-2 text-sm font-semibold">
-                  <CalendarDays className="size-4 text-primary" /> Personalized meal plan
+                  <CalendarDays className="size-4 text-primary" /> Personalized
+                  meal plan
                 </p>
               </div>
             </div>
@@ -132,13 +135,13 @@ export default function MealPlanLanding({
             {benefits.map(({ icon: Icon, title, description }, index) => (
               <div
                 key={title}
-                className="rounded-[1.5rem] border border-[#eadcc8] bg-white p-6 shadow-sm"
+                className="rounded-[1.5rem] border border-[#eadcc8] bg-white p-6 shadow-sm dark:border-white/10 dark:bg-[#10241e] dark:shadow-none"
               >
-                <span className="mb-5 flex size-11 items-center justify-center rounded-full bg-[#f9edda] text-primary">
+                <span className="mb-5 flex size-11 items-center justify-center rounded-full bg-[#f9edda] text-primary dark:bg-white/10 dark:text-[#e1b366]">
                   <Icon className="size-5" />
                 </span>
                 <h2 className="text-lg font-semibold">{title}</h2>
-                <p className="mt-3 text-sm leading-6 text-[#695b4e]">
+                <p className="mt-3 text-sm leading-6 text-[#695b4e] dark:text-[#b5c1bb]">
                   {index === 2 ? variedPlanDescription : description}
                 </p>
               </div>
@@ -147,7 +150,7 @@ export default function MealPlanLanding({
         </Container>
       </section>
 
-      <section className="border-y border-[#eadcc8] bg-white py-14 sm:py-20">
+      <section className="border-y border-[#eadcc8] bg-white py-14 dark:border-white/10 dark:bg-[#10241e] sm:py-20">
         <Container>
           <div className="grid gap-10 lg:grid-cols-[0.8fr_1.2fr] lg:items-center">
             <div>
@@ -157,7 +160,7 @@ export default function MealPlanLanding({
               <h2 className="mt-4 text-3xl font-semibold">
                 Four choices. Your week is ready.
               </h2>
-              <p className="mt-4 leading-7 text-[#695b4e]">
+              <p className="mt-4 leading-7 text-[#695b4e] dark:text-[#b5c1bb]">
                 Meal planning here is based on everyday food preferences only,
                 so it stays simple, useful and transparent.
               </p>
@@ -166,7 +169,7 @@ export default function MealPlanLanding({
               {steps.map((step, index) => (
                 <div
                   key={step}
-                  className="flex items-center gap-4 rounded-2xl bg-[#fffaf2] p-4"
+                  className="flex items-center gap-4 rounded-2xl bg-[#fffaf2] p-4 dark:bg-[#142b23]"
                 >
                   <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-primary text-sm font-semibold text-white">
                     {index + 1}

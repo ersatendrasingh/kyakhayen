@@ -31,6 +31,10 @@ export default function MealPlanProgressModal({
 }: MealPlanProgressModalProps) {
   if (!open) return null;
 
+  const activeMilestoneIndex = milestones.findIndex(
+    (milestone) => percentage < milestone.limit,
+  );
+
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[#160f0a]/70 px-4 backdrop-blur-md">
       <section className="relative w-full max-w-lg overflow-hidden rounded-[2rem] border border-white/15 bg-[#fffaf2] p-6 text-[#2c2118] shadow-2xl dark:border-white/10 dark:bg-[#10241e] dark:text-[#eef2ec] sm:p-9">
@@ -71,20 +75,37 @@ export default function MealPlanProgressModal({
                   {percentage}%
                 </span>
               </div>
-              <Progress value={percentage} className="mt-4 h-3 bg-[#eddfcc] dark:bg-white/10" />
+              <Progress
+                value={percentage}
+                className="mt-4 h-3 bg-[#eddfcc] dark:bg-white/10"
+              />
               <div className="mt-7 grid grid-cols-4 gap-2">
-                {milestones.map((milestone) => {
+                {milestones.map((milestone, index) => {
                   const done = percentage >= milestone.limit;
+                  const active =
+                    !done &&
+                    (activeMilestoneIndex === index ||
+                      (activeMilestoneIndex === -1 &&
+                        index === milestones.length - 1));
+
                   return (
                     <div key={milestone.text} className="text-center">
                       <span
                         className={`mx-auto flex size-7 items-center justify-center rounded-full text-xs ${
                           done
                             ? "bg-primary text-white"
-                            : "bg-[#eddfcc] text-[#8b7a69] dark:bg-white/10 dark:text-[#aab8b0]"
+                            : active
+                              ? "bg-[#fff2ec] text-primary ring-1 ring-primary/30 dark:bg-white/15 dark:text-[#f3c77c] dark:ring-[#d9a556]/40"
+                              : "bg-[#eddfcc] text-[#8b7a69] dark:bg-white/10 dark:text-[#aab8b0]"
                         }`}
                       >
-                        {done ? <Check className="size-3.5" /> : <Loader2 className="size-3.5" />}
+                        {done ? (
+                          <Check className="size-3.5" />
+                        ) : active ? (
+                          <Loader2 className="size-3.5 animate-spin" />
+                        ) : (
+                          <span className="size-2 rounded-full bg-current/45" />
+                        )}
                       </span>
                       <p className="mt-2 text-[10px] leading-4 text-[#695b4e] dark:text-[#aab8b0]">
                         {milestone.text}

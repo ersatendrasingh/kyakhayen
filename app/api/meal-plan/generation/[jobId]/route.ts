@@ -3,6 +3,10 @@ import { NextResponse } from "next/server";
 import { currentUser } from "@/lib/auth";
 import { getMealPlanQueue } from "@/lib/meal-plan-queue";
 
+const generationStallLimitMs = 5 * 60 * 1000;
+const earlyProgressCutoff = 20;
+const stallWatchedStates = new Set(["active", "waiting", "delayed"]);
+
 export async function GET(
   _request: Request,
   props: { params: Promise<{ jobId: string }> },
@@ -38,11 +42,32 @@ export async function GET(
                 : "Preparing your meal plan",
           };
 
+    const startedAt =
+      typeof job.processedOn === "number"
+        ? job.processedOn
+        : typeof job.timestamp === "number"
+          ? job.timestamp
+          : Date.now();
+    const stalled =
+      job.name === "generateMealPlan" &&
+      stallWatchedStates.has(state) &&
+      Date.now() - startedAt > generationStallLimitMs &&
+      progress.percentage <= earlyProgressCutoff;
+    const responseState = stalled ? "stalled" : state;
+    const stalledMessage =
+      "Meal plan generation is taking too long. Please try again.";
+
     return NextResponse.json({
-      state,
+      state: responseState,
       percentage: state === "completed" ? 100 : progress.percentage,
-      message: state === "completed" ? "Your meal plan is ready" : progress.message,
-      error: state === "failed" ? job.failedReason : null,
+      message:
+        state === "completed"
+          ? "Your meal plan is ready"
+          : stalled
+            ? stalledMessage
+            : progress.message,
+      error:
+        state === "failed" ? job.failedReason : stalled ? stalledMessage : null,
     });
   } finally {
     await queue.close();

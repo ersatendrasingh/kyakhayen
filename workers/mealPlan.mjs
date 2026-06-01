@@ -18,6 +18,12 @@ const APP_URL =
 const MEAL_PLAN_WORKER_SECRET =
   process.env.MEAL_PLAN_WORKER_SECRET ||
   (process.env.NODE_ENV !== "production" ? "local-meal-plan-worker" : "");
+const parsedWorkerTimeoutMs = Number(
+  process.env.MEAL_PLAN_WORKER_TIMEOUT_MS || 420000,
+);
+const WORKER_REQUEST_TIMEOUT_MS = Number.isFinite(parsedWorkerTimeoutMs)
+  ? parsedWorkerTimeoutMs
+  : 420000;
 
 // Define the worker to process the queue
 const worker = new Worker(
@@ -29,7 +35,7 @@ const worker = new Worker(
         job.name === "mealReminder" || job.name === "membershipExpiryReminder";
       const isCampaignJob = job.name === "sendNotificationCampaign";
       console.log(
-        `Starting job ${job.id}: ${isDeliveryJob ? "Delivering meal plan day" : isPushAutomationJob ? "Sending automated push" : isCampaignJob ? "Sending scheduled campaign" : "Generating meal plan"}`
+        `Starting job ${job.id}: ${isDeliveryJob ? "Delivering meal plan day" : isPushAutomationJob ? "Sending automated push" : isCampaignJob ? "Sending scheduled campaign" : "Generating meal plan"}`,
       );
 
       // Update progress to 10%
@@ -40,8 +46,8 @@ const worker = new Worker(
           : isPushAutomationJob
             ? "Preparing reminder notification"
             : isDeliveryJob
-          ? "Preparing daily meal-plan delivery"
-          : "Starting your personalized meal plan",
+              ? "Preparing daily meal-plan delivery"
+              : "Starting your personalized meal plan",
       });
 
       const endpoint = isCampaignJob
@@ -58,15 +64,12 @@ const worker = new Worker(
           : isDeliveryJob
             ? { userId: job.data.userId, date: job.data.date }
             : { userId: job.data.userId, jobId: job.id };
-      const response = await axios.post(
-        `${APP_URL}${endpoint}`,
-        body,
-        {
-          headers: {
-            "x-meal-plan-worker-secret": MEAL_PLAN_WORKER_SECRET,
-          },
+      const response = await axios.post(`${APP_URL}${endpoint}`, body, {
+        timeout: WORKER_REQUEST_TIMEOUT_MS,
+        headers: {
+          "x-meal-plan-worker-secret": MEAL_PLAN_WORKER_SECRET,
         },
-      );
+      });
 
       await job.updateProgress({
         percentage: 100,
@@ -75,12 +78,10 @@ const worker = new Worker(
           : isPushAutomationJob
             ? "Reminder notification delivered"
             : isDeliveryJob
-          ? "Daily meal-plan PDF delivered"
-          : "Your meal plan is ready",
+              ? "Daily meal-plan PDF delivered"
+              : "Your meal plan is ready",
       });
-      console.log(
-        `Job ${job.id}: Progress 100% - complete`
-      );
+      console.log(`Job ${job.id}: Progress 100% - complete`);
 
       return response.data;
     } catch (error) {
@@ -89,13 +90,18 @@ const worker = new Worker(
       throw error; // Re-throw the error to mark the job as failed
     }
   },
-  { connection }
+  {
+    connection,
+    lockDuration: WORKER_REQUEST_TIMEOUT_MS + 60000,
+    stalledInterval: 30000,
+    maxStalledCount: 1,
+  },
 );
 
 // Event listener for when the job is completed
 worker.on("completed", (job, returnvalue) => {
   console.log(
-    `Job ${job.id} completed successfully with result: ${returnvalue}`
+    `Job ${job.id} completed successfully with result: ${returnvalue}`,
   );
 });
 

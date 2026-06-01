@@ -12,7 +12,10 @@ import {
 } from "@/lib/generate-meal-plan-pdf";
 import type { RecipeWithCategory } from "@/types/recipe";
 import { NotificationAutomationTrigger } from "@prisma/client";
-import { scheduleMealPlanDeliveries, scheduleMealReminders } from "@/lib/meal-plan-queue";
+import {
+  scheduleMealPlanDeliveries,
+  scheduleMealReminders,
+} from "@/lib/meal-plan-queue";
 import { runUserAutomationRules } from "@/lib/notification-automations";
 import {
   generateWeeklyMealPlan,
@@ -49,8 +52,7 @@ type MealPlanProgressReporter = (
   message: string,
 ) => Promise<void> | void;
 
-const planDateKey = (date: Date) =>
-  formatISO(date, { representation: "date" });
+const planDateKey = (date: Date) => formatISO(date, { representation: "date" });
 
 const maxPlanStartDate = (candidate: Date, cutoff: Date) =>
   planDateKey(candidate) < planDateKey(cutoff) ? cutoff : candidate;
@@ -181,7 +183,9 @@ export const generateMealPlan = async (
     if (dates.length === 0) {
       throw new Error("Meal plan generation has no current or future dates.");
     }
+    await reportProgress?.(18, "Selecting recipes for your week");
     const weeklyPlan = await generateWeeklyMealPlan(userId, dates);
+    await reportProgress?.(24, "Building your seven-day plan");
     const mealPlanResults: MealPlanResult[] = [];
 
     for (const [index, day] of weeklyPlan.days.entries()) {
@@ -207,7 +211,9 @@ export const generateMealPlan = async (
         mealsByTime: day.mealsByTime,
         routineSlots: day.routineSlots,
       });
-      const percentage = Math.round(18 + ((index + 1) / weeklyPlan.days.length) * 60);
+      const percentage = Math.round(
+        18 + ((index + 1) / weeklyPlan.days.length) * 60,
+      );
       await reportProgress?.(
         percentage,
         `Curating day ${index + 1} of ${weeklyPlan.days.length}`,
@@ -222,8 +228,8 @@ export const generateMealPlan = async (
     try {
       const isPaidAccess = Boolean(
         userPlan?.plan &&
-          ((userPlan.plan.priceInr || 0) > 0 ||
-            (userPlan.plan.priceUsd || 0) > 0),
+        ((userPlan.plan.priceInr || 0) > 0 ||
+          (userPlan.plan.priceUsd || 0) > 0),
       );
       const deliveryDays: PdfMealPlanDay[] = (
         isPaidAccess ? mealPlanResults.slice(0, 1) : mealPlanResults
@@ -276,12 +282,15 @@ export const generateMealPlan = async (
           CustomerMealPlanMail({
             name: user.name || "Member",
             daysIncluded: deliveryDays.length,
-          })
+          }),
         ),
         attachments: [mealPlanAttachment],
       });
     } catch (emailError) {
-      console.error("Meal plan created, but ready email could not be sent:", emailError);
+      console.error(
+        "Meal plan created, but ready email could not be sent:",
+        emailError,
+      );
     }
     try {
       await runUserAutomationRules({

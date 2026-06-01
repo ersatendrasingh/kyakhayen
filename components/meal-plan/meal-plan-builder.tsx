@@ -55,6 +55,7 @@ const emptyDraft: Draft = {
 const storageKey = "mealPlanBuilderDraft";
 const pendingGenerationKey = "mealPlanPendingGeneration";
 const storageVersion = 2;
+const generationStallLimitMs = 3 * 60 * 1000;
 const genericOptionImage = "/assets/images/meal-plan-choice-fallback.svg";
 const fallbackOptionImages: Record<string, string> = {
   mustard: "/assets/images/allergies/mustard.svg",
@@ -77,7 +78,8 @@ const stepDetails = [
   {
     label: "Cuisines",
     title: "Which cuisines do you look forward to?",
-    detail: "Select one or more. We will use these for variety through the week.",
+    detail:
+      "Select one or more. We will use these for variety through the week.",
   },
   {
     label: "Exclusions",
@@ -188,14 +190,33 @@ export default function MealPlanBuilder({
     if (!generationJobId || generationFailed) return;
 
     let cancelled = false;
+    let lastPercentage = -1;
+    let lastMessage = "";
+    let lastChangeAt = Date.now();
+
     const pollStatus = async () => {
       try {
         const response = await axios.get(
           `/api/meal-plan/generation/${generationJobId}`,
         );
         if (cancelled) return;
-        setGenerationProgress(response.data.percentage);
-        setGenerationMessage(response.data.message);
+        const percentage =
+          typeof response.data.percentage === "number"
+            ? response.data.percentage
+            : 0;
+        const message =
+          typeof response.data.message === "string"
+            ? response.data.message
+            : "Preparing your meal plan";
+
+        if (percentage !== lastPercentage || message !== lastMessage) {
+          lastPercentage = percentage;
+          lastMessage = message;
+          lastChangeAt = Date.now();
+        }
+
+        setGenerationProgress(percentage);
+        setGenerationMessage(message);
         if (response.data.state === "completed") {
           window.localStorage.removeItem(storageKey);
           await update();
@@ -205,9 +226,21 @@ export default function MealPlanBuilder({
           }, 550);
           return;
         }
-        if (response.data.state === "failed") {
+        if (
+          response.data.state === "failed" ||
+          response.data.state === "stalled"
+        ) {
           setGenerationMessage(
-            "We could not finish preparing your plan. Please try again.",
+            typeof response.data.error === "string" && response.data.error
+              ? response.data.error
+              : "We could not finish preparing your plan. Please try again.",
+          );
+          setGenerationFailed(true);
+          return;
+        }
+        if (Date.now() - lastChangeAt > generationStallLimitMs) {
+          setGenerationMessage(
+            "This is taking longer than expected. Please try again.",
           );
           setGenerationFailed(true);
           return;
@@ -356,7 +389,11 @@ export default function MealPlanBuilder({
         percentage={generationProgress}
         message={generationMessage}
         failed={generationFailed}
-        progressLabel={hasPaidAccess ? "Preparing your membership plan" : "Preparing seven days"}
+        progressLabel={
+          hasPaidAccess
+            ? "Preparing your membership plan"
+            : "Preparing seven days"
+        }
         onRetry={() => {
           setGenerationJobId(null);
           setGenerationFailed(false);
@@ -399,7 +436,9 @@ export default function MealPlanBuilder({
           </div>
 
           <section className="rounded-[2rem] border border-[#eadcc8] bg-white p-6 shadow-sm dark:border-white/10 dark:bg-[#10241e] dark:shadow-none sm:p-10">
-            <h2 className="text-2xl font-semibold">{stepDetails[step].title}</h2>
+            <h2 className="text-2xl font-semibold">
+              {stepDetails[step].title}
+            </h2>
             <p className="mt-3 max-w-2xl text-sm leading-6 text-[#695b4e] dark:text-[#aab8b0]">
               {stepDetails[step].detail}
             </p>
@@ -510,7 +549,8 @@ export default function MealPlanBuilder({
                         <span
                           className={cn(
                             "mt-3 text-sm font-medium text-[#514136] dark:text-[#e6e8e2]",
-                            active && "font-semibold text-primary dark:text-[#e3b56b]",
+                            active &&
+                              "font-semibold text-primary dark:text-[#e3b56b]",
                           )}
                         >
                           {option.title}

@@ -1,35 +1,24 @@
-"use client";
-
-import { useEffect } from "react";
-import { useRouter } from "next/navigation";
-
-import { RoleGate } from "@/components/auth/role-gate";
 import { AdminShell } from "@/components/admin/admin-shell";
+import { currentUser } from "@/lib/auth";
 import { UserRole } from "@prisma/client";
-import { useCurrentRole } from "@/hooks/use-current-role";
-import { useCurrentUser } from "@/hooks/use-current-user";
+import { redirect } from "next/navigation";
 
 interface AdminLayoutProps {
   children: React.ReactNode;
 }
 
-const AdminLayout = ({ children }: AdminLayoutProps) => {
-  const router = useRouter();
-  const user = useCurrentUser();
-  const role = useCurrentRole();
+const AdminLayout = async ({ children }: AdminLayoutProps) => {
+  const user = await currentUser();
 
-  useEffect(() => {
-    // If user is logged in but not admin, redirect to home page
-    if (user && role !== UserRole.ADMIN) {
-      router.push("/");
-    }
-  }, [user, role, router]);
+  if (!user) {
+    redirect("/auth/login?callbackUrl=%2Fadmin%2Fdashboard");
+  }
 
-  return (
-    <RoleGate allowedRole={UserRole.ADMIN}>
-      <AdminShell>{children}</AdminShell>
-    </RoleGate>
-  );
+  if (user.role !== UserRole.ADMIN) {
+    redirect("/");
+  }
+
+  return <AdminShell>{children}</AdminShell>;
 };
 
 export default AdminLayout;
