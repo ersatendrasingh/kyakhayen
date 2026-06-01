@@ -24,6 +24,13 @@ import {
 } from "@/lib/seo";
 
 const mediaBaseUrl = process.env.NEXT_PUBLIC_MEDIA_URL?.replace(/\/+$/, "");
+const heroVideoKeys = [
+  "media/homepage/hero/20260524/hero-breakfast-prep.mp4",
+  "media/homepage/hero/20260524/hero-food-story-02.mp4",
+  "media/homepage/hero/20260524/hero-food-story-03.mp4",
+  "media/homepage/hero/20260524/hero-food-story-04.mp4",
+  "media/homepage/hero/20260524/hero-food-story-05.mp4",
+];
 const seasonalEditorialKey =
   "media/homepage/discovery/20260524/summer-green-smoothie.webp";
 const ingredientEditorialKey =
@@ -130,6 +137,9 @@ export default async function Home() {
     weekday: "long",
     timeZone: "Asia/Kolkata",
   }).format(tomorrow);
+  const heroVideoUrls = mediaBaseUrl
+    ? heroVideoKeys.map((key) => `${mediaBaseUrl}/${key}`)
+    : [];
   const seasonalEditorialImage = mediaBaseUrl
     ? `${mediaBaseUrl}/${seasonalEditorialKey}`
     : "/assets/images/smoothie.png";
@@ -397,6 +407,7 @@ export default async function Home() {
       />
       <PremiumHomeHero
         catalogRecipeCount={catalogRecipeCount}
+        videoUrls={heroVideoUrls}
       />
       <LazyMembershipPromptModal />
       <HomePreferenceProvider defaultPreference="veg">

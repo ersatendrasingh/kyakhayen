@@ -1,6 +1,8 @@
+"use client";
+
 import { ArrowRight, ChefHat, Flame, Sparkles } from "lucide-react";
-import Image from "next/image";
 import Link from "next/link";
+import { useEffect, useState } from "react";
 
 import Container from "@/components/container";
 import HomeMealPlanAction from "@/components/sections/home-meal-plan-action";
@@ -8,6 +10,7 @@ import { recipeCollectionHref } from "@/lib/recipe-collection-url";
 
 type PremiumHomeHeroProps = {
   catalogRecipeCount: number;
+  videoUrls: string[];
 };
 
 const discoveryLinks = [
@@ -30,25 +33,60 @@ const inspirationCards = [
   },
 ];
 
+const rotatingHighlights = [
+  "Find your perfect plate.",
+  "Cook like a pro chef.",
+  "Find daily meal plans.",
+];
+
+const rotatingEyebrows = [
+  "Comfort food for every mood",
+  "Thoughtfully chosen for your table",
+  "Fresh ideas from your kitchen",
+];
+
 export default function PremiumHomeHero({
   catalogRecipeCount,
+  videoUrls,
 }: PremiumHomeHeroProps) {
-  const activeHighlight = "Find your perfect plate.";
-  const activeEyebrow = "Comfort food for every mood";
+  const [activeVideoIndex, setActiveVideoIndex] = useState(0);
+  const [activeHighlightIndex, setActiveHighlightIndex] = useState(0);
+  const activeVideo = videoUrls[activeVideoIndex];
+  const activeHighlight = rotatingHighlights[activeHighlightIndex];
+  const activeEyebrow = rotatingEyebrows[activeHighlightIndex];
   const growingRecipeCount = `${Math.floor(catalogRecipeCount / 1000)},000+`;
+
+  useEffect(() => {
+    const interval = window.setInterval(() => {
+      setActiveHighlightIndex(
+        (index) => (index + 1) % rotatingHighlights.length,
+      );
+    }, 4600);
+
+    return () => window.clearInterval(interval);
+  }, []);
+
+  const nextVideo = () => {
+    setActiveVideoIndex((index) => (index + 1) % videoUrls.length);
+  };
 
   return (
     <section className="home-hero relative isolate min-h-[calc(100svh-70px)] overflow-hidden lg:h-[clamp(600px,calc(100svh-86px),700px)] lg:min-h-0 xl:h-[clamp(620px,calc(100svh-86px),720px)]">
-      <Image
-        src="/assets/images/home-banner-1.webp"
-        alt=""
-        fill
-        priority
-        fetchPriority="high"
-        quality={72}
-        sizes="100vw"
-        className="home-hero-video absolute inset-0 -z-20 h-full w-full object-cover object-[62%_center] lg:object-center"
-      />
+      {activeVideo && (
+        <video
+          key={activeVideo}
+          className="home-hero-video absolute inset-0 -z-20 h-full w-full object-cover object-[62%_center] lg:object-center"
+          autoPlay
+          muted
+          playsInline
+          preload="metadata"
+          poster="/assets/images/home-banner-1.webp"
+          onEnded={nextVideo}
+          aria-hidden="true"
+        >
+          <source src={activeVideo} type="video/mp4" />
+        </video>
+      )}
       <div className="home-hero-overlay absolute inset-0 -z-10" />
       <div className="home-hero-bottom-fade absolute inset-x-0 bottom-0 -z-10 h-16 bg-gradient-to-t from-background/65 to-transparent" />
 
@@ -122,6 +160,32 @@ export default function PremiumHomeHero({
                 <HomeMealPlanAction variant="hero" />
               </div>
 
+              {videoUrls.length > 1 && (
+                <div className="mt-5 flex items-center gap-3 lg:mt-4">
+                  <span className="text-xs font-medium uppercase tracking-[0.2em] text-white/62">
+                    Food stories
+                  </span>
+                  <div
+                    className="flex gap-2"
+                    aria-label="Select hero food video"
+                  >
+                    {videoUrls.map((videoUrl, index) => (
+                      <button
+                        key={videoUrl}
+                        type="button"
+                        onClick={() => setActiveVideoIndex(index)}
+                        aria-label={`Play food story ${index + 1}`}
+                        aria-current={index === activeVideoIndex}
+                        className={`h-1.5 rounded-full transition-all ${
+                          index === activeVideoIndex
+                            ? "w-8 bg-[#f8d18a]"
+                            : "w-4 bg-white/38 hover:bg-white/62"
+                        }`}
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
           <div className="home-proof-card absolute bottom-10 right-8 hidden w-[278px] rounded-[1.5rem] border border-[#f8d18a]/32 bg-[#17120e]/72 p-5 text-white shadow-2xl shadow-black/25 backdrop-blur-md lg:block xl:bottom-12 xl:right-16">
