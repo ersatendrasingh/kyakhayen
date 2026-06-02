@@ -34,14 +34,17 @@ const worker = new Worker(
       const isPushAutomationJob =
         job.name === "mealReminder" || job.name === "membershipExpiryReminder";
       const isCampaignJob = job.name === "sendNotificationCampaign";
+      const isContentPipelineJob = job.name === "publishContentPipelinePost";
       console.log(
-        `Starting job ${job.id}: ${isDeliveryJob ? "Delivering meal plan day" : isPushAutomationJob ? "Sending automated push" : isCampaignJob ? "Sending scheduled campaign" : "Generating meal plan"}`,
+        `Starting job ${job.id}: ${isContentPipelineJob ? "Publishing scheduled content" : isDeliveryJob ? "Delivering meal plan day" : isPushAutomationJob ? "Sending automated push" : isCampaignJob ? "Sending scheduled campaign" : "Generating meal plan"}`,
       );
 
       // Update progress to 10%
       await job.updateProgress({
         percentage: 5,
-        message: isCampaignJob
+        message: isContentPipelineJob
+          ? "Preparing scheduled content publish"
+          : isCampaignJob
           ? "Preparing scheduled broadcast"
           : isPushAutomationJob
             ? "Preparing reminder notification"
@@ -50,14 +53,18 @@ const worker = new Worker(
               : "Starting your personalized meal plan",
       });
 
-      const endpoint = isCampaignJob
+      const endpoint = isContentPipelineJob
+        ? "/api/admin/content-pipeline/dispatch"
+        : isCampaignJob
         ? "/api/push/dispatch"
         : isPushAutomationJob
           ? "/api/push/automation"
           : isDeliveryJob
             ? "/api/deliver-meal-plan-day"
             : "/api/generate-meal-plan";
-      const body = isCampaignJob
+      const body = isContentPipelineJob
+        ? { kind: "scheduledPost", postId: job.data.postId }
+        : isCampaignJob
         ? { campaignId: job.data.campaignId }
         : isPushAutomationJob
           ? { ...job.data, kind: job.name }
@@ -73,7 +80,9 @@ const worker = new Worker(
 
       await job.updateProgress({
         percentage: 100,
-        message: isCampaignJob
+        message: isContentPipelineJob
+          ? "Scheduled content publish completed"
+          : isCampaignJob
           ? "Scheduled broadcast delivered"
           : isPushAutomationJob
             ? "Reminder notification delivered"

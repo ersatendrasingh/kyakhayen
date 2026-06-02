@@ -54,6 +54,7 @@ const permittedMediaPrefixes = [
   "recipes/",
   "articles/",
   "users/",
+  "content-pipeline/",
 ];
 
 const validUploadedKey = (key: string) =>

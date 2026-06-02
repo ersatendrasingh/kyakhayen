@@ -629,6 +629,113 @@ model NotificationDelivery {
   @@index([userId, createdAt])
 }
 
+enum ContentPipelineScheduleStatus {
+  SCHEDULED
+  PROCESSING
+  COMPLETED
+  PARTIAL_FAILED
+  FAILED
+  CANCELLED
+  SKIPPED
+}
+
+enum ContentPipelineScheduleSource {
+  MANUAL
+  AUTOMATION
+}
+
+enum ContentPipelineRecipeSource {
+  LATEST_READY
+}
+
+model ContentPipelineAutomationRule {
+  id              String                         @id @default(cuid())
+  name            String
+  isActive        Boolean                        @default(true)
+  platforms       Json
+  timeSlots       Json
+  daysOfWeek      Json?
+  timezone        String                         @default("Asia/Kolkata")
+  recipeSource    ContentPipelineRecipeSource    @default(LATEST_READY)
+  lastScheduledAt DateTime?
+  createdById     String?
+  createdByName   String?
+  scheduledPosts  ContentPipelineScheduledPost[]
+  createdAt       DateTime                       @default(now())
+  updatedAt       DateTime                       @updatedAt
+
+  @@index([isActive, createdAt])
+}
+
+model ContentPipelineScheduledPost {
+  id               String                          @id @default(cuid())
+  recipeId         String?
+  recipeTitle      String                          @db.Text
+  recipeUrl        String                          @db.VarChar(700)
+  imageUrl         String?                         @db.VarChar(700)
+  videoUrl         String?                         @db.VarChar(700)
+  platforms        Json
+  contentJson      Json
+  status           ContentPipelineScheduleStatus   @default(SCHEDULED)
+  source           ContentPipelineScheduleSource   @default(MANUAL)
+  scheduledAt      DateTime
+  processedAt      DateTime?
+  lastError        String?                         @db.Text
+  attempts         Int                             @default(0)
+  createdById      String?
+  createdByName    String?
+  automationRuleId String?
+  automationRule   ContentPipelineAutomationRule?  @relation(fields: [automationRuleId], references: [id], onDelete: SetNull)
+  publishAttempts  ContentPipelinePublishAttempt[]
+  createdAt        DateTime                        @default(now())
+  updatedAt        DateTime                        @updatedAt
+
+  @@index([status, scheduledAt])
+  @@index([automationRuleId, scheduledAt])
+  @@index([recipeId, scheduledAt])
+}
+
+model ContentPipelinePublishAttempt {
+  id              String                       @id @default(cuid())
+  scheduledPostId String
+  scheduledPost   ContentPipelineScheduledPost @relation(fields: [scheduledPostId], references: [id], onDelete: Cascade)
+  platform        String                       @db.VarChar(64)
+  status          String                       @db.VarChar(64)
+  message         String                       @db.Text
+  externalId      String?
+  externalUrl     String?                      @db.VarChar(700)
+  reactionCount   Int?
+  commentCount    Int?
+  shareCount      Int?
+  viewCount       Int?
+  metricsSyncedAt DateTime?
+  createdAt       DateTime                     @default(now())
+
+  @@index([scheduledPostId])
+  @@index([platform, status])
+}
+
+model ContentPipelineSocialCredential {
+  id                     String    @id @default(cuid())
+  provider               String    @unique @db.VarChar(64)
+  environment            String    @db.VarChar(32)
+  boardId                String?
+  accessTokenCiphertext  String?   @db.Text
+  refreshTokenCiphertext String?   @db.Text
+  tokenType              String?   @db.VarChar(64)
+  scope                  String?   @db.VarChar(700)
+  accessTokenExpiresAt   DateTime?
+  refreshTokenExpiresAt  DateTime?
+  connectedAccountId     String?
+  connectedAccountName   String?
+  connectedById          String?
+  connectedByName        String?
+  createdAt              DateTime  @default(now())
+  updatedAt              DateTime  @updatedAt
+
+  @@index([provider, environment])
+}
+
 model UserPlan {
   id        String    @id @default(uuid())
   userId    String

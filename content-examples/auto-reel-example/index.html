@@ -1,0 +1,441 @@
+<!doctype html>
+<html lang="hi">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Kyakhayen Auto Reel Example</title>
+    <style>
+      :root {
+        --ink: #211712;
+        --paper: #fff8ec;
+        --tomato: #d94833;
+        --leaf: #348f4b;
+        --mustard: #f3b33d;
+        --charcoal: #14100d;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        min-height: 100vh;
+        margin: 0;
+        display: grid;
+        place-items: center;
+        background:
+          radial-gradient(circle at 20% 18%, rgba(243, 179, 61, 0.28), transparent 28%),
+          linear-gradient(145deg, #fff6e6, #f7d9b8 55%, #eec8a5);
+        color: var(--ink);
+        font-family:
+          Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+          sans-serif;
+      }
+
+      .page {
+        width: min(1120px, 100%);
+        padding: 28px;
+        display: grid;
+        grid-template-columns: minmax(320px, 420px) minmax(280px, 1fr);
+        gap: 32px;
+        align-items: center;
+      }
+
+      .phone {
+        width: min(420px, calc(100vw - 56px));
+        aspect-ratio: 9 / 16;
+        position: relative;
+        overflow: hidden;
+        border: 10px solid #1c1714;
+        border-radius: 34px;
+        background: #17100c;
+        box-shadow: 0 28px 70px rgba(71, 40, 20, 0.28);
+      }
+
+      .reel {
+        position: absolute;
+        inset: 0;
+        overflow: hidden;
+        background: var(--charcoal);
+      }
+
+      .food {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        opacity: 0.88;
+        transform: scale(1.12);
+        animation: slowZoom 24s linear infinite;
+      }
+
+      .shade {
+        position: absolute;
+        inset: 0;
+        background:
+          linear-gradient(180deg, rgba(0, 0, 0, 0.44), transparent 26%),
+          linear-gradient(0deg, rgba(0, 0, 0, 0.78), transparent 48%),
+          radial-gradient(circle at 50% 44%, transparent 0, rgba(0, 0, 0, 0.18) 62%);
+      }
+
+      .brand {
+        position: absolute;
+        top: 20px;
+        left: 18px;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        z-index: 5;
+        color: white;
+        font-size: 14px;
+        font-weight: 800;
+        letter-spacing: 0;
+        text-shadow: 0 2px 10px rgba(0, 0, 0, 0.36);
+      }
+
+      .brand-mark {
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        display: grid;
+        place-items: center;
+        background: var(--mustard);
+        color: #31160b;
+        font-size: 17px;
+      }
+
+      .scene {
+        position: absolute;
+        inset: auto 20px 96px;
+        opacity: 0;
+        transform: translateY(22px) scale(0.98);
+        animation: sceneIn 24s infinite;
+        z-index: 4;
+      }
+
+      .scene-1 {
+        animation-delay: 0s;
+      }
+
+      .scene-2 {
+        animation-delay: 4s;
+      }
+
+      .scene-3 {
+        animation-delay: 8s;
+      }
+
+      .scene-4 {
+        animation-delay: 12s;
+      }
+
+      .scene-5 {
+        animation-delay: 16s;
+      }
+
+      .scene-6 {
+        animation-delay: 20s;
+      }
+
+      .eyebrow {
+        width: fit-content;
+        max-width: 100%;
+        margin-bottom: 10px;
+        padding: 7px 11px;
+        border-radius: 999px;
+        background: rgba(255, 248, 236, 0.94);
+        color: #512414;
+        font-size: 12px;
+        font-weight: 900;
+        text-transform: uppercase;
+      }
+
+      h1,
+      h2 {
+        margin: 0;
+        color: white;
+        font-weight: 950;
+        letter-spacing: 0;
+        line-height: 0.95;
+        text-shadow: 0 4px 24px rgba(0, 0, 0, 0.58);
+      }
+
+      h1 {
+        font-size: 48px;
+      }
+
+      h2 {
+        font-size: 38px;
+      }
+
+      .copy {
+        margin: 12px 0 0;
+        color: rgba(255, 255, 255, 0.94);
+        font-size: 20px;
+        font-weight: 740;
+        line-height: 1.24;
+        text-shadow: 0 3px 16px rgba(0, 0, 0, 0.5);
+      }
+
+      .chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 14px;
+      }
+
+      .chip {
+        padding: 8px 10px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.9);
+        color: #3b1d12;
+        font-size: 13px;
+        font-weight: 850;
+      }
+
+      .cta {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        margin-top: 14px;
+        padding: 12px 14px;
+        border-radius: 999px;
+        background: var(--tomato);
+        color: white;
+        font-size: 15px;
+        font-weight: 900;
+        box-shadow: 0 12px 30px rgba(217, 72, 51, 0.36);
+      }
+
+      .progress {
+        position: absolute;
+        left: 16px;
+        right: 16px;
+        bottom: 22px;
+        height: 5px;
+        overflow: hidden;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.24);
+        z-index: 6;
+      }
+
+      .bar {
+        width: 100%;
+        height: 100%;
+        transform-origin: left;
+        background: linear-gradient(90deg, var(--mustard), #fff4b5);
+        animation: progress 24s linear infinite;
+      }
+
+      .meta {
+        display: grid;
+        gap: 18px;
+      }
+
+      .meta h2 {
+        color: var(--ink);
+        font-size: 34px;
+        line-height: 1.05;
+        text-shadow: none;
+      }
+
+      .meta p {
+        margin: 0;
+        max-width: 560px;
+        color: #5d4436;
+        font-size: 16px;
+        line-height: 1.6;
+      }
+
+      .panel {
+        padding: 20px;
+        border: 1px solid rgba(91, 55, 26, 0.14);
+        border-radius: 8px;
+        background: rgba(255, 252, 244, 0.76);
+        box-shadow: 0 20px 52px rgba(111, 69, 31, 0.14);
+      }
+
+      .panel h3 {
+        margin: 0 0 12px;
+        font-size: 14px;
+        text-transform: uppercase;
+        color: #8a422d;
+      }
+
+      ol {
+        margin: 0;
+        padding-left: 22px;
+        color: #49352b;
+        line-height: 1.58;
+      }
+
+      button {
+        width: fit-content;
+        border: 0;
+        border-radius: 999px;
+        padding: 12px 16px;
+        background: var(--leaf);
+        color: white;
+        font: inherit;
+        font-size: 15px;
+        font-weight: 850;
+        cursor: pointer;
+        box-shadow: 0 12px 30px rgba(52, 143, 75, 0.26);
+      }
+
+      button:hover {
+        background: #27783d;
+      }
+
+      @keyframes sceneIn {
+        0%,
+        14% {
+          opacity: 1;
+          transform: translateY(0) scale(1);
+        }
+
+        16%,
+        100% {
+          opacity: 0;
+          transform: translateY(-14px) scale(1);
+        }
+      }
+
+      @keyframes progress {
+        from {
+          transform: scaleX(0);
+        }
+
+        to {
+          transform: scaleX(1);
+        }
+      }
+
+      @keyframes slowZoom {
+        from {
+          transform: scale(1.08);
+        }
+
+        to {
+          transform: scale(1.2);
+        }
+      }
+
+      @media (max-width: 800px) {
+        .page {
+          grid-template-columns: 1fr;
+          padding: 18px;
+        }
+
+        .phone {
+          justify-self: center;
+        }
+
+        h1 {
+          font-size: 40px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="page">
+      <section class="phone" aria-label="Automated recipe reel preview">
+        <div class="reel">
+          <img
+            class="food"
+            src="../../public/assets/images/membership-prompt/saute-cabbage-onions.webp"
+            alt="Patta gobi sabzi"
+          />
+          <div class="shade"></div>
+          <div class="brand">
+            <span class="brand-mark">K</span>
+            <span>Kya Khayen?</span>
+          </div>
+
+          <article class="scene scene-1">
+            <div class="eyebrow">Auto Reel Hook</div>
+            <h1>10 minute wali patta gobi sabzi</h1>
+            <p class="copy">Lunch box ke liye light, tasty aur ghar-jaisi.</p>
+          </article>
+
+          <article class="scene scene-2">
+            <div class="eyebrow">Ingredients</div>
+            <h2>Bas ye chahiye</h2>
+            <div class="chips">
+              <span class="chip">Patta gobi</span>
+              <span class="chip">Rai</span>
+              <span class="chip">Hari mirch</span>
+              <span class="chip">Haldi</span>
+              <span class="chip">Nariyal</span>
+            </div>
+          </article>
+
+          <article class="scene scene-3">
+            <div class="eyebrow">Step 1</div>
+            <h2>Tadka ready</h2>
+            <p class="copy">Oil garam karo, rai aur hari mirch ka quick tadka lagao.</p>
+          </article>
+
+          <article class="scene scene-4">
+            <div class="eyebrow">Step 2</div>
+            <h2>Gobi toss karo</h2>
+            <p class="copy">Patta gobi, namak aur haldi add karke 6-7 minute cook karo.</p>
+          </article>
+
+          <article class="scene scene-5">
+            <div class="eyebrow">Step 3</div>
+            <h2>Fresh finish</h2>
+            <p class="copy">Nariyal aur dhaniya se garnish karo. Simple, fresh, ready.</p>
+          </article>
+
+          <article class="scene scene-6">
+            <div class="eyebrow">CTA</div>
+            <h2>Aaj lunch mein try karo</h2>
+            <div class="cta">Save recipe on Kyakhayen</div>
+          </article>
+
+          <div class="progress" aria-hidden="true">
+            <div class="bar"></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="meta">
+        <h2>Automated template reel example</h2>
+        <p>
+          Ye sample real cooking shoot ke bina ban sakta hai. Recipe database se title,
+          ingredients, steps aur cook time aate hain. AI hook, short voiceover, captions
+          aur CTA generate karta hai. Template engine image ke upar animated scenes
+          assemble karta hai.
+        </p>
+
+        <button type="button" id="speak">Play sample voiceover</button>
+
+        <div class="panel">
+          <h3>Voiceover script</h3>
+          <ol>
+            <li>10 minute mein banne wali simple patta gobi sabzi.</li>
+            <li>Sabse pehle oil garam karke rai aur hari mirch ka tadka lagao.</li>
+            <li>Ab patta gobi, namak aur haldi add karke 6 se 7 minute cook karo.</li>
+            <li>End mein nariyal aur dhaniya daalo.</li>
+            <li>Bas, light aur tasty sabzi ready. Recipe save kar lo.</li>
+          </ol>
+        </div>
+      </section>
+    </main>
+
+    <script>
+      const script =
+        "10 minute mein banne wali simple patta gobi sabzi. Sabse pehle oil garam karke rai aur hari mirch ka tadka lagao. Ab patta gobi, namak aur haldi add karke 6 se 7 minute cook karo. End mein nariyal aur dhaniya daalo. Bas, light aur tasty sabzi ready. Recipe save kar lo.";
+
+      document.querySelector("#speak").addEventListener("click", () => {
+        window.speechSynthesis.cancel();
+        const utterance = new SpeechSynthesisUtterance(script);
+        utterance.lang = "hi-IN";
+        utterance.rate = 1.02;
+        window.speechSynthesis.speak(utterance);
+      });
+    </script>
+  </body>
+</html>

@@ -31,6 +31,7 @@ type MultipartRequest = {
   recipeTypeId?: string | null;
   ingredientId?: string | null;
   ingredientCategoryId?: string | null;
+  contentPipeline?: boolean;
   key?: string;
   uploadId?: string;
   partNumber?: number;
@@ -60,14 +61,20 @@ const uploadPrefixes = [
   "ingredientCategories/",
   "recipes/",
   "articles/",
+  "content-pipeline/",
 ];
 
 const validAdminKey = (key: string | undefined) =>
   Boolean(key && uploadPrefixes.some((prefix) => key.startsWith(prefix)) && !key.includes(".."));
 
+const normalizeVideoType = (fileType: string | undefined) =>
+  fileType?.split(";")[0]?.trim().toLowerCase() ?? "";
+
 const resolvePrefix = (values: MultipartRequest) =>
   values.library
     ? "media"
+    : values.contentPipeline
+      ? "content-pipeline/reels"
     : values.categoryId
       ? `categories/${values.categoryId}`
       : values.cookingMethodId
@@ -111,10 +118,10 @@ export async function POST(req: Request) {
     const values = (await req.json()) as MultipartRequest;
 
     if (values.action === "create") {
+      const fileType = normalizeVideoType(values.fileType);
       if (
         !values.fileName ||
-        !values.fileType ||
-        !supportedVideoTypes.has(values.fileType)
+        !supportedVideoTypes.has(fileType)
       ) {
         return NextResponse.json("Multipart video upload is not supported for this request.", {
           status: 400,
@@ -130,7 +137,7 @@ export async function POST(req: Request) {
       const key = `${prefix}/${randomUUID()}-${safeName}`;
 
       return NextResponse.json(
-        await createMultipartMediaUpload(key, values.fileType),
+        await createMultipartMediaUpload(key, fileType),
         { status: 201 }
       );
     }

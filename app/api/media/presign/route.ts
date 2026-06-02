@@ -34,6 +34,7 @@ type PresignRequest = {
   recipeTypeId?: string | null;
   ingredientId?: string | null;
   ingredientCategoryId?: string | null;
+  contentPipeline?: boolean;
   library?: boolean;
 };
 
@@ -81,6 +82,8 @@ export async function POST(req: Request) {
 
       prefix = values.library
         ? "media"
+        : values.contentPipeline
+        ? "content-pipeline/reels"
         : values.categoryId
         ? `categories/${values.categoryId}`
         : values.cookingMethodId

@@ -18,6 +18,7 @@ export type MediaDestination = {
   recipeTypeId?: string;
   ingredientId?: string;
   ingredientCategoryId?: string;
+  contentPipeline?: boolean;
   library?: boolean;
 };
 

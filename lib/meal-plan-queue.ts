@@ -123,3 +123,22 @@ export async function scheduleNotificationCampaign(campaignId: string, scheduled
     await queue.close();
   }
 }
+
+export async function scheduleContentPipelinePost(postId: string, scheduledAt: Date) {
+  const queue = getMealPlanQueue();
+  try {
+    await queue.add(
+      "publishContentPipelinePost",
+      { postId },
+      {
+        delay: Math.max(scheduledAt.getTime() - Date.now(), 0),
+        jobId: `content-pipeline-post-${postId}`,
+        attempts: 2,
+        backoff: { type: "exponential", delay: 30000 },
+        removeOnComplete: true,
+      },
+    );
+  } finally {
+    await queue.close();
+  }
+}

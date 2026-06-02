@@ -3,6 +3,7 @@ import {
   BadgeDollarSign,
   BellRing,
   CookingPot,
+  Clapperboard,
   LayoutDashboard,
   MessageSquareCode,
   Newspaper,
@@ -85,6 +86,15 @@ export const adminNavigation: AdminNavigationGroup[] = [
         title: "Media Library",
         href: "/admin/media",
         icon: Images,
+      },
+      {
+        title: "Content Pipeline",
+        href: "/admin/content-pipeline",
+        icon: Clapperboard,
+        children: [
+          { title: "Creator Studio", href: "/admin/content-pipeline" },
+          { title: "Automation", href: "/admin/content-pipeline/automation" },
+        ],
       },
     ],
   },

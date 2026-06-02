@@ -41,6 +41,8 @@ const labels: Record<string, string> = {
   users: "Users",
   "contact-queries": "Contact Queries",
   create: "Create",
+  "content-pipeline": "Content Pipeline",
+  automation: "Automation",
 };
 
 function formatSegment(segment: string) {
