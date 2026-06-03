@@ -78,10 +78,13 @@ export function pinterestEnvironmentLabel() {
 }
 
 export function pinterestRedirectUri(origin?: string) {
-  return (
-    process.env.PINTEREST_REDIRECT_URI ||
-    `${origin || process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/api/admin/content-pipeline/pinterest/oauth/callback`
-  );
+  const configuredRedirect = process.env.PINTEREST_REDIRECT_URI?.replace(/\/$/, "");
+  if (configuredRedirect) return configuredRedirect;
+
+  const configuredOrigin =
+    process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_APP_URL || origin || "http://localhost:3000";
+
+  return `${configuredOrigin.replace(/\/$/, "")}/api/admin/content-pipeline/pinterest/oauth/callback`;
 }
 
 function encryptionSecret() {
