@@ -33,7 +33,7 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import { toast } from "sonner";
 
 import {
@@ -100,6 +100,7 @@ type PinterestBoardSummary = {
 };
 
 type PinterestBoardsResponse = {
+  board?: PinterestBoardSummary;
   boards?: PinterestBoardSummary[];
   selectedBoardId?: string | null;
 };
@@ -542,6 +543,8 @@ export function ContentPipelineDashboard({
   const [socialSetup, setSocialSetup] = useState(initialSocialSetup);
   const [pinterestBoards, setPinterestBoards] = useState<PinterestBoardSummary[]>([]);
   const [pinterestBoardLoading, setPinterestBoardLoading] = useState(false);
+  const [pinterestBoardsChecked, setPinterestBoardsChecked] = useState(false);
+  const [pinterestBoardCreating, setPinterestBoardCreating] = useState(false);
   const [pinterestBoardSaving, setPinterestBoardSaving] = useState(false);
   const [selectedPinterestBoardId, setSelectedPinterestBoardId] = useState(
     () =>
@@ -1315,7 +1318,7 @@ export function ContentPipelineDashboard({
     }
   };
 
-  const refreshSocialSetup = async () => {
+  const refreshSocialSetup = useCallback(async () => {
     const response = await fetch("/api/admin/content-pipeline/social-setup");
     const payload = await readResponsePayload<SocialSetupStatus>(
       response,
@@ -1328,9 +1331,9 @@ export function ContentPipelineDashboard({
     const pinterestPlatform = payload.platforms.find((platform) => platform.key === "pinterest");
     setSelectedPinterestBoardId(pinterestPlatform?.selectedBoardId ?? "");
     return payload;
-  };
+  }, []);
 
-  const loadPinterestBoards = async () => {
+  const loadPinterestBoards = useCallback(async () => {
     try {
       setPinterestBoardLoading(true);
       const response = await fetch("/api/admin/content-pipeline/pinterest/boards");
@@ -1344,14 +1347,51 @@ export function ContentPipelineDashboard({
 
       const boards = payload.boards ?? [];
       setPinterestBoards(boards);
+      setPinterestBoardsChecked(true);
       setSelectedPinterestBoardId(payload.selectedBoardId ?? boards[0]?.id ?? "");
       if (!boards.length) {
-        toast.info("No Pinterest boards found for this account.");
+        const pinterestPlatform = socialSetup.platforms.find(
+          (platform) => platform.key === "pinterest"
+        );
+        toast.info(
+          pinterestPlatform?.environment === "sandbox"
+            ? "No Sandbox boards found. Create one here to test Pinterest publishing."
+            : "No Pinterest boards found for this account."
+        );
       }
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Unable to load Pinterest boards.");
     } finally {
       setPinterestBoardLoading(false);
+    }
+  }, [socialSetup.platforms]);
+
+  const createPinterestDefaultBoard = async () => {
+    try {
+      setPinterestBoardCreating(true);
+      const response = await fetch("/api/admin/content-pipeline/pinterest/boards", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "create_default", name: "Kya Khayen Recipes" }),
+      });
+      const payload = await readResponsePayload<PinterestBoardsResponse>(
+        response,
+        "Unable to create Pinterest board."
+      );
+      if (!response.ok || typeof payload === "string") {
+        throw new Error(responseMessage(payload, "Unable to create Pinterest board."));
+      }
+
+      const boards = payload.boards ?? (payload.board ? [payload.board] : []);
+      setPinterestBoards(boards);
+      setPinterestBoardsChecked(true);
+      setSelectedPinterestBoardId(payload.selectedBoardId ?? payload.board?.id ?? "");
+      await refreshSocialSetup();
+      toast.success("Pinterest board created and selected.");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Unable to create Pinterest board.");
+    } finally {
+      setPinterestBoardCreating(false);
     }
   };
 
@@ -1406,7 +1446,7 @@ export function ContentPipelineDashboard({
     }
 
     toast.error("Pinterest connection failed.");
-  }, []);
+  }, [loadPinterestBoards, refreshSocialSetup]);
 
   const activePlatformMeta = PLATFORMS.find((platform) => platform.key === activePlatform);
   const currentPlatformNeedsApproval = VIDEO_POST_PLATFORMS.includes(activePlatform);
@@ -1704,59 +1744,86 @@ export function ContentPipelineDashboard({
                   </Button>
                 )}
                 {platform.key === "pinterest" && platform.connected && (
-                <div className="mt-3 rounded-lg border border-white/70 bg-white/70 p-2 dark:border-white/10 dark:bg-black/15">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="xs"
-                      className="bg-white/80 dark:bg-black/20"
-                      onClick={() => void loadPinterestBoards()}
-                      disabled={pinterestBoardLoading}
-                    >
-                      {pinterestBoardLoading ? (
-                        <LoaderCircle className="mr-1.5 size-3 animate-spin" />
-                      ) : (
-                        <Bookmark className="mr-1.5 size-3" />
-                      )}
-                      Load boards
-                    </Button>
-                    {platform.selectedBoardId && (
-                      <span className="text-[11px] font-medium opacity-75">Board selected</span>
-                    )}
-                  </div>
-                  {pinterestBoards.length > 0 && (
-                    <div className="mt-2 grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto]">
-                      <select
-                        value={selectedPinterestBoardId}
-                        onChange={(event) => setSelectedPinterestBoardId(event.target.value)}
-                        className="h-9 min-w-0 rounded-md border border-[#eadcc8] bg-white px-2 text-xs font-medium text-[#30261f] outline-none ring-offset-background focus-visible:ring-2 focus-visible:ring-ring dark:border-white/10 dark:bg-black/20 dark:text-white"
-                      >
-                        {pinterestBoards.map((board) => (
-                          <option key={board.id} value={board.id}>
-                            {board.name}
-                          </option>
-                        ))}
-                      </select>
+                  <div className="mt-3 rounded-lg border border-white/70 bg-white/70 p-2 dark:border-white/10 dark:bg-black/15">
+                    <div className="flex flex-wrap items-center gap-2">
                       <Button
                         type="button"
                         variant="outline"
                         size="xs"
-                        className="h-9 bg-white/80 dark:bg-black/20"
-                        onClick={() => void savePinterestBoard()}
-                        disabled={pinterestBoardSaving}
+                        className="bg-white/80 dark:bg-black/20"
+                        onClick={() => void loadPinterestBoards()}
+                        disabled={pinterestBoardLoading || pinterestBoardCreating}
                       >
-                        {pinterestBoardSaving ? (
+                        {pinterestBoardLoading ? (
                           <LoaderCircle className="mr-1.5 size-3 animate-spin" />
                         ) : (
-                          <CheckCircle2 className="mr-1.5 size-3" />
+                          <Bookmark className="mr-1.5 size-3" />
                         )}
-                        Save
+                        Load boards
                       </Button>
+                      {platform.environment === "sandbox" &&
+                        pinterestBoardsChecked &&
+                        pinterestBoards.length === 0 && (
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="xs"
+                            className="bg-white/80 dark:bg-black/20"
+                            onClick={() => void createPinterestDefaultBoard()}
+                            disabled={pinterestBoardCreating || pinterestBoardLoading}
+                          >
+                            {pinterestBoardCreating ? (
+                              <LoaderCircle className="mr-1.5 size-3 animate-spin" />
+                            ) : (
+                              <Plus className="mr-1.5 size-3" />
+                            )}
+                            Create sandbox board
+                          </Button>
+                        )}
+                      {platform.selectedBoardId && (
+                        <span className="text-[11px] font-medium opacity-75">Board selected</span>
+                      )}
                     </div>
-                  )}
-                </div>
-              )}
+                    {platform.environment === "sandbox" &&
+                      pinterestBoardsChecked &&
+                      pinterestBoards.length === 0 && (
+                        <p className="mt-2 text-[11px] leading-4 opacity-75">
+                          Sandbox boards are separate from your real Pinterest account. Create one
+                          sandbox board here for trial Pin publishing.
+                        </p>
+                      )}
+                    {pinterestBoards.length > 0 && (
+                      <div className="mt-2 grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto]">
+                        <select
+                          value={selectedPinterestBoardId}
+                          onChange={(event) => setSelectedPinterestBoardId(event.target.value)}
+                          className="h-9 min-w-0 rounded-md border border-[#eadcc8] bg-white px-2 text-xs font-medium text-[#30261f] outline-none ring-offset-background focus-visible:ring-2 focus-visible:ring-ring dark:border-white/10 dark:bg-black/20 dark:text-white"
+                        >
+                          {pinterestBoards.map((board) => (
+                            <option key={board.id} value={board.id}>
+                              {board.name}
+                            </option>
+                          ))}
+                        </select>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="xs"
+                          className="h-9 bg-white/80 dark:bg-black/20"
+                          onClick={() => void savePinterestBoard()}
+                          disabled={pinterestBoardSaving}
+                        >
+                          {pinterestBoardSaving ? (
+                            <LoaderCircle className="mr-1.5 size-3 animate-spin" />
+                          ) : (
+                            <CheckCircle2 className="mr-1.5 size-3" />
+                          )}
+                          Save
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             );
           })}

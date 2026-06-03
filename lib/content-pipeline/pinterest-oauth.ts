@@ -54,6 +54,7 @@ type PinterestBoardResponse = {
   id?: string;
   name?: string;
   privacy?: string;
+  message?: string;
 };
 
 type PinterestBoardsResponse = {
@@ -421,6 +422,41 @@ export async function listPinterestBoards(): Promise<PinterestBoardSummary[]> {
     }));
 }
 
+export async function createPinterestBoard(name = "Kya Khayen Recipes") {
+  const accessToken = await getPinterestAccessToken();
+  if (!accessToken) {
+    throw new Error("Connect Pinterest OAuth before creating a board.");
+  }
+
+  const response = await fetch(`${pinterestApiBaseUrl()}/boards`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      name,
+      description: "Recipe Pins published from Kya Khayen.",
+      privacy: "PUBLIC",
+    }),
+  });
+  const json = (await response.json().catch(() => null)) as PinterestBoardResponse | null;
+  if (!response.ok || !json?.id || !json.name) {
+    throw new Error(
+      json?.message ||
+        `Pinterest ${pinterestEnvironmentLabel()} board create failed with ${response.status}.`
+    );
+  }
+
+  const board = {
+    id: json.id,
+    name: json.name,
+    privacy: json.privacy || null,
+  };
+  await setPinterestBoardId(board.id);
+  return board;
+}
+
 export async function getPinterestCredentialStatus() {
   const row = await findPinterestCredential().catch(() => null);
   const boardId = row?.boardId || "";
@@ -440,6 +476,7 @@ export async function getPinterestCredentialStatus() {
   return {
     configured: missing.length === 0,
     connected,
+    environment: row?.environment || pinterestEnvironment(),
     missing,
     scope: row?.scope || null,
     accessTokenExpiresAt: row?.accessTokenExpiresAt?.toISOString() || null,

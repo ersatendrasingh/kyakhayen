@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 
 import { currentUser } from "@/lib/auth";
 import {
+  createPinterestBoard,
   getPinterestBoardId,
   listPinterestBoards,
   setPinterestBoardId,
@@ -41,7 +42,25 @@ export async function POST(request: Request) {
     return NextResponse.json("Unauthorized", { status: 401 });
   }
 
-  const body = (await request.json().catch(() => null)) as { boardId?: unknown } | null;
+  const body = (await request.json().catch(() => null)) as {
+    action?: unknown;
+    boardId?: unknown;
+    name?: unknown;
+  } | null;
+  if (body?.action === "create_default") {
+    try {
+      const board = await createPinterestBoard(
+        typeof body.name === "string" && body.name.trim() ? body.name.trim() : undefined
+      );
+      const boards = await listPinterestBoards();
+      return NextResponse.json({ board, boards, selectedBoardId: board.id });
+    } catch (error) {
+      return NextResponse.json(errorMessage(error, "Unable to create Pinterest board."), {
+        status: 400,
+      });
+    }
+  }
+
   const boardId = typeof body?.boardId === "string" ? body.boardId.trim() : "";
   if (!boardId) {
     return NextResponse.json("Choose a Pinterest board.", { status: 400 });

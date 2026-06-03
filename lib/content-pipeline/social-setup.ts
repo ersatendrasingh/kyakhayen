@@ -17,6 +17,7 @@ export type SocialSetupPlatform = {
   note: string;
   setupUrl?: string;
   connected?: boolean;
+  environment?: string | null;
   selectedBoardId?: string | null;
 };
 
@@ -103,6 +104,7 @@ export async function getSocialSetupStatus(): Promise<SocialSetupStatus> {
         missing: pinterestStatus.missing,
         setupUrl: "/api/admin/content-pipeline/pinterest/oauth/start",
         connected: pinterestStatus.connected,
+        environment: pinterestStatus.environment,
         selectedBoardId: pinterestStatus.boardId,
         note: pinterestStatus.connected
           ? `Connected${pinterestStatus.connectedAccountName ? ` as ${pinterestStatus.connectedAccountName}` : ""}. ${
