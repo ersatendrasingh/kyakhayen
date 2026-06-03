@@ -8,8 +8,15 @@ import {
 
 const STATE_COOKIE = "kyakhayen_pinterest_oauth_state";
 
+function publicAppOrigin(request: Request) {
+  const configuredOrigin =
+    process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_APP_URL;
+  if (configuredOrigin) return configuredOrigin.replace(/\/$/, "");
+  return new URL(request.url).origin;
+}
+
 function redirectToPipeline(request: Request, params: Record<string, string>) {
-  const url = new URL("/admin/content-pipeline", request.url);
+  const url = new URL("/admin/content-pipeline", publicAppOrigin(request));
   Object.entries(params).forEach(([key, value]) => url.searchParams.set(key, value));
   return NextResponse.redirect(url);
 }
