@@ -63,6 +63,13 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 
@@ -105,6 +112,24 @@ type PinterestBoardsResponse = {
   selectedBoardId?: string | null;
 };
 
+type CartesiaVoiceSummary = {
+  id: string;
+  name: string;
+  description?: string | null;
+  gender?: string | null;
+  language?: string | null;
+  country?: string | null;
+  preview_file_url?: string | null;
+};
+
+type CartesiaVoicesResponse = {
+  defaultVoiceId?: string;
+  language?: CartesiaLanguage;
+  voices?: CartesiaVoiceSummary[];
+};
+
+type CartesiaLanguage = "hi" | "en";
+
 type EditableContent = {
   instagramCaption: string;
   facebookPost: string;
@@ -118,6 +143,8 @@ type EditableContent = {
   backgroundVideoUrl: string;
   reelVideoUrl: string;
   voiceoverAudioUrl: string;
+  cartesiaVoiceId: string;
+  cartesiaLanguage: CartesiaLanguage;
   showReelTextOverlay: boolean;
   scenes: ReelScene[];
 };
@@ -146,9 +173,20 @@ type AutomationFormState = {
   daysOfWeek: number[];
 };
 
+type CustomDraftFormState = {
+  title: string;
+  summary: string;
+};
+
 const APPROVAL_STORAGE_KEY = "kyakhayen-content-pipeline-platform-approvals-v2";
 const CONTENT_STORAGE_KEY = "kyakhayen-content-pipeline-content-overrides-v3";
-const CONTENT_COPY_VERSION = "social-copy-v3";
+const CUSTOM_DRAFTS_STORAGE_KEY = "kyakhayen-content-pipeline-custom-drafts-v1";
+const CONTENT_COPY_VERSION = "social-copy-v4";
+const KYAKHAYEN_HOME_URL = "https://www.kyakhayen.com";
+const DEFAULT_CUSTOM_DRAFT_FORM: CustomDraftFormState = {
+  title: "",
+  summary: "",
+};
 const PREVIEW_FRAMES = [
   { objectPosition: "50% 50%", transform: "scale(1.08)" },
   { objectPosition: "35% 50%", transform: "scale(1.2) translateX(2%)" },
@@ -166,7 +204,7 @@ const PLATFORMS: Array<{
   {
     key: "instagram_reel",
     label: "Instagram Reel",
-    description: "Caption + reel script. Publishing needs a rendered MP4 URL.",
+    description: "Caption + reel script. Publishing needs a rendered MP4.",
   },
   {
     key: "facebook_reel",
@@ -250,6 +288,121 @@ function writeJsonStorage(key: string, value: unknown) {
   localStorage.setItem(key, JSON.stringify(value));
 }
 
+function draftSelectionId(draft: ContentDraft) {
+  return draft.recipeId || draft.id;
+}
+
+function titleToTag(value: string) {
+  return value
+    .replace(/[^a-zA-Z0-9 ]/g, " ")
+    .split(/\s+/)
+    .filter(Boolean)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
+    .join("");
+}
+
+function buildCustomDraft(
+  input: CustomDraftFormState & {
+    imageUrl?: string | null;
+  }
+): ContentDraft {
+  const title = input.title.replace(/\s+/g, " ").trim();
+  const imageUrl = input.imageUrl ?? null;
+  const summary =
+    input.summary.trim() ||
+    "A fresh Kya Khayen update for the days when you want something different.";
+  const shortSummary = compactPreviewCopy(summary, 120);
+  const hashtags = Array.from(
+    new Set([titleToTag(title), "KyaKhayen", "FoodReels", "IndianFood", "FoodIdeas"].filter(Boolean))
+  ).slice(0, 10);
+  const hashtagText = hashtags.map((tag) => `#${tag}`).join(" ");
+  const caption = [`${title}.`, "", summary, "", hashtagText].join("\n");
+  const scenes: ReelScene[] = [
+    {
+      id: "hook",
+      seconds: "0-6",
+      label: "Hook",
+      text: title,
+      voiceoverLine: `${title}. Kabhi kabhi recipe nahi, bas ek fresh idea share karna hota hai.`,
+      speechLine: `${title}. Kabhi kabhi recipe nahi, bas ek fresh idea share karna hota hai.`,
+      visual: "Use uploaded custom reel video or a clean image-motion opening",
+    },
+    {
+      id: "story",
+      seconds: "6-14",
+      label: "Story",
+      text: "Quick update",
+      voiceoverLine: shortSummary,
+      speechLine: shortSummary,
+      visual: "Keep the custom footage central with light text movement",
+    },
+    {
+      id: "moment",
+      seconds: "14-22",
+      label: "Moment",
+      text: "Worth sharing",
+      voiceoverLine:
+        "Agar yeh tumhare kaam ka hai, ya bas mood set karta hai, toh ise save kar lo.",
+      speechLine:
+        "Agar yeh tumhare kaam ka hai, ya bas mood set karta hai, toh ise save kar lo.",
+      visual: "Slow punch-in with brand-safe overlay space",
+    },
+    {
+      id: "cta",
+      seconds: "22-30",
+      label: "CTA",
+      text: "Save this",
+      voiceoverLine:
+        "Aur jab agla sawaal aaye, Kya Khayen, toh Kyakhayen par wapas aa jaana.",
+      speechLine:
+        "Aur jab agla sawaal aaye, Kya Khayen, toh Kyakhayen par wapas aa jaana.",
+      visual: "Logo, save prompt, and final frame",
+    },
+  ];
+
+  return {
+    id: `custom-${Date.now()}`,
+    recipeId: null,
+    recipeTitle: title,
+    recipeUrl: KYAKHAYEN_HOME_URL,
+    imageUrl,
+    status: "pending",
+    platforms: [
+      "Instagram Reel",
+      "Facebook Reel",
+      "YouTube Short",
+      "Facebook Post",
+      "Instagram Photo",
+      "Pinterest Pin",
+      "X Post",
+      "LinkedIn Post",
+    ],
+    hook: title,
+    durationSeconds: 30,
+    scenes,
+    voiceover: scenes.map((scene) => scene.voiceoverLine).join(" "),
+    voiceoverSpeech: scenes.map((scene) => scene.speechLine).join(" "),
+    instagramCaption: caption,
+    youtubeTitle: title.slice(0, 100),
+    youtubeDescription: caption,
+    facebookPost: caption,
+    xPost: [`${title}. ${summary}`, hashtagText].join("\n").slice(0, 275),
+    linkedinPost: caption,
+    pinterestTitle: title.slice(0, 100),
+    pinterestDescription: summary.slice(0, 500),
+    hashtags,
+    renderSpec: {
+      format: "1080x1920",
+      template: "custom-content-text-voiceover-v1",
+      assets: [
+        ...(imageUrl ? [{ type: "image" as const, value: imageUrl }] : []),
+        { type: "voiceover", value: scenes.map((scene) => scene.speechLine).join(" ") },
+        { type: "music", value: "light-indian-instrumental" },
+      ],
+    },
+  };
+}
+
 function mergeRecipeQueues(primary: PipelineRecipe[], secondary: PipelineRecipe[]) {
   const seen = new Set<string>();
   return [...primary, ...secondary].filter((recipe) => {
@@ -281,15 +434,11 @@ function defaultEditableContent(draft: ContentDraft): EditableContent {
     backgroundVideoUrl: "",
     reelVideoUrl: "",
     voiceoverAudioUrl: "",
+    cartesiaVoiceId: "",
+    cartesiaLanguage: "hi",
     showReelTextOverlay: true,
     scenes: draft.scenes,
   };
-}
-
-function normalizeSpeechInput(input: string) {
-  return input
-    .replace(/\bKya\s+Khayen\b/gi, "क्या खाएं")
-    .replace(/\bKyakhayen\b/gi, "क्या खाएं");
 }
 
 async function copyText(value: string, label: string) {
@@ -330,20 +479,6 @@ async function downloadRemoteUrl(url: string, filename: string) {
   }
 }
 
-function chooseSpeechVoice() {
-  const voices = window.speechSynthesis.getVoices();
-  return (
-    voices.find((voice) => /lekha|heera|swara|kalpana/i.test(voice.name)) ??
-    voices.find((voice) => /google.*(hindi|हिन्दी)/i.test(voice.name)) ??
-    voices.find((voice) => /hindi|हिन्दी/i.test(voice.name)) ??
-    voices.find((voice) => /hemant/i.test(voice.name)) ??
-    voices.find((voice) => voice.lang.toLowerCase().startsWith("hi")) ??
-    voices.find((voice) => voice.lang.toLowerCase().startsWith("en-in")) ??
-    voices.find((voice) => /india|indian/i.test(voice.name)) ??
-    null
-  );
-}
-
 function platformCopy(content: EditableContent, platform: PlatformKey) {
   if (platform === "facebook_post") return content.facebookPost;
   if (platform === "pinterest_pin") {
@@ -374,7 +509,7 @@ function platformPublishPayload(
   platforms: PlatformKey[]
 ) {
   return {
-    recipeId: draft.recipeId,
+    recipeId: draft.recipeId || null,
     recipeTitle: draft.recipeTitle,
     recipeUrl: draft.recipeUrl,
     imageUrl: draft.imageUrl,
@@ -524,6 +659,7 @@ export function ContentPipelineDashboard({
   initialAutomationRules: ContentPipelineAutomationRuleSummary[];
 }) {
   const [recipeQueue, setRecipeQueue] = useState<PipelineRecipe[]>(recipes);
+  const [customDrafts, setCustomDrafts] = useState<ContentDraft[]>([]);
   const [recipeSearch, setRecipeSearch] = useState("");
   const [recipeSearching, setRecipeSearching] = useState(false);
   const [selectedRecipeId, setSelectedRecipeId] = useState(recipes[0]?.id ?? "");
@@ -536,10 +672,21 @@ export function ContentPipelineDashboard({
   const [reelRenderProgress, setReelRenderProgress] = useState("");
   const [reelRenderPercent, setReelRenderPercent] = useState(0);
   const [renderProgressOpen, setRenderProgressOpen] = useState(false);
+  const [reelVideoUploading, setReelVideoUploading] = useState(false);
   const [previewSceneIndex, setPreviewSceneIndex] = useState(0);
   const [previewPlaying, setPreviewPlaying] = useState(false);
   const [voicePreviewPlaying, setVoicePreviewPlaying] = useState(false);
   const [voiceGenerating, setVoiceGenerating] = useState(false);
+  const [customDraftOpen, setCustomDraftOpen] = useState(false);
+  const [customDraftForm, setCustomDraftForm] =
+    useState<CustomDraftFormState>(DEFAULT_CUSTOM_DRAFT_FORM);
+  const [customDraftImageFile, setCustomDraftImageFile] = useState<File | null>(null);
+  const [customDraftVideoFile, setCustomDraftVideoFile] = useState<File | null>(null);
+  const [customDraftSaving, setCustomDraftSaving] = useState(false);
+  const [cartesiaVoices, setCartesiaVoices] = useState<CartesiaVoiceSummary[]>([]);
+  const [cartesiaDefaultVoiceId, setCartesiaDefaultVoiceId] = useState("");
+  const [cartesiaVoicesLoading, setCartesiaVoicesLoading] = useState(false);
+  const [cartesiaVoicesError, setCartesiaVoicesError] = useState("");
   const [socialSetup, setSocialSetup] = useState(initialSocialSetup);
   const [pinterestBoards, setPinterestBoards] = useState<PinterestBoardSummary[]>([]);
   const [pinterestBoardLoading, setPinterestBoardLoading] = useState(false);
@@ -575,9 +722,12 @@ export function ContentPipelineDashboard({
   const voicePreviewTimersRef = useRef<number[]>([]);
   const handledPinterestReturnRef = useRef(false);
 
-  const drafts = useMemo(() => recipeQueue.map(buildContentDraft), [recipeQueue]);
+  const drafts = useMemo(
+    () => [...customDrafts, ...recipeQueue.map(buildContentDraft)],
+    [customDrafts, recipeQueue]
+  );
   const selectedDraft =
-    drafts.find((draft) => draft.recipeId === selectedRecipeId) ?? drafts[0] ?? null;
+    drafts.find((draft) => draftSelectionId(draft) === selectedRecipeId) ?? drafts[0] ?? null;
   const selectedContent = useMemo(() => {
     if (!selectedDraft) return null;
     return {
@@ -594,6 +744,9 @@ export function ContentPipelineDashboard({
   const renderedReelUrl = selectedContent?.reelVideoUrl || "";
   const voiceoverAudioPreviewUrl =
     selectedLocalAssets?.voiceUrl || selectedContent?.voiceoverAudioUrl || "";
+  const selectedCartesiaLanguage = selectedContent?.cartesiaLanguage || "hi";
+  const selectedCartesiaVoiceId =
+    selectedContent?.cartesiaVoiceId || cartesiaDefaultVoiceId || cartesiaVoices[0]?.id || "";
 
   const currentApprovalKey = selectedDraft
     ? approvalKey(selectedDraft.id, activePlatform)
@@ -607,17 +760,56 @@ export function ContentPipelineDashboard({
     const timer = window.setTimeout(() => {
       setApprovals(readJsonStorage<ApprovalMap>(APPROVAL_STORAGE_KEY, {}));
       setContentOverrides(readJsonStorage<ContentOverrideMap>(CONTENT_STORAGE_KEY, {}));
+      setCustomDrafts(readJsonStorage<ContentDraft[]>(CUSTOM_DRAFTS_STORAGE_KEY, []));
     }, 0);
 
     return () => window.clearTimeout(timer);
   }, []);
 
   useEffect(() => {
-    return () => {
-      if (typeof window !== "undefined" && "speechSynthesis" in window) {
-        window.speechSynthesis.cancel();
-        voicePreviewTimersRef.current.forEach((timer) => window.clearTimeout(timer));
+    let cancelled = false;
+
+    const loadCartesiaVoices = async () => {
+      try {
+        setCartesiaVoicesLoading(true);
+        setCartesiaVoicesError("");
+        setCartesiaVoices([]);
+        setCartesiaDefaultVoiceId("");
+        const response = await fetch(
+          `/api/admin/content-pipeline/voice?language=${selectedCartesiaLanguage}`
+        );
+        const payload = await readResponsePayload<CartesiaVoicesResponse>(
+          response,
+          "Unable to load Cartesia voices."
+        );
+        if (cancelled) return;
+        if (!response.ok || typeof payload === "string") {
+          throw new Error(responseMessage(payload, "Unable to load Cartesia voices."));
+        }
+
+        setCartesiaVoices(payload.voices ?? []);
+        setCartesiaDefaultVoiceId(payload.defaultVoiceId ?? "");
+      } catch (error) {
+        if (!cancelled) {
+          setCartesiaVoicesError(
+            error instanceof Error ? error.message : "Unable to load Cartesia voices."
+          );
+        }
+      } finally {
+        if (!cancelled) setCartesiaVoicesLoading(false);
       }
+    };
+
+    void loadCartesiaVoices();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [selectedCartesiaLanguage]);
+
+  useEffect(() => {
+    return () => {
+      voicePreviewTimersRef.current.forEach((timer) => window.clearTimeout(timer));
       voiceAudioRef.current?.pause();
       Object.values(localAssetsRef.current).forEach((assets) => {
         if (assets.videoUrl) URL.revokeObjectURL(assets.videoUrl);
@@ -632,26 +824,92 @@ export function ContentPipelineDashboard({
     setRenderProgressOpen(false);
   };
 
-  const updateSelectedContent = <Field extends keyof EditableContent>(
-    field: Field,
-    value: EditableContent[Field],
+  const saveCustomDrafts = (nextDrafts: ContentDraft[]) => {
+    setCustomDrafts(nextDrafts);
+    writeJsonStorage(CUSTOM_DRAFTS_STORAGE_KEY, nextDrafts);
+  };
+
+  const createCustomDraft = async (event?: FormEvent<HTMLFormElement>) => {
+    event?.preventDefault();
+    const title = customDraftForm.title.trim();
+    if (title.length < 2) {
+      toast.error("Add a custom content title.");
+      return;
+    }
+
+    try {
+      setCustomDraftSaving(true);
+      const imageAsset = customDraftImageFile
+        ? await uploadMediaAsset(customDraftImageFile, { contentPipeline: true })
+        : null;
+      const videoAsset = customDraftVideoFile
+        ? await uploadMediaAsset(customDraftVideoFile, { contentPipeline: true })
+        : null;
+
+      const draft = buildCustomDraft({
+        ...customDraftForm,
+        title,
+        imageUrl: imageAsset?.url ?? null,
+      });
+      const nextDrafts = [draft, ...customDrafts];
+      saveCustomDrafts(nextDrafts);
+
+      if (videoAsset?.url) {
+        const key = contentKey(draft.id);
+        const nextOverrides = {
+          ...contentOverrides,
+          [key]: {
+            ...(contentOverrides[key] ?? {}),
+            reelVideoUrl: videoAsset.url,
+          },
+        };
+        setContentOverrides(nextOverrides);
+        writeJsonStorage(CONTENT_STORAGE_KEY, nextOverrides);
+      }
+
+      setSelectedRecipeId(draftSelectionId(draft));
+      setActivePlatform(videoAsset?.url ? "instagram_reel" : "facebook_post");
+      setPreviewSceneIndex(0);
+      setPublishResults([]);
+      setCustomDraftForm(DEFAULT_CUSTOM_DRAFT_FORM);
+      setCustomDraftImageFile(null);
+      setCustomDraftVideoFile(null);
+      setCustomDraftOpen(false);
+      toast.success("Custom post/reel draft created.");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Unable to create custom draft.");
+    } finally {
+      setCustomDraftSaving(false);
+    }
+  };
+
+  const updateSelectedContentFields = (
+    patch: Partial<EditableContent>,
     options?: { invalidateReel?: boolean }
   ) => {
     if (!selectedDraft) return;
 
     const key = contentKey(selectedDraft.id);
-    const shouldInvalidateReel = Boolean(options?.invalidateReel && field !== "reelVideoUrl");
+    const shouldInvalidateReel = Boolean(options?.invalidateReel && !("reelVideoUrl" in patch));
     const next = {
       ...contentOverrides,
       [key]: {
         ...(contentOverrides[key] ?? {}),
-        [field]: value,
+        ...patch,
         ...(shouldInvalidateReel ? { reelVideoUrl: "" } : {}),
       },
     };
     setContentOverrides(next);
     writeJsonStorage(CONTENT_STORAGE_KEY, next);
     if (shouldInvalidateReel) resetRenderState();
+  };
+
+  const updateSelectedContent = <Field extends keyof EditableContent>(
+    field: Field,
+    value: EditableContent[Field],
+    options?: { invalidateReel?: boolean }
+  ) => {
+    updateSelectedContentFields({ [field]: value } as Partial<EditableContent>, options);
   };
 
   const updateLocalAsset = (
@@ -719,10 +977,54 @@ export function ContentPipelineDashboard({
     setLocalAssets(nextAssets);
   };
 
+  const clearLocalAssetsForDraft = (draftId: string) => {
+    const currentAssets = localAssetsRef.current[draftId];
+    if (!currentAssets) return;
+
+    if (currentAssets.videoUrl) URL.revokeObjectURL(currentAssets.videoUrl);
+    if (currentAssets.voiceUrl) URL.revokeObjectURL(currentAssets.voiceUrl);
+
+    const nextAssets = { ...localAssetsRef.current };
+    delete nextAssets[draftId];
+    localAssetsRef.current = nextAssets;
+    setLocalAssets(nextAssets);
+  };
+
   const clearReelVideoAsset = () => {
     clearLocalAsset("video");
     updateSelectedContent("backgroundVideoUrl", "", { invalidateReel: true });
     toast.success("Custom video removed. Template preview restored.");
+  };
+
+  const uploadFinalReelFile = async (file: File | null | undefined) => {
+    if (!selectedDraft || !file) return;
+
+    try {
+      setReelVideoUploading(true);
+      setReelRenderProgress("Uploading final reel...");
+      const asset = await uploadMediaAsset(file, { contentPipeline: true }, (event) => {
+        const total = event.total || file.size;
+        const progress = total ? Math.round((event.loaded / total) * 100) : 0;
+        setReelRenderPercent(Math.min(100, progress));
+        setReelRenderProgress(`Uploading final reel... ${progress}%`);
+      });
+      updateSelectedContent("reelVideoUrl", asset.url);
+      setReelRenderPercent(100);
+      setReelRenderProgress("Final reel video ready.");
+      toast.success("Final reel uploaded.");
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Unable to upload final reel.";
+      setReelRenderProgress(message);
+      toast.error(message);
+    } finally {
+      setReelVideoUploading(false);
+    }
+  };
+
+  const clearFinalReelVideo = () => {
+    updateSelectedContent("reelVideoUrl", "");
+    resetRenderState();
+    toast.success("Final reel removed.");
   };
 
   const clearVoiceoverAsset = () => {
@@ -790,6 +1092,43 @@ export function ContentPipelineDashboard({
     toast.success("This recipe draft has been reset.");
   };
 
+  const deleteCustomDraft = (draftId: string) => {
+    const draft = customDrafts.find((item) => item.id === draftId);
+    if (!draft) return;
+
+    const nextDrafts = customDrafts.filter((item) => item.id !== draftId);
+    saveCustomDrafts(nextDrafts);
+
+    const nextOverrides = { ...contentOverrides };
+    delete nextOverrides[contentKey(draftId)];
+    setContentOverrides(nextOverrides);
+    writeJsonStorage(CONTENT_STORAGE_KEY, nextOverrides);
+
+    const nextApprovals = { ...approvals };
+    PLATFORMS.forEach((platform) => {
+      delete nextApprovals[approvalKey(draftId, platform.key)];
+    });
+    setApprovals(nextApprovals);
+    writeJsonStorage(APPROVAL_STORAGE_KEY, nextApprovals);
+
+    clearLocalAssetsForDraft(draftId);
+
+    if (selectedDraft?.id === draftId) {
+      const nextSelection = nextDrafts[0]
+        ? draftSelectionId(nextDrafts[0])
+        : recipeQueue[0]?.id ?? "";
+      setSelectedRecipeId(nextSelection);
+      setPublishResults([]);
+      setPreviewSceneIndex(0);
+      setPreviewPlaying(false);
+      setVoicePreviewPlaying(false);
+      resetRenderState();
+      clearVoicePreviewTimers();
+    }
+
+    toast.success("Custom draft deleted.");
+  };
+
   const selectRecipe = (recipeId: string) => {
     setSelectedRecipeId(recipeId);
     setPublishResults([]);
@@ -800,9 +1139,6 @@ export function ContentPipelineDashboard({
     setReelRenderPercent(0);
     setRenderProgressOpen(false);
     clearVoicePreviewTimers();
-    if (typeof window !== "undefined" && "speechSynthesis" in window) {
-      window.speechSynthesis.cancel();
-    }
   };
 
   const clearVoicePreviewTimers = () => {
@@ -825,9 +1161,6 @@ export function ContentPipelineDashboard({
 
   const stopVoicePreview = () => {
     clearVoicePreviewTimers();
-    if (typeof window !== "undefined" && "speechSynthesis" in window) {
-      window.speechSynthesis.cancel();
-    }
     voiceAudioRef.current?.pause();
     voiceAudioRef.current = null;
     setVoicePreviewPlaying(false);
@@ -835,12 +1168,6 @@ export function ContentPipelineDashboard({
 
   const startVoicePreview = () => {
     if (!selectedDraft || !selectedContent) return;
-    if (typeof window === "undefined" || !("speechSynthesis" in window)) {
-      toast.error("Voice preview is not available in this browser.");
-      return;
-    }
-
-    window.speechSynthesis.cancel();
     clearVoicePreviewTimers();
 
     const customVoiceUrl = selectedLocalAssets?.voiceUrl || selectedContent.voiceoverAudioUrl || "";
@@ -870,38 +1197,12 @@ export function ContentPipelineDashboard({
       return;
     }
 
-    const voice = chooseSpeechVoice();
-    const lines = selectedContent.scenes.length
-      ? selectedContent.scenes.map((scene) => scene.speechLine)
-      : [selectedContent.voiceoverSpeech];
-
-    setVoicePreviewPlaying(true);
-    lines.forEach((line, index) => {
-      const utterance = new SpeechSynthesisUtterance(normalizeSpeechInput(line));
-      utterance.lang = voice?.lang ?? "hi-IN";
-      utterance.rate = 0.82;
-      utterance.pitch = 1.02;
-      utterance.volume = 1;
-      if (voice) utterance.voice = voice;
-      utterance.onstart = () =>
-        setPreviewSceneIndex(Math.min(index, Math.max(selectedContent.scenes.length - 1, 0)));
-      if (index === lines.length - 1) {
-        utterance.onend = () => {
-          setVoicePreviewPlaying(false);
-          setPreviewPlaying(false);
-        };
-        utterance.onerror = () => {
-          setVoicePreviewPlaying(false);
-          setPreviewPlaying(false);
-        };
-      }
-      window.speechSynthesis.speak(utterance);
-    });
-
-    toast.success("Hindi voice preview started.");
+    setVoicePreviewPlaying(false);
+    setPreviewPlaying(false);
+    toast.info("Generate Cartesia AI audio or upload a custom voiceover first.");
   };
 
-  const createDefaultVoiceoverFile = async () => {
+  const createVoiceoverFile = async () => {
     if (!selectedContent) throw new Error("Select a recipe first.");
 
     const response = await fetch("/api/admin/content-pipeline/voice", {
@@ -909,29 +1210,30 @@ export function ContentPipelineDashboard({
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         input: selectedContent.voiceoverSpeech,
-        provider: "default",
+        language: selectedCartesiaLanguage,
+        ...(selectedCartesiaVoiceId ? { voiceId: selectedCartesiaVoiceId } : {}),
       }),
     });
 
     if (!response.ok) {
       const message = await response.text();
-      throw new Error(message.replace(/^"|"$/g, "") || "Unable to generate default voice.");
+      throw new Error(message.replace(/^"|"$/g, "") || "Unable to generate voiceover.");
     }
 
     const blob = await response.blob();
-    return new File([blob], "kyakhayen-default-voice.m4a", {
-      type: blob.type || "audio/mp4",
+    return new File([blob], "kyakhayen-cartesia-ai-voice.mp3", {
+      type: blob.type || "audio/mpeg",
     });
   };
 
-  const generateDefaultVoiceover = async () => {
+  const generateCartesiaVoiceover = async () => {
     try {
       setVoiceGenerating(true);
-      const file = await createDefaultVoiceoverFile();
+      const file = await createVoiceoverFile();
       updateLocalAsset("voice", file);
-      toast.success("Default Hindi voice selected.");
+      toast.success("Cartesia AI voice selected.");
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Unable to generate default voice.");
+      toast.error(error instanceof Error ? error.message : "Unable to generate voiceover.");
     } finally {
       setVoiceGenerating(false);
     }
@@ -950,8 +1252,8 @@ export function ContentPipelineDashboard({
       if (!renderAudioUrl) {
         setVoiceGenerating(true);
         setReelRenderPercent(16);
-        setReelRenderProgress("Generating default Hindi voice...");
-        const file = await createDefaultVoiceoverFile();
+        setReelRenderProgress("Generating Cartesia AI voice...");
+        const file = await createVoiceoverFile();
         renderAudioUrl = updateLocalAsset("voice", file, {
           resetRender: false,
           silent: true,
@@ -1158,7 +1460,7 @@ export function ContentPipelineDashboard({
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          recipeId: selectedDraft.recipeId,
+          recipeId: selectedDraft.recipeId || null,
           scheduledAt: scheduledDate.toISOString(),
           payload: platformPublishPayload(selectedDraft, selectedContent, platforms),
         }),
@@ -1539,8 +1841,8 @@ export function ContentPipelineDashboard({
             <Progress value={reelRenderPercent} className="h-2.5" />
             {selectedContent?.reelVideoUrl && reelRenderPercent === 100 && (
               <div className="rounded-xl border bg-muted/40 p-3 text-xs text-muted-foreground">
-                <p className="font-medium text-foreground">Saved to S3</p>
-                <p className="mt-1 break-all">{selectedContent.reelVideoUrl}</p>
+                <p className="font-medium text-foreground">Video saved</p>
+                <p className="mt-1">Publish-ready reel is uploaded and selected.</p>
               </div>
             )}
             {!renderingReel && reelRenderPercent === 100 && (
@@ -1554,6 +1856,103 @@ export function ContentPipelineDashboard({
         </DialogContent>
       </Dialog>
 
+      <Dialog open={customDraftOpen} onOpenChange={setCustomDraftOpen}>
+        <DialogContent className="sm:max-w-xl">
+          <form onSubmit={createCustomDraft}>
+            <DialogHeader>
+              <DialogTitle>Create custom post/reel</DialogTitle>
+              <DialogDescription>
+                Use this when the content is not tied to a recipe. Upload media files directly and
+                edit platform copy after creating the draft.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="mt-5 grid gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="custom-draft-title">Title</Label>
+                <Input
+                  id="custom-draft-title"
+                  value={customDraftForm.title}
+                  onChange={(event) =>
+                    setCustomDraftForm((current) => ({
+                      ...current,
+                      title: event.target.value,
+                    }))
+                  }
+                  placeholder="Weekend cafe finds, offer update, behind the scenes..."
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="custom-draft-image">Post image</Label>
+                <Input
+                  id="custom-draft-image"
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp,image/avif"
+                  onChange={(event) =>
+                    setCustomDraftImageFile(event.target.files?.[0] ?? null)
+                  }
+                  disabled={customDraftSaving}
+                />
+                <p className="text-xs leading-5 text-muted-foreground">
+                  {customDraftImageFile
+                    ? `Selected: ${customDraftImageFile.name}`
+                    : "Optional. Upload an image for photo posts and social previews."}
+                </p>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="custom-draft-video">Final reel video</Label>
+                <Input
+                  id="custom-draft-video"
+                  type="file"
+                  accept="video/mp4,video/webm,video/quicktime"
+                  onChange={(event) =>
+                    setCustomDraftVideoFile(event.target.files?.[0] ?? null)
+                  }
+                  disabled={customDraftSaving}
+                />
+                <p className="text-xs leading-5 text-muted-foreground">
+                  {customDraftVideoFile
+                    ? `Selected: ${customDraftVideoFile.name}`
+                    : "Optional. Upload an already edited reel/video to publish it directly."}
+                </p>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="custom-draft-summary">Brief</Label>
+                <Textarea
+                  id="custom-draft-summary"
+                  value={customDraftForm.summary}
+                  onChange={(event) =>
+                    setCustomDraftForm((current) => ({
+                      ...current,
+                      summary: event.target.value,
+                    }))
+                  }
+                  placeholder="What should this post say?"
+                  className="min-h-28 resize-y"
+                />
+              </div>
+            </div>
+            <DialogFooter className="mt-5">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setCustomDraftOpen(false)}
+                disabled={customDraftSaving}
+              >
+                Cancel
+              </Button>
+              <Button type="submit" disabled={customDraftSaving}>
+                {customDraftSaving ? (
+                  <LoaderCircle className="mr-2 size-4 animate-spin" />
+                ) : (
+                  <Plus className="mr-2 size-4" />
+                )}
+                {customDraftSaving ? "Uploading..." : "Create draft"}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
       <Dialog open={scheduleOpen} onOpenChange={setScheduleOpen}>
         <DialogContent className="sm:max-w-2xl">
           <DialogHeader>
@@ -1563,7 +1962,7 @@ export function ContentPipelineDashboard({
             </DialogTitle>
             <DialogDescription>
               Choose a future publish time. Simple posts can run without approval; reels and shorts
-              need approval and a rendered video URL.
+              need approval and a rendered video.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
@@ -2330,18 +2729,45 @@ export function ContentPipelineDashboard({
         <section className="self-start rounded-[20px] border bg-card p-4 shadow-sm xl:sticky xl:top-24 xl:max-h-[calc(100dvh-7rem)] xl:overflow-y-auto">
           <div className="flex items-center justify-between gap-3">
             <div>
-              <h2 className="text-lg font-semibold">Recipes</h2>
-              <p className="text-sm text-muted-foreground">Search or pick a recipe to prepare.</p>
+              <h2 className="text-lg font-semibold">Content drafts</h2>
+              <p className="text-sm text-muted-foreground">
+                Pick a recipe or create custom content.
+              </p>
             </div>
             <Button
               variant="outline"
               size="icon"
-              title="Reset current recipe draft"
+              title="Reset current draft"
               disabled={!selectedDraft}
               onClick={resetCurrentRecipe}
             >
               <RotateCcw className="size-4" />
             </Button>
+          </div>
+
+          <div className="mt-4 rounded-xl border bg-muted/20 p-3">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <h3 className="text-sm font-semibold">Custom post/reel</h3>
+                <p className="mt-1 text-xs leading-5 text-muted-foreground">
+                  Use this for announcements, offers, reels, or any content without a recipe.
+                </p>
+              </div>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  setCustomDraftForm(DEFAULT_CUSTOM_DRAFT_FORM);
+                  setCustomDraftImageFile(null);
+                  setCustomDraftVideoFile(null);
+                  setCustomDraftOpen(true);
+                }}
+              >
+                <Plus className="mr-2 size-4" />
+                New
+              </Button>
+            </div>
           </div>
 
           <form className="mt-4 space-y-2" onSubmit={loadSearchedRecipes}>
@@ -2378,18 +2804,20 @@ export function ContentPipelineDashboard({
               ).length;
 
               return (
-                <button
+                <div
                   key={draft.id}
-                  type="button"
-                  onClick={() => selectRecipe(draft.recipeId)}
                   className={cn(
-                    "w-full rounded-xl border p-3 text-left transition hover:border-[#d8ad63] hover:bg-[#fff8ed] dark:hover:border-[#d8ad63] dark:hover:bg-[#18342c] dark:hover:text-[#eef2ec]",
+                    "group flex w-full items-center gap-2 rounded-xl border p-3 transition hover:border-[#d8ad63] hover:bg-[#fff8ed] dark:hover:border-[#d8ad63] dark:hover:bg-[#18342c] dark:hover:text-[#eef2ec]",
                     isSelected
                       ? "border-[#d8ad63] bg-[#fff8ed] text-[#30261f] dark:bg-[#18342c] dark:text-[#eef2ec]"
                       : "border-border bg-background"
                   )}
                 >
-                  <div className="flex gap-3">
+                  <button
+                    type="button"
+                    onClick={() => selectRecipe(draftSelectionId(draft))}
+                    className="flex min-w-0 flex-1 gap-3 text-left"
+                  >
                     <div className="relative size-14 shrink-0 overflow-hidden rounded-lg bg-muted">
                       {draft.imageUrl ? (
                         <Image
@@ -2403,14 +2831,34 @@ export function ContentPipelineDashboard({
                       ) : null}
                     </div>
                     <div className="min-w-0 flex-1">
-                      <p className="line-clamp-2 text-sm font-semibold">{draft.recipeTitle}</p>
+                      <div className="flex items-start gap-2">
+                        <p className="line-clamp-2 text-sm font-semibold">{draft.recipeTitle}</p>
+                        {!draft.recipeId && (
+                          <Badge variant="outline" className="shrink-0 text-[10px]">
+                            Custom
+                          </Badge>
+                        )}
+                      </div>
                       <p className="mt-1 text-xs text-muted-foreground dark:text-[#b8c8bf]">
-                        {draft.durationSeconds}s video plan · {approvedCount}/{PLATFORMS.length}{" "}
-                        approved
+                        {draft.recipeId ? `${draft.durationSeconds}s video plan` : "Custom content plan"} ·{" "}
+                        {approvedCount}/{PLATFORMS.length} approved
                       </p>
                     </div>
-                  </div>
-                </button>
+                  </button>
+                  {!draft.recipeId && (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      title="Delete custom draft"
+                      aria-label={`Delete ${draft.recipeTitle}`}
+                      className="size-9 shrink-0 text-muted-foreground hover:bg-red-50 hover:text-red-700 dark:hover:bg-red-950/30 dark:hover:text-red-300"
+                      onClick={() => deleteCustomDraft(draft.id)}
+                    >
+                      <Trash2 className="size-4" />
+                    </Button>
+                  )}
+                </div>
               );
             })}
           </div>
@@ -2484,10 +2932,11 @@ export function ContentPipelineDashboard({
                       <h2 className="line-clamp-2 text-xl font-semibold">
                         {selectedDraft.recipeTitle}
                       </h2>
-                      <p className="mt-1 break-all text-sm text-muted-foreground">
-                        {selectedDraft.recipeUrl}
+                      <p className="mt-1 text-sm text-muted-foreground">
+                        {selectedDraft.recipeId ? selectedDraft.recipeUrl : "Custom content"}
                       </p>
                       <div className="mt-3 flex flex-wrap gap-2">
+                        {!selectedDraft.recipeId && <Badge variant="outline">Custom</Badge>}
                         <Badge variant="outline">{selectedDraft.durationSeconds}s video</Badge>
                         <Badge variant="outline">{selectedDraft.hashtags.length} hashtags</Badge>
                         <Badge
@@ -2521,10 +2970,16 @@ export function ContentPipelineDashboard({
                   voicePreviewPlaying={voicePreviewPlaying}
                   voiceGenerating={voiceGenerating}
                   renderingReel={renderingReel}
+                  reelVideoUploading={reelVideoUploading}
                   reelRenderProgress={reelRenderProgress}
                   reelVideoPreviewUrl={backgroundVideoPreviewUrl}
                   renderedReelUrl={renderedReelUrl}
                   voiceoverAudioPreviewUrl={voiceoverAudioPreviewUrl}
+                  cartesiaVoices={cartesiaVoices}
+                  selectedCartesiaLanguage={selectedCartesiaLanguage}
+                  selectedCartesiaVoiceId={selectedCartesiaVoiceId}
+                  cartesiaVoicesLoading={cartesiaVoicesLoading}
+                  cartesiaVoicesError={cartesiaVoicesError}
                   localVideoName={selectedLocalAssets?.videoName ?? ""}
                   localVoiceName={selectedLocalAssets?.voiceName ?? ""}
                   onSceneChange={updateSelectedScene}
@@ -2537,9 +2992,22 @@ export function ContentPipelineDashboard({
                     })
                   }
                   onVideoFileChange={(file) => updateLocalAsset("video", file)}
+                  onFinalReelFileChange={(file) => void uploadFinalReelFile(file)}
                   onVoiceFileChange={(file) => updateLocalAsset("voice", file)}
-                  onGenerateVoice={() => void generateDefaultVoiceover()}
+                  onCartesiaLanguageChange={(language) =>
+                    updateSelectedContentFields(
+                      { cartesiaLanguage: language, cartesiaVoiceId: "" },
+                      { invalidateReel: true }
+                    )
+                  }
+                  onCartesiaVoiceChange={(voiceId) =>
+                    updateSelectedContent("cartesiaVoiceId", voiceId, {
+                      invalidateReel: true,
+                    })
+                  }
+                  onGenerateVoice={() => void generateCartesiaVoiceover()}
                   onClearVideo={clearReelVideoAsset}
+                  onClearFinalReel={clearFinalReelVideo}
                   onClearVoice={clearVoiceoverAsset}
                   onSceneSelect={(index) => {
                     setPreviewSceneIndex(index);
@@ -2713,19 +3181,29 @@ function ReelStudio({
   voicePreviewPlaying,
   voiceGenerating,
   renderingReel,
+  reelVideoUploading,
   reelRenderProgress,
   reelVideoPreviewUrl,
   renderedReelUrl,
   voiceoverAudioPreviewUrl,
+  cartesiaVoices,
+  selectedCartesiaLanguage,
+  selectedCartesiaVoiceId,
+  cartesiaVoicesLoading,
+  cartesiaVoicesError,
   localVideoName,
   localVoiceName,
   onSceneChange,
   onVoiceoverChange,
   onTextOverlayChange,
   onVideoFileChange,
+  onFinalReelFileChange,
   onVoiceFileChange,
+  onCartesiaLanguageChange,
+  onCartesiaVoiceChange,
   onGenerateVoice,
   onClearVideo,
+  onClearFinalReel,
   onClearVoice,
   onSceneSelect,
   onPreviewToggle,
@@ -2742,19 +3220,29 @@ function ReelStudio({
   voicePreviewPlaying: boolean;
   voiceGenerating: boolean;
   renderingReel: boolean;
+  reelVideoUploading: boolean;
   reelRenderProgress: string;
   reelVideoPreviewUrl: string;
   renderedReelUrl: string;
   voiceoverAudioPreviewUrl: string;
+  cartesiaVoices: CartesiaVoiceSummary[];
+  selectedCartesiaLanguage: CartesiaLanguage;
+  selectedCartesiaVoiceId: string;
+  cartesiaVoicesLoading: boolean;
+  cartesiaVoicesError: string;
   localVideoName: string;
   localVoiceName: string;
   onSceneChange: (index: number, patch: Partial<ReelScene>) => void;
   onVoiceoverChange: (value: string) => void;
   onTextOverlayChange: (checked: boolean) => void;
   onVideoFileChange: (file: File | null | undefined) => void;
+  onFinalReelFileChange: (file: File | null | undefined) => void;
   onVoiceFileChange: (file: File | null | undefined) => void;
+  onCartesiaLanguageChange: (language: CartesiaLanguage) => void;
+  onCartesiaVoiceChange: (voiceId: string) => void;
   onGenerateVoice: () => void;
   onClearVideo: () => void;
+  onClearFinalReel: () => void;
   onClearVoice: () => void;
   onSceneSelect: (index: number) => void;
   onPreviewToggle: () => void;
@@ -2764,6 +3252,7 @@ function ReelStudio({
 }) {
   const editableScene = content.scenes[previewSceneIndex] ?? content.scenes[0] ?? null;
   const reelVideoRef = useRef<HTMLVideoElement | null>(null);
+  const scriptLanguageLabel = selectedCartesiaLanguage === "en" ? "English" : "Hindi";
 
   useEffect(() => {
     const video = reelVideoRef.current;
@@ -2843,15 +3332,26 @@ function ReelStudio({
         <ReelAssetControls
           content={content}
           reelVideoPreviewUrl={reelVideoPreviewUrl}
+          renderedReelUrl={renderedReelUrl}
           voiceoverAudioPreviewUrl={voiceoverAudioPreviewUrl}
+          cartesiaVoices={cartesiaVoices}
+          selectedCartesiaLanguage={selectedCartesiaLanguage}
+          selectedCartesiaVoiceId={selectedCartesiaVoiceId}
+          cartesiaVoicesLoading={cartesiaVoicesLoading}
+          cartesiaVoicesError={cartesiaVoicesError}
           localVideoName={localVideoName}
           localVoiceName={localVoiceName}
           voiceGenerating={voiceGenerating}
+          reelVideoUploading={reelVideoUploading}
           onTextOverlayChange={onTextOverlayChange}
           onVideoFileChange={onVideoFileChange}
+          onFinalReelFileChange={onFinalReelFileChange}
           onVoiceFileChange={onVoiceFileChange}
+          onCartesiaLanguageChange={onCartesiaLanguageChange}
+          onCartesiaVoiceChange={onCartesiaVoiceChange}
           onGenerateVoice={onGenerateVoice}
           onClearVideo={onClearVideo}
+          onClearFinalReel={onClearFinalReel}
           onClearVoice={onClearVoice}
         />
       </div>
@@ -2882,7 +3382,7 @@ function ReelStudio({
             title={
               voiceoverAudioPreviewUrl
                 ? "Render reel with selected voiceover"
-                : "Default Hindi voice will be generated before rendering"
+                : "Cartesia AI voice will be generated before rendering"
             }
           >
             {renderingReel ? (
@@ -2910,7 +3410,7 @@ function ReelStudio({
             ) : (
               <div className="space-y-1">
                 <p className="font-semibold text-foreground">Rendered reel ready</p>
-                <p className="break-all">S3 URL: {renderedReelUrl}</p>
+                <p>Publish-ready video is uploaded and selected.</p>
               </div>
             )}
           </div>
@@ -2986,7 +3486,7 @@ function ReelStudio({
               </div>
             </div>
             <div className="space-y-2">
-              <Label>Hindi voice line</Label>
+              <Label>{scriptLanguageLabel} voice line</Label>
               <Textarea
                 value={editableScene.speechLine}
                 onChange={(event) =>
@@ -3003,13 +3503,13 @@ function ReelStudio({
 
         <div className="space-y-2">
           <div className="flex items-center justify-between gap-2">
-            <Label>Full Hindi voiceover script</Label>
+            <Label>Full {scriptLanguageLabel} voiceover script</Label>
             <Button
               type="button"
               variant="ghost"
               size="icon-sm"
               title="Copy full script"
-              aria-label="Copy full Hindi voiceover script"
+              aria-label={`Copy full ${scriptLanguageLabel} voiceover script`}
               onClick={() => copyText(content.voiceoverSpeech, "Voiceover script")}
             >
               <Copy className="size-4" />
@@ -3021,8 +3521,8 @@ function ReelStudio({
             className="min-h-32 resize-y"
           />
           <p className="text-xs text-muted-foreground">
-            This full script is used for the final Hindi MP3. Scene voice lines above can still be
-            edited separately.
+            This full script is used for the final Cartesia MP3. Scene voice lines above can still
+            be edited separately.
           </p>
         </div>
       </div>
@@ -3054,9 +3554,6 @@ function AnimatedSceneOverlay({
       >
         {scene.text}
       </h4>
-      <p className="mt-3 rounded-2xl bg-black/48 px-3 py-2 text-sm font-semibold leading-snug text-white/95 backdrop-blur">
-        {scene.speechLine}
-      </p>
       <div className="mt-5 h-1.5 overflow-hidden rounded-full bg-white/20">
         <div
           className="h-full rounded-full bg-[#f3b33d] transition-[width] duration-[1800ms] ease-linear"
@@ -3070,32 +3567,62 @@ function AnimatedSceneOverlay({
 function ReelAssetControls({
   content,
   reelVideoPreviewUrl,
+  renderedReelUrl,
   voiceoverAudioPreviewUrl,
+  cartesiaVoices,
+  selectedCartesiaLanguage,
+  selectedCartesiaVoiceId,
+  cartesiaVoicesLoading,
+  cartesiaVoicesError,
   localVideoName,
   localVoiceName,
   voiceGenerating,
+  reelVideoUploading,
   onTextOverlayChange,
   onVideoFileChange,
+  onFinalReelFileChange,
   onVoiceFileChange,
+  onCartesiaLanguageChange,
+  onCartesiaVoiceChange,
   onGenerateVoice,
   onClearVideo,
+  onClearFinalReel,
   onClearVoice,
 }: {
   content: EditableContent;
   reelVideoPreviewUrl: string;
+  renderedReelUrl: string;
   voiceoverAudioPreviewUrl: string;
+  cartesiaVoices: CartesiaVoiceSummary[];
+  selectedCartesiaLanguage: CartesiaLanguage;
+  selectedCartesiaVoiceId: string;
+  cartesiaVoicesLoading: boolean;
+  cartesiaVoicesError: string;
   localVideoName: string;
   localVoiceName: string;
   voiceGenerating: boolean;
+  reelVideoUploading: boolean;
   onTextOverlayChange: (checked: boolean) => void;
   onVideoFileChange: (file: File | null | undefined) => void;
+  onFinalReelFileChange: (file: File | null | undefined) => void;
   onVoiceFileChange: (file: File | null | undefined) => void;
+  onCartesiaLanguageChange: (language: CartesiaLanguage) => void;
+  onCartesiaVoiceChange: (voiceId: string) => void;
   onGenerateVoice: () => void;
   onClearVideo: () => void;
+  onClearFinalReel: () => void;
   onClearVoice: () => void;
 }) {
   const hasCustomVideo = Boolean(reelVideoPreviewUrl || content.backgroundVideoUrl);
-  const hasCustomVoice = Boolean(voiceoverAudioPreviewUrl || content.voiceoverAudioUrl || localVoiceName);
+  const hasFinalReel = Boolean(renderedReelUrl || content.reelVideoUrl);
+  const hasCustomVoice = Boolean(
+    voiceoverAudioPreviewUrl || content.voiceoverAudioUrl || localVoiceName
+  );
+  const selectedCartesiaVoice = cartesiaVoices.find(
+    (voice) => voice.id === selectedCartesiaVoiceId
+  );
+  const cartesiaPlaceholderValue = "cartesia-voice-placeholder";
+  const cartesiaVoiceSelectValue = selectedCartesiaVoiceId || cartesiaPlaceholderValue;
 
   return (
     <div className="mt-4 rounded-2xl border bg-background p-4">
@@ -3147,6 +3674,34 @@ function ReelAssetControls({
           </p>
         </div>
 
+        <div className="space-y-2 rounded-xl border bg-muted/20 p-3">
+          <div className="flex items-center justify-between gap-2">
+            <Label>Final reel video</Label>
+            {hasFinalReel && (
+              <Button type="button" variant="ghost" size="sm" onClick={onClearFinalReel}>
+                Remove
+              </Button>
+            )}
+          </div>
+          <Input
+            type="file"
+            accept="video/mp4,video/webm,video/quicktime"
+            onChange={(event) => onFinalReelFileChange(event.target.files?.[0])}
+            disabled={reelVideoUploading}
+          />
+          <p className="line-clamp-2 text-xs text-muted-foreground">
+            {hasFinalReel
+              ? "Publish-ready video is uploaded and selected."
+              : "Upload an already edited MP4/WebM to publish it directly, without rendering."}
+          </p>
+          {reelVideoUploading && (
+            <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
+              <LoaderCircle className="size-3.5 animate-spin" />
+              Uploading final reel...
+            </div>
+          )}
+        </div>
+
         <div className="space-y-2">
           <div className="flex items-center justify-between gap-2">
             <Label>Voiceover audio</Label>
@@ -3156,22 +3711,90 @@ function ReelAssetControls({
               </Button>
             )}
           </div>
-          <div className="flex flex-wrap gap-2">
+          <div className="grid gap-3 rounded-xl border bg-muted/20 p-3">
+            <div className="grid gap-2 sm:grid-cols-[120px_minmax(0,1fr)]">
+              <div className="space-y-1.5">
+                <Label>Language</Label>
+                <Select
+                  value={selectedCartesiaLanguage}
+                  onValueChange={(value) =>
+                    onCartesiaLanguageChange(value as CartesiaLanguage)
+                  }
+                  disabled={voiceGenerating}
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="hi">Hindi</SelectItem>
+                    <SelectItem value="en">English</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between gap-2">
+                  <Label>Cartesia voice</Label>
+                  {selectedCartesiaVoice?.country && (
+                    <Badge variant="outline" className="shrink-0">
+                      {selectedCartesiaVoice.country}
+                    </Badge>
+                  )}
+                </div>
+                <Select
+                  value={cartesiaVoiceSelectValue}
+                  onValueChange={(value) => {
+                    if (value !== cartesiaPlaceholderValue) onCartesiaVoiceChange(value);
+                  }}
+                  disabled={cartesiaVoicesLoading || !cartesiaVoices.length || voiceGenerating}
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue
+                      placeholder={
+                        cartesiaVoicesLoading ? "Loading voices..." : "Choose a voice"
+                      }
+                    />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {!selectedCartesiaVoiceId && (
+                      <SelectItem value={cartesiaPlaceholderValue} disabled>
+                        Choose a voice
+                      </SelectItem>
+                    )}
+                    {cartesiaVoices.map((voice) => (
+                      <SelectItem key={voice.id} value={voice.id}>
+                        {voice.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <p className="line-clamp-2 text-xs text-muted-foreground">
+              {cartesiaVoicesError ||
+                selectedCartesiaVoice?.description ||
+                "This voice is used when you generate a Cartesia AI MP3."}
+            </p>
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
             <Button
               type="button"
               variant="outline"
               size="sm"
               onClick={onGenerateVoice}
-              disabled={voiceGenerating}
+              disabled={voiceGenerating || !selectedCartesiaVoiceId}
             >
               {voiceGenerating ? (
                 <LoaderCircle className="mr-2 size-4 animate-spin" />
               ) : (
-                <Volume2 className="mr-2 size-4" />
+                <Sparkles className="mr-2 size-4" />
               )}
-              Default voice
+              Cartesia AI
             </Button>
+            <span className="text-xs text-muted-foreground">
+              Generate an MP3 from the full script.
+            </span>
           </div>
+          <Label>Custom audio</Label>
           <Input
             type="file"
             accept="audio/mpeg,audio/mp3,audio/wav,audio/x-wav,audio/mp4"
@@ -3183,7 +3806,7 @@ function ReelAssetControls({
           <p className="line-clamp-2 text-xs text-muted-foreground">
             {localVoiceName
               ? `Selected audio: ${localVoiceName}`
-              : "Use default voice, or upload your own MP3/WAV to override it."}
+              : "Upload your own MP3/WAV when you want to override Cartesia AI."}
           </p>
         </div>
       </div>
@@ -3470,14 +4093,11 @@ function PlatformPreview({
           <MoreHorizontal className="size-5" />
         </div>
         <div className="absolute inset-x-4 bottom-5">
-          {firstScene && (
-            content.showReelTextOverlay && (
-              <h4 className="line-clamp-3 text-3xl font-black leading-none drop-shadow">
-                {firstScene.text}
-              </h4>
-            )
-          )}
-          {content.showReelTextOverlay && (
+          {firstScene && content.showReelTextOverlay ? (
+            <h4 className="line-clamp-3 text-3xl font-black leading-none drop-shadow">
+              {firstScene.text}
+            </h4>
+          ) : (
             <p className="mt-3 line-clamp-4 text-sm font-semibold leading-snug text-white/90">
               {reelCaption}
             </p>
@@ -3601,7 +4221,7 @@ function PlatformEditor({
         />
         {platform === "instagram_photo" && (
           <p className="text-xs leading-5 text-muted-foreground">
-            Instagram keeps caption URLs as plain text. Use Facebook, Pinterest, LinkedIn, or X for
+            Instagram keeps caption links as plain text. Use Facebook, Pinterest, LinkedIn, or X for
             clickable recipe links.
           </p>
         )}

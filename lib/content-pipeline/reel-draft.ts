@@ -26,7 +26,7 @@ export type ReelScene = {
 
 export type ContentDraft = {
   id: string;
-  recipeId: string;
+  recipeId: string | null;
   recipeTitle: string;
   recipeUrl: string;
   imageUrl: string | null;
@@ -108,8 +108,18 @@ function simplifyIngredientName(value: string) {
     .trim();
 }
 
-function recipeMode(title: string, recipe: PipelineRecipe) {
+type RecipeMode = "dessert" | "drink" | "curry" | "generic";
+
+function recipeMode(title: string, recipe: PipelineRecipe): RecipeMode {
   const text = `${title} ${recipe.category ?? ""} ${recipe.ingredients.join(" ")}`.toLowerCase();
+
+  if (
+    /(dessert|sweet|cake|chocolate|brownie|cookie|halwa|kheer|laddu|ladoo|barfi|ice cream|pudding|rabri|gulab jamun|rasmalai|jalebi|mousse|custard|payasam)/.test(
+      text
+    )
+  ) {
+    return "dessert";
+  }
 
   if (/(water|tea|infusion|smoothie|juice|lassi|drink|detox|sharbat|kadha)/.test(text)) {
     return "drink";
@@ -127,18 +137,22 @@ function readableJoin(items: string[], fallback: string) {
 }
 
 function minutesSpeech(totalMinutes: number | null) {
-  if (!totalMinutes) return "Yeh ek simple homemade recipe hai.";
-  return `Yeh recipe lagbhag ${totalMinutes} minute mein ready ho jaati hai.`;
+  if (!totalMinutes) return "Yeh ek easy homemade plan hai.";
+  return `Sirf ${totalMinutes} minute ka plan hai.`;
 }
 
-function ingredientSpeech(items: string[], mode: "drink" | "curry" | "generic") {
-  if (mode === "drink") {
-    return "Iske liye bas warm water aur kuch simple spices chahiye.";
+function ingredientSpeech(items: string[], mode: RecipeMode) {
+  if (mode === "dessert") {
+    return "Thodi sweetness, creamy texture, aur woh comfort wali khushboo chahiye.";
   }
 
-  if (!items.length) return "Iske liye fresh ingredients aur simple spices chahiye.";
+  if (mode === "drink") {
+    return "Iske liye warm water, simple spices, aur ek slow sa mood chahiye.";
+  }
 
-  return `Main ingredients hain ${items.slice(0, 3).join(", ")}.`;
+  if (!items.length) return "Iske liye fresh ingredients, simple spices, aur thoda patience chahiye.";
+
+  return `Main ingredients: ${items.slice(0, 3).join(", ")}... aur baaki ka magic heat karti hai.`;
 }
 
 function buildHashtags(recipe: PipelineRecipe) {
@@ -160,13 +174,18 @@ function formatHashtags(hashtags: string[]) {
   return hashtags.map((tag) => `#${tag}`).join(" ");
 }
 
-function socialOpening(title: string, mode: "drink" | "curry" | "generic") {
-  if (mode === "drink") return `${title} for slow mornings.`;
-  if (mode === "curry") return `${title} for an easy dinner plan.`;
-  return `${title} for a simple homemade meal.`;
+function socialOpening(title: string, mode: RecipeMode) {
+  if (mode === "dessert") return `${title} for the craving that never asks permission.`;
+  if (mode === "drink") return `${title} for slow mornings and softer pauses.`;
+  if (mode === "curry") return `${title} for that restaurant-style dinner craving.`;
+  return `${title} for the days when a simple plate can fix the mood.`;
 }
 
-function socialBody(mode: "drink" | "curry" | "generic") {
+function socialBody(mode: RecipeMode) {
+  if (mode === "dessert") {
+    return "Creamy, sweet, and exactly the kind of idea you save before the next craving arrives.";
+  }
+
   if (mode === "drink") {
     return "Warm, light, and easy to save for the next time you want something soothing.";
   }
@@ -187,156 +206,300 @@ export function buildContentDraft(recipe: PipelineRecipe): ContentDraft {
   const timeText = recipe.totalMinutes
     ? `Ready in ${recipe.totalMinutes} min`
     : "Easy homemade recipe";
-  const hook = /paneer|masala|curry/i.test(title)
-    ? `Restaurant style ${title}`
-    : mode === "drink"
-      ? title
-      : `Try this ${title}`;
+  const timeScreenText = recipe.totalMinutes ? `${recipe.totalMinutes} min plan` : "Easy plan";
+  const hook =
+    mode === "dessert"
+      ? `Sirf ek bite: ${title}`
+      : mode === "drink"
+        ? `Bas ek sip: ${title}`
+        : mode === "curry"
+          ? `Restaurant craving: ${title}`
+          : `Aaj kya khayen: ${title}`;
 
   const ingredientText = readableJoin(
     heroIngredients,
-    mode === "drink" ? "Warm water + simple spices" : "Fresh ingredients + simple spices"
+    mode === "dessert"
+      ? "Cream + sweetness + comfort"
+      : mode === "drink"
+        ? "Warm water + simple spices"
+        : "Fresh ingredients + simple spices"
   );
-  const drinkMethodText = "Steep, strain, and sip";
-  const cookMethodText =
-    mode === "curry" ? "Cook the masala until glossy" : "Cook until flavor comes together";
-  const finishScreenText = mode === "drink" ? "Serve it warm" : "Finish and serve hot";
-  const ctaScreenText = "Save this recipe";
-
   const scenes: ReelScene[] =
-    mode === "drink"
+    mode === "dessert"
       ? [
           {
             id: "hook",
-            seconds: "0-3",
+            seconds: "0-6",
             label: "Hook",
-            text: shortText(hook, 48),
-            voiceoverLine: `${title} ghar par banana bahut simple hai.`,
-            speechLine: `${title} ghar par banana bahut simple hai.`,
-            visual: "Warm close-up with slow zoom",
+            text: "Sirf ek bite",
+            voiceoverLine:
+              "Sirf ek bite... aur phir wahi jhooth jo hum sab khud se bolte hain.",
+            speechLine:
+              "Sirf ek bite... aur phir wahi jhooth jo hum sab khud se bolte hain.",
+            visual: "Dessert close-up with a slow, tempting push-in",
           },
           {
             id: "time",
-            seconds: "3-6",
+            seconds: "6-12",
             label: "Timing",
-            text: timeText,
-            voiceoverLine: `${minutesSpeech(recipe.totalMinutes)} Bas kuch everyday ingredients chahiye.`,
-            speechLine: `${minutesSpeech(recipe.totalMinutes)} Bas kuch everyday ingredients chahiye.`,
-            visual: "Timer badge with gentle pan",
+            text: "Kal se diet?",
+            voiceoverLine: `"Aaj kha leta hoon, kal se diet pakka." ${minutesSpeech(
+              recipe.totalMinutes
+            )}`,
+            speechLine: `"Aaj kha leta hoon, kal se diet pakka." ${minutesSpeech(
+              recipe.totalMinutes
+            )}`,
+            visual: "Timer badge lands over the plated dessert",
           },
           {
             id: "ingredients",
-            seconds: "6-10",
+            seconds: "12-18",
             label: "Ingredients",
-            text: ingredientText,
-            voiceoverLine: ingredientSpeech(ingredients, mode),
-            speechLine: ingredientSpeech(ingredients, mode),
-            visual: "Ingredient names appear one by one",
-          },
-          {
-            id: "steep",
-            seconds: "10-15",
-            label: "Steep",
-            text: drinkMethodText,
-            voiceoverLine:
-              "In ingredients ko warm water mein kuch minute ke liye steep hone dein.",
-            speechLine:
-              "In ingredients ko warm water mein kuch minute ke liye steep hone dein, taaki flavor achchhe se aa jaaye.",
-            visual: "Steam overlay and close crop",
-          },
-          {
-            id: "serve",
-            seconds: "15-20",
-            label: "Serve",
-            text: finishScreenText,
-            voiceoverLine: "Ab ise strain karke cup mein serve karein.",
-            speechLine: "Ab ise strain karke cup mein serve karein.",
-            visual: "Final cup crop with soft motion",
-          },
-          {
-            id: "cta",
-            seconds: "20-24",
-            label: "CTA",
-            text: ctaScreenText,
-            voiceoverLine: "Full recipe Kya Khayen par dekhein, aur is idea ko save kar lein.",
-            speechLine: "Full recipe Kya Khayen par dekhein, aur is idea ko save kar lein.",
-            visual: "Logo, save prompt and final image",
-          },
-        ]
-      : [
-          {
-            id: "hook",
-            seconds: "0-3",
-            label: "Hook",
-            text: shortText(hook, 48),
-            voiceoverLine:
-              mode === "curry"
-                ? "Restaurant-style recipe ab ghar par easily banaiye."
-                : "Yeh recipe ghar par banana kaafi easy hai.",
-            speechLine:
-              mode === "curry"
-                ? "Restaurant-style recipe ab ghar par easily banaiye."
-                : "Yeh recipe ghar par banana kaafi easy hai.",
-            visual: "Final dish image with slow zoom",
-          },
-          {
-            id: "time",
-            seconds: "3-6",
-            label: "Timing",
-            text: timeText,
-            voiceoverLine: `${minutesSpeech(recipe.totalMinutes)} Dinner ke liye yeh ek tasty idea hai.`,
-            speechLine: `${minutesSpeech(recipe.totalMinutes)} Dinner ke liye yeh ek tasty idea hai.`,
-            visual: "Dish image pan with timer badge",
-          },
-          {
-            id: "ingredients",
-            seconds: "6-10",
-            label: "Ingredients",
-            text: ingredientText,
-            voiceoverLine: ingredientSpeech(ingredients, mode),
-            speechLine: ingredientSpeech(ingredients, mode),
-            visual: "Ingredient names pop in one by one",
+            text: "Creamy craving",
+            voiceoverLine: `Lekin phir ${title} ka texture, ${ingredientText} wali richness, aur woh meethi khushboo...`,
+            speechLine: `Lekin phir ${title} ka texture, ${ingredientText} wali richness, aur woh meethi khushboo...`,
+            visual: "Ingredient words fade in like craving thoughts",
           },
           {
             id: "cook",
-            seconds: "10-15",
-            label: "Cook",
-            text: cookMethodText,
+            seconds: "18-24",
+            label: "Build",
+            text: "Monday shift",
             voiceoverLine:
-              mode === "curry"
-                ? "Onion tomato masala ko glossy aur aromatic hone tak cook karein."
-                : "Medium heat par cook karein, jab tak flavor achchhe se combine ho jaaye.",
+              "Bas yahin par plan hil jaata hai, aur diet seedha Monday par shift.",
             speechLine:
-              mode === "curry"
-                ? "Onion tomato masala ko glossy aur aromatic hone tak cook karein."
-                : "Medium heat par cook karein, jab tak flavor achchhe se combine ho jaaye.",
-            visual: "Warm steam overlay on recipe image",
+              "Bas yahin par plan hil jaata hai, aur diet seedha Monday par shift.",
+            visual: "Soft steam or shine pass across the dessert image",
           },
           {
             id: "finish",
-            seconds: "15-20",
-            label: "Finish",
-            text: finishScreenText,
+            seconds: "24-30",
+            label: "Craving",
+            text: "Kaun strong?",
             voiceoverLine:
-              mode === "curry"
-                ? "Paneer ko gravy mein gently simmer hone dein."
-                : "Fresh garnish ke saath serve karein.",
+              "Sach batao... aisi dessert craving ke saamne kaun strong reh sakta hai?",
             speechLine:
-              mode === "curry"
-                ? "Paneer ko gravy mein gently simmer hone dein."
-                : "Fresh garnish ke saath serve karein.",
-            visual: "Close crop with garnish focus",
+              "Sach batao... aisi dessert craving ke saamne kaun strong reh sakta hai?",
+            visual: "Final plated crop with slight handheld-style motion",
           },
           {
             id: "cta",
-            seconds: "20-24",
+            seconds: "30-36",
             label: "CTA",
-            text: ctaScreenText,
-            voiceoverLine: "Full recipe Kya Khayen par dekhein, aur is idea ko save kar lein.",
-            speechLine: "Full recipe Kya Khayen par dekhein, aur is idea ko save kar lein.",
-            visual: "Final dish with logo and save prompt",
+            text: "Save for cravings",
+            voiceoverLine:
+              "Cravings kabhi bata kar nahi aati. Save kar lo... aur jab samajh na aaye Kya Khayen, jawab Kyakhayen par milega.",
+            speechLine:
+              "Cravings kabhi bata kar nahi aati. Save kar lo... aur jab samajh na aaye Kya Khayen, jawab Kyakhayen par milega.",
+            visual: "Logo, save prompt, and final dessert hero shot",
           },
-        ];
+        ]
+      : mode === "drink"
+        ? [
+            {
+              id: "hook",
+              seconds: "0-6",
+              label: "Hook",
+              text: "Bas ek sip",
+              voiceoverLine:
+                "Bas ek sip... aur slow morning thodi softer lagne lagti hai.",
+              speechLine:
+                "Bas ek sip... aur slow morning thodi softer lagne lagti hai.",
+              visual: "Warm cup close-up with steam and slow zoom",
+            },
+            {
+              id: "time",
+              seconds: "6-12",
+              label: "Timing",
+              text: timeScreenText,
+              voiceoverLine: `${title} ka yeh ${minutesSpeech(
+                recipe.totalMinutes
+              )} Mood kaafi der tak settle rehta hai.`,
+              speechLine: `${title} ka yeh ${minutesSpeech(
+                recipe.totalMinutes
+              )} Mood kaafi der tak settle rehta hai.`,
+              visual: "Timer badge with a calm side pan",
+            },
+            {
+              id: "ingredients",
+              seconds: "12-18",
+              label: "Ingredients",
+              text: shortText(ingredientText, 42),
+              voiceoverLine: ingredientSpeech(ingredients, mode),
+              speechLine: ingredientSpeech(ingredients, mode),
+              visual: "Ingredient names appear one by one",
+            },
+            {
+              id: "steep",
+              seconds: "18-24",
+              label: "Steep",
+              text: "Steep and breathe",
+              voiceoverLine:
+                "Inhe kuch minute steep hone do, taaki flavor cup mein araam se utar aaye.",
+              speechLine:
+                "Inhe kuch minute steep hone do, taaki flavor cup mein araam se utar aaye.",
+              visual: "Steam overlay, slow crop, and gentle light pass",
+            },
+            {
+              id: "serve",
+              seconds: "24-30",
+              label: "Serve",
+              text: "Serve warm",
+              voiceoverLine:
+                "Ab strain karo, sip lo, aur phone ko thodi der side par rakho.",
+              speechLine:
+                "Ab strain karo, sip lo, aur phone ko thodi der side par rakho.",
+              visual: "Final cup crop with soft motion",
+            },
+            {
+              id: "cta",
+              seconds: "30-36",
+              label: "CTA",
+              text: "Save this sip",
+              voiceoverLine:
+                "Aise simple ideas ke liye video save kar lo. Jab socho Kya Khayen, Kyakhayen yaad rakhna.",
+              speechLine:
+                "Aise simple ideas ke liye video save kar lo. Jab socho Kya Khayen, Kyakhayen yaad rakhna.",
+              visual: "Logo, save prompt, and warm final image",
+            },
+          ]
+        : mode === "curry"
+          ? [
+              {
+                id: "hook",
+                seconds: "0-6",
+                label: "Hook",
+                text: "Restaurant craving",
+                voiceoverLine:
+                  "Sirf ek spoon... aur restaurant wali craving seedha ghar aa jaati hai.",
+                speechLine:
+                  "Sirf ek spoon... aur restaurant wali craving seedha ghar aa jaati hai.",
+                visual: "Final curry image with glossy slow zoom",
+              },
+              {
+                id: "time",
+                seconds: "6-12",
+                label: "Timing",
+                text: timeScreenText,
+                voiceoverLine: `Dinner ka stress? ${minutesSpeech(
+                  recipe.totalMinutes
+                )} Yeh plan kaafi handle ho sakta hai.`,
+                speechLine: `Dinner ka stress? ${minutesSpeech(
+                  recipe.totalMinutes
+                )} Yeh plan kaafi handle ho sakta hai.`,
+                visual: "Timer badge over a warm pan crop",
+              },
+              {
+                id: "ingredients",
+                seconds: "12-18",
+                label: "Ingredients",
+                text: shortText(ingredientText, 42),
+                voiceoverLine: ingredientSpeech(ingredients, mode),
+                speechLine: ingredientSpeech(ingredients, mode),
+                visual: "Ingredient names pop in with a spice sprinkle motion",
+              },
+              {
+                id: "cook",
+                seconds: "18-24",
+                label: "Cook",
+                text: "Glossy masala",
+                voiceoverLine:
+                  "Onion tomato masala ko glossy hone do; wahi gravy ka real mood set karta hai.",
+                speechLine:
+                  "Onion tomato masala ko glossy hone do; wahi gravy ka real mood set karta hai.",
+                visual: "Warm steam overlay on the recipe image",
+              },
+              {
+                id: "finish",
+                seconds: "24-30",
+                label: "Finish",
+                text: "Simmer slow",
+                voiceoverLine:
+                  "Paneer ya main ingredient ko gently simmer karo, taaki flavor andar tak jaaye.",
+                speechLine:
+                  "Paneer ya main ingredient ko gently simmer karo, taaki flavor andar tak jaaye.",
+                visual: "Close crop with garnish focus",
+              },
+              {
+                id: "cta",
+                seconds: "30-36",
+                label: "CTA",
+                text: "Dinner sorted",
+                voiceoverLine:
+                  "Save kar lo. Aaj dinner ka sawaal aaye, toh Kya Khayen ka jawab ready rahe.",
+                speechLine:
+                  "Save kar lo. Aaj dinner ka sawaal aaye, toh Kya Khayen ka jawab ready rahe.",
+                visual: "Final dish with logo and save prompt",
+              },
+            ]
+          : [
+              {
+                id: "hook",
+                seconds: "0-6",
+                label: "Hook",
+                text: shortText(hook, 42),
+                voiceoverLine:
+                  "Kabhi kabhi ek simple plate hi poora mood reset kar deti hai.",
+                speechLine:
+                  "Kabhi kabhi ek simple plate hi poora mood reset kar deti hai.",
+                visual: "Final dish image with slow zoom",
+              },
+              {
+                id: "time",
+                seconds: "6-12",
+                label: "Timing",
+                text: timeScreenText,
+                voiceoverLine: `Busy day ho ya sudden craving, ${minutesSpeech(
+                  recipe.totalMinutes
+                )} Yeh idea kaam aa sakta hai.`,
+                speechLine: `Busy day ho ya sudden craving, ${minutesSpeech(
+                  recipe.totalMinutes
+                )} Yeh idea kaam aa sakta hai.`,
+                visual: "Dish image pan with timer badge",
+              },
+              {
+                id: "ingredients",
+                seconds: "12-18",
+                label: "Ingredients",
+                text: shortText(ingredientText, 42),
+                voiceoverLine: ingredientSpeech(ingredients, mode),
+                speechLine: ingredientSpeech(ingredients, mode),
+                visual: "Ingredient names pop in one by one",
+              },
+              {
+                id: "cook",
+                seconds: "18-24",
+                label: "Cook",
+                text: "Flavor build",
+                voiceoverLine:
+                  "Steps simple rakho, heat steady rakho, aur flavor ko jaldi mat karo.",
+                speechLine:
+                  "Steps simple rakho, heat steady rakho, aur flavor ko jaldi mat karo.",
+                visual: "Warm steam overlay on recipe image",
+              },
+              {
+                id: "finish",
+                seconds: "24-30",
+                label: "Finish",
+                text: "First bite",
+                voiceoverLine:
+                  "Serve karte hi woh first bite wala silence aa jaata hai.",
+                speechLine:
+                  "Serve karte hi woh first bite wala silence aa jaata hai.",
+                visual: "Close crop with garnish focus",
+              },
+              {
+                id: "cta",
+                seconds: "30-36",
+                label: "CTA",
+                text: "Save the idea",
+                voiceoverLine:
+                  "Video save kar lo. Jab agla sawaal aaye, Kya Khayen, toh jawab ready milega.",
+                speechLine:
+                  "Video save kar lo. Jab agla sawaal aaye, Kya Khayen, toh jawab ready milega.",
+                visual: "Final dish with logo and save prompt",
+              },
+            ];
 
   const voiceover = scenes.map((scene) => scene.voiceoverLine).join(" ");
   const voiceoverSpeech = scenes.map((scene) => scene.speechLine).join(" ");
@@ -414,7 +577,7 @@ export function buildContentDraft(recipe: PipelineRecipe): ContentDraft {
       "LinkedIn Post",
     ],
     hook,
-    durationSeconds: 24,
+    durationSeconds: 36,
     scenes,
     voiceover,
     voiceoverSpeech,

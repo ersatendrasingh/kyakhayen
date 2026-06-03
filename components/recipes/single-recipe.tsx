@@ -39,6 +39,29 @@ function recipeDescriptionFallback(recipe: RecipeWithCategory) {
   return `${recipe.title} recipe with ingredients and step-by-step cooking instructions${context ? ` for ${context.toLowerCase()} cooking` : ""}. Make it at home with Kya Khayen.`;
 }
 
+function schemaAmount(value: number, unit: string, fractionDigits = 1) {
+  if (!Number.isFinite(value) || value < 0) return undefined;
+  const rounded =
+    fractionDigits === 0 ? Math.round(value).toString() : value.toFixed(fractionDigits);
+  return `${rounded.replace(/\.0$/, "")} ${unit}`;
+}
+
+function nutritionJsonLd(totals: ReturnType<typeof calculateRecipeNutrition>["totals"]) {
+  const nutrition = {
+    "@type": "NutritionInformation",
+    calories: schemaAmount(totals.calories, "calories", 0),
+    carbohydrateContent: schemaAmount(totals.carbohydrate, "g"),
+    proteinContent: schemaAmount(totals.protein, "g"),
+    fatContent: schemaAmount(totals.totalFat, "g"),
+    fiberContent: schemaAmount(totals.dietaryFiber, "g"),
+    sodiumContent: schemaAmount(totals.sodium, "mg"),
+  };
+
+  return Object.fromEntries(
+    Object.entries(nutrition).filter(([, value]) => value !== undefined),
+  );
+}
+
 const SingleRecipe = async ({ recipe }: SingleRecipeProps) => {
   if (!recipe) return <RecipeNotFound />;
 
@@ -60,6 +83,8 @@ const SingleRecipe = async ({ recipe }: SingleRecipeProps) => {
   const totalTime = formatTime(totalMinutes);
 
   const recipeCuisine = recipe.recipeCuisine?.map((c) => c.cuisine.title);
+  const recipeUrl = absoluteUrl(recipeHref(recipe));
+  const recipeImageUrl = recipe.imageUrl ? absoluteUrl(recipe.imageUrl) : undefined;
 
   const recipeIngredients = recipe.recipeIngredients.map((ingredient) => {
     const amount = ingredient.quantity ? String(ingredient.quantity) : "";
@@ -73,19 +98,34 @@ const SingleRecipe = async ({ recipe }: SingleRecipeProps) => {
       .trim();
   });
 
-  const recipeMethods = recipe.recipeMethods.map((method) => ({
-    "@type": "HowToStep",
-    position: method.position || undefined,
-    name: method.title,
-    text: stripHtml(method.description || method.title),
-    ...(method.imageUrl ? { image: absoluteUrl(method.imageUrl) } : {}),
-  }));
+  const recipeMethods = recipe.recipeMethods.map((method, index) => {
+    const stepImage = method.imageUrl ? absoluteUrl(method.imageUrl) : recipeImageUrl;
+    const stepVideo = method.videoUrl
+      ? {
+          "@type": "VideoObject",
+          name: method.title,
+          description: stripHtml(method.description || method.title),
+          contentUrl: absoluteUrl(method.videoUrl),
+          thumbnailUrl: [stepImage || recipeImageUrl].filter(Boolean),
+          uploadDate: recipeContentUpdatedAt(recipe) || recipePublishedAt(recipe),
+        }
+      : undefined;
+
+    return {
+      "@type": "HowToStep",
+      position: method.position || index + 1,
+      name: method.title,
+      text: stripHtml(method.description || method.title),
+      url: `${recipeUrl}#recipe-step-${method.id}`,
+      ...(stepImage ? { image: stepImage } : {}),
+      ...(stepVideo ? { video: stepVideo } : {}),
+    };
+  });
   const approvedReviews = (recipe.Review || []).filter((review) => review.isPublished);
   const averageRating = approvedReviews.length
     ? approvedReviews.reduce((sum, review) => sum + review.rating, 0) /
       approvedReviews.length
     : 0;
-  const recipeUrl = absoluteUrl(recipeHref(recipe));
 
   const { totals: nutritionTotals, missingConversions } = calculateRecipeNutrition(
     recipe.recipeIngredients
@@ -94,6 +134,7 @@ const SingleRecipe = async ({ recipe }: SingleRecipeProps) => {
     recipe.recipeIngredients.length > 0 &&
     recipe.recipeIngredients.every((item) => item.ingredient.isPublished) &&
     missingConversions.length === 0;
+  const recipeVideo = recipe.recipeMethods.find((method) => method.videoUrl);
 
   const jsonLdData = {
     "@context": "https://schema.org",
@@ -106,7 +147,21 @@ const SingleRecipe = async ({ recipe }: SingleRecipeProps) => {
       recipe.metaDescription,
       recipeDescriptionFallback(recipe),
     ),
-    image: recipe.imageUrl ? [absoluteUrl(recipe.imageUrl)] : undefined,
+    image: recipeImageUrl ? [recipeImageUrl] : undefined,
+    ...(recipeVideo?.videoUrl
+      ? {
+          video: {
+            "@type": "VideoObject",
+            name: recipeVideo.title || recipe.title,
+            description: stripHtml(recipeVideo.description || recipe.title),
+            contentUrl: absoluteUrl(recipeVideo.videoUrl),
+            thumbnailUrl: [
+              recipeVideo.imageUrl ? absoluteUrl(recipeVideo.imageUrl) : recipeImageUrl,
+            ].filter(Boolean),
+            uploadDate: recipeContentUpdatedAt(recipe) || recipePublishedAt(recipe),
+          },
+        }
+      : {}),
     author: {
       "@type": "Organization",
       name: "Kya Khayen",
@@ -158,10 +213,7 @@ const SingleRecipe = async ({ recipe }: SingleRecipeProps) => {
       : {}),
     ...(hasVerifiedNutrition
       ? {
-          nutrition: {
-            "@type": "NutritionInformation",
-            calories: `${nutritionTotals.calories.toFixed(2)} kcal`,
-          },
+          nutrition: nutritionJsonLd(nutritionTotals),
         }
       : {}),
   };

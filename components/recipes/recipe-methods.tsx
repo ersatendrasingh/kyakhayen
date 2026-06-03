@@ -37,6 +37,7 @@ const RecipeMethods = ({ recipeMethods }: RecipeMethodsProps) => {
         const done = checkedMethods.includes(method.id);
         return (
           <li
+            id={`recipe-step-${method.id}`}
             key={method.id}
             className={cn(
               "relative flex gap-4 rounded-[1.4rem] border p-4 transition sm:p-5",
