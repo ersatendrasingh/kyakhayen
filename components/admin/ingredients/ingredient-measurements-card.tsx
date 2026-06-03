@@ -44,7 +44,7 @@ export function IngredientMeasurementsCard({
   const saveMeasurement = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const value = Number(grams);
-    if (!unitId || !Number.isFinite(value) || value <= 0) {
+    if (!unitId || !Number.isFinite(value) || value < 0) {
       toast.error("Select a unit and enter its gram equivalent.");
       return;
     }

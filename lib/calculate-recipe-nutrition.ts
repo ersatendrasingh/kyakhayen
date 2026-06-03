@@ -56,7 +56,7 @@ export function calculateRecipeNutrition(ingredients: RecipeIngredientType[]) {
       (measurement) => measurement.unitId === unitId
     );
     const isGram = ["g", "gm"].includes(unit?.shortName?.toLowerCase() ?? "");
-    const grams = matchingUnit?.values
+    const grams = matchingUnit
       ? matchingUnit.values * quantity
       : isGram
         ? quantity

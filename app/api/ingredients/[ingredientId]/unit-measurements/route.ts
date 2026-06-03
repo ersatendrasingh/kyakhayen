@@ -5,7 +5,7 @@ import { z } from "zod";
 
 const measurementSchema = z.object({
   unitId: z.string().uuid(),
-  values: z.number().finite().positive(),
+  values: z.number().finite().min(0),
 });
 
 export async function POST(req: Request, props: { params: Promise<{ ingredientId: string }> }) {
