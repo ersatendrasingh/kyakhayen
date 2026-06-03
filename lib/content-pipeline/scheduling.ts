@@ -32,7 +32,7 @@ export type ContentPipelineScheduledPostSummary = {
   id: string;
   recipeId: string | null;
   recipeTitle: string;
-  recipeUrl: string;
+  recipeUrl: string | null;
   imageUrl: string | null;
   videoUrl: string | null;
   platforms: ContentPlatform[];
@@ -360,7 +360,7 @@ export async function createScheduledContentPost(input: {
   const post = await db.contentPipelineScheduledPost.create({
     data: {
       recipeTitle: parsed.recipeTitle,
-      recipeUrl: parsed.recipeUrl,
+      recipeUrl: parsed.recipeUrl || "",
       recipeId: input.recipeId || null,
       imageUrl: parsed.imageUrl || null,
       videoUrl: parsed.videoUrl || null,
@@ -500,7 +500,7 @@ export async function scheduleNextAutomationPost(ruleId: string, from = new Date
     data: {
       recipeId: recipe.id,
       recipeTitle: payload.recipeTitle,
-      recipeUrl: payload.recipeUrl,
+      recipeUrl: payload.recipeUrl || "",
       imageUrl: payload.imageUrl || null,
       videoUrl: null,
       platforms,
@@ -664,7 +664,7 @@ export function serializeScheduledPost(post: ScheduledPostWithAttempts): Content
     id: post.id,
     recipeId: post.recipeId,
     recipeTitle: post.recipeTitle,
-    recipeUrl: post.recipeUrl,
+    recipeUrl: post.recipeUrl || null,
     imageUrl: post.imageUrl,
     videoUrl: post.videoUrl,
     platforms: platformArray(post.platforms),

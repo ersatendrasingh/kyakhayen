@@ -1,4 +1,11 @@
-import { ContactLeadStatus, PaymentStatus } from "@prisma/client";
+import {
+  ContactLeadStatus,
+  PaymentStatus,
+  PwaInstallEventType,
+  PwaInstallState,
+  PwaPlatform,
+  type PushSubscription,
+} from "@prisma/client";
 
 import {
   AdminDashboard,
@@ -24,11 +31,77 @@ function weeksUntilNow(value: Date, count: number) {
   });
 }
 
+type PwaDashboardDevice = {
+  id: string;
+  userId: string | null;
+  platform: PwaPlatform;
+  os: string | null;
+  browser: string | null;
+  displayMode: string | null;
+  installState: PwaInstallState;
+  pushPermission: string | null;
+  installedAt: Date | null;
+  lastSeenAt: Date;
+};
+
+type PwaDashboardEvent = {
+  eventType: PwaInstallEventType;
+  platform: PwaPlatform;
+  createdAt: Date;
+};
+
+async function pwaDashboardRows(thisWeekStart: Date) {
+  const [deviceResult, pushSubscriptions, eventResult] = await Promise.all([
+    db.pwaDevice
+      .findMany({
+        select: {
+          id: true,
+          userId: true,
+          platform: true,
+          os: true,
+          browser: true,
+          displayMode: true,
+          installState: true,
+          pushPermission: true,
+          installedAt: true,
+          lastSeenAt: true,
+        },
+        orderBy: { lastSeenAt: "desc" },
+      })
+      .then((rows) => ({ rows, ready: true }))
+      .catch(() => ({ rows: [] as PwaDashboardDevice[], ready: false })),
+    db.pushSubscription
+      .findMany({
+        select: {
+          id: true,
+          isActive: true,
+          createdAt: true,
+        },
+      })
+      .catch(() => [] as Pick<PushSubscription, "id" | "isActive" | "createdAt">[]),
+    db.pwaInstallEvent
+      .findMany({
+        where: { createdAt: { gte: thisWeekStart } },
+        select: { eventType: true, platform: true, createdAt: true },
+      })
+      .then((rows) => ({ rows, ready: true }))
+      .catch(() => ({ rows: [] as PwaDashboardEvent[], ready: false })),
+  ]);
+
+  return {
+    pwaDevices: deviceResult.rows,
+    pushSubscriptions,
+    pwaEventsThisWeek: eventResult.rows,
+    pwaTrackingReady: deviceResult.ready && eventResult.ready,
+  };
+}
+
 const DashboardPage = async () => {
   const now = new Date();
   const monthBuckets = monthsUntilNow(now, 6);
   const weekBuckets = weeksUntilNow(now, 8);
   const since = monthBuckets[0];
+  const thisWeekStart = weekBuckets[weekBuckets.length - 1] || now;
 
   const [
     recipes,
@@ -116,6 +189,8 @@ const DashboardPage = async () => {
     }),
     db.mediaAsset.count(),
   ]);
+  const { pwaDevices, pushSubscriptions, pwaEventsThisWeek, pwaTrackingReady } =
+    await pwaDashboardRows(thisWeekStart);
 
   const paidOrders = orders.filter(
     (order) =>
@@ -142,6 +217,15 @@ const DashboardPage = async () => {
     };
     return result;
   }, {});
+  const pwaInstallStates = new Set<PwaInstallState>([PwaInstallState.INSTALLED, PwaInstallState.INFERRED]);
+  const installedPwaDevices = pwaDevices.filter((device) => pwaInstallStates.has(device.installState));
+  const activePushSubscriptions = pushSubscriptions.filter((subscription) => subscription.isActive);
+  const platformLabels: Record<PwaPlatform, string> = {
+    ANDROID: "Android",
+    IOS: "iOS",
+    DESKTOP: "Desktop",
+    UNKNOWN: "Unknown",
+  };
 
   const dashboardData: AdminDashboardData = {
     generatedAt: now.toISOString(),
@@ -229,6 +313,48 @@ const DashboardPage = async () => {
         .map(([label, plan]) => ({ label, value: plan.value, paid: plan.paid }))
         .sort((first, second) => second.value - first.value),
     },
+    pwa: {
+      downloadsTotal: installedPwaDevices.length,
+      downloadsThisWeek: installedPwaDevices.filter((device) => device.installedAt && device.installedAt >= thisWeekStart)
+        .length,
+      registeredThisWeek: users.filter((user) => user.createdAt >= thisWeekStart).length,
+      activeSubscribers: activePushSubscriptions.length,
+      subscribersThisWeek: activePushSubscriptions.filter((subscription) => subscription.createdAt >= thisWeekStart).length,
+      linkedDevices: pwaDevices.filter((device) => Boolean(device.userId)).length,
+      anonymousDevices: pwaDevices.filter((device) => !device.userId).length,
+      activeDevicesThisWeek: pwaDevices.filter((device) => device.lastSeenAt >= thisWeekStart).length,
+      promptShownThisWeek: pwaEventsThisWeek.filter((event) => event.eventType === PwaInstallEventType.PROMPT_SHOWN).length,
+      promptAcceptedThisWeek: pwaEventsThisWeek.filter((event) => event.eventType === PwaInstallEventType.PROMPT_ACCEPTED)
+        .length,
+      promptDismissedThisWeek: pwaEventsThisWeek.filter((event) => event.eventType === PwaInstallEventType.PROMPT_DISMISSED)
+        .length,
+      trackingReady: pwaTrackingReady,
+      platformDownloads: Object.values(PwaPlatform).map((platform) => ({
+        label: platformLabels[platform],
+        value: installedPwaDevices.filter((device) => device.platform === platform).length,
+      })),
+      weeklyDownloads: weekBuckets.map((start, index) => {
+        const end = weekBuckets[index + 1] || new Date(now.getTime() + 86_400_000);
+        return {
+          label: start.toLocaleDateString("en-IN", { day: "numeric", month: "short" }),
+          value: installedPwaDevices.filter(
+            (device) => device.installedAt && device.installedAt >= start && device.installedAt < end,
+          ).length,
+        };
+      }),
+      recentDevices: pwaDevices.slice(0, 6).map((device) => ({
+        id: device.id,
+        platform: device.platform,
+        browser: device.browser,
+        os: device.os,
+        installState: device.installState,
+        displayMode: device.displayMode,
+        pushPermission: device.pushPermission,
+        hasUser: Boolean(device.userId),
+        lastSeenAt: device.lastSeenAt.toISOString(),
+        installedAt: device.installedAt?.toISOString() || null,
+      })),
+    },
     inventory: {
       articles: articles.length,
       ingredients: ingredients.length,
@@ -313,7 +439,7 @@ const DashboardPage = async () => {
   };
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8">
+    <div className="p-3 sm:p-4 lg:p-5">
       <AdminDashboard data={dashboardData} />
     </div>
   );

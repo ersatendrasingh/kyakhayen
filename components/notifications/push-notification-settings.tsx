@@ -1,16 +1,11 @@
 "use client";
 
-import { BellRing, LoaderCircle, Send, ShieldCheck } from "lucide-react";
+import { BellRing, LoaderCircle, ShieldCheck } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
-
-function publicKeyBytes(key: string) {
-  const padding = "=".repeat((4 - (key.length % 4)) % 4);
-  const base64 = (key + padding).replaceAll("-", "+").replaceAll("_", "/");
-  return Uint8Array.from(window.atob(base64), (character) => character.charCodeAt(0));
-}
+import { subscribeToPushNotifications, unsubscribeFromPushNotifications } from "@/lib/pwa-client";
 
 export function PushNotificationSettings() {
   const [checking, setChecking] = useState(true);
@@ -19,7 +14,6 @@ export function PushNotificationSettings() {
   const [subscribed, setSubscribed] = useState(false);
   const [permission, setPermission] = useState<NotificationPermission>("default");
   const [busy, setBusy] = useState(false);
-  const [testing, setTesting] = useState(false);
 
   useEffect(() => {
     const available =
@@ -49,42 +43,8 @@ export function PushNotificationSettings() {
   async function enablePush() {
     try {
       setBusy(true);
-      const configurationResponse = await fetch("/api/push/public-key");
-      const configuration = await configurationResponse.json();
-      if (!configuration.enabled || !configuration.publicKey) {
-        toast.error("Push notifications are not configured yet.");
-        return;
-      }
-
-      const nextPermission = await Notification.requestPermission();
-      setPermission(nextPermission);
-      if (nextPermission !== "granted") {
-        toast.error("Notification permission was not granted.");
-        return;
-      }
-
-      const registration = await navigator.serviceWorker.getRegistration();
-      if (!registration) {
-        toast.error("Open the installed app or production site before enabling push.");
-        return;
-      }
-      const subscription = await registration.pushManager.subscribe({
-        userVisibleOnly: true,
-        applicationServerKey: publicKeyBytes(configuration.publicKey),
-      });
-      const serialised = subscription.toJSON();
-      const response = await fetch("/api/push/subscriptions", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          endpoint: subscription.endpoint,
-          p256dh: serialised.keys?.p256dh,
-          auth: serialised.keys?.auth,
-          userAgent: navigator.userAgent,
-        }),
-      });
-      if (!response.ok) throw new Error("Unable to save notification subscription.");
-
+      await subscribeToPushNotifications();
+      setPermission(Notification.permission);
       setSubscribed(true);
       toast.success("Push notifications enabled on this device.");
     } catch (error) {
@@ -97,36 +57,13 @@ export function PushNotificationSettings() {
   async function disablePush() {
     try {
       setBusy(true);
-      const registration = await navigator.serviceWorker.getRegistration();
-      const subscription = await registration?.pushManager.getSubscription();
-      if (subscription) {
-        await fetch("/api/push/subscriptions", {
-          method: "DELETE",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ endpoint: subscription.endpoint }),
-        });
-        await subscription.unsubscribe();
-      }
+      await unsubscribeFromPushNotifications();
       setSubscribed(false);
       toast.success("Push notifications disabled on this device.");
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Unable to disable push notifications.");
     } finally {
       setBusy(false);
-    }
-  }
-
-  async function sendTest() {
-    try {
-      setTesting(true);
-      const response = await fetch("/api/push/test", { method: "POST" });
-      const result = await response.json();
-      if (!response.ok) throw new Error(typeof result === "string" ? result : "Test push failed.");
-      toast.success(result.sent ? "Test push sent. Check this device." : "No active device received the test.");
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Unable to send test push.");
-    } finally {
-      setTesting(false);
     }
   }
 
@@ -163,10 +100,6 @@ export function PushNotificationSettings() {
         </div>
         {subscribed ? (
           <div className="flex shrink-0 gap-2">
-            <Button variant="outline" onClick={() => void sendTest()} disabled={testing} className="rounded-xl">
-              {testing ? <LoaderCircle className="animate-spin" /> : <Send />}
-              Test
-            </Button>
             <Button variant="outline" onClick={() => void disablePush()} disabled={busy} className="rounded-xl">
               {busy ? <LoaderCircle className="animate-spin" /> : null}
               Disable

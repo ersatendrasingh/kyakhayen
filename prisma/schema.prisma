@@ -485,6 +485,8 @@ model User {
   Order                  Order[]
   UserCoupon             UserCoupon[]
   PushSubscription       PushSubscription[]
+  pwaDevices             PwaDevice[]
+  pwaInstallEvents       PwaInstallEvent[]
   targetedCampaigns      NotificationCampaign[] @relation("NotificationTargetUser")
   notificationDeliveries NotificationDelivery[]
 
@@ -493,21 +495,110 @@ model User {
 }
 
 model PushSubscription {
-  id            String                 @id @default(cuid())
-  userId        String
-  user          User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  endpoint      String                 @unique @db.VarChar(512)
-  p256dh        String                 @db.Text
-  auth          String                 @db.Text
-  userAgent     String?                @db.Text
-  isActive      Boolean                @default(true)
-  lastSentAt    DateTime?
-  failureReason String?                @db.Text
-  deliveries    NotificationDelivery[]
-  createdAt     DateTime               @default(now())
-  updatedAt     DateTime               @updatedAt
+  id                     String                 @id @default(cuid())
+  userId                 String?
+  user                   User?                  @relation(fields: [userId], references: [id], onDelete: SetNull)
+  deviceId               String?
+  device                 PwaDevice?             @relation(fields: [deviceId], references: [id], onDelete: SetNull)
+  endpoint               String                 @unique @db.VarChar(512)
+  p256dh                 String                 @db.Text
+  auth                   String                 @db.Text
+  userAgent              String?                @db.Text
+  platform               PwaPlatform            @default(UNKNOWN)
+  os                     String?                @db.VarChar(120)
+  browser                String?                @db.VarChar(120)
+  displayMode            String?                @db.VarChar(60)
+  notificationPermission String?                @db.VarChar(40)
+  isActive               Boolean                @default(true)
+  lastSentAt             DateTime?
+  lastSeenAt             DateTime?
+  failureReason          String?                @db.Text
+  deliveries             NotificationDelivery[]
+  createdAt              DateTime               @default(now())
+  updatedAt              DateTime               @updatedAt
 
   @@index([userId, isActive])
+  @@index([deviceId])
+  @@index([platform, isActive])
+}
+
+enum PwaPlatform {
+  ANDROID
+  IOS
+  DESKTOP
+  UNKNOWN
+}
+
+enum PwaInstallState {
+  BROWSING
+  PROMPTED
+  INSTALLED
+  INFERRED
+}
+
+enum PwaInstallEventType {
+  VISITED
+  PROMPT_SHOWN
+  PROMPT_ACCEPTED
+  PROMPT_DISMISSED
+  APP_INSTALLED
+  STANDALONE_OPENED
+  PUSH_PERMISSION_GRANTED
+  PUSH_PERMISSION_DENIED
+  PUSH_PERMISSION_BLOCKED
+  PUSH_SUBSCRIBED
+  PUSH_UNSUBSCRIBED
+}
+
+model PwaDevice {
+  id                    String             @id @default(cuid())
+  deviceKey             String             @unique @db.VarChar(80)
+  userId                String?
+  user                  User?              @relation(fields: [userId], references: [id], onDelete: SetNull)
+  platform              PwaPlatform        @default(UNKNOWN)
+  os                    String?            @db.VarChar(120)
+  browser               String?            @db.VarChar(120)
+  displayMode           String?            @db.VarChar(60)
+  userAgent             String?            @db.Text
+  installState          PwaInstallState    @default(BROWSING)
+  pushPermission        String?            @db.VarChar(40)
+  promptShownAt         DateTime?
+  promptAcceptedAt      DateTime?
+  installedAt           DateTime?
+  standaloneFirstSeenAt DateTime?
+  pushSubscribedAt      DateTime?
+  pushUnsubscribedAt    DateTime?
+  lastSeenAt            DateTime           @default(now())
+  events                PwaInstallEvent[]
+  pushSubscriptions     PushSubscription[]
+  createdAt             DateTime           @default(now())
+  updatedAt             DateTime           @updatedAt
+
+  @@index([platform, installState])
+  @@index([userId])
+  @@index([installedAt])
+  @@index([lastSeenAt])
+}
+
+model PwaInstallEvent {
+  id          String              @id @default(cuid())
+  deviceId    String
+  device      PwaDevice           @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+  userId      String?
+  user        User?               @relation(fields: [userId], references: [id], onDelete: SetNull)
+  eventType   PwaInstallEventType
+  platform    PwaPlatform         @default(UNKNOWN)
+  os          String?             @db.VarChar(120)
+  browser     String?             @db.VarChar(120)
+  displayMode String?             @db.VarChar(60)
+  userAgent   String?             @db.Text
+  metadata    Json?
+  createdAt   DateTime            @default(now())
+
+  @@index([deviceId, createdAt])
+  @@index([eventType, createdAt])
+  @@index([platform, createdAt])
+  @@index([userId, createdAt])
 }
 
 enum NotificationAudience {
@@ -612,8 +703,8 @@ model NotificationDelivery {
   id             String                     @id @default(cuid())
   campaignId     String
   campaign       NotificationCampaign       @relation(fields: [campaignId], references: [id], onDelete: Cascade)
-  userId         String
-  user           User                       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId         String?
+  user           User?                      @relation(fields: [userId], references: [id], onDelete: SetNull)
   subscriptionId String?
   subscription   PushSubscription?          @relation(fields: [subscriptionId], references: [id], onDelete: SetNull)
   status         NotificationDeliveryStatus @default(QUEUED)

@@ -27,6 +27,7 @@ export type ReelScene = {
 export type ContentDraft = {
   id: string;
   recipeId: string | null;
+  customContentType?: "ready_reel" | "post";
   recipeTitle: string;
   recipeUrl: string;
   imageUrl: string | null;

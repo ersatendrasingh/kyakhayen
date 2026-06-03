@@ -2,17 +2,21 @@ import type { PaymentStatus } from "@prisma/client";
 import {
   ArrowRight,
   ArrowUpRight,
+  BellRing,
   BookOpenText,
   ChartNoAxesCombined,
   ChefHat,
   CircleAlert,
   Crown,
+  Download,
   Eye,
   Images,
   IndianRupee,
   MessageSquareText,
+  Smartphone,
   Sparkles,
   Star,
+  UserPlus,
   UsersRound,
 } from "lucide-react";
 import Link from "next/link";
@@ -50,6 +54,34 @@ export type AdminDashboardData = {
     expiringSoon: number;
     noExpiry: number;
     plans: Array<DataPoint & { paid: boolean }>;
+  };
+  pwa: {
+    downloadsTotal: number;
+    downloadsThisWeek: number;
+    registeredThisWeek: number;
+    activeSubscribers: number;
+    subscribersThisWeek: number;
+    linkedDevices: number;
+    anonymousDevices: number;
+    activeDevicesThisWeek: number;
+    promptShownThisWeek: number;
+    promptAcceptedThisWeek: number;
+    promptDismissedThisWeek: number;
+    trackingReady: boolean;
+    platformDownloads: DataPoint[];
+    weeklyDownloads: DataPoint[];
+    recentDevices: Array<{
+      id: string;
+      platform: string;
+      browser: string | null;
+      os: string | null;
+      installState: string;
+      displayMode: string | null;
+      pushPermission: string | null;
+      hasUser: boolean;
+      lastSeenAt: string;
+      installedAt: string | null;
+    }>;
   };
   inventory: { articles: number; ingredients: number; media: number };
   topRecipes: Array<{
@@ -115,32 +147,32 @@ export function AdminDashboard({ data }: { data: AdminDashboardData }) {
   const totalLeads = data.pipeline.reduce((total, stage) => total + stage.value, 0);
 
   return (
-    <div className="space-y-6">
-      <section className="admin-taxonomy-hero rounded-[32px] p-5 sm:p-7 lg:p-9">
-        <div className="relative z-[1] flex flex-col gap-7 xl:flex-row xl:items-end xl:justify-between">
-          <div className="max-w-3xl space-y-4">
+    <div className="space-y-4">
+      <section className="admin-taxonomy-hero rounded-3xl p-4 sm:p-5 lg:p-6">
+        <div className="relative z-[1] flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
+          <div className="max-w-3xl space-y-3">
             <span className="admin-taxonomy-hero-badge inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-[0.22em]">
               <Sparkles className="size-3.5" />
               Operations Cockpit
             </span>
             <div>
-              <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl lg:text-[2.7rem]">
+              <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl lg:text-4xl">
                 Namaste, admin. Your kitchen is moving.
               </h1>
-              <p className="admin-taxonomy-hero-copy mt-3 max-w-2xl text-sm leading-6 sm:text-base">
+              <p className="admin-taxonomy-hero-copy mt-2 max-w-2xl text-sm leading-6">
                 Sales, subscriptions, editorial quality and customer conversations in one calm
                 view. Prioritise the work that grows Kya Khayen today.
               </p>
             </div>
           </div>
-          <div className="flex flex-col gap-3 sm:flex-row xl:flex-col">
-            <Button asChild className="h-12 rounded-2xl px-5">
+          <div className="flex flex-col gap-2 sm:flex-row xl:flex-col">
+            <Button asChild className="h-10 rounded-xl px-4">
               <Link href="/admin/recipes">
                 <ChefHat />
                 Manage recipes
               </Link>
             </Button>
-            <Button asChild variant="outline" className="admin-taxonomy-hero-action h-12 rounded-2xl px-5">
+            <Button asChild variant="outline" className="admin-taxonomy-hero-action h-10 rounded-xl px-4">
               <Link href="/admin/contact-queries">
                 <MessageSquareText />
                 Open lead inbox
@@ -149,7 +181,7 @@ export function AdminDashboard({ data }: { data: AdminDashboardData }) {
           </div>
         </div>
 
-        <div className="relative z-[1] mt-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <div className="relative z-[1] mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
           <HeroStat
             icon={IndianRupee}
             label="Paid revenue"
@@ -177,8 +209,8 @@ export function AdminDashboard({ data }: { data: AdminDashboardData }) {
         </div>
       </section>
 
-      <div className="grid gap-6 xl:grid-cols-[minmax(0,1.65fr)_minmax(325px,1fr)]">
-        <section className="rounded-[28px] border bg-card p-5 shadow-sm sm:p-6">
+      <div className="grid gap-4 xl:grid-cols-[minmax(0,1.65fr)_minmax(325px,1fr)]">
+        <section className="rounded-3xl border bg-card p-4 shadow-sm sm:p-5">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">Commerce</p>
@@ -194,7 +226,7 @@ export function AdminDashboard({ data }: { data: AdminDashboardData }) {
           <RevenueBars points={data.revenue} />
         </section>
 
-        <section className="rounded-[28px] border bg-card p-5 shadow-sm sm:p-6">
+        <section className="rounded-3xl border bg-card p-4 shadow-sm sm:p-5">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">Action Center</p>
@@ -212,8 +244,94 @@ export function AdminDashboard({ data }: { data: AdminDashboardData }) {
         </section>
       </div>
 
-      <div className="grid gap-6 xl:grid-cols-[minmax(350px,1.08fr)_minmax(350px,1fr)_minmax(300px,0.9fr)]">
-        <section className="rounded-[28px] border bg-card p-5 shadow-sm sm:p-6">
+      <div className="grid gap-4 xl:grid-cols-[minmax(0,1.25fr)_minmax(360px,0.85fr)]">
+        <section className="rounded-3xl border bg-card p-4 shadow-sm sm:p-5">
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">PWA App</p>
+              <h2 className="mt-2 text-xl font-semibold">Downloads and push reach</h2>
+              <p className="mt-1 text-sm text-muted-foreground">
+                {data.pwa.trackingReady
+                  ? "Install signals, signups and notification-ready devices."
+                  : "Push subscribers are counted; install tracking will fill after migration."}
+              </p>
+            </div>
+            <Button variant="outline" asChild className="rounded-xl">
+              <Link href="/admin/notifications">
+                Notifications <ArrowUpRight />
+              </Link>
+            </Button>
+          </div>
+
+          <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+            <PwaMetric
+              icon={Download}
+              label="Total installs"
+              value={data.pwa.downloadsTotal}
+              note={data.pwa.trackingReady ? `${data.pwa.downloadsThisWeek} this week` : "tracking pending"}
+            />
+            <PwaMetric icon={UserPlus} label="Registrations" value={data.pwa.registeredThisWeek} note="new users this week" />
+            <PwaMetric icon={BellRing} label="Push subscribers" value={data.pwa.activeSubscribers} note={`${data.pwa.subscribersThisWeek} new this week`} />
+            <PwaMetric icon={Smartphone} label="Active devices" value={data.pwa.activeDevicesThisWeek} note="seen this week" />
+          </div>
+
+          <div className="mt-4 grid gap-4 lg:grid-cols-[minmax(0,1fr)_260px]">
+            <PwaDownloadBars points={data.pwa.weeklyDownloads} />
+            <div className="space-y-3">
+              <PwaPlatformMix points={data.pwa.platformDownloads} total={data.pwa.downloadsTotal} />
+              <div className="rounded-2xl border border-dashed p-3">
+                <p className="text-sm font-semibold">Prompt response this week</p>
+                <div className="mt-3 grid grid-cols-3 gap-2 text-center">
+                  <TinyStat label="Shown" value={data.pwa.promptShownThisWeek} />
+                  <TinyStat label="Accepted" value={data.pwa.promptAcceptedThisWeek} />
+                  <TinyStat label="Dismissed" value={data.pwa.promptDismissedThisWeek} />
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section className="rounded-3xl border bg-card p-4 shadow-sm sm:p-5">
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">Device Details</p>
+              <h2 className="mt-2 text-xl font-semibold">Latest app opens</h2>
+            </div>
+            <Smartphone className="size-5 text-webprimary" />
+          </div>
+          <div className="mt-4 grid grid-cols-2 gap-2">
+            <SubscriptionStat label="Linked" value={data.pwa.linkedDevices} tone="emerald" />
+            <SubscriptionStat label="Anonymous" value={data.pwa.anonymousDevices} tone="blue" />
+          </div>
+          <div className="mt-5 space-y-3">
+            {data.pwa.recentDevices.map((device) => (
+              <div key={device.id} className="rounded-2xl border p-3">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-semibold">
+                      {pwaPlatformLabel(device.platform)} {device.browser ? `- ${device.browser}` : ""}
+                    </p>
+                    <p className="mt-1 truncate text-xs text-muted-foreground">
+                      {device.os || "Unknown OS"} · {device.displayMode || "browser"} · {device.hasUser ? "registered" : "anonymous"}
+                    </p>
+                  </div>
+                  <Badge variant="outline" className="shrink-0 capitalize">
+                    {device.installState.toLowerCase()}
+                  </Badge>
+                </div>
+                <div className="mt-3 flex items-center justify-between gap-3 text-xs text-muted-foreground">
+                  <span>{device.pushPermission || "permission unknown"}</span>
+                  <span>{day(device.lastSeenAt)}</span>
+                </div>
+              </div>
+            ))}
+            {!data.pwa.recentDevices.length && <EmptyState label="PWA devices will appear after visitors install or open the app." />}
+          </div>
+        </section>
+      </div>
+
+      <div className="grid gap-4 xl:grid-cols-[minmax(350px,1.08fr)_minmax(350px,1fr)_minmax(300px,0.9fr)]">
+        <section className="rounded-3xl border bg-card p-4 shadow-sm sm:p-5">
           <div className="flex items-start justify-between gap-3">
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">Audience</p>
@@ -248,7 +366,7 @@ export function AdminDashboard({ data }: { data: AdminDashboardData }) {
           </div>
         </section>
 
-        <section className="rounded-[28px] border bg-card p-5 shadow-sm sm:p-6">
+        <section className="rounded-3xl border bg-card p-4 shadow-sm sm:p-5">
           <div className="flex items-start justify-between">
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">Publishing</p>
@@ -290,7 +408,7 @@ export function AdminDashboard({ data }: { data: AdminDashboardData }) {
           </Link>
         </section>
 
-        <section className="rounded-[28px] border bg-card p-5 shadow-sm sm:p-6">
+        <section className="rounded-3xl border bg-card p-4 shadow-sm sm:p-5">
           <div className="flex items-start justify-between gap-3">
             <div>
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">Subscriptions</p>
@@ -304,8 +422,8 @@ export function AdminDashboard({ data }: { data: AdminDashboardData }) {
         </section>
       </div>
 
-      <div className="grid gap-6 xl:grid-cols-[minmax(380px,1.15fr)_minmax(320px,0.88fr)_minmax(380px,1.1fr)]">
-        <section className="rounded-[28px] border bg-card p-5 shadow-sm sm:p-6">
+      <div className="grid gap-4 xl:grid-cols-[minmax(380px,1.15fr)_minmax(320px,0.88fr)_minmax(380px,1.1fr)]">
+        <section className="rounded-3xl border bg-card p-4 shadow-sm sm:p-5">
           <PanelHeading title="Most discovered recipes" eyebrow="Engagement" href="/admin/recipes" />
           <div className="mt-5 space-y-3">
             {data.topRecipes.map((recipe, index) => (
@@ -332,12 +450,12 @@ export function AdminDashboard({ data }: { data: AdminDashboardData }) {
           </div>
         </section>
 
-        <section className="rounded-[28px] border bg-card p-5 shadow-sm sm:p-6">
+        <section className="rounded-3xl border bg-card p-4 shadow-sm sm:p-5">
           <PanelHeading title="Lead pipeline" eyebrow="CRM" href="/admin/contact-queries" />
           <Pipeline stages={data.pipeline} total={totalLeads} />
         </section>
 
-        <section className="rounded-[28px] border bg-card p-5 shadow-sm sm:p-6">
+        <section className="rounded-3xl border bg-card p-4 shadow-sm sm:p-5">
           <PanelHeading title="Latest orders" eyebrow="Payments" href="/admin/orders" />
           <div className="mt-5 space-y-3">
             {data.recentOrders.map((order) => (
@@ -384,21 +502,100 @@ function HeroStat({
   note: string;
 }) {
   return (
-    <div className="admin-taxonomy-stat rounded-3xl px-5 py-5 backdrop-blur">
+    <div className="admin-taxonomy-stat rounded-2xl px-4 py-4 backdrop-blur">
       <div className="flex items-center justify-between gap-3">
         <p className="admin-taxonomy-stat-label text-sm font-medium">{label}</p>
         <Icon className="admin-taxonomy-stat-icon size-5" />
       </div>
-      <p className="admin-taxonomy-stat-value mt-3 text-3xl font-semibold tracking-tight">{value}</p>
+      <p className="admin-taxonomy-stat-value mt-2 text-2xl font-semibold tracking-tight">{value}</p>
       <p className="mt-2 text-xs text-muted-foreground">{note}</p>
     </div>
   );
 }
 
+function PwaMetric({
+  icon: Icon,
+  label,
+  value,
+  note,
+}: {
+  icon: typeof IndianRupee;
+  label: string;
+  value: number;
+  note: string;
+}) {
+  return (
+    <div className="rounded-2xl border bg-muted/20 p-3">
+      <div className="flex items-center justify-between gap-3">
+        <p className="text-xs font-medium text-muted-foreground">{label}</p>
+        <Icon className="size-4 text-primary" />
+      </div>
+      <p className="mt-2 text-xl font-semibold">{compact(value)}</p>
+      <p className="mt-1 text-[11px] text-muted-foreground">{note}</p>
+    </div>
+  );
+}
+
+function PwaDownloadBars({ points }: { points: DataPoint[] }) {
+  const maximum = Math.max(...points.map((point) => point.value), 1);
+  return (
+    <div>
+      <div className="flex items-center justify-between gap-3">
+        <p className="text-sm font-semibold">Weekly installs</p>
+        <p className="text-xs text-muted-foreground">last {points.length} weeks</p>
+      </div>
+      <div className="mt-4 flex h-32 items-end gap-2">
+        {points.map((point) => (
+          <div key={point.label} className="group flex h-full flex-1 flex-col justify-end gap-2">
+            <div className="relative flex flex-1 items-end">
+              <div className="absolute bottom-full mb-2 hidden rounded-xl border bg-popover px-2.5 py-1.5 text-xs shadow-md group-hover:block">
+                {point.value} installs
+              </div>
+              <div
+                className={`w-full rounded-t-xl ${point.value ? "bg-primary" : "bg-muted"}`}
+                style={{ height: `${point.value ? Math.max(8, (point.value / maximum) * 100) : 2}%` }}
+              />
+            </div>
+            <p className="truncate text-center text-[10px] text-muted-foreground">{point.label}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function PwaPlatformMix({ points, total }: { points: DataPoint[]; total: number }) {
+  return (
+    <div className="rounded-2xl border p-3">
+      <p className="text-sm font-semibold">Platform split</p>
+      <div className="mt-4 space-y-3">
+        {points.map((point) => (
+          <div key={point.label}>
+            <div className="mb-1.5 flex items-center justify-between gap-3 text-sm">
+              <span>{point.label}</span>
+              <span className="font-semibold">{point.value}</span>
+            </div>
+            <div className="h-1.5 overflow-hidden rounded-full bg-muted">
+              <div className="h-full rounded-full bg-webprimary" style={{ width: `${percentage(point.value, total)}%` }} />
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function pwaPlatformLabel(platform: string) {
+  if (platform === "ANDROID") return "Android";
+  if (platform === "IOS") return "iOS";
+  if (platform === "DESKTOP") return "Desktop";
+  return "Unknown";
+}
+
 function RevenueBars({ points }: { points: Array<DataPoint & { orders: number }> }) {
   const maximum = Math.max(...points.map((point) => point.value), 1);
   return (
-    <div className="mt-8 flex h-64 items-end gap-3 sm:gap-5">
+    <div className="mt-6 flex h-52 items-end gap-3 sm:gap-4">
       {points.map((point) => (
         <div key={point.label} className="group flex h-full flex-1 flex-col justify-end gap-3">
           <div className="relative flex flex-1 items-end justify-center">

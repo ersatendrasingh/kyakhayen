@@ -269,11 +269,17 @@ async function publishFacebookPost(input: ContentPublishPayload): Promise<Conten
     };
   }
 
-  const published = await postForm(`https://graph.facebook.com/${graphVersion}/${pageId}/feed`, {
-    message: input.facebookPost,
-    link: input.recipeUrl,
-    access_token: accessToken,
-  });
+  const published = input.imageUrl
+    ? await postForm(`https://graph.facebook.com/${graphVersion}/${pageId}/photos`, {
+        url: input.imageUrl,
+        caption: input.facebookPost,
+        access_token: accessToken,
+      })
+    : await postForm(`https://graph.facebook.com/${graphVersion}/${pageId}/feed`, {
+        message: input.facebookPost,
+        ...(input.recipeUrl ? { link: input.recipeUrl } : {}),
+        access_token: accessToken,
+      });
 
   return {
     platform: "facebook_post",
@@ -406,7 +412,7 @@ async function publishPinterestPin(input: ContentPublishPayload): Promise<Conten
       board_id: boardId,
       title: input.pinterestTitle,
       description: input.pinterestDescription,
-      link: input.recipeUrl,
+      ...(input.recipeUrl ? { link: input.recipeUrl } : {}),
       media_source: {
         source_type: "image_url",
         url: input.imageUrl,
@@ -676,6 +682,21 @@ async function publishLinkedInPost(
     };
   }
 
+  const shareContent = input.recipeUrl
+    ? {
+        shareMediaCategory: "ARTICLE",
+        media: [
+          {
+            status: "READY",
+            originalUrl: input.recipeUrl,
+            title: { text: input.recipeTitle },
+          },
+        ],
+      }
+    : {
+        shareMediaCategory: "NONE",
+      };
+
   const response = await fetch("https://api.linkedin.com/v2/ugcPosts", {
     method: "POST",
     headers: {
@@ -689,14 +710,7 @@ async function publishLinkedInPost(
       specificContent: {
         "com.linkedin.ugc.ShareContent": {
           shareCommentary: { text: input.linkedinPost },
-          shareMediaCategory: "ARTICLE",
-          media: [
-            {
-              status: "READY",
-              originalUrl: input.recipeUrl,
-              title: { text: input.recipeTitle },
-            },
-          ],
+          ...shareContent,
         },
       },
       visibility: {
@@ -742,14 +756,14 @@ async function recordDirectPublishHistory({
   admin: NonNullable<Awaited<ReturnType<typeof currentUser>>>;
 }) {
   const publishedResults = results.filter((result) => result.status === "published");
-  if (!liveMode() || !input.recipeId || !publishedResults.length) return;
+  if (!liveMode() || !publishedResults.length) return;
 
   await ensureContentPipelineSchedulingSchema();
   await db.contentPipelineScheduledPost.create({
     data: {
-      recipeId: input.recipeId,
+      recipeId: input.recipeId || null,
       recipeTitle: input.recipeTitle,
-      recipeUrl: input.recipeUrl,
+      recipeUrl: input.recipeUrl || "",
       imageUrl: input.imageUrl || null,
       videoUrl: input.videoUrl || null,
       platforms: input.platforms,

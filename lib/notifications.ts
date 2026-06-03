@@ -38,12 +38,12 @@ function subscriptionWhere(campaign: {
     if (campaign.segmentType === "CUISINE") {
       return {
         isActive: true,
-        user: { userCuisines: { some: { cuisineId: campaign.segmentId } } },
+        user: { is: { userCuisines: { some: { cuisineId: campaign.segmentId } } } },
       };
     }
     return {
       isActive: true,
-      user: { foodPreferenceId: campaign.segmentId },
+      user: { is: { foodPreferenceId: campaign.segmentId } },
     };
   }
   return { isActive: true };
@@ -98,7 +98,7 @@ export async function sendNotificationCampaign(campaignId: string) {
   await db.notificationDelivery.createMany({
     data: subscriptions.map((subscription) => ({
       campaignId,
-      userId: subscription.userId,
+      userId: subscription.userId || null,
       subscriptionId: subscription.id,
     })),
     skipDuplicates: true,

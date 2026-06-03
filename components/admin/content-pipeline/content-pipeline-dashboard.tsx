@@ -164,6 +164,7 @@ type LocalAssetMap = Record<
 >;
 
 type ScheduleSelectionMap = Partial<Record<PlatformKey, boolean>>;
+type CustomDraftKind = "ready_reel" | "post";
 
 type AutomationFormState = {
   name: string;
@@ -174,8 +175,8 @@ type AutomationFormState = {
 };
 
 type CustomDraftFormState = {
-  title: string;
-  summary: string;
+  kind: CustomDraftKind;
+  caption: string;
 };
 
 const APPROVAL_STORAGE_KEY = "kyakhayen-content-pipeline-platform-approvals-v2";
@@ -184,8 +185,8 @@ const CUSTOM_DRAFTS_STORAGE_KEY = "kyakhayen-content-pipeline-custom-drafts-v1";
 const CONTENT_COPY_VERSION = "social-copy-v4";
 const KYAKHAYEN_HOME_URL = "https://www.kyakhayen.com";
 const DEFAULT_CUSTOM_DRAFT_FORM: CustomDraftFormState = {
-  title: "",
-  summary: "",
+  kind: "ready_reel",
+  caption: "",
 };
 const PREVIEW_FRAMES = [
   { objectPosition: "50% 50%", transform: "scale(1.08)" },
@@ -301,22 +302,62 @@ function titleToTag(value: string) {
     .join("");
 }
 
+function titleFromFileName(value?: string | null) {
+  return (value || "")
+    .replace(/\.[a-z0-9]+$/i, "")
+    .replace(/[-_]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function titleFromCaption(value: string) {
+  return value
+    .split("\n")
+    .map((line) => line.trim())
+    .find(Boolean)
+    ?.slice(0, 90)
+    .trim();
+}
+
+function customDraftTitle(input: {
+  kind: CustomDraftKind;
+  caption: string;
+  fileName?: string | null;
+}) {
+  return (
+    titleFromCaption(input.caption) ||
+    titleFromFileName(input.fileName) ||
+    (input.kind === "ready_reel" ? "Custom reel" : "Custom post")
+  );
+}
+
 function buildCustomDraft(
   input: CustomDraftFormState & {
     imageUrl?: string | null;
+    sourceFileName?: string | null;
   }
 ): ContentDraft {
-  const title = input.title.replace(/\s+/g, " ").trim();
+  const title = customDraftTitle({
+    kind: input.kind,
+    caption: input.caption,
+    fileName: input.sourceFileName,
+  });
   const imageUrl = input.imageUrl ?? null;
-  const summary =
-    input.summary.trim() ||
-    "A fresh Kya Khayen update for the days when you want something different.";
+  const summary = input.caption.trim() || "Kya Khayen update.";
   const shortSummary = compactPreviewCopy(summary, 120);
   const hashtags = Array.from(
-    new Set([titleToTag(title), "KyaKhayen", "FoodReels", "IndianFood", "FoodIdeas"].filter(Boolean))
+    new Set(
+      [
+        titleToTag(title),
+        "KyaKhayen",
+        input.kind === "ready_reel" ? "FoodReels" : "FoodPost",
+        "IndianFood",
+        "FoodIdeas",
+      ].filter(Boolean)
+    )
   ).slice(0, 10);
   const hashtagText = hashtags.map((tag) => `#${tag}`).join(" ");
-  const caption = [`${title}.`, "", summary, "", hashtagText].join("\n");
+  const caption = [summary, hashtagText].filter(Boolean).join("\n\n");
   const scenes: ReelScene[] = [
     {
       id: "hook",
@@ -363,6 +404,7 @@ function buildCustomDraft(
   return {
     id: `custom-${Date.now()}`,
     recipeId: null,
+    customContentType: input.kind,
     recipeTitle: title,
     recipeUrl: KYAKHAYEN_HOME_URL,
     imageUrl,
@@ -511,7 +553,7 @@ function platformPublishPayload(
   return {
     recipeId: draft.recipeId || null,
     recipeTitle: draft.recipeTitle,
-    recipeUrl: draft.recipeUrl,
+    recipeUrl: draft.recipeId ? draft.recipeUrl : null,
     imageUrl: draft.imageUrl,
     videoUrl: content.reelVideoUrl || undefined,
     instagramCaption: content.instagramCaption,
@@ -563,6 +605,37 @@ function statusLabel(value: string) {
 
 function selectedPlatforms(selection: ScheduleSelectionMap, allowedPlatforms: PlatformKey[]) {
   return allowedPlatforms.filter((platform) => selection[platform]);
+}
+
+function isCustomDraft(draft: ContentDraft | null | undefined) {
+  return Boolean(draft && !draft.recipeId);
+}
+
+function customDraftKind(draft: ContentDraft, content?: EditableContent | null): CustomDraftKind {
+  if (draft.customContentType) return draft.customContentType;
+  return content?.reelVideoUrl ? "ready_reel" : "post";
+}
+
+function platformNeedsMedia(
+  platform: PlatformKey,
+  draft: ContentDraft,
+  content: EditableContent
+) {
+  if (VIDEO_POST_PLATFORMS.includes(platform)) return !content.reelVideoUrl;
+  if (platform === "instagram_photo" || platform === "pinterest_pin") return !draft.imageUrl;
+  return false;
+}
+
+function availablePlatformsForDraft(
+  draft: ContentDraft | null,
+  content: EditableContent | null
+) {
+  if (!draft) return [];
+  if (draft.recipeId) return PLATFORMS.map((platform) => platform.key);
+  if (customDraftKind(draft, content) === "ready_reel") return VIDEO_POST_PLATFORMS;
+  return draft.imageUrl
+    ? SIMPLE_POST_PLATFORMS
+    : (["facebook_post", "x_post", "linkedin_post"] satisfies PlatformKey[]);
 }
 
 function normalizeTimeSlot(value: string) {
@@ -663,7 +736,7 @@ export function ContentPipelineDashboard({
   const [recipeSearch, setRecipeSearch] = useState("");
   const [recipeSearching, setRecipeSearching] = useState(false);
   const [selectedRecipeId, setSelectedRecipeId] = useState(recipes[0]?.id ?? "");
-  const [activePlatform, setActivePlatform] = useState<PlatformKey>("facebook_post");
+  const [activePlatformState, setActivePlatform] = useState<PlatformKey>("facebook_post");
   const [approvals, setApprovals] = useState<ApprovalMap>({});
   const [contentOverrides, setContentOverrides] = useState<ContentOverrideMap>({});
   const [publishing, setPublishing] = useState(false);
@@ -683,6 +756,7 @@ export function ContentPipelineDashboard({
   const [customDraftImageFile, setCustomDraftImageFile] = useState<File | null>(null);
   const [customDraftVideoFile, setCustomDraftVideoFile] = useState<File | null>(null);
   const [customDraftSaving, setCustomDraftSaving] = useState(false);
+  const [customImageUploading, setCustomImageUploading] = useState(false);
   const [cartesiaVoices, setCartesiaVoices] = useState<CartesiaVoiceSummary[]>([]);
   const [cartesiaDefaultVoiceId, setCartesiaDefaultVoiceId] = useState("");
   const [cartesiaVoicesLoading, setCartesiaVoicesLoading] = useState(false);
@@ -747,13 +821,24 @@ export function ContentPipelineDashboard({
   const selectedCartesiaLanguage = selectedContent?.cartesiaLanguage || "hi";
   const selectedCartesiaVoiceId =
     selectedContent?.cartesiaVoiceId || cartesiaDefaultVoiceId || cartesiaVoices[0]?.id || "";
+  const selectedAvailablePlatforms = useMemo(
+    () => availablePlatformsForDraft(selectedDraft, selectedContent),
+    [selectedContent, selectedDraft]
+  );
+  const activePlatform = selectedAvailablePlatforms.includes(activePlatformState)
+    ? activePlatformState
+    : selectedAvailablePlatforms[0] ?? activePlatformState;
+  const selectedCustomKind =
+    selectedDraft && isCustomDraft(selectedDraft)
+      ? customDraftKind(selectedDraft, selectedContent)
+      : null;
 
   const currentApprovalKey = selectedDraft
     ? approvalKey(selectedDraft.id, activePlatform)
     : "";
   const currentApproved = Boolean(currentApprovalKey && approvals[currentApprovalKey]);
   const approvedPlatformCount = selectedDraft
-    ? PLATFORMS.filter((platform) => approvals[approvalKey(selectedDraft.id, platform.key)]).length
+    ? selectedAvailablePlatforms.filter((platform) => approvals[approvalKey(selectedDraft.id, platform)]).length
     : 0;
 
   useEffect(() => {
@@ -831,25 +916,30 @@ export function ContentPipelineDashboard({
 
   const createCustomDraft = async (event?: FormEvent<HTMLFormElement>) => {
     event?.preventDefault();
-    const title = customDraftForm.title.trim();
-    if (title.length < 2) {
-      toast.error("Add a custom content title.");
+    const kind = customDraftForm.kind;
+    const caption = customDraftForm.caption.trim();
+    if (kind === "ready_reel" && !customDraftVideoFile) {
+      toast.error("Upload the ready reel video.");
+      return;
+    }
+    if (kind === "post" && !customDraftImageFile && caption.length < 2) {
+      toast.error("Upload a post image or write post text.");
       return;
     }
 
     try {
       setCustomDraftSaving(true);
-      const imageAsset = customDraftImageFile
+      const imageAsset = kind === "post" && customDraftImageFile
         ? await uploadMediaAsset(customDraftImageFile, { contentPipeline: true })
         : null;
-      const videoAsset = customDraftVideoFile
+      const videoAsset = kind === "ready_reel" && customDraftVideoFile
         ? await uploadMediaAsset(customDraftVideoFile, { contentPipeline: true })
         : null;
 
       const draft = buildCustomDraft({
         ...customDraftForm,
-        title,
         imageUrl: imageAsset?.url ?? null,
+        sourceFileName: customDraftVideoFile?.name ?? customDraftImageFile?.name ?? null,
       });
       const nextDrafts = [draft, ...customDrafts];
       saveCustomDrafts(nextDrafts);
@@ -868,14 +958,14 @@ export function ContentPipelineDashboard({
       }
 
       setSelectedRecipeId(draftSelectionId(draft));
-      setActivePlatform(videoAsset?.url ? "instagram_reel" : "facebook_post");
+      setActivePlatform(kind === "ready_reel" ? "instagram_reel" : imageAsset?.url ? "instagram_photo" : "facebook_post");
       setPreviewSceneIndex(0);
       setPublishResults([]);
       setCustomDraftForm(DEFAULT_CUSTOM_DRAFT_FORM);
       setCustomDraftImageFile(null);
       setCustomDraftVideoFile(null);
       setCustomDraftOpen(false);
-      toast.success("Custom post/reel draft created.");
+      toast.success(kind === "ready_reel" ? "Ready reel uploaded." : "Custom post draft created.");
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Unable to create custom draft.");
     } finally {
@@ -1019,6 +1109,34 @@ export function ContentPipelineDashboard({
     } finally {
       setReelVideoUploading(false);
     }
+  };
+
+  const updateCustomDraftImage = (draftId: string, imageUrl: string | null) => {
+    const nextDrafts = customDrafts.map((draft) =>
+      draft.id === draftId ? { ...draft, imageUrl } : draft
+    );
+    saveCustomDrafts(nextDrafts);
+  };
+
+  const uploadCustomPostImageFile = async (file: File | null | undefined) => {
+    if (!selectedDraft || selectedDraft.recipeId || !file) return;
+
+    try {
+      setCustomImageUploading(true);
+      const asset = await uploadMediaAsset(file, { contentPipeline: true });
+      updateCustomDraftImage(selectedDraft.id, asset.url);
+      toast.success("Custom post image uploaded.");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Unable to upload post image.");
+    } finally {
+      setCustomImageUploading(false);
+    }
+  };
+
+  const clearCustomPostImage = () => {
+    if (!selectedDraft || selectedDraft.recipeId) return;
+    updateCustomDraftImage(selectedDraft.id, null);
+    toast.success("Custom post image removed.");
   };
 
   const clearFinalReelVideo = () => {
@@ -1363,6 +1481,11 @@ export function ContentPipelineDashboard({
 
   const publishPlatforms = async (platforms: PlatformKey[]) => {
     if (!selectedDraft || !selectedContent) return;
+    const unsupported = platforms.filter((platform) => !selectedAvailablePlatforms.includes(platform));
+    if (unsupported.length) {
+      toast.error(`${platformLabel(unsupported[0])} is not available for this custom draft.`);
+      return;
+    }
 
     const unapproved = platforms.filter(
       (platform) =>
@@ -1378,7 +1501,19 @@ export function ContentPipelineDashboard({
       (platform) => VIDEO_POST_PLATFORMS.includes(platform) && !selectedContent.reelVideoUrl
     );
     if (missingRenderedVideo.length) {
-      toast.error("Render the reel video before publishing reel/short platforms.");
+      toast.error(
+        isCustomDraft(selectedDraft)
+          ? "Upload the ready reel video before publishing."
+          : "Render the reel video before publishing reel/short platforms."
+      );
+      return;
+    }
+
+    const missingMedia = platforms.find((platform) =>
+      platformNeedsMedia(platform, selectedDraft, selectedContent)
+    );
+    if (missingMedia) {
+      toast.error(`${platformLabel(missingMedia)} needs an uploaded media file first.`);
       return;
     }
 
@@ -1417,7 +1552,10 @@ export function ContentPipelineDashboard({
     VIDEO_POST_PLATFORMS.includes(platform);
 
   const schedulePlatformBlocked = (platform: PlatformKey) => {
-    if (!selectedDraft || !selectedContent || !platformRequiresApproval(platform)) return false;
+    if (!selectedDraft || !selectedContent) return false;
+    if (!selectedAvailablePlatforms.includes(platform)) return true;
+    if (platformNeedsMedia(platform, selectedDraft, selectedContent)) return true;
+    if (!platformRequiresApproval(platform)) return false;
     const approved = approvals[approvalKey(selectedDraft.id, platform)];
     return !approved || !selectedContent.reelVideoUrl;
   };
@@ -1425,7 +1563,14 @@ export function ContentPipelineDashboard({
   const openScheduleDialog = () => {
     if (!selectedDraft || !selectedContent) return;
     setScheduleAt(defaultScheduleAtInput());
-    setScheduleSelection({ [schedulePlatformBlocked(activePlatform) ? "facebook_post" : activePlatform]: true });
+    const fallbackPlatform = selectedAvailablePlatforms.find(
+      (platform) => !schedulePlatformBlocked(platform)
+    );
+    setScheduleSelection({
+      [schedulePlatformBlocked(activePlatform)
+        ? fallbackPlatform ?? selectedAvailablePlatforms[0] ?? activePlatform
+        : activePlatform]: true,
+    });
     setScheduleOpen(true);
   };
 
@@ -1437,7 +1582,7 @@ export function ContentPipelineDashboard({
     if (!selectedDraft || !selectedContent) return;
     const platforms = selectedPlatforms(
       scheduleSelection,
-      PLATFORMS.map((platform) => platform.key)
+      selectedAvailablePlatforms
     );
     if (!platforms.length) {
       toast.error("Choose at least one platform to schedule.");
@@ -1445,7 +1590,7 @@ export function ContentPipelineDashboard({
     }
     const blockedPlatform = platforms.find(schedulePlatformBlocked);
     if (blockedPlatform) {
-      toast.error(`${platformLabel(blockedPlatform)} needs approval and a rendered video first.`);
+      toast.error(`${platformLabel(blockedPlatform)} needs approval/media before scheduling.`);
       return;
     }
     const scheduledDate = new Date(scheduleAt);
@@ -1752,8 +1897,14 @@ export function ContentPipelineDashboard({
 
   const activePlatformMeta = PLATFORMS.find((platform) => platform.key === activePlatform);
   const currentPlatformNeedsApproval = VIDEO_POST_PLATFORMS.includes(activePlatform);
+  const currentPlatformMediaReady =
+    selectedDraft && selectedContent
+      ? !platformNeedsMedia(activePlatform, selectedDraft, selectedContent)
+      : false;
   const currentPlatformPublishReady =
     Boolean(selectedDraft && selectedContent) &&
+    selectedAvailablePlatforms.includes(activePlatform) &&
+    currentPlatformMediaReady &&
     (!currentPlatformNeedsApproval || (currentApproved && Boolean(selectedContent?.reelVideoUrl)));
   const publishModeLabel =
     socialSetup.mode === "live" ? "Live publishing" : "Dry run mode";
@@ -1860,73 +2011,100 @@ export function ContentPipelineDashboard({
         <DialogContent className="sm:max-w-xl">
           <form onSubmit={createCustomDraft}>
             <DialogHeader>
-              <DialogTitle>Create custom post/reel</DialogTitle>
+              <DialogTitle>Create custom content</DialogTitle>
               <DialogDescription>
-                Use this when the content is not tied to a recipe. Upload media files directly and
-                edit platform copy after creating the draft.
+                Upload a finished reel or a post asset that is not tied to a recipe.
               </DialogDescription>
             </DialogHeader>
             <div className="mt-5 grid gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="custom-draft-title">Title</Label>
-                <Input
-                  id="custom-draft-title"
-                  value={customDraftForm.title}
-                  onChange={(event) =>
-                    setCustomDraftForm((current) => ({
-                      ...current,
-                      title: event.target.value,
-                    }))
-                  }
-                  placeholder="Weekend cafe finds, offer update, behind the scenes..."
-                />
+              <div className="grid gap-2 sm:grid-cols-2">
+                {[
+                  {
+                    kind: "ready_reel" as const,
+                    label: "Ready reel",
+                    description: "Finished video with its own audio.",
+                  },
+                  {
+                    kind: "post" as const,
+                    label: "Post image/text",
+                    description: "Image post or text update.",
+                  },
+                ].map((option) => (
+                  <button
+                    key={option.kind}
+                    type="button"
+                    onClick={() => {
+                      setCustomDraftForm((current) => ({ ...current, kind: option.kind }));
+                      setCustomDraftImageFile(null);
+                      setCustomDraftVideoFile(null);
+                    }}
+                    className={cn(
+                      "rounded-xl border p-3 text-left transition hover:border-[#d8ad63] hover:bg-[#fff8ed]",
+                      customDraftForm.kind === option.kind
+                        ? "border-[#d8ad63] bg-[#fff8ed] text-[#30261f]"
+                        : "border-border bg-background"
+                    )}
+                    disabled={customDraftSaving}
+                  >
+                    <span className="block text-sm font-semibold">{option.label}</span>
+                    <span className="mt-1 block text-xs leading-5 text-muted-foreground">
+                      {option.description}
+                    </span>
+                  </button>
+                ))}
               </div>
+
+              {customDraftForm.kind === "ready_reel" ? (
+                <div className="space-y-2">
+                  <Label htmlFor="custom-draft-video">Reel video</Label>
+                  <Input
+                    id="custom-draft-video"
+                    type="file"
+                    accept="video/mp4,video/webm,video/quicktime"
+                    onChange={(event) =>
+                      setCustomDraftVideoFile(event.target.files?.[0] ?? null)
+                    }
+                    disabled={customDraftSaving}
+                    required
+                  />
+                  <p className="text-xs leading-5 text-muted-foreground">
+                    {customDraftVideoFile
+                      ? `Selected: ${customDraftVideoFile.name}`
+                      : "Upload the final edited reel. Its existing audio will be used as-is."}
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  <Label htmlFor="custom-draft-image">Post image</Label>
+                  <Input
+                    id="custom-draft-image"
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp,image/avif"
+                    onChange={(event) =>
+                      setCustomDraftImageFile(event.target.files?.[0] ?? null)
+                    }
+                    disabled={customDraftSaving}
+                  />
+                  <p className="text-xs leading-5 text-muted-foreground">
+                    {customDraftImageFile
+                      ? `Selected: ${customDraftImageFile.name}`
+                      : "Optional for Facebook, X, and LinkedIn. Required for Instagram Photo and Pinterest."}
+                  </p>
+                </div>
+              )}
+
               <div className="space-y-2">
-                <Label htmlFor="custom-draft-image">Post image</Label>
-                <Input
-                  id="custom-draft-image"
-                  type="file"
-                  accept="image/jpeg,image/png,image/webp,image/avif"
-                  onChange={(event) =>
-                    setCustomDraftImageFile(event.target.files?.[0] ?? null)
-                  }
-                  disabled={customDraftSaving}
-                />
-                <p className="text-xs leading-5 text-muted-foreground">
-                  {customDraftImageFile
-                    ? `Selected: ${customDraftImageFile.name}`
-                    : "Optional. Upload an image for photo posts and social previews."}
-                </p>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="custom-draft-video">Final reel video</Label>
-                <Input
-                  id="custom-draft-video"
-                  type="file"
-                  accept="video/mp4,video/webm,video/quicktime"
-                  onChange={(event) =>
-                    setCustomDraftVideoFile(event.target.files?.[0] ?? null)
-                  }
-                  disabled={customDraftSaving}
-                />
-                <p className="text-xs leading-5 text-muted-foreground">
-                  {customDraftVideoFile
-                    ? `Selected: ${customDraftVideoFile.name}`
-                    : "Optional. Upload an already edited reel/video to publish it directly."}
-                </p>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="custom-draft-summary">Brief</Label>
+                <Label htmlFor="custom-draft-caption">Caption / post text</Label>
                 <Textarea
-                  id="custom-draft-summary"
-                  value={customDraftForm.summary}
+                  id="custom-draft-caption"
+                  value={customDraftForm.caption}
                   onChange={(event) =>
                     setCustomDraftForm((current) => ({
                       ...current,
-                      summary: event.target.value,
+                      caption: event.target.value,
                     }))
                   }
-                  placeholder="What should this post say?"
+                  placeholder="Write the caption only if you want one."
                   className="min-h-28 resize-y"
                 />
               </div>
@@ -1962,7 +2140,7 @@ export function ContentPipelineDashboard({
             </DialogTitle>
             <DialogDescription>
               Choose a future publish time. Simple posts can run without approval; reels and shorts
-              need approval and a rendered video.
+              need approval and an uploaded video.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
@@ -1977,7 +2155,9 @@ export function ContentPipelineDashboard({
               />
             </div>
             <div className="grid gap-2 sm:grid-cols-2">
-              {PLATFORMS.map((platform) => {
+              {selectedAvailablePlatforms.map((platformKey) => {
+                const platform = PLATFORMS.find((item) => item.key === platformKey);
+                if (!platform) return null;
                 const blocked = schedulePlatformBlocked(platform.key);
                 const checked = Boolean(scheduleSelection[platform.key]);
                 return (
@@ -1998,7 +2178,7 @@ export function ContentPipelineDashboard({
                       <span className="block font-semibold">{platform.label}</span>
                       <span className="mt-1 block text-xs leading-5 text-muted-foreground">
                         {blocked
-                          ? "Approve this platform and render the reel video first."
+                          ? "Complete approval/media first."
                           : platform.description}
                       </span>
                     </span>
@@ -2799,9 +2979,22 @@ export function ContentPipelineDashboard({
           <div className="mt-4 max-h-[420px] space-y-2 overflow-y-auto pr-1">
             {drafts.map((draft) => {
               const isSelected = selectedDraft?.id === draft.id;
-              const approvedCount = PLATFORMS.filter(
-                (platform) => approvals[approvalKey(draft.id, platform.key)]
+              const draftContent = {
+                ...defaultEditableContent(draft),
+                ...(contentOverrides[contentKey(draft.id)] ?? {}),
+              };
+              const draftPlatforms = availablePlatformsForDraft(draft, draftContent);
+              const approvedCount = draftPlatforms.filter((platform) =>
+                approvals[approvalKey(draft.id, platform)]
               ).length;
+              const draftKindLabel =
+                isCustomDraft(draft) && customDraftKind(draft, draftContent) === "ready_reel"
+                  ? "Ready reel"
+                  : isCustomDraft(draft)
+                    ? draft.imageUrl
+                      ? "Custom image post"
+                      : "Custom text post"
+                    : `${draft.durationSeconds}s video plan`;
 
               return (
                 <div
@@ -2840,8 +3033,7 @@ export function ContentPipelineDashboard({
                         )}
                       </div>
                       <p className="mt-1 text-xs text-muted-foreground dark:text-[#b8c8bf]">
-                        {draft.recipeId ? `${draft.durationSeconds}s video plan` : "Custom content plan"} ·{" "}
-                        {approvedCount}/{PLATFORMS.length} approved
+                        {draftKindLabel} · {approvedCount}/{draftPlatforms.length} approved
                       </p>
                     </div>
                   </button>
@@ -2873,11 +3065,13 @@ export function ContentPipelineDashboard({
                   </p>
                 </div>
                 <Badge variant="outline" className="shrink-0">
-                  {approvedPlatformCount}/{PLATFORMS.length}
+                  {approvedPlatformCount}/{selectedAvailablePlatforms.length}
                 </Badge>
               </div>
               <div className="grid gap-2">
-                {PLATFORMS.map((platform) => {
+                {selectedAvailablePlatforms.map((platformKey) => {
+                  const platform = PLATFORMS.find((item) => item.key === platformKey);
+                  if (!platform) return null;
                   const isActive = activePlatform === platform.key;
                   const isApproved = approvals[approvalKey(selectedDraft.id, platform.key)];
                   return (
@@ -2933,11 +3127,25 @@ export function ContentPipelineDashboard({
                         {selectedDraft.recipeTitle}
                       </h2>
                       <p className="mt-1 text-sm text-muted-foreground">
-                        {selectedDraft.recipeId ? selectedDraft.recipeUrl : "Custom content"}
+                        {selectedDraft.recipeId
+                          ? selectedDraft.recipeUrl
+                          : selectedCustomKind === "ready_reel"
+                            ? "Custom ready reel"
+                            : "Custom post"}
                       </p>
                       <div className="mt-3 flex flex-wrap gap-2">
                         {!selectedDraft.recipeId && <Badge variant="outline">Custom</Badge>}
-                        <Badge variant="outline">{selectedDraft.durationSeconds}s video</Badge>
+                        {selectedDraft.recipeId || selectedCustomKind === "ready_reel" ? (
+                          <Badge variant="outline">
+                            {selectedCustomKind === "ready_reel"
+                              ? "Uploaded video"
+                              : `${selectedDraft.durationSeconds}s video`}
+                          </Badge>
+                        ) : (
+                          <Badge variant="outline">
+                            {selectedDraft.imageUrl ? "Uploaded image" : "Text post"}
+                          </Badge>
+                        )}
                         <Badge variant="outline">{selectedDraft.hashtags.length} hashtags</Badge>
                         <Badge
                           variant="outline"
@@ -2959,76 +3167,92 @@ export function ContentPipelineDashboard({
                 </div>
               </div>
 
-              <div className="border-b p-4">
-                <ReelStudio
-                  draft={selectedDraft}
-                  content={selectedContent}
-                  activeScene={activeScene}
-                  activeFrame={activeFrame}
-                  previewSceneIndex={previewSceneIndex}
-                  previewPlaying={previewPlaying}
-                  voicePreviewPlaying={voicePreviewPlaying}
-                  voiceGenerating={voiceGenerating}
-                  renderingReel={renderingReel}
-                  reelVideoUploading={reelVideoUploading}
-                  reelRenderProgress={reelRenderProgress}
-                  reelVideoPreviewUrl={backgroundVideoPreviewUrl}
-                  renderedReelUrl={renderedReelUrl}
-                  voiceoverAudioPreviewUrl={voiceoverAudioPreviewUrl}
-                  cartesiaVoices={cartesiaVoices}
-                  selectedCartesiaLanguage={selectedCartesiaLanguage}
-                  selectedCartesiaVoiceId={selectedCartesiaVoiceId}
-                  cartesiaVoicesLoading={cartesiaVoicesLoading}
-                  cartesiaVoicesError={cartesiaVoicesError}
-                  localVideoName={selectedLocalAssets?.videoName ?? ""}
-                  localVoiceName={selectedLocalAssets?.voiceName ?? ""}
-                  onSceneChange={updateSelectedScene}
-                  onVoiceoverChange={(value) =>
-                    updateSelectedContent("voiceoverSpeech", value, { invalidateReel: true })
-                  }
-                  onTextOverlayChange={(checked) =>
-                    updateSelectedContent("showReelTextOverlay", checked, {
-                      invalidateReel: true,
-                    })
-                  }
-                  onVideoFileChange={(file) => updateLocalAsset("video", file)}
-                  onFinalReelFileChange={(file) => void uploadFinalReelFile(file)}
-                  onVoiceFileChange={(file) => updateLocalAsset("voice", file)}
-                  onCartesiaLanguageChange={(language) =>
-                    updateSelectedContentFields(
-                      { cartesiaLanguage: language, cartesiaVoiceId: "" },
-                      { invalidateReel: true }
-                    )
-                  }
-                  onCartesiaVoiceChange={(voiceId) =>
-                    updateSelectedContent("cartesiaVoiceId", voiceId, {
-                      invalidateReel: true,
-                    })
-                  }
-                  onGenerateVoice={() => void generateCartesiaVoiceover()}
-                  onClearVideo={clearReelVideoAsset}
-                  onClearFinalReel={clearFinalReelVideo}
-                  onClearVoice={clearVoiceoverAsset}
-                  onSceneSelect={(index) => {
-                    setPreviewSceneIndex(index);
-                    setPreviewPlaying(false);
-                  }}
-                  onPreviewToggle={() => {
-                    if (previewPlaying) {
-                      setPreviewPlaying(false);
-                      stopVoicePreview();
-                    } else {
-                      setPreviewPlaying(true);
-                      startVoicePreview();
+              {isCustomDraft(selectedDraft) ? (
+                <div className="border-b p-4">
+                  <CustomContentStudio
+                    draft={selectedDraft}
+                    kind={selectedCustomKind ?? "post"}
+                    renderedReelUrl={renderedReelUrl}
+                    reelVideoUploading={reelVideoUploading}
+                    customImageUploading={customImageUploading}
+                    onFinalReelFileChange={(file) => void uploadFinalReelFile(file)}
+                    onClearFinalReel={clearFinalReelVideo}
+                    onImageFileChange={(file) => void uploadCustomPostImageFile(file)}
+                    onClearImage={clearCustomPostImage}
+                  />
+                </div>
+              ) : (
+                <div className="border-b p-4">
+                  <ReelStudio
+                    draft={selectedDraft}
+                    content={selectedContent}
+                    activeScene={activeScene}
+                    activeFrame={activeFrame}
+                    previewSceneIndex={previewSceneIndex}
+                    previewPlaying={previewPlaying}
+                    voicePreviewPlaying={voicePreviewPlaying}
+                    voiceGenerating={voiceGenerating}
+                    renderingReel={renderingReel}
+                    reelVideoUploading={reelVideoUploading}
+                    reelRenderProgress={reelRenderProgress}
+                    reelVideoPreviewUrl={backgroundVideoPreviewUrl}
+                    renderedReelUrl={renderedReelUrl}
+                    voiceoverAudioPreviewUrl={voiceoverAudioPreviewUrl}
+                    cartesiaVoices={cartesiaVoices}
+                    selectedCartesiaLanguage={selectedCartesiaLanguage}
+                    selectedCartesiaVoiceId={selectedCartesiaVoiceId}
+                    cartesiaVoicesLoading={cartesiaVoicesLoading}
+                    cartesiaVoicesError={cartesiaVoicesError}
+                    localVideoName={selectedLocalAssets?.videoName ?? ""}
+                    localVoiceName={selectedLocalAssets?.voiceName ?? ""}
+                    onSceneChange={updateSelectedScene}
+                    onVoiceoverChange={(value) =>
+                      updateSelectedContent("voiceoverSpeech", value, { invalidateReel: true })
                     }
-                  }}
-                  onVoiceToggle={() =>
-                    voicePreviewPlaying ? stopVoicePreview() : startVoicePreview()
-                  }
-                  onRenderReel={() => void renderSelectedReel()}
-                  onDownloadReel={() => void downloadRenderedReel()}
-                />
-              </div>
+                    onTextOverlayChange={(checked) =>
+                      updateSelectedContent("showReelTextOverlay", checked, {
+                        invalidateReel: true,
+                      })
+                    }
+                    onVideoFileChange={(file) => updateLocalAsset("video", file)}
+                    onFinalReelFileChange={(file) => void uploadFinalReelFile(file)}
+                    onVoiceFileChange={(file) => updateLocalAsset("voice", file)}
+                    onCartesiaLanguageChange={(language) =>
+                      updateSelectedContentFields(
+                        { cartesiaLanguage: language, cartesiaVoiceId: "" },
+                        { invalidateReel: true }
+                      )
+                    }
+                    onCartesiaVoiceChange={(voiceId) =>
+                      updateSelectedContent("cartesiaVoiceId", voiceId, {
+                        invalidateReel: true,
+                      })
+                    }
+                    onGenerateVoice={() => void generateCartesiaVoiceover()}
+                    onClearVideo={clearReelVideoAsset}
+                    onClearFinalReel={clearFinalReelVideo}
+                    onClearVoice={clearVoiceoverAsset}
+                    onSceneSelect={(index) => {
+                      setPreviewSceneIndex(index);
+                      setPreviewPlaying(false);
+                    }}
+                    onPreviewToggle={() => {
+                      if (previewPlaying) {
+                        setPreviewPlaying(false);
+                        stopVoicePreview();
+                      } else {
+                        setPreviewPlaying(true);
+                        startVoicePreview();
+                      }
+                    }}
+                    onVoiceToggle={() =>
+                      voicePreviewPlaying ? stopVoicePreview() : startVoicePreview()
+                    }
+                    onRenderReel={() => void renderSelectedReel()}
+                    onDownloadReel={() => void downloadRenderedReel()}
+                  />
+                </div>
+              )}
 
               <div className="p-4">
                 <div className="min-w-0 space-y-4">
@@ -3530,6 +3754,163 @@ function ReelStudio({
   );
 }
 
+function CustomContentStudio({
+  draft,
+  kind,
+  renderedReelUrl,
+  reelVideoUploading,
+  customImageUploading,
+  onFinalReelFileChange,
+  onClearFinalReel,
+  onImageFileChange,
+  onClearImage,
+}: {
+  draft: ContentDraft;
+  kind: CustomDraftKind;
+  renderedReelUrl: string;
+  reelVideoUploading: boolean;
+  customImageUploading: boolean;
+  onFinalReelFileChange: (file: File | null | undefined) => void;
+  onClearFinalReel: () => void;
+  onImageFileChange: (file: File | null | undefined) => void;
+  onClearImage: () => void;
+}) {
+  if (kind === "ready_reel") {
+    return (
+      <div className="grid gap-4 xl:grid-cols-[320px_minmax(0,1fr)]">
+        <div>
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <h3 className="text-lg font-semibold">Ready reel</h3>
+              <p className="text-sm text-muted-foreground">
+                Publish the uploaded video as-is.
+              </p>
+            </div>
+            <Badge variant="outline">No render needed</Badge>
+          </div>
+          <div className="mt-4 flex justify-center xl:justify-start">
+            <div className="relative aspect-[9/16] w-full max-w-[280px] overflow-hidden rounded-[28px] border-[10px] border-[#19130f] bg-black shadow-xl">
+              {renderedReelUrl ? (
+                <video
+                  key={renderedReelUrl}
+                  src={renderedReelUrl}
+                  controls
+                  playsInline
+                  preload="metadata"
+                  className="absolute inset-0 size-full object-cover"
+                />
+              ) : (
+                <div className="absolute inset-0 grid place-items-center p-6 text-center text-sm text-white/75">
+                  Upload the final reel video.
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+        <div className="min-w-0 space-y-4">
+          <div className="rounded-2xl border bg-background p-4">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <h4 className="font-semibold">Video file</h4>
+                <p className="text-xs leading-5 text-muted-foreground">
+                  Replace this only when you have a newer finished reel.
+                </p>
+              </div>
+              {renderedReelUrl && (
+                <Button type="button" variant="ghost" size="sm" onClick={onClearFinalReel}>
+                  Remove
+                </Button>
+              )}
+            </div>
+            <div className="mt-4 space-y-2">
+              <Input
+                type="file"
+                accept="video/mp4,video/webm,video/quicktime"
+                onChange={(event) => onFinalReelFileChange(event.target.files?.[0])}
+                disabled={reelVideoUploading}
+              />
+              <p className="text-xs text-muted-foreground">
+                {renderedReelUrl
+                  ? "Publish-ready video is uploaded and selected."
+                  : "Upload a finished MP4/WebM/MOV before publishing."}
+              </p>
+              {reelVideoUploading && (
+                <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
+                  <LoaderCircle className="size-3.5 animate-spin" />
+                  Uploading reel...
+                </div>
+              )}
+            </div>
+          </div>
+          <div className="rounded-2xl border bg-muted/20 p-4 text-sm leading-6 text-muted-foreground">
+            This flow skips script, Cartesia voice, and browser rendering. Edit only the platform
+            caption/title below, then approve and publish the reel platforms.
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="grid gap-4 xl:grid-cols-[320px_minmax(0,1fr)]">
+      <div>
+        <div className="flex items-center justify-between gap-3">
+          <div>
+            <h3 className="text-lg font-semibold">Custom post</h3>
+            <p className="text-sm text-muted-foreground">
+              Use an uploaded image or text-only social copy.
+            </p>
+          </div>
+          <Badge variant="outline">{draft.imageUrl ? "Image" : "Text"}</Badge>
+        </div>
+        <div className="mt-4">
+          {draft.imageUrl ? (
+            <PreviewImage draft={draft} className="aspect-square rounded-2xl border" sizes="320px" />
+          ) : (
+            <div className="grid aspect-square place-items-center rounded-2xl border bg-muted/30 p-6 text-center text-sm text-muted-foreground">
+              No image selected.
+            </div>
+          )}
+        </div>
+      </div>
+      <div className="min-w-0 space-y-4">
+        <div className="rounded-2xl border bg-background p-4">
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <h4 className="font-semibold">Post image</h4>
+              <p className="text-xs leading-5 text-muted-foreground">
+                Instagram Photo and Pinterest need an image. Facebook, X, and LinkedIn can use text.
+              </p>
+            </div>
+            {draft.imageUrl && (
+              <Button type="button" variant="ghost" size="sm" onClick={onClearImage}>
+                Remove
+              </Button>
+            )}
+          </div>
+          <div className="mt-4 space-y-2">
+            <Input
+              type="file"
+              accept="image/jpeg,image/png,image/webp,image/avif"
+              onChange={(event) => onImageFileChange(event.target.files?.[0])}
+              disabled={customImageUploading}
+            />
+            {customImageUploading && (
+              <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
+                <LoaderCircle className="size-3.5 animate-spin" />
+                Uploading image...
+              </div>
+            )}
+          </div>
+        </div>
+        <div className="rounded-2xl border bg-muted/20 p-4 text-sm leading-6 text-muted-foreground">
+          Edit platform-specific text below. No recipe link, voiceover, or reel render is required.
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function AnimatedSceneOverlay({
   scene,
   sceneIndex,
@@ -3829,6 +4210,7 @@ function PlatformPreview({
   const reelCaption = content.instagramCaption;
   const facebookPreviewCopy = compactPreviewCopy(content.facebookPost, 170);
   const linkedinPreviewCopy = compactPreviewCopy(content.linkedinPost, 190);
+  const hasRecipeLink = Boolean(draft.recipeId);
 
   if (platform === "facebook_post") {
     return (
@@ -3849,22 +4231,28 @@ function PlatformPreview({
               {facebookPreviewCopy}
             </p>
           </div>
-          <div className="mx-3 overflow-hidden rounded-xl border bg-[#f0f2f5] dark:border-white/10 dark:bg-[#111827]">
-            <PreviewImage
-              draft={draft}
-              className="aspect-[1.91/1]"
-              sizes="(max-width: 1280px) 320px, 360px"
-            />
-            <div className="border-t p-3 dark:border-white/10">
-              <p className="text-[11px] uppercase text-[#65676b] dark:text-slate-400">
-                kyakhayen.com
-              </p>
-              <h4 className="line-clamp-2 text-sm font-semibold">{draft.recipeTitle}</h4>
-              <p className="mt-1 line-clamp-2 text-xs text-[#65676b] dark:text-slate-400">
-                Open the full step-by-step recipe on Kya Khayen.
-              </p>
+          {(draft.imageUrl || hasRecipeLink) && (
+            <div className="mx-3 overflow-hidden rounded-xl border bg-[#f0f2f5] dark:border-white/10 dark:bg-[#111827]">
+              {draft.imageUrl && (
+                <PreviewImage
+                  draft={draft}
+                  className="aspect-[1.91/1]"
+                  sizes="(max-width: 1280px) 320px, 360px"
+                />
+              )}
+              {hasRecipeLink && (
+                <div className="border-t p-3 dark:border-white/10">
+                  <p className="text-[11px] uppercase text-[#65676b] dark:text-slate-400">
+                    kyakhayen.com
+                  </p>
+                  <h4 className="line-clamp-2 text-sm font-semibold">{draft.recipeTitle}</h4>
+                  <p className="mt-1 line-clamp-2 text-xs text-[#65676b] dark:text-slate-400">
+                    Open the full step-by-step recipe on Kya Khayen.
+                  </p>
+                </div>
+              )}
             </div>
-          </div>
+          )}
           <div className="grid grid-cols-3 border-t px-2 py-1 text-xs font-semibold text-[#65676b] dark:border-white/10 dark:text-slate-300">
             <span className="flex items-center justify-center gap-1 rounded-md py-2">
               <ThumbsUp className="size-4" />
@@ -3926,7 +4314,7 @@ function PlatformPreview({
             <p className="line-clamp-4 text-sm text-[#5f4b55] dark:text-slate-300">
               {content.pinterestDescription}
             </p>
-            <p className="mt-3 line-clamp-1 text-xs font-semibold">kyakhayen.com</p>
+            {hasRecipeLink && <p className="mt-3 line-clamp-1 text-xs font-semibold">kyakhayen.com</p>}
           </div>
         </div>
       </div>
@@ -3985,13 +4373,19 @@ function PlatformPreview({
                 <span className="text-[#536471] dark:text-slate-400">@kyakhayen · now</span>
               </div>
               <p className="mt-2 whitespace-pre-line text-sm leading-5">{content.xPost}</p>
-              <div className="mt-3 overflow-hidden rounded-2xl border dark:border-white/10">
-                <PreviewImage draft={draft} className="aspect-[16/9]" sizes="420px" />
-                <div className="border-t p-3 dark:border-white/10">
-                  <p className="text-xs text-[#536471] dark:text-slate-400">kyakhayen.com</p>
-                  <p className="line-clamp-2 text-sm font-semibold">{draft.recipeTitle}</p>
+              {(draft.imageUrl || hasRecipeLink) && (
+                <div className="mt-3 overflow-hidden rounded-2xl border dark:border-white/10">
+                  {draft.imageUrl && (
+                    <PreviewImage draft={draft} className="aspect-[16/9]" sizes="420px" />
+                  )}
+                  {hasRecipeLink && (
+                    <div className="border-t p-3 dark:border-white/10">
+                      <p className="text-xs text-[#536471] dark:text-slate-400">kyakhayen.com</p>
+                      <p className="line-clamp-2 text-sm font-semibold">{draft.recipeTitle}</p>
+                    </div>
+                  )}
                 </div>
-              </div>
+              )}
               <div className="mt-3 flex justify-between text-[#536471] dark:text-slate-400">
                 <MessageCircle className="size-4" />
                 <Share2 className="size-4" />
@@ -4024,17 +4418,23 @@ function PlatformPreview({
               {linkedinPreviewCopy}
             </p>
           </div>
-          <div className="mx-4 overflow-hidden rounded-xl border dark:border-white/10">
-            <PreviewImage
-              draft={draft}
-              className="aspect-[1.91/1]"
-              sizes="(max-width: 1280px) 320px, 460px"
-            />
-            <div className="border-t bg-[#eef3f8] p-3 dark:border-white/10 dark:bg-[#111827]">
-              <p className="text-xs text-[#666] dark:text-slate-400">kyakhayen.com</p>
-              <h4 className="line-clamp-2 text-sm font-semibold">{draft.recipeTitle}</h4>
+          {(draft.imageUrl || hasRecipeLink) && (
+            <div className="mx-4 overflow-hidden rounded-xl border dark:border-white/10">
+              {draft.imageUrl && (
+                <PreviewImage
+                  draft={draft}
+                  className="aspect-[1.91/1]"
+                  sizes="(max-width: 1280px) 320px, 460px"
+                />
+              )}
+              {hasRecipeLink && (
+                <div className="border-t bg-[#eef3f8] p-3 dark:border-white/10 dark:bg-[#111827]">
+                  <p className="text-xs text-[#666] dark:text-slate-400">kyakhayen.com</p>
+                  <h4 className="line-clamp-2 text-sm font-semibold">{draft.recipeTitle}</h4>
+                </div>
+              )}
             </div>
-          </div>
+          )}
           <div className="grid grid-cols-3 border-t px-3 py-2 text-xs font-semibold text-[#666] dark:border-white/10 dark:text-slate-300">
             <span className="flex items-center justify-center gap-1 py-2">
               <ThumbsUp className="size-4" />

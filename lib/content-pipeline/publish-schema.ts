@@ -14,7 +14,7 @@ export const contentPlatformSchema = z.enum([
 export const contentPublishSchema = z.object({
   recipeId: z.string().trim().min(1).optional().nullable(),
   recipeTitle: z.string().trim().min(2).max(180),
-  recipeUrl: z.string().trim().url().max(700),
+  recipeUrl: z.string().trim().url().max(700).optional().nullable(),
   imageUrl: z.string().trim().url().max(700).nullable().optional(),
   videoUrl: z.string().trim().url().max(700).nullable().optional(),
   instagramCaption: z.string().trim().min(2).max(2200),
