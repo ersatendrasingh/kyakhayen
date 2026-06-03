@@ -10,6 +10,7 @@ import {
   RecipeSteam,
   shouldShowRecipeSteam,
 } from "@/components/recipes/recipe-steam";
+import { shouldServeDirectMediaImage } from "@/lib/direct-media-image";
 import { handleRecipeClick } from "@/lib/handle-recipe-click";
 import { cn } from "@/lib/utils";
 
@@ -35,12 +36,25 @@ export type RecipeCardRecipe = {
 interface RecipeCardProps {
   recipe: RecipeCardRecipe;
   layout?: "grid" | "list";
+  imageLoad?: "priority" | "eager" | "lazy";
 }
 
-const RecipeCard = ({ recipe, layout = "grid" }: RecipeCardProps) => {
+const RecipeCard = ({
+  recipe,
+  layout = "grid",
+  imageLoad = "lazy",
+}: RecipeCardProps) => {
   const href = recipe.metaSlug
     ? `/${recipe.slug}-${recipe.metaSlug}`
     : `/${recipe.slug}`;
+  const imageSrc = recipe.imageUrl || "/meta-images/recipe-page.jpg";
+  const imageLoadingProps =
+    imageLoad === "priority"
+      ? { priority: true, fetchPriority: "high" as const }
+      : {
+          loading: imageLoad === "eager" ? ("eager" as const) : ("lazy" as const),
+          fetchPriority: imageLoad === "eager" ? ("high" as const) : ("auto" as const),
+        };
   const totalMinutes = recipe.recipeCookingTime
     ? recipe.recipeCookingTime.prepTime +
       recipe.recipeCookingTime.cookTime +
@@ -87,10 +101,12 @@ const RecipeCard = ({ recipe, layout = "grid" }: RecipeCardProps) => {
           )}
         >
           <Image
-            src={recipe.imageUrl || "/meta-images/recipe-page.jpg"}
+            src={imageSrc}
             alt={recipe.title || "Recipe"}
             fill
+            unoptimized={shouldServeDirectMediaImage(imageSrc)}
             sizes="(max-width: 640px) 100vw, (max-width: 1100px) 50vw, 25vw"
+            {...imageLoadingProps}
             className="object-cover transition duration-700 group-hover:scale-105"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-[#11130f]/38 via-transparent to-transparent" />

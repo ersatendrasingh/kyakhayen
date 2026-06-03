@@ -7,6 +7,7 @@ import { GetRecipeListingPage } from "@/actions/get-recipe-listing";
 import Container from "@/components/container";
 import type { RecipeCardRecipe } from "@/components/recipes/recipe-card";
 import RecipeResultsFeed from "@/components/recipes/recipe-results-feed";
+import { shouldServeDirectMediaImage } from "@/lib/direct-media-image";
 import { recipeCollectionHref } from "@/lib/recipe-collection-url";
 import {
   breadcrumbJsonLd,
@@ -456,6 +457,7 @@ export async function renderRecipeListingPage({
                       alt={`${heroRecipes[0].title} recipe`}
                       fill
                       priority
+                      unoptimized={shouldServeDirectMediaImage(heroRecipes[0].imageUrl)}
                       sizes="(max-width: 1024px) 58vw, 390px"
                       className="object-cover transition duration-700 group-hover:scale-105"
                     />
@@ -474,6 +476,7 @@ export async function renderRecipeListingPage({
                       src={heroRecipes[1].imageUrl as string}
                       alt={`${heroRecipes[1].title} recipe`}
                       fill
+                      unoptimized={shouldServeDirectMediaImage(heroRecipes[1].imageUrl)}
                       sizes="(max-width: 1024px) 36vw, 250px"
                       className="object-cover transition duration-700 group-hover:scale-105"
                     />
@@ -488,6 +491,7 @@ export async function renderRecipeListingPage({
                       src={heroRecipes[2].imageUrl as string}
                       alt={`${heroRecipes[2].title} recipe`}
                       fill
+                      unoptimized={shouldServeDirectMediaImage(heroRecipes[2].imageUrl)}
                       sizes="(max-width: 1024px) 42vw, 275px"
                       className="object-cover transition duration-700 group-hover:scale-105"
                     />

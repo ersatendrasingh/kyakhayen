@@ -7,6 +7,7 @@ import {
   RecipeSteam,
   shouldShowRecipeSteam,
 } from "@/components/recipes/recipe-steam";
+import { shouldServeDirectMediaImage } from "@/lib/direct-media-image";
 
 export type HomeRecipeCardRecipe = {
   id: string;
@@ -44,6 +45,7 @@ export default function HomeRecipeCard({
   recipe: HomeRecipeCardRecipe;
 }) {
   const minutes = getTotalMinutes(recipe);
+  const imageSrc = recipe.imageUrl || "/meta-images/recipe-page.jpg";
 
   return (
     <Link
@@ -52,10 +54,11 @@ export default function HomeRecipeCard({
     >
       <div className="relative aspect-[1.45] overflow-hidden">
         <Image
-          src={recipe.imageUrl || "/meta-images/recipe-page.jpg"}
+          src={imageSrc}
           alt={recipe.title}
           fill
           quality={64}
+          unoptimized={shouldServeDirectMediaImage(imageSrc)}
           sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 24vw"
           className="object-cover transition duration-500 group-hover:scale-105"
         />

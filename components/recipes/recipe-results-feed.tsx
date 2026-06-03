@@ -138,8 +138,19 @@ export default function RecipeResultsFeed({
               : "grid gap-4 lg:grid-cols-2",
           )}
         >
-          {recipes.map((recipe) => (
-            <RecipeCard key={recipe.id} recipe={recipe} layout={layout} />
+          {recipes.map((recipe, index) => (
+            <RecipeCard
+              key={recipe.id}
+              recipe={recipe}
+              layout={layout}
+              imageLoad={
+                index < 3
+                  ? "priority"
+                  : index < (layout === "grid" ? 8 : 4)
+                    ? "eager"
+                    : "lazy"
+              }
+            />
           ))}
         </div>
       )}
