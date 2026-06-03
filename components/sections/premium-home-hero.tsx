@@ -14,9 +14,9 @@ type PremiumHomeHeroProps = {
 };
 
 const discoveryLinks = [
-  { label: "Comfort food", href: "/search?k=comfort%20food" },
-  { label: "Healthy & tasty", href: "/search?k=healthy%20recipes" },
-  { label: "Quick dinner", href: "/search?k=quick%20dinner" },
+  { label: "Comfort food", href: recipeCollectionHref("meal") },
+  { label: "Healthy & tasty", href: recipeCollectionHref("healthy") },
+  { label: "Quick dinner", href: recipeCollectionHref("dinner") },
   { label: "Protein rich", href: recipeCollectionHref("protein") },
 ];
 
@@ -46,7 +46,6 @@ const rotatingEyebrows = [
 ];
 
 export default function PremiumHomeHero({
-  catalogRecipeCount,
   videoUrls,
 }: PremiumHomeHeroProps) {
   const [activeVideoIndex, setActiveVideoIndex] = useState(0);
@@ -54,7 +53,7 @@ export default function PremiumHomeHero({
   const activeVideo = videoUrls[activeVideoIndex];
   const activeHighlight = rotatingHighlights[activeHighlightIndex];
   const activeEyebrow = rotatingEyebrows[activeHighlightIndex];
-  const growingRecipeCount = `${Math.floor(catalogRecipeCount / 1000)},000+`;
+  const growingRecipeCount = "50,000+";
 
   useEffect(() => {
     const interval = window.setInterval(() => {
