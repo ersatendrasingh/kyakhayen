@@ -570,6 +570,7 @@ export function ContentPipelineDashboard({
   const localAssetsRef = useRef<LocalAssetMap>({});
   const voiceAudioRef = useRef<HTMLAudioElement | null>(null);
   const voicePreviewTimersRef = useRef<number[]>([]);
+  const handledPinterestReturnRef = useRef(false);
 
   const drafts = useMemo(() => recipeQueue.map(buildContentDraft), [recipeQueue]);
   const selectedDraft =
@@ -1384,6 +1385,29 @@ export function ContentPipelineDashboard({
     }
   };
 
+  useEffect(() => {
+    if (handledPinterestReturnRef.current) return;
+    const params = new URLSearchParams(window.location.search);
+    const pinterestStatus = params.get("pinterest");
+    if (!pinterestStatus) return;
+
+    handledPinterestReturnRef.current = true;
+    params.delete("pinterest");
+    params.delete("message");
+    const nextUrl = `${window.location.pathname}${params.toString() ? `?${params.toString()}` : ""}${window.location.hash}`;
+    window.history.replaceState(null, "", nextUrl);
+
+    if (pinterestStatus === "connected") {
+      toast.success("Pinterest connected. Select a board to finish setup.");
+      window.setTimeout(() => {
+        void refreshSocialSetup().then(() => loadPinterestBoards());
+      }, 0);
+      return;
+    }
+
+    toast.error("Pinterest connection failed.");
+  }, []);
+
   const activePlatformMeta = PLATFORMS.find((platform) => platform.key === activePlatform);
   const currentPlatformNeedsApproval = VIDEO_POST_PLATFORMS.includes(activePlatform);
   const currentPlatformPublishReady =
@@ -1630,43 +1654,56 @@ export function ContentPipelineDashboard({
           </Badge>
         </div>
         <div className="mt-4 grid gap-2 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-6">
-          {socialSetup.platforms.map((platform) => (
-            <div
-              key={platform.key}
-              className={cn(
-                "rounded-xl border p-3",
-                platform.key === "pinterest" && "2xl:col-span-2",
-                platform.configured
-                  ? "border-emerald-200 bg-emerald-50 text-emerald-800 dark:border-emerald-900/60 dark:bg-emerald-950/30 dark:text-emerald-200"
-                  : "border-amber-200 bg-amber-50 text-amber-800 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-200"
-              )}
-              title={
-                platform.configured
-                  ? platform.note
-                  : `Missing: ${platform.missing.join(", ")}. ${platform.note}`
-              }
-            >
-              <div className="flex items-center justify-between gap-2">
-                <span className="text-sm font-semibold">{platform.label}</span>
-                {platform.configured ? (
-                  <CheckCircle2 className="size-4 shrink-0" />
-                ) : (
-                  <span className="shrink-0 rounded-full bg-white/70 px-2 py-0.5 text-[11px] font-semibold dark:bg-black/20">
-                    Setup
-                  </span>
+          {socialSetup.platforms.map((platform) => {
+            const pinterestConnected = platform.key === "pinterest" && platform.connected;
+            const statusLabel = platform.configured
+              ? "Ready"
+              : pinterestConnected
+                ? "Connected"
+                : "Setup";
+            const statusText = platform.configured
+              ? "Ready in config"
+              : pinterestConnected
+                ? platform.note
+                : platform.missing.join(", ");
+
+            return (
+              <div
+                key={platform.key}
+                className={cn(
+                  "rounded-xl border p-3",
+                  platform.key === "pinterest" && "2xl:col-span-2",
+                  platform.configured
+                    ? "border-emerald-200 bg-emerald-50 text-emerald-800 dark:border-emerald-900/60 dark:bg-emerald-950/30 dark:text-emerald-200"
+                    : pinterestConnected
+                      ? "border-sky-200 bg-sky-50 text-sky-900 dark:border-sky-900/60 dark:bg-sky-950/30 dark:text-sky-200"
+                      : "border-amber-200 bg-amber-50 text-amber-800 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-200"
                 )}
-              </div>
-              <p className="mt-1 line-clamp-2 text-xs leading-5 opacity-80">
-                {platform.configured ? "Ready in config" : platform.missing.join(", ")}
-              </p>
-              {platform.setupUrl && (
-                <Button asChild variant="outline" size="xs" className="mt-3 bg-white/80 dark:bg-black/20">
-                  <Link href={platform.setupUrl}>
-                    {platform.configured ? "Reconnect" : "Connect"}
-                  </Link>
-                </Button>
-              )}
-              {platform.key === "pinterest" && platform.connected && (
+                title={
+                  platform.configured || pinterestConnected
+                    ? platform.note
+                    : `Missing: ${platform.missing.join(", ")}. ${platform.note}`
+                }
+              >
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-sm font-semibold">{platform.label}</span>
+                  {platform.configured ? (
+                    <CheckCircle2 className="size-4 shrink-0" />
+                  ) : (
+                    <span className="shrink-0 rounded-full bg-white/70 px-2 py-0.5 text-[11px] font-semibold dark:bg-black/20">
+                      {statusLabel}
+                    </span>
+                  )}
+                </div>
+                <p className="mt-1 line-clamp-2 text-xs leading-5 opacity-80">{statusText}</p>
+                {platform.setupUrl && (
+                  <Button asChild variant="outline" size="xs" className="mt-3 bg-white/80 dark:bg-black/20">
+                    <Link href={platform.setupUrl}>
+                      {platform.configured || pinterestConnected ? "Reconnect" : "Connect"}
+                    </Link>
+                  </Button>
+                )}
+                {platform.key === "pinterest" && platform.connected && (
                 <div className="mt-3 rounded-lg border border-white/70 bg-white/70 p-2 dark:border-white/10 dark:bg-black/15">
                   <div className="flex flex-wrap items-center gap-2">
                     <Button
@@ -1720,8 +1757,9 @@ export function ContentPipelineDashboard({
                   )}
                 </div>
               )}
-            </div>
-          ))}
+              </div>
+            );
+          })}
         </div>
       </section>
 
