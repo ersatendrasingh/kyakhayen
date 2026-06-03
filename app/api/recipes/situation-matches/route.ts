@@ -1,0 +1,922 @@
+import type { Prisma } from "@prisma/client";
+import { NextResponse } from "next/server";
+
+import { db } from "@/lib/db";
+import { publishedRecipeWhere } from "@/lib/recipe-publication";
+
+const NON_VEG_TOKENS = ["chicken", "mutton", "fish", "prawn", "egg"];
+const MAIN_RECIPE_TYPE_SLUGS = new Set(["meal", "protein", "cooked-vegetable"]);
+const BREAKFAST_RECIPE_TYPE_SLUGS = new Set(["meal", "grains", "protein", "snacks"]);
+const LUNCH_DINNER_RECIPE_TYPE_SLUGS = new Set([
+  "meal",
+  "protein",
+  "cooked-vegetable",
+]);
+const UTILITY_RECIPE_TYPE_SLUGS = new Set([
+  "beveragesmoothie",
+  "drink-teas",
+  "drink-infusions",
+  "drink-juices",
+  "drink-coolers-sharbat",
+  "drink-smoothies",
+  "drink-shakes",
+  "drink-lassi-buttermilk",
+  "drink-detox",
+  "drink-hot-sips",
+  "morning-hydration",
+  "fruits",
+  "fruit-salad",
+]);
+const BREAKFAST_BLOCKED_TYPE_SLUGS = new Set([
+  "cooked-vegetable",
+  "vegetable-salad",
+  "soup",
+  "chutneydips",
+  "curdraita",
+  "desserts",
+  ...UTILITY_RECIPE_TYPE_SLUGS,
+]);
+const LIGHT_RECIPE_TYPE_SLUGS = new Set([
+  "snacks",
+  "soup",
+  "vegetable-salad",
+  "chutneydips",
+  "curdraita",
+  "desserts",
+  ...UTILITY_RECIPE_TYPE_SLUGS,
+]);
+const GUEST_AVOID_TYPE_SLUGS = new Set([
+  "grains",
+  "soup",
+  "vegetable-salad",
+  "chutneydips",
+  "curdraita",
+  "desserts",
+  ...UTILITY_RECIPE_TYPE_SLUGS,
+]);
+const KIDS_FRIENDLY_TYPE_SLUGS = new Set(["meal", "grains", "protein", "snacks"]);
+const KIDS_AVOID_PATTERN =
+  /\b(spicy|chilli|mirchi|schezwan|thecha|pickle|achaar|pepper fry)\b/;
+
+const recipeSelect = {
+  id: true,
+  title: true,
+  slug: true,
+  metaSlug: true,
+  imageUrl: true,
+  views: true,
+  RecipeCategories: { select: { name: true, slug: true } },
+  recipeCookingTime: {
+    select: { prepTime: true, cookTime: true, restTime: true },
+  },
+  recipeNutrient: {
+    where: { nutrient: { isPublished: true } },
+    select: { nutrient: { select: { title: true } } },
+    take: 1,
+  },
+  recipeIngredients: {
+    select: { ingredient: { select: { name: true, slug: true } } },
+    take: 32,
+  },
+  recipeMealTime: {
+    where: { mealTime: { isPublished: true } },
+    select: { mealTime: { select: { title: true, slug: true } } },
+    take: 4,
+  },
+  recipeCuisine: {
+    where: { cuisine: { isPublished: true } },
+    select: { cuisine: { select: { title: true, slug: true } } },
+    take: 3,
+  },
+  recipeRecipeType: {
+    where: { recipeType: { isPublished: true } },
+    select: { recipeType: { select: { title: true, slug: true } } },
+    take: 4,
+  },
+  _count: { select: { recipeIngredients: true } },
+} satisfies Prisma.RecipesSelect;
+
+type RecipeRecord = Prisma.RecipesGetPayload<{ select: typeof recipeSelect }>;
+
+function normalize(value: string) {
+  return value
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, " ")
+    .replace(/-/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function slugValue(value: string) {
+  return normalize(value).replace(/\s+/g, "-");
+}
+
+function titleCase(value: string) {
+  return value
+    .split(" ")
+    .filter(Boolean)
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
+}
+
+function tokens(value: string) {
+  return normalize(value)
+    .split(" ")
+    .filter((token) => token.length > 2);
+}
+
+function recipeIngredientNames(recipe: RecipeRecord) {
+  return recipe.recipeIngredients.map((item) => normalize(item.ingredient.name));
+}
+
+function recipeTokenSet(recipe: RecipeRecord) {
+  return new Set(
+    tokens(
+      [
+        recipe.title,
+        recipe.RecipeCategories?.name,
+        ...recipe.recipeMealTime.map((item) => item.mealTime.title),
+        ...recipe.recipeRecipeType.map((item) => item.recipeType.title),
+        ...recipe.recipeNutrient.map((item) => item.nutrient.title),
+        ...recipe.recipeIngredients.map((item) => item.ingredient.name),
+      ]
+        .filter(Boolean)
+        .join(" "),
+    ),
+  );
+}
+
+function totalMinutes(recipe: RecipeRecord) {
+  if (!recipe.recipeCookingTime) return 0;
+
+  return (
+    recipe.recipeCookingTime.prepTime +
+    recipe.recipeCookingTime.cookTime +
+    recipe.recipeCookingTime.restTime
+  );
+}
+
+function recipeDiscoveryText(recipe: RecipeRecord) {
+  return normalize(
+    [
+      recipe.title,
+      recipe.slug,
+      recipe.RecipeCategories?.name,
+      ...recipe.recipeMealTime.map((item) => item.mealTime.title),
+      ...recipe.recipeMealTime.map((item) => item.mealTime.slug),
+      ...recipe.recipeRecipeType.map((item) => item.recipeType.title),
+      ...recipe.recipeRecipeType.map((item) => item.recipeType.slug),
+    ]
+      .filter(Boolean)
+      .join(" "),
+  );
+}
+
+function recipeTypeSlugSet(recipe: RecipeRecord) {
+  return new Set(
+    recipe.recipeRecipeType.map((item) => normalize(item.recipeType.slug)),
+  );
+}
+
+function recipeMealSlugSet(recipe: RecipeRecord) {
+  return new Set(recipe.recipeMealTime.map((item) => normalize(item.mealTime.slug)));
+}
+
+function hasAnyType(recipe: RecipeRecord, slugs: Set<string>) {
+  return recipe.recipeRecipeType.some((item) => slugs.has(normalize(item.recipeType.slug)));
+}
+
+function hasTypeSlug(recipe: RecipeRecord, slug: string) {
+  return recipeTypeSlugSet(recipe).has(slug);
+}
+
+function mainMealScore(recipe: RecipeRecord) {
+  const minutes = totalMinutes(recipe);
+  const typeSlugs = recipeTypeSlugSet(recipe);
+  let score = 0;
+
+  if (hasMealFocus(recipe, "lunch")) score += 160;
+  if (hasMealFocus(recipe, "dinner")) score += 150;
+  if (typeSlugs.has("meal")) score += 240;
+  if (typeSlugs.has("protein")) score += 220;
+  if (typeSlugs.has("cooked-vegetable")) score += 210;
+  if (typeSlugs.has("grains")) score -= 55;
+  if (typeSlugs.has("snacks")) score -= 150;
+  if (hasAnyType(recipe, UTILITY_RECIPE_TYPE_SLUGS)) score -= 520;
+  if (minutes >= 18 && minutes <= 90) score += 35;
+  if (minutes > 120) score -= 40;
+
+  return score;
+}
+
+function popularityScore(recipe: RecipeRecord) {
+  return Math.log10(Math.max(recipe.views, 0) + 10) * 80;
+}
+
+function hasMealFocus(recipe: RecipeRecord, focus: string) {
+  const target = normalize(focus).replace(/\s+/g, "-");
+  const mealSlugs = recipeMealSlugSet(recipe);
+
+  return mealSlugs.has(target);
+}
+
+function isEarlyMorningRecipe(recipe: RecipeRecord) {
+  return hasMealFocus(recipe, "early-morning");
+}
+
+function isUtilityDrinkRecipe(recipe: RecipeRecord) {
+  return hasAnyType(recipe, UTILITY_RECIPE_TYPE_SLUGS);
+}
+
+function isBareIngredientRecipe(recipe: RecipeRecord) {
+  return (
+    recipe._count.recipeIngredients <= 1 &&
+    !hasAnyType(recipe, MAIN_RECIPE_TYPE_SLUGS) &&
+    !hasAnyType(recipe, BREAKFAST_RECIPE_TYPE_SLUGS)
+  );
+}
+
+function isAllowedSituationRecipe(recipe: RecipeRecord) {
+  return (
+    !isEarlyMorningRecipe(recipe) &&
+    !isUtilityDrinkRecipe(recipe) &&
+    !isBareIngredientRecipe(recipe)
+  );
+}
+
+function isLightRecipe(recipe: RecipeRecord) {
+  return hasAnyType(recipe, LIGHT_RECIPE_TYPE_SLUGS);
+}
+
+function isSnackRecipe(recipe: RecipeRecord) {
+  return hasTypeSlug(recipe, "snacks");
+}
+
+function isMainSituationRecipe(recipe: RecipeRecord) {
+  return (
+    isAllowedSituationRecipe(recipe) &&
+    hasAnyType(recipe, MAIN_RECIPE_TYPE_SLUGS) &&
+    !hasAnyType(recipe, UTILITY_RECIPE_TYPE_SLUGS)
+  );
+}
+
+function isGuestFullRecipe(recipe: RecipeRecord) {
+  return (
+    isMainSituationRecipe(recipe) &&
+    !hasAnyType(recipe, GUEST_AVOID_TYPE_SLUGS) &&
+    (hasMealFocus(recipe, "lunch") || hasMealFocus(recipe, "dinner"))
+  );
+}
+
+function isGuestQuickRecipe(recipe: RecipeRecord) {
+  return (
+    isAllowedSituationRecipe(recipe) &&
+    !hasAnyType(recipe, UTILITY_RECIPE_TYPE_SLUGS) &&
+    !hasAnyType(recipe, new Set(["desserts", "chutneydips", "curdraita"])) &&
+    (isMainSituationRecipe(recipe) || isSnackRecipe(recipe))
+  );
+}
+
+function recipeCategoryText(recipe: RecipeRecord) {
+  return normalize(
+    `${recipe.RecipeCategories?.name || ""} ${recipe.RecipeCategories?.slug || ""}`,
+  );
+}
+
+function recipeBaseWhere(where: Prisma.RecipesWhereInput = {}): Prisma.RecipesWhereInput {
+  return {
+    AND: [publishedRecipeWhere(), { imageUrl: { not: null } }, where],
+  };
+}
+
+function foodTypeWhere(foodType: string): Prisma.RecipesWhereInput {
+  const normalized = normalize(foodType);
+
+  if (normalized === "veg") {
+    return {
+      RecipeCategories: {
+        OR: [{ slug: { in: ["veg", "vegan"] } }, { name: { in: ["Veg", "Vegan"] } }],
+      },
+    };
+  }
+
+  if (normalized === "non veg" || normalized === "non-veg") {
+    return {
+      RecipeCategories: {
+        OR: [
+          { slug: { in: ["non-veg", "pescetarian"] } },
+          { name: { in: ["Non Veg", "Pescetarian"] } },
+        ],
+      },
+    };
+  }
+
+  return {};
+}
+
+function textMatchWhere(value: string): Prisma.RecipesWhereInput[] {
+  const normalized = normalize(value);
+  const slug = slugValue(value);
+
+  return [
+    { title: { contains: normalized } },
+    { slug: { contains: slug } },
+    {
+      recipeIngredients: {
+        some: {
+          ingredient: {
+            OR: [
+              { name: { contains: normalized } },
+              { slug: { contains: slug } },
+            ],
+          },
+        },
+      },
+    },
+  ];
+}
+
+function hasSelectedMatch(recipe: RecipeRecord, selected: string[]) {
+  const title = normalize(recipe.title);
+  const ingredientNames = recipeIngredientNames(recipe);
+
+  return selected.some((ingredient) => {
+    const normalized = normalize(ingredient);
+
+    return (
+      title.includes(normalized) ||
+      ingredientNames.some((name) => name.includes(normalized))
+    );
+  });
+}
+
+function scoreIngredientRecipe(recipe: RecipeRecord, selected: string[]) {
+  const title = normalize(recipe.title);
+  const ingredientNames = recipeIngredientNames(recipe);
+  let score = popularityScore(recipe) + mainMealScore(recipe);
+
+  selected.forEach((ingredient, index) => {
+    const weight = index === 0 ? 70 : 34;
+    const ingredientTokens = tokens(ingredient);
+    const exactIngredient = ingredientNames.some((name) => name === ingredient);
+    const partialIngredient = ingredientNames.some((name) => name.includes(ingredient));
+    const titleMatch = title.includes(ingredient);
+    const tokenMatch = ingredientTokens.some((token) =>
+      ingredientNames.some((name) => name.includes(token)),
+    );
+
+    if (exactIngredient) score += weight;
+    if (partialIngredient) score += Math.round(weight * 0.72);
+    if (titleMatch) score += Math.round(weight * 0.74);
+    if (tokenMatch) score += Math.round(weight * 0.32);
+  });
+
+  if (selected[0] && title.includes(selected[0])) {
+    if (hasMealFocus(recipe, "lunch") || hasMealFocus(recipe, "dinner")) {
+      score += 220;
+    }
+    if (hasAnyType(recipe, MAIN_RECIPE_TYPE_SLUGS)) score += 240;
+  }
+
+  if (isLightRecipe(recipe)) score -= 160;
+  if (isSnackRecipe(recipe)) score -= 120;
+
+  return score;
+}
+
+function matchLabelForSelected(recipe: RecipeRecord, selected: string[]) {
+  const ingredientNames = recipeIngredientNames(recipe);
+  const matched = selected.filter((ingredient) =>
+    ingredientNames.some((name) => name.includes(ingredient)),
+  );
+
+  if (matched.length === 0) return "Title match";
+
+  return `Matches ${matched.slice(0, 2).map(titleCase).join(", ")}`;
+}
+
+function matchLabelForGeneral(recipe: RecipeRecord, mode: string) {
+  if (mode === "budget") {
+    return `${recipe._count.recipeIngredients} ingredients listed`;
+  }
+
+  const mealTime = recipe.recipeMealTime[0]?.mealTime.title;
+  const recipeType = recipe.recipeRecipeType[0]?.recipeType.title;
+
+  if (mode === "daily" && mealTime) return `${mealTime} recipe`;
+  if (mode === "guests" && recipeType) return recipeType;
+
+  return "Recipe pick";
+}
+
+function guestMatchLabel(recipe: RecipeRecord, guestCount: number, guestPlan: string) {
+  if (guestPlan === "snacks") return "Snack plate";
+  if (guestPlan === "quick") {
+    return totalMinutes(recipe) > 0 && totalMinutes(recipe) <= 35
+      ? "Quick serve"
+      : "Easy serve";
+  }
+
+  return guestCount >= 10 ? "Batch-friendly meal" : "Guest meal";
+}
+
+function dailyMatchLabel(recipe: RecipeRecord, focus: string, specificFocus: boolean) {
+  if (specificFocus) return `${titleCase(focus)} recipe`;
+
+  const preferredMeal = ["lunch", "dinner", "breakfast"].find((meal) =>
+    hasMealFocus(recipe, meal),
+  );
+
+  return preferredMeal
+    ? `${titleCase(preferredMeal)} recipe`
+    : matchLabelForGeneral(recipe, "daily");
+}
+
+function publicRecipe(recipe: RecipeRecord, matchLabel: string) {
+  return {
+    id: recipe.id,
+    title: recipe.title,
+    slug: recipe.slug,
+    metaSlug: recipe.metaSlug,
+    imageUrl: recipe.imageUrl,
+    RecipeCategories: recipe.RecipeCategories,
+    recipeCookingTime: recipe.recipeCookingTime,
+    recipeNutrient: recipe.recipeNutrient,
+    recipeIngredients: recipe.recipeIngredients,
+    recipeMealTime: recipe.recipeMealTime,
+    recipeCuisine: recipe.recipeCuisine,
+    recipeRecipeType: recipe.recipeRecipeType,
+    ingredientCount: recipe._count.recipeIngredients,
+    matchLabel,
+  };
+}
+
+type PublicRecipe = ReturnType<typeof publicRecipe>;
+type RecipePageResult = {
+  recipes: PublicRecipe[];
+  total: number;
+};
+
+function paginateRecipes<T>(items: T[], pageSize: number, page: number) {
+  const safePage = Math.max(page, 0);
+  const start = safePage * pageSize;
+
+  return items.slice(start, start + pageSize);
+}
+
+function diversifyRecipes(recipes: RecipeRecord[]) {
+  const picked: RecipeRecord[] = [];
+  const seenGroups = new Set<string>();
+
+  for (const recipe of recipes) {
+    const group =
+      recipe.recipeRecipeType[0]?.recipeType.slug ||
+      recipe.recipeMealTime[0]?.mealTime.slug ||
+      recipe.RecipeCategories?.name ||
+      recipe.id;
+
+    if (!seenGroups.has(group)) {
+      picked.push(recipe);
+      seenGroups.add(group);
+    }
+  }
+
+  for (const recipe of recipes) {
+    if (!picked.some((item) => item.id === recipe.id)) {
+      picked.push(recipe);
+    }
+  }
+
+  return picked;
+}
+
+function stableRecipeBucket(recipe: RecipeRecord) {
+  const value = recipe.slug || recipe.id;
+  let hash = 0;
+
+  for (let index = 0; index < value.length; index += 1) {
+    hash = (hash * 31 + value.charCodeAt(index)) >>> 0;
+  }
+
+  return hash % 2;
+}
+
+function isAssignedToMealFocus(recipe: RecipeRecord, focus: string) {
+  if (focus !== "lunch" && focus !== "dinner") return hasMealFocus(recipe, focus);
+
+  const hasLunch = hasMealFocus(recipe, "lunch");
+  const hasDinner = hasMealFocus(recipe, "dinner");
+
+  if (hasLunch && hasDinner) {
+    return focus === "lunch"
+      ? stableRecipeBucket(recipe) === 0
+      : stableRecipeBucket(recipe) === 1;
+  }
+
+  return hasMealFocus(recipe, focus);
+}
+
+function isGrainLedStaple(recipe: RecipeRecord) {
+  return (
+    hasTypeSlug(recipe, "grains") &&
+    !hasTypeSlug(recipe, "protein") &&
+    !hasTypeSlug(recipe, "cooked-vegetable")
+  );
+}
+
+function isDailyRecipeForFocus(
+  recipe: RecipeRecord,
+  focus: string,
+  specificFocus: boolean,
+) {
+  if (!specificFocus) return isMainSituationRecipe(recipe) && !isUtilityDrinkRecipe(recipe);
+
+  if (focus === "breakfast") {
+    return (
+      isAllowedSituationRecipe(recipe) &&
+      hasMealFocus(recipe, "breakfast") &&
+      hasAnyType(recipe, BREAKFAST_RECIPE_TYPE_SLUGS) &&
+      !hasAnyType(recipe, BREAKFAST_BLOCKED_TYPE_SLUGS)
+    );
+  }
+
+  if (focus === "lunch" || focus === "dinner") {
+    return (
+      isAllowedSituationRecipe(recipe) &&
+      isAssignedToMealFocus(recipe, focus) &&
+      hasAnyType(recipe, LUNCH_DINNER_RECIPE_TYPE_SLUGS) &&
+      !isGrainLedStaple(recipe) &&
+      !hasAnyType(recipe, UTILITY_RECIPE_TYPE_SLUGS)
+    );
+  }
+
+  return isMainSituationRecipe(recipe);
+}
+
+function dailyFocusScore(recipe: RecipeRecord, focus: string, specificFocus: boolean) {
+  if (!specificFocus) return 0;
+
+  if (focus === "breakfast") {
+    return (
+      (hasTypeSlug(recipe, "meal") ? 180 : 0) +
+      (hasTypeSlug(recipe, "grains") ? 120 : 0) +
+      (hasTypeSlug(recipe, "protein") ? 90 : 0) +
+      (hasTypeSlug(recipe, "snacks") ? 40 : 0)
+    );
+  }
+
+  if (focus === "lunch" || focus === "dinner") {
+    return (
+      (hasTypeSlug(recipe, "cooked-vegetable") ? 420 : 0) +
+      (hasTypeSlug(recipe, "protein") ? 180 : 0) +
+      (hasTypeSlug(recipe, "meal") ? 80 : 0) -
+      (hasTypeSlug(recipe, "snacks") ? 240 : 0) -
+      (hasTypeSlug(recipe, "grains") ? 300 : 0)
+    );
+  }
+
+  return 0;
+}
+
+function buildRecipePage(
+  recipes: RecipeRecord[],
+  pageSize: number,
+  page: number,
+  getMatchLabel: (recipe: RecipeRecord) => string,
+): RecipePageResult {
+  return {
+    recipes: paginateRecipes(recipes, pageSize, page).map((recipe) =>
+      publicRecipe(recipe, getMatchLabel(recipe)),
+    ),
+    total: recipes.length,
+  };
+}
+
+async function fetchIngredientRecipes(
+  selected: string[],
+  foodType: string,
+  pageSize: number,
+  page: number,
+) {
+  if (selected.length === 0) return { recipes: [], total: 0 };
+
+  const recipes = await db.recipes.findMany({
+    where: recipeBaseWhere({
+      AND: [
+        foodTypeWhere(foodType),
+        { OR: selected.flatMap((ingredient) => textMatchWhere(ingredient)) },
+      ],
+    }),
+    select: recipeSelect,
+    orderBy: [
+      { views: "desc" },
+      { contentUpdatedAt: "desc" },
+      { updatedAt: "desc" },
+    ],
+  });
+
+  const selectedTokens = new Set(selected.flatMap(tokens));
+  const ranked = recipes
+    .filter(isAllowedSituationRecipe)
+    .filter((recipe) => {
+      const recipeTokens = recipeTokenSet(recipe);
+      const hasUnselectedNonVeg = NON_VEG_TOKENS.some(
+        (token) => recipeTokens.has(token) && !selectedTokens.has(token),
+      );
+
+      return hasSelectedMatch(recipe, selected) && !hasUnselectedNonVeg;
+    })
+    .map((recipe) => ({
+      recipe,
+      score: scoreIngredientRecipe(recipe, selected),
+    }))
+    .sort((left, right) => right.score - left.score)
+    .map(({ recipe }) => recipe);
+
+  return buildRecipePage(ranked, pageSize, page, (recipe) =>
+    matchLabelForSelected(recipe, selected),
+  );
+}
+
+async function fetchDailyRecipes(
+  mealFocus: string,
+  foodType: string,
+  pageSize: number,
+  page: number,
+) {
+  const focus = normalize(mealFocus);
+  const specificFocus = focus && focus !== "full day" && focus !== "full-day";
+  const where: Prisma.RecipesWhereInput = specificFocus
+    ? {
+        recipeMealTime: {
+          some: {
+            mealTime: {
+              OR: [
+                { title: { contains: focus } },
+                { slug: { contains: slugValue(focus) } },
+              ],
+            },
+          },
+        },
+      }
+    : {
+        recipeMealTime: {
+          some: {
+            mealTime: {
+              OR: [
+                { title: { contains: "breakfast" } },
+                { slug: { contains: "breakfast" } },
+                { title: { contains: "lunch" } },
+                { slug: { contains: "lunch" } },
+                { title: { contains: "dinner" } },
+                { slug: { contains: "dinner" } },
+              ],
+            },
+          },
+        },
+      };
+
+  const recipes = await db.recipes.findMany({
+    where: recipeBaseWhere({ AND: [foodTypeWhere(foodType), where] }),
+    select: recipeSelect,
+    orderBy: [
+      { views: "desc" },
+      { contentUpdatedAt: "desc" },
+      { updatedAt: "desc" },
+    ],
+  });
+
+  const ranked = recipes
+    .filter((recipe) => isDailyRecipeForFocus(recipe, focus, Boolean(specificFocus)))
+    .map((recipe) => {
+      const mealMatch =
+        specificFocus &&
+        (focus === "lunch" || focus === "dinner"
+          ? isAssignedToMealFocus(recipe, focus)
+          : hasMealFocus(recipe, focus));
+
+      return {
+        recipe,
+        score:
+          popularityScore(recipe) +
+          mainMealScore(recipe) +
+          dailyFocusScore(recipe, focus, Boolean(specificFocus)) +
+          (mealMatch ? 260 : 0) -
+          totalMinutes(recipe) / 120,
+      };
+    })
+    .sort((left, right) => right.score - left.score)
+    .map(({ recipe }) => recipe);
+
+  const shouldPreserveRankedOrder = focus === "lunch" || focus === "dinner";
+  const orderedRecipes = shouldPreserveRankedOrder ? ranked : diversifyRecipes(ranked);
+
+  return buildRecipePage(orderedRecipes, pageSize, page, (recipe) =>
+    dailyMatchLabel(recipe, focus, Boolean(specificFocus)),
+  );
+}
+
+async function fetchGuestRecipes(
+  guestCount: number,
+  guestPlan: string,
+  foodType: string,
+  pageSize: number,
+  page: number,
+) {
+  const plan = normalize(guestPlan || "full-meal");
+  const useSnackMode = plan === "snacks";
+  const useQuickMode = plan === "quick";
+
+  const recipes = await db.recipes.findMany({
+    where: recipeBaseWhere(foodTypeWhere(foodType)),
+    select: recipeSelect,
+    orderBy: [
+      { views: "desc" },
+      { contentUpdatedAt: "desc" },
+      { updatedAt: "desc" },
+    ],
+  });
+
+  const groupSizePressure = Math.max(1, Math.min(guestCount, 24)) / 12;
+  const isLargeGroup = guestCount >= 10;
+  const isSmallGroup = guestCount <= 4;
+  const ranked = recipes
+    .filter((recipe) =>
+      useSnackMode
+        ? isAllowedSituationRecipe(recipe) && isSnackRecipe(recipe)
+        : useQuickMode
+          ? isGuestQuickRecipe(recipe)
+          : isGuestFullRecipe(recipe),
+    )
+    .map((recipe) => {
+      const minutes = totalMinutes(recipe);
+      const ingredientCount = recipe._count.recipeIngredients;
+
+      return {
+        recipe,
+        score:
+          popularityScore(recipe) +
+          (useSnackMode ? 360 : mainMealScore(recipe)) +
+          (!useSnackMode && hasTypeSlug(recipe, "protein") ? 180 : 0) +
+          (!useSnackMode && hasTypeSlug(recipe, "cooked-vegetable") ? 140 : 0) +
+          (!useSnackMode && hasTypeSlug(recipe, "meal") ? 90 : 0) +
+          (useQuickMode && minutes > 0 && minutes <= 35 ? 320 : 0) +
+          (isLargeGroup && minutes <= 90 ? 90 : 0) +
+          (isLargeGroup && ingredientCount <= 14 ? 130 : 0) +
+          (isSmallGroup && ingredientCount >= 8 ? 95 : 0) -
+          (hasTypeSlug(recipe, "snacks") && !useSnackMode ? 170 : 0) -
+          ingredientCount *
+            groupSizePressure *
+            (isLargeGroup ? 0.9 : 0.35) -
+          (useQuickMode ? Math.max(minutes - 35, 0) * 2.8 : minutes / 120),
+      };
+    })
+    .sort((left, right) => right.score - left.score)
+    .map(({ recipe }) => recipe);
+
+  return buildRecipePage(ranked, pageSize, page, (recipe) =>
+    guestMatchLabel(recipe, guestCount, plan),
+  );
+}
+
+async function fetchBudgetRecipes(
+  budget: number,
+  foodType: string,
+  pageSize: number,
+  page: number,
+) {
+  const recipes = await db.recipes.findMany({
+    where: recipeBaseWhere(foodTypeWhere(foodType)),
+    select: recipeSelect,
+    orderBy: [
+      { views: "desc" },
+      { contentUpdatedAt: "desc" },
+      { updatedAt: "desc" },
+    ],
+  });
+
+  const budgetPressure = Math.max(0.7, 260 / Math.max(budget, 60));
+  const ranked = recipes
+    .filter(isMainSituationRecipe)
+    .filter((recipe) => !isGrainLedStaple(recipe))
+    .map((recipe) => ({
+      recipe,
+      score:
+        popularityScore(recipe) +
+        mainMealScore(recipe) -
+        recipe._count.recipeIngredients * budgetPressure -
+        totalMinutes(recipe) / 45,
+    }))
+    .sort((left, right) => right.score - left.score)
+    .map(({ recipe }) => recipe);
+
+  return buildRecipePage(diversifyRecipes(ranked), pageSize, page, (recipe) =>
+    matchLabelForGeneral(recipe, "budget"),
+  );
+}
+
+async function fetchMomsRecipes(foodType: string, pageSize: number, page: number) {
+  const recipes = await db.recipes.findMany({
+    where: recipeBaseWhere(foodTypeWhere(foodType)),
+    select: recipeSelect,
+    orderBy: [
+      { views: "desc" },
+      { contentUpdatedAt: "desc" },
+      { updatedAt: "desc" },
+    ],
+  });
+
+  const ranked = recipes
+    .filter(isAllowedSituationRecipe)
+    .filter((recipe) => hasAnyType(recipe, KIDS_FRIENDLY_TYPE_SLUGS))
+    .filter((recipe) => !hasAnyType(recipe, UTILITY_RECIPE_TYPE_SLUGS))
+    .map((recipe) => {
+      const text = recipeDiscoveryText(recipe);
+      const category = recipeCategoryText(recipe);
+
+      return {
+        recipe,
+        score:
+          popularityScore(recipe) +
+          (hasTypeSlug(recipe, "snacks") ? 180 : 0) +
+          (hasTypeSlug(recipe, "grains") ? 140 : 0) +
+          (hasTypeSlug(recipe, "protein") ? 110 : 0) +
+          (category.includes("veg") ? 45 : 0) +
+          mainMealScore(recipe) * 0.6 -
+          (KIDS_AVOID_PATTERN.test(text) ? 260 : 0) -
+          Math.max(totalMinutes(recipe) - 45, 0) * 2,
+      };
+    })
+    .sort((left, right) => right.score - left.score)
+    .map(({ recipe }) => recipe);
+
+  return buildRecipePage(diversifyRecipes(ranked), pageSize, page, () =>
+    "Kids-friendly pick",
+  );
+}
+
+export async function GET(req: Request) {
+  try {
+    const { searchParams } = new URL(req.url);
+    const mode = normalize(searchParams.get("mode") || "ingredients");
+    const pageSize = Math.min(
+      Math.max(Number(searchParams.get("pageSize") || 6), 1),
+      12,
+    );
+    const page = Math.max(Number(searchParams.get("page") || 0), 0);
+    const foodType = normalize(searchParams.get("foodType") || "veg");
+    let result: RecipePageResult = { recipes: [], total: 0 };
+
+    if (mode === "ingredients") {
+      const selected = [
+        ...searchParams.getAll("ingredient"),
+        ...searchParams.getAll("item"),
+      ]
+        .flatMap((value) => value.split(","))
+        .map(normalize)
+        .filter(Boolean)
+        .slice(0, 10);
+
+      result = await fetchIngredientRecipes(selected, foodType, pageSize, page);
+    } else if (mode === "daily") {
+      result = await fetchDailyRecipes(
+        searchParams.get("mealFocus") || "full-day",
+        foodType,
+        pageSize,
+        page,
+      );
+    } else if (mode === "guests") {
+      result = await fetchGuestRecipes(
+        Math.max(Number(searchParams.get("guestCount") || 5), 1),
+        searchParams.get("guestPlan") || "full-meal",
+        foodType,
+        pageSize,
+        page,
+      );
+    } else if (mode === "budget") {
+      result = await fetchBudgetRecipes(
+        Math.max(Number(searchParams.get("budget") || 150), 1),
+        foodType,
+        pageSize,
+        page,
+      );
+    } else if (mode === "moms") {
+      result = await fetchMomsRecipes(foodType, pageSize, page);
+    }
+
+    return NextResponse.json(
+      {
+        ...result,
+        page,
+        pageSize,
+        hasPrevious: page > 0,
+        hasNext: (page + 1) * pageSize < result.total,
+      },
+      { headers: { "Cache-Control": "no-store, max-age=0" } },
+    );
+  } catch (error) {
+    console.error("[SITUATION_RECIPE_MATCHES]", error);
+    return NextResponse.json("Internal Server Error", { status: 500 });
+  }
+}

@@ -1,3 +1,4 @@
+import type { Prisma } from "@prisma/client";
 import type { Metadata } from "next";
 
 import {
@@ -12,6 +13,7 @@ import { HomePreferenceProvider } from "@/components/sections/home-preference-co
 import PremiumHomeHero from "@/components/sections/premium-home-hero";
 import LazyMembershipPromptModal from "@/components/sections/lazy-membership-prompt-modal";
 import HomeEditorialStories from "@/components/sections/home-editorial-stories";
+import HomeSituationTools from "@/components/sections/home-situation-tools";
 import { db } from "@/lib/db";
 import { publishedRecipeAnd, publishedRecipeWhere } from "@/lib/recipe-publication";
 import {
@@ -56,6 +58,127 @@ const homepageCuisineSlugs = [
   "american",
   "international-mediterranean",
 ] as const;
+
+const homeSituationRecipeSelect = {
+  id: true,
+  title: true,
+  slug: true,
+  metaSlug: true,
+  imageUrl: true,
+  views: true,
+  RecipeCategories: { select: { name: true, slug: true } },
+  recipeCookingTime: {
+    select: { prepTime: true, cookTime: true, restTime: true },
+  },
+  recipeNutrient: {
+    where: { nutrient: { isPublished: true } },
+    select: { nutrient: { select: { title: true } } },
+    take: 1,
+  },
+  recipeIngredients: {
+    select: { ingredient: { select: { name: true, slug: true } } },
+    take: 32,
+  },
+  recipeMealTime: {
+    where: { mealTime: { isPublished: true } },
+    select: { mealTime: { select: { title: true, slug: true } } },
+    take: 4,
+  },
+  recipeCuisine: {
+    where: { cuisine: { isPublished: true } },
+    select: { cuisine: { select: { title: true, slug: true } } },
+    take: 3,
+  },
+  recipeRecipeType: {
+    where: { recipeType: { isPublished: true } },
+    select: { recipeType: { select: { title: true, slug: true } } },
+    take: 4,
+  },
+  _count: { select: { recipeIngredients: true } },
+} satisfies Prisma.RecipesSelect;
+
+type HomeSituationRecipe = Prisma.RecipesGetPayload<{
+  select: typeof homeSituationRecipeSelect;
+}>;
+
+const situationMainMealPattern =
+  /\b(lunch|dinner|main|meal|course|curry|sabzi|dal|rice|biryani|pulao|khichdi|roti|paratha|kulcha|thali|gravy|masala|bhurji|do pyaza|angara|kadai)\b/;
+const situationLightPattern =
+  /\b(snack|starter|momo|momos|roll|drink|beverage|juice|smoothie|dessert|sweet|chutney|pickle|raita|dip|salad|soup|gazpacho|water)\b/;
+
+function normalizeSituationText(value: string) {
+  return value
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, " ")
+    .replace(/-/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function situationMinutes(recipe: HomeSituationRecipe) {
+  if (!recipe.recipeCookingTime) return 0;
+
+  return (
+    recipe.recipeCookingTime.prepTime +
+    recipe.recipeCookingTime.cookTime +
+    recipe.recipeCookingTime.restTime
+  );
+}
+
+function situationDiscoveryText(recipe: HomeSituationRecipe) {
+  return normalizeSituationText(
+    [
+      recipe.title,
+      recipe.slug,
+      recipe.RecipeCategories?.name,
+      ...recipe.recipeMealTime.map((item) => item.mealTime.title),
+      ...recipe.recipeMealTime.map((item) => item.mealTime.slug),
+      ...recipe.recipeRecipeType.map((item) => item.recipeType.title),
+      ...recipe.recipeRecipeType.map((item) => item.recipeType.slug),
+    ]
+      .filter(Boolean)
+      .join(" "),
+  );
+}
+
+function scoreInitialSituationRecipe(recipe: HomeSituationRecipe) {
+  const title = normalizeSituationText(recipe.title);
+  const text = situationDiscoveryText(recipe);
+  const minutes = situationMinutes(recipe);
+  let score = Math.log10(Math.max(recipe.views, 0) + 10) * 80;
+
+  if (title.includes("paneer")) score += 360;
+  if (situationMainMealPattern.test(title)) score += 300;
+  if (situationMainMealPattern.test(text)) score += 140;
+  if (recipe.recipeMealTime.some((item) => /lunch|dinner/.test(item.mealTime.slug))) {
+    score += 220;
+  }
+  if (situationLightPattern.test(title)) score -= 420;
+  else if (situationLightPattern.test(text)) score -= 220;
+  if (minutes >= 18 && minutes <= 90) score += 35;
+
+  return score;
+}
+
+function publicInitialSituationRecipe(recipe: HomeSituationRecipe) {
+  return {
+    id: recipe.id,
+    title: recipe.title,
+    slug: recipe.slug,
+    metaSlug: recipe.metaSlug,
+    imageUrl: recipe.imageUrl,
+    RecipeCategories: recipe.RecipeCategories,
+    recipeCookingTime: recipe.recipeCookingTime,
+    recipeNutrient: recipe.recipeNutrient,
+    recipeIngredients: recipe.recipeIngredients,
+    recipeMealTime: recipe.recipeMealTime,
+    recipeCuisine: recipe.recipeCuisine,
+    recipeRecipeType: recipe.recipeRecipeType,
+    ingredientCount: recipe._count.recipeIngredients,
+    matchLabel: "Matches Paneer",
+  };
+}
 
 function uniqueByRecipeId<T extends { id: string }>(recipes: T[]) {
   const seen = new Set<string>();
@@ -106,7 +229,7 @@ function pickSummerDrinkRecipes<
 export const metadata: Metadata = buildSeoMetadata({
   title: "Kya Khayen | Easy Recipes, Healthy Meal Ideas and Meal Plans",
   description:
-    "Discover easy recipes, healthy meal ideas, quick breakfast inspiration, dinner recipes, seasonal dishes and taste-based meal plans with Kya Khayen.",
+    "Discover easy recipes, healthy meal ideas, quick breakfast inspiration, dinner recipes, seasonal dishes, meal plans and real-life kitchen situation tools with Kya Khayen.",
   path: "/",
   image: "/meta-images/home.png",
   imageAlt: "Kya Khayen recipes and weekly meal planning",
@@ -121,6 +244,10 @@ export const metadata: Metadata = buildSeoMetadata({
     "vegan recipes",
     "healthy dinner ideas",
     "dinner recipes",
+    "fridge ingredients recipes",
+    "leftover recipes",
+    "budget meal ideas",
+    "guest menu ideas",
   ],
 });
 
@@ -152,6 +279,7 @@ export default async function Home() {
     summerDrinkCandidates,
     cuisineStories,
     paneerRecipes,
+    paneerSituationCandidates,
     foodPreferenceStories,
     homeArticles,
   ] = await Promise.all([
@@ -324,6 +452,35 @@ export default async function Home() {
         orderBy: { views: "desc" },
         take: 6,
       }),
+      db.recipes.findMany({
+        where: {
+          ...publishedRecipeWhere(),
+          imageUrl: { not: null },
+          RecipeCategories: { slug: { in: ["veg", "vegan"] } },
+          OR: [
+            { title: { contains: "paneer" } },
+            { slug: { contains: "paneer" } },
+            {
+              recipeIngredients: {
+                some: {
+                  ingredient: {
+                    OR: [
+                      { name: { contains: "paneer" } },
+                      { slug: { contains: "paneer" } },
+                    ],
+                  },
+                },
+              },
+            },
+          ],
+        },
+        select: homeSituationRecipeSelect,
+        orderBy: [
+          { views: "desc" },
+          { contentUpdatedAt: "desc" },
+          { updatedAt: "desc" },
+        ],
+      }),
       db.recipeCategories.findMany({
         where: {
           isPublished: true,
@@ -381,6 +538,13 @@ export default async function Home() {
       }),
     ]);
   const summerRecipes = pickSummerDrinkRecipes(summerDrinkCandidates);
+  const initialSituationRecipes = [...paneerSituationCandidates]
+    .sort(
+      (left, right) =>
+        scoreInitialSituationRecipe(right) - scoreInitialSituationRecipe(left),
+    )
+    .slice(0, 6)
+    .map(publicInitialSituationRecipe);
 
   const recipeListSchema = itemListJsonLd(
     "Featured recipes from Kya Khayen",
@@ -412,6 +576,16 @@ export default async function Home() {
       <LazyMembershipPromptModal />
       <HomePreferenceProvider defaultPreference="veg">
         <div className="home-page-body relative isolate overflow-hidden">
+          <HomeSituationTools
+            initialRecipePage={{
+              recipes: initialSituationRecipes,
+              total: paneerSituationCandidates.length,
+              page: 0,
+              pageSize: 6,
+              hasNext: paneerSituationCandidates.length > 6,
+              hasPrevious: false,
+            }}
+          />
           <HomeFeaturedRecipes recipes={featuredRecipes} />
           <SeasonalSpotlight
             recipes={summerRecipes}

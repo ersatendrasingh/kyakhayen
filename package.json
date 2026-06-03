@@ -17,6 +17,7 @@
     "seed:early-morning": "node scripts/seed-early-morning-recipes.mjs",
     "upload:early-morning-images": "node scripts/upload-early-morning-images.mjs",
     "reconcile:recipe-views": "node scripts/reconcile-recipe-views.mjs",
+    "repair:situation-tags": "node scripts/repair-situation-recipe-tags.mjs",
     "backup:db": "node scripts/backup-database.mjs",
     "worker:mealPlan": "node workers/mealPlan.mjs",
     "worker": "npm run worker:mealPlan"

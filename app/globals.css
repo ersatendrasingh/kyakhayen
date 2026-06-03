@@ -534,6 +534,18 @@ body {
     isolation: isolate;
   }
 
+  .home-situation-engine {
+    background:
+      linear-gradient(180deg, rgb(255 252 246 / 72%), rgb(244 232 214 / 48%)),
+      linear-gradient(115deg, rgb(184 54 39 / 7%), transparent 42%, rgb(210 153 65 / 9%));
+  }
+
+  .home-situation-panel {
+    box-shadow:
+      0 28px 62px -44px rgb(62 37 21 / 48%),
+      inset 0 1px rgb(255 255 255 / 76%);
+  }
+
   .home-featured::after,
   .home-seasonal::after,
   .home-cuisine-explorer::after,
@@ -1040,6 +1052,19 @@ body {
     background: linear-gradient(180deg, rgb(12 35 28 / 70%), rgb(8 22 18 / 32%));
   }
 
+  .dark .home-situation-engine {
+    border-color: rgb(143 180 159 / 13%);
+    background:
+      linear-gradient(180deg, rgb(11 28 22 / 74%), rgb(8 20 16 / 58%)),
+      linear-gradient(118deg, rgb(199 161 86 / 8%), transparent 44%, rgb(50 125 93 / 12%));
+  }
+
+  .dark .home-situation-panel {
+    box-shadow:
+      0 28px 68px -42px rgb(0 0 0 / 75%),
+      inset 0 1px rgb(255 255 255 / 7%);
+  }
+
   .dark .home-cuisine-explorer {
     border-color: rgb(115 163 138 / 12%);
     background:
@@ -1400,6 +1425,43 @@ body {
 
   .home-hide-scrollbar::-webkit-scrollbar {
     display: none;
+  }
+
+  .home-situation-tab-copy {
+    max-width: 7.5rem;
+  }
+
+  .home-situation-tab-copy-text {
+    display: inline-block;
+    min-width: max-content;
+  }
+
+  @keyframes home-situation-tab-marquee {
+    from {
+      transform: translateX(0);
+    }
+
+    to {
+      transform: translateX(-32%);
+    }
+  }
+
+  @media (max-width: 639px) {
+    .home-situation-tab-copy-text {
+      animation: home-situation-tab-marquee 5.2s ease-in-out infinite alternate;
+    }
+  }
+
+  @media (min-width: 640px) {
+    .home-situation-tab-copy {
+      max-width: 100%;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .home-situation-tab-copy-text {
+      animation: none;
+    }
   }
 
   .admin-shell {
