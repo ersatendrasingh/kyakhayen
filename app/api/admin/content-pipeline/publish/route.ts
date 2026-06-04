@@ -269,17 +269,22 @@ async function publishFacebookPost(input: ContentPublishPayload): Promise<Conten
     };
   }
 
-  const published = input.imageUrl
-    ? await postForm(`https://graph.facebook.com/${graphVersion}/${pageId}/photos`, {
-        url: input.imageUrl,
-        caption: input.facebookPost,
+  const published = input.recipeUrl
+    ? await postForm(`https://graph.facebook.com/${graphVersion}/${pageId}/feed`, {
+        message: input.facebookPost,
+        link: input.recipeUrl,
         access_token: accessToken,
       })
-    : await postForm(`https://graph.facebook.com/${graphVersion}/${pageId}/feed`, {
-        message: input.facebookPost,
-        ...(input.recipeUrl ? { link: input.recipeUrl } : {}),
-        access_token: accessToken,
-      });
+    : input.imageUrl
+      ? await postForm(`https://graph.facebook.com/${graphVersion}/${pageId}/photos`, {
+          url: input.imageUrl,
+          caption: input.facebookPost,
+          access_token: accessToken,
+        })
+      : await postForm(`https://graph.facebook.com/${graphVersion}/${pageId}/feed`, {
+          message: input.facebookPost,
+          access_token: accessToken,
+        });
 
   return {
     platform: "facebook_post",

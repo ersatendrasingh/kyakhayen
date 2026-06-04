@@ -8,6 +8,7 @@ import {
   Search,
   Share2,
 } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 
@@ -49,6 +50,34 @@ import type {
   SituationRecipe,
 } from "@/components/sections/situation-tools/types";
 import { cn } from "@/lib/utils";
+
+const situationImageMap = {
+  ingredients: {
+    src: "/assets/images/tools/ingredient-finder-hero.png",
+    alt: "Indian kitchen ingredient finder with fresh vegetables",
+    label: "Cook from what is already at home",
+  },
+  daily: {
+    src: "/assets/images/tools/daily-menu-hero.png",
+    alt: "Indian meal planning with breakfast lunch and dinner",
+    label: "Plan today's meals faster",
+  },
+  guests: {
+    src: "/assets/images/tools/guest-menu-hero.png",
+    alt: "Indian guest menu with food served at home",
+    label: "Make hosting feel easier",
+  },
+  budget: {
+    src: "/assets/images/tools/budget-meal-hero.png",
+    alt: "Budget Indian meal ideas with home ingredients",
+    label: "Find ideas around your budget",
+  },
+  moms: {
+    src: "/assets/images/tools/kids-meal-hero.png",
+    alt: "Family-friendly Indian food ideas for kids",
+    label: "Simple food ideas for kids",
+  },
+} satisfies Record<SituationKey, { src: string; alt: string; label: string }>;
 
 export default function HomeSituationTools({
   initialRecipePage,
@@ -107,6 +136,7 @@ export default function HomeSituationTools({
 
   const activeSituation =
     situations.find((situation) => situation.key === activeKey) ?? situations[0];
+  const situationImage = situationImageMap[activeKey];
   const resetRecipePage = () => setRecipePage(0);
   const result = useMemo(
     () =>
@@ -544,6 +574,27 @@ export default function HomeSituationTools({
                     {highlight}
                   </span>
                 ))}
+              </div>
+
+              <div className="mt-5 overflow-hidden rounded-[1rem] border border-[#ead9c3] bg-[#fff4df] shadow-sm dark:border-white/10 dark:bg-white/[0.045]">
+                <div className="relative h-56 sm:h-64 lg:h-72">
+                  <Image
+                    src={situationImage.src}
+                    alt={situationImage.alt}
+                    fill
+                    sizes="(min-width: 1024px) 34vw, 100vw"
+                    className="object-cover"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#201713]/58 via-transparent to-transparent" />
+                  <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between gap-3">
+                    <span className="rounded-full bg-[#201713]/78 px-3 py-1.5 text-xs font-semibold text-[#f2cf8b] backdrop-blur">
+                      {situationImage.label}
+                    </span>
+                    <span className="hidden rounded-full bg-white/88 px-3 py-1.5 text-xs font-semibold text-[#49362a] shadow-sm sm:inline-flex">
+                      {activeSituation.shortTitle}
+                    </span>
+                  </div>
+                </div>
               </div>
             </div>
 

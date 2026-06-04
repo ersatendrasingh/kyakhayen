@@ -7,6 +7,7 @@ import { unstable_cache } from "next/cache";
 
 import Container from "@/components/container";
 import Copyrights from "@/components/footer/copyrights";
+import { toolPages } from "@/components/sections/situation-tools/tool-page-config";
 import { db } from "@/lib/db";
 import { recipeCollectionHref } from "@/lib/recipe-collection-url";
 
@@ -196,6 +197,35 @@ const Footer = async () => {
                 </Link>
               ))}
             </nav>
+          </div>
+        </div>
+        <div className="mb-8 rounded-[1.5rem] border border-white/8 bg-white/[0.025] px-5 py-6 sm:px-7">
+          <div className="mb-4 flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.23em] text-[#f8d18a]">
+                Cooking tools
+              </p>
+              <p className="mt-2 max-w-xl text-sm leading-6 text-white/58">
+                Open the exact tool for the kitchen question in front of you.
+              </p>
+            </div>
+            <Link
+              href="/tools"
+              className="inline-flex w-fit items-center gap-2 text-sm font-semibold text-[#f8d18a] transition hover:text-white"
+            >
+              View all tools <ArrowRight className="size-4" />
+            </Link>
+          </div>
+          <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-5">
+            {toolPages.map((tool) => (
+              <Link
+                key={tool.slug}
+                href={tool.href}
+                className="rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 text-sm font-semibold text-white/72 transition hover:border-[#d79b42]/55 hover:text-white"
+              >
+                {tool.title}
+              </Link>
+            ))}
           </div>
         </div>
         <div className="mb-8 rounded-[1.5rem] border border-white/8 bg-white/[0.025] px-5 py-6 sm:px-7">

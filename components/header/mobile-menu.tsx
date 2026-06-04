@@ -1,6 +1,6 @@
 "use client";
 
-import { CalendarHeart, CookingPot, Menu, Soup } from "lucide-react";
+import { CalendarHeart, CookingPot, Menu, Refrigerator, Soup } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -10,6 +10,7 @@ import { cn } from "@/lib/utils";
 
 const destinations = [
   { label: "Recipes", href: "/recipes", icon: CookingPot },
+  { label: "Tools", href: "/tools", icon: Refrigerator },
   {
     label: "Cuisines",
     href: recipeCollectionHref("north-indian"),

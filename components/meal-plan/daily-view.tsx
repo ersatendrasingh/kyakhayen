@@ -27,6 +27,9 @@ interface DailyViewProps {
   onSelectDate: (date: Date) => void;
 }
 
+const mealPlanLoadRetryDelays = [450, 1200];
+const wait = (ms: number) => new Promise((resolve) => window.setTimeout(resolve, ms));
+
 const DailyView = ({ date, onSelectDate }: DailyViewProps) => {
   const [mealsByTime, setMealsByTime] = useState<{
     [key: string]: RecipeWithCategory[];
@@ -50,54 +53,80 @@ const DailyView = ({ date, onSelectDate }: DailyViewProps) => {
 
   useEffect(() => {
     let active = true;
-    const timer = window.setTimeout(() => {
-      if (!active) return;
+    const fetchMealPlan = async () => {
+      setLoading(true);
       setPlanStartWarning(false);
       setPlanEndWarning(false);
-    }, 0);
+      setPlanUnavailable(false);
+      setPlanLoadError(false);
+      setMealsByTime({});
+      setMealTimes([]);
+      setRoutineSlots([]);
 
-    const fetchUserPlanDates = async () => {
       try {
-        const { startDate, endDate } = await getUserLatestPlanDates();
+        let planDates: Awaited<ReturnType<typeof getUserLatestPlanDates>> | null = null;
+        let planDatesError: unknown = null;
 
+        for (let attempt = 0; attempt <= mealPlanLoadRetryDelays.length; attempt += 1) {
+          try {
+            planDates = await getUserLatestPlanDates();
+            planDatesError = null;
+            break;
+          } catch (error) {
+            planDatesError = error;
+            const retryDelay = mealPlanLoadRetryDelays[attempt];
+            if (typeof retryDelay === "number") {
+              await wait(retryDelay);
+            }
+          }
+        }
+
+        if (planDatesError || !planDates) {
+          throw planDatesError ?? new Error("Meal plan dates could not be loaded.");
+        }
+
+        const { startDate, endDate } = planDates;
         const userPlanStartDate = normalizeDate(new Date(startDate));
         const userPlanEndDate = normalizeDate(new Date(endDate));
-
         const selectedDate = normalizeDate(new Date(date));
+
         if (!active) return;
         setMealPlanStartDate(userPlanStartDate);
         setMealPlanEndDate(userPlanEndDate);
 
         if (selectedDate < userPlanStartDate) {
           setPlanStartWarning(true);
+          setLoading(false);
+          return;
         }
 
         if (selectedDate > userPlanEndDate) {
           setPlanEndWarning(true);
+          setLoading(false);
+          return;
         }
-      } catch (error) {
-        console.error("Error fetching user's meal plan dates:", error);
-      }
-    };
 
-    void fetchUserPlanDates();
-    return () => {
-      active = false;
-      window.clearTimeout(timer);
-    };
-  }, [date]);
-
-  useEffect(() => {
-    let active = true;
-    const fetchMealPlan = async () => {
-      setLoading(true);
-      setPlanUnavailable(false);
-      setPlanLoadError(false);
-
-      try {
         const formattedDate = formatISO(date, { representation: "date" });
+        let mealPlanResult: Awaited<ReturnType<typeof getMealPlanFromS3>> = null;
+        let mealPlanError: unknown = null;
 
-        const mealPlanResult = await getMealPlanFromS3({ date: formattedDate });
+        for (let attempt = 0; attempt <= mealPlanLoadRetryDelays.length; attempt += 1) {
+          try {
+            mealPlanResult = await getMealPlanFromS3({ date: formattedDate });
+            mealPlanError = null;
+            break;
+          } catch (error) {
+            mealPlanError = error;
+            const retryDelay = mealPlanLoadRetryDelays[attempt];
+            if (typeof retryDelay === "number") {
+              await wait(retryDelay);
+            }
+          }
+        }
+
+        if (mealPlanError) {
+          throw mealPlanError;
+        }
 
         if (!active) return;
         if (mealPlanResult && mealPlanResult.mealTimes.length > 0) {
@@ -111,7 +140,7 @@ const DailyView = ({ date, onSelectDate }: DailyViewProps) => {
         }
       } catch (error) {
         if (!active) return;
-        console.error("Error fetching or generating meal plan:", error);
+        console.error("Error fetching meal plan:", error);
         setPlanLoadError(true);
         setRoutineSlots([]);
       }

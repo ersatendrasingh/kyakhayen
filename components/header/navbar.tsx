@@ -481,6 +481,11 @@ export const Navbar = ({
               Desserts
             </Link>
           </NavigationMenuItem>
+          <NavigationMenuItem>
+            <Link href="/tools" className={navControlClass}>
+              Tools
+            </Link>
+          </NavigationMenuItem>
         </NavigationMenuList>
       </NavigationMenu>
     </nav>

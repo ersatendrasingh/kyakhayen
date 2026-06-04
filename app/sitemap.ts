@@ -1,5 +1,6 @@
 import { MetadataRoute } from "next";
 
+import { toolPages } from "@/components/sections/situation-tools/tool-page-config";
 import { db } from "@/lib/db";
 import { getPublishedRecipeCollectionRoutes } from "@/lib/recipe-collection-resolver";
 import { publishedRecipeWhere, recipeContentUpdatedAt } from "@/lib/recipe-publication";
@@ -43,6 +44,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const staticRoutes = [
     { url: "/", lastModified: "2026-05-30", changeFrequency: "daily" },
     { url: "/recipes", lastModified: "2026-05-30", changeFrequency: "daily" },
+    { url: "/tools", lastModified: "2026-06-04", changeFrequency: "daily" },
+    {
+      url: "/tools/what-can-i-cook-with-ingredients",
+      lastModified: "2026-06-04",
+      changeFrequency: "daily",
+    },
     { url: "/blog", lastModified: "2026-05-30", changeFrequency: "daily" },
     {
       url: "/about-us",
@@ -80,6 +87,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     lastModified: route.lastModified,
     changeFrequency: route.changeFrequency as ChangeFrequency,
   }));
+  const toolRoutes = toolPages
+    .filter((tool) => tool.href !== "/tools/what-can-i-cook-with-ingredients")
+    .map((tool) => ({
+      url: absoluteUrl(tool.href),
+      lastModified: "2026-06-04",
+      changeFrequency,
+    }));
 
   const recipesRoutes = recipes.map((recipe) => {
     const lastModifiedDate = new Date(recipeContentUpdatedAt(recipe))
@@ -113,5 +127,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     changeFrequency,
   }));
 
-  return [...staticRoutes, ...collectionRoutes, ...recipesRoutes, ...articlesRoutes];
+  return [
+    ...staticRoutes,
+    ...toolRoutes,
+    ...collectionRoutes,
+    ...recipesRoutes,
+    ...articlesRoutes,
+  ];
 }

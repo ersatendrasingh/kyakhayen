@@ -49,8 +49,8 @@ export const situations: Situation[] = [
   },
   {
     key: "moms",
-    title: "Moms Mode",
-    shortTitle: "Moms mode",
+    title: "Kids Meal Ideas",
+    shortTitle: "Kids meals",
     prompt: "Kids-friendly picks",
     icon: Heart,
   },
@@ -77,7 +77,10 @@ export const foodTypeOptions = [
 
 export const budgetPresetOptions = [75, 100, 150, 250, 500];
 
-export const fridgeHeadlines = ["What's in your fridge?", "Fridge me kya hai?"];
+export const fridgeHeadlines = [
+  "What's in your fridge?",
+  "What can you cook today?",
+];
 
 export const broadCuisineSlugs = new Set([
   "indian",

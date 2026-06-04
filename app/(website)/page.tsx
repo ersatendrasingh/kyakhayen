@@ -54,10 +54,11 @@ const homepageCuisineSlugs = [
   "bihari",
   "rajasthani",
   "gujarati",
-  "west-indian",
-  "american",
-  "international-mediterranean",
+  "maharashtrian",
+  "bengali",
+  "italian",
 ] as const;
+const homepageCuisineRecipeTake = 72;
 
 const homeSituationRecipeSelect = {
   id: true,
@@ -413,8 +414,12 @@ export default async function Home() {
                 },
               },
             },
-            orderBy: { recipe: { views: "desc" } },
-            take: 12,
+            orderBy: [
+              { recipe: { views: "desc" } },
+              { recipe: { contentUpdatedAt: "desc" } },
+              { recipe: { updatedAt: "desc" } },
+            ],
+            take: homepageCuisineRecipeTake,
           },
         },
         orderBy: { position: "asc" },

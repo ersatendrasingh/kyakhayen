@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { addDays, subDays } from "date-fns";
+import { addDays, isAfter, isBefore, isSameDay, startOfDay, subDays } from "date-fns";
 import { ArrowRight, Loader2, Sparkles } from "lucide-react";
 import Link from "next/link";
 import CalendarHeader from "@/components/calendar/calendar-header";
@@ -14,6 +14,7 @@ const MealPlan = () => {
   const { data: session, status, update } = useSession();
   const user = session?.user;
   const hasRunOnce = useRef(false);
+  const hasAlignedPlanDate = useRef(false);
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
 
   useEffect(() => {
@@ -46,6 +47,42 @@ const MealPlan = () => {
   const activePlan =
     currentPlanIndex >= 0 ? user?.userPlan?.[currentPlanIndex] : undefined;
   const hasPaidAccess = Boolean(activePlan && activePlan !== "Freemium");
+
+  useEffect(() => {
+    if (hasAlignedPlanDate.current || !user?.isPersonalised || currentPlanIndex < 0) {
+      return;
+    }
+
+    const planStartValue = user.userPlanStartDate?.[currentPlanIndex];
+    const planEndValue = user.userPlanEndDate?.[currentPlanIndex];
+    if (!planStartValue || !planEndValue) return;
+
+    const planStartDate = startOfDay(new Date(planStartValue));
+    const planEndDate = startOfDay(new Date(planEndValue));
+    const today = startOfDay(new Date());
+    const firstVisibleDate = isBefore(today, planStartDate)
+      ? planStartDate
+      : isAfter(today, planEndDate)
+        ? planEndDate
+        : today;
+
+    const timer = window.setTimeout(() => {
+      setSelectedDate((currentDate) => {
+        const normalizedCurrentDate = startOfDay(currentDate);
+        return isSameDay(normalizedCurrentDate, firstVisibleDate)
+          ? currentDate
+          : firstVisibleDate;
+      });
+      hasAlignedPlanDate.current = true;
+    }, 0);
+
+    return () => window.clearTimeout(timer);
+  }, [
+    currentPlanIndex,
+    user?.isPersonalised,
+    user?.userPlanEndDate,
+    user?.userPlanStartDate,
+  ]);
 
   if (status === "loading") {
     return (

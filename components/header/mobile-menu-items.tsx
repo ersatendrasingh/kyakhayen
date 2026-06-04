@@ -5,6 +5,7 @@ import {
   CloudRain,
   CakeSlice,
   Leaf,
+  Refrigerator,
   Snowflake,
   Sparkles,
   SunMedium,
@@ -200,6 +201,18 @@ export const MobileMenuItems = ({
         >
           <span className="inline-flex items-center gap-2">
             <Leaf className="size-4 text-[#d8edc4]" /> Explore vegetarian
+          </span>
+          <span aria-hidden="true">-&gt;</span>
+        </Link>
+      </SheetClose>
+
+      <SheetClose asChild>
+        <Link
+          href="/tools"
+          className="mx-4 mt-4 flex cursor-pointer items-center justify-between rounded-2xl border border-[#eadbc8] bg-white px-4 py-4 text-sm font-semibold text-[#45362c]"
+        >
+          <span className="inline-flex items-center gap-2">
+            <Refrigerator className="size-4 text-[#bd8030]" /> Cooking tools
           </span>
           <span aria-hidden="true">-&gt;</span>
         </Link>
