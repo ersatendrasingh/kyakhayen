@@ -15,6 +15,7 @@
     "postinstall": "prisma generate",
     "email": "email dev",
     "seed:early-morning": "node scripts/seed-early-morning-recipes.mjs",
+    "seed:ingredient-prices": "node scripts/seed-ingredient-prices.mjs",
     "upload:early-morning-images": "node scripts/upload-early-morning-images.mjs",
     "reconcile:recipe-views": "node scripts/reconcile-recipe-views.mjs",
     "repair:situation-tags": "node scripts/repair-situation-recipe-tags.mjs",

@@ -1139,6 +1139,27 @@ async function main() {
     }
   }
 
+  const catalogMissingIngredients = await db.ingredients.findMany({
+    where: {
+      OR: NUTRITION_FIELDS.map((field) => ({ [field]: null })),
+    },
+    select: Object.fromEntries(
+      [
+        "id",
+        "name",
+        "slug",
+        "isPublished",
+        "nutritionSource",
+        "nutritionBasisGrams",
+        ...NUTRITION_FIELDS,
+      ].map((field) => [field, true]),
+    ),
+  });
+
+  for (const ingredient of catalogMissingIngredients) {
+    ingredientById.set(ingredient.id, ingredient);
+  }
+
   const missingNutritionIngredients = [...ingredientById.values()].filter(
     (ingredient) => !hasCompleteNutrition(ingredient),
   );

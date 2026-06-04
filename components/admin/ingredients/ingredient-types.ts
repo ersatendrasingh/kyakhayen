@@ -40,6 +40,10 @@ export type IngredientEditorRecord = {
   totalFat: number | null;
   dietaryFiber: number | null;
   protein: number | null;
+  marketPriceInr: number | null;
+  marketPriceBasisGrams: number;
+  marketPriceSource: string | null;
+  marketPriceUpdatedAt: Date | null;
   vitaminA: number | null;
   ascorbicAcids: number | null;
   vitaminD: number | null;

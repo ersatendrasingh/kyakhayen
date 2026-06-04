@@ -350,32 +350,36 @@ model recipeRecipeType {
 }
 
 model Ingredients {
-  id                   String  @id @default(uuid())
-  name                 String
-  slug                 String? @unique
-  imageUrl             String?
-  nutritionSource      String?
-  nutritionBasisGrams  Float   @default(100)
-  calories             Float?
-  carbohydrate         Float?
-  totalFat             Float?
-  dietaryFiber         Float?
-  protein              Float?
-  vitaminA             Float?
-  ascorbicAcids        Float?
-  vitaminD             Float?
-  tocopherolEquivalent Float?
-  vitaminK             Float?
-  thiamine             Float?
-  riboflavin           Float?
-  totalB6              Float?
-  folates              Float?
-  calcium              Float?
-  iron                 Float?
-  phosphorus           Float?
-  potassium            Float?
-  sodium               Float?
-  zinc                 Float?
+  id                    String    @id @default(uuid())
+  name                  String
+  slug                  String?   @unique
+  imageUrl              String?
+  nutritionSource       String?
+  nutritionBasisGrams   Float     @default(100)
+  calories              Float?
+  carbohydrate          Float?
+  totalFat              Float?
+  dietaryFiber          Float?
+  protein               Float?
+  vitaminA              Float?
+  ascorbicAcids         Float?
+  vitaminD              Float?
+  tocopherolEquivalent  Float?
+  vitaminK              Float?
+  thiamine              Float?
+  riboflavin            Float?
+  totalB6               Float?
+  folates               Float?
+  calcium               Float?
+  iron                  Float?
+  phosphorus            Float?
+  potassium             Float?
+  sodium                Float?
+  zinc                  Float?
+  marketPriceInr        Float?
+  marketPriceBasisGrams Float     @default(100)
+  marketPriceSource     String?
+  marketPriceUpdatedAt  DateTime?
 
   IngredientCategories   IngredientCategories? @relation(fields: [ingredientCategoriesId], references: [id])
   ingredientCategoriesId String?
@@ -386,6 +390,8 @@ model Ingredients {
   createdAt                  DateTime                     @default(now())
   updatedAt                  DateTime                     @updatedAt
   IngredientUnitMeasurements IngredientUnitMeasurements[]
+
+  @@index([marketPriceInr])
 }
 
 model IngredientUnitMeasurements {

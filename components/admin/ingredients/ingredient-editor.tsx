@@ -5,6 +5,7 @@ import { IngredientBasicsCard } from "@/components/admin/ingredients/ingredient-
 import { IngredientEditorActions } from "@/components/admin/ingredients/ingredient-editor-actions";
 import { IngredientMeasurementsCard } from "@/components/admin/ingredients/ingredient-measurements-card";
 import { IngredientNutritionCard } from "@/components/admin/ingredients/ingredient-nutrition-card";
+import { IngredientPricingCard } from "@/components/admin/ingredients/ingredient-pricing-card";
 import type {
   IngredientCategoryOption,
   IngredientEditorRecord,
@@ -50,6 +51,9 @@ export function IngredientEditor({
   const nutritionComplete = completedNutritionFields === nutritionFields.length;
   const identityComplete = Boolean(ingredient.name && ingredient.ingredientCategoriesId);
   const measurementComplete = ingredient.IngredientUnitMeasurements.length > 0;
+  const pricingComplete = Boolean(
+    ingredient.marketPriceInr !== null && ingredient.marketPriceBasisGrams > 0,
+  );
   const canPublish = identityComplete && nutritionComplete && measurementComplete;
 
   return (
@@ -117,6 +121,9 @@ export function IngredientEditor({
             <p className="admin-taxonomy-stat-value mt-2 text-2xl font-semibold">
               {ingredient._count.RecipeIngredients}
             </p>
+            <p className="admin-taxonomy-stat-label mt-1 text-xs">
+              {pricingComplete ? "Price ready" : "Price missing"}
+            </p>
           </div>
         </div>
       </section>
@@ -124,6 +131,7 @@ export function IngredientEditor({
       <div className="grid min-w-0 items-start gap-6 xl:grid-cols-[370px_minmax(0,1fr)]">
         <IngredientBasicsCard ingredient={ingredient} categories={categories} />
         <div className="min-w-0 space-y-6">
+          <IngredientPricingCard ingredient={ingredient} />
           <IngredientNutritionCard ingredient={ingredient} />
           <IngredientMeasurementsCard
             ingredientId={ingredient.id}

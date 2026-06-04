@@ -75,8 +75,23 @@ const recipeSelect = {
     take: 1,
   },
   recipeIngredients: {
-    select: { ingredient: { select: { name: true, slug: true } } },
-    take: 32,
+    select: {
+      quantity: true,
+      unitId: true,
+      unit: { select: { title: true, shortName: true } },
+      ingredient: {
+        select: {
+          id: true,
+          name: true,
+          slug: true,
+          marketPriceInr: true,
+          marketPriceBasisGrams: true,
+          IngredientUnitMeasurements: {
+            select: { unitId: true, values: true },
+          },
+        },
+      },
+    },
   },
   recipeMealTime: {
     where: { mealTime: { isPublished: true } },
@@ -97,6 +112,13 @@ const recipeSelect = {
 } satisfies Prisma.RecipesSelect;
 
 type RecipeRecord = Prisma.RecipesGetPayload<{ select: typeof recipeSelect }>;
+type RecipeIngredientRecord = RecipeRecord["recipeIngredients"][number];
+
+const GRAM_UNIT_SHORT_NAMES = new Set(["g", "gm", "gram", "grams"]);
+const KILOGRAM_UNIT_SHORT_NAMES = new Set(["kg", "kgs", "kilogram", "kilograms"]);
+const MILLIGRAM_UNIT_SHORT_NAMES = new Set(["mg", "milligram", "milligrams"]);
+const MILLILITER_UNIT_SHORT_NAMES = new Set(["ml", "milliliter", "milliliters"]);
+const LITER_UNIT_SHORT_NAMES = new Set(["l", "ltr", "liter", "liters", "litre", "litres"]);
 
 function normalize(value: string) {
   return value
@@ -155,6 +177,77 @@ function totalMinutes(recipe: RecipeRecord) {
     recipe.recipeCookingTime.cookTime +
     recipe.recipeCookingTime.restTime
   );
+}
+
+function unitShortName(value: string | null | undefined) {
+  return normalize(value ?? "").replace(/\s+/g, "");
+}
+
+function ingredientGrams(recipeIngredient: RecipeIngredientRecord) {
+  const mappedMeasurement = recipeIngredient.ingredient.IngredientUnitMeasurements.find(
+    (measurement) => measurement.unitId === recipeIngredient.unitId,
+  );
+
+  if (mappedMeasurement) return mappedMeasurement.values * recipeIngredient.quantity;
+
+  const shortName = unitShortName(recipeIngredient.unit.shortName);
+
+  if (GRAM_UNIT_SHORT_NAMES.has(shortName)) return recipeIngredient.quantity;
+  if (KILOGRAM_UNIT_SHORT_NAMES.has(shortName)) return recipeIngredient.quantity * 1000;
+  if (MILLIGRAM_UNIT_SHORT_NAMES.has(shortName)) return recipeIngredient.quantity / 1000;
+  if (MILLILITER_UNIT_SHORT_NAMES.has(shortName)) return recipeIngredient.quantity;
+  if (LITER_UNIT_SHORT_NAMES.has(shortName)) return recipeIngredient.quantity * 1000;
+
+  return null;
+}
+
+function roundCostInr(value: number) {
+  const interval = value < 100 ? 5 : 10;
+
+  return Math.max(interval, Math.round(value / interval) * interval);
+}
+
+function recipeCostEstimate(recipe: RecipeRecord) {
+  let total = 0;
+  let pricedIngredientCount = 0;
+  let convertibleIngredientCount = 0;
+  let missingPriceCount = 0;
+  let missingConversionCount = 0;
+
+  for (const recipeIngredient of recipe.recipeIngredients) {
+    const grams = ingredientGrams(recipeIngredient);
+
+    if (grams === null) {
+      missingConversionCount += 1;
+      continue;
+    }
+
+    convertibleIngredientCount += 1;
+
+    const price = recipeIngredient.ingredient.marketPriceInr;
+    const basisGrams = recipeIngredient.ingredient.marketPriceBasisGrams || 100;
+
+    if (price === null || price <= 0 || basisGrams <= 0) {
+      missingPriceCount += 1;
+      continue;
+    }
+
+    total += (grams / basisGrams) * price;
+    pricedIngredientCount += 1;
+  }
+
+  const ingredientCount = recipe.recipeIngredients.length;
+  const costConfidence = ingredientCount > 0 ? pricedIngredientCount / ingredientCount : 0;
+
+  return {
+    estimatedCostInr: pricedIngredientCount > 0 ? roundCostInr(total) : null,
+    rawCostInr: pricedIngredientCount > 0 ? total : null,
+    costConfidence,
+    pricedIngredientCount,
+    convertibleIngredientCount,
+    missingPriceCount,
+    missingConversionCount,
+  };
 }
 
 function recipeDiscoveryText(recipe: RecipeRecord) {
@@ -398,7 +491,9 @@ function matchLabelForSelected(recipe: RecipeRecord, selected: string[]) {
 
 function matchLabelForGeneral(recipe: RecipeRecord, mode: string) {
   if (mode === "budget") {
-    return `${recipe._count.recipeIngredients} ingredients listed`;
+    const cost = recipeCostEstimate(recipe).estimatedCostInr;
+
+    return cost === null ? "Price data needed" : `Approx Rs ${cost}`;
   }
 
   const mealTime = recipe.recipeMealTime[0]?.mealTime.title;
@@ -434,6 +529,8 @@ function dailyMatchLabel(recipe: RecipeRecord, focus: string, specificFocus: boo
 }
 
 function publicRecipe(recipe: RecipeRecord, matchLabel: string) {
+  const cost = recipeCostEstimate(recipe);
+
   return {
     id: recipe.id,
     title: recipe.title,
@@ -443,11 +540,21 @@ function publicRecipe(recipe: RecipeRecord, matchLabel: string) {
     RecipeCategories: recipe.RecipeCategories,
     recipeCookingTime: recipe.recipeCookingTime,
     recipeNutrient: recipe.recipeNutrient,
-    recipeIngredients: recipe.recipeIngredients,
+    recipeIngredients: recipe.recipeIngredients.map((item) => ({
+      ingredient: {
+        name: item.ingredient.name,
+        slug: item.ingredient.slug,
+      },
+    })),
     recipeMealTime: recipe.recipeMealTime,
     recipeCuisine: recipe.recipeCuisine,
     recipeRecipeType: recipe.recipeRecipeType,
     ingredientCount: recipe._count.recipeIngredients,
+    estimatedCostInr: cost.estimatedCostInr,
+    costConfidence: cost.costConfidence,
+    pricedIngredientCount: cost.pricedIngredientCount,
+    missingPriceCount: cost.missingPriceCount,
+    missingConversionCount: cost.missingConversionCount,
     matchLabel,
   };
 }
@@ -796,22 +903,51 @@ async function fetchBudgetRecipes(
     ],
   });
 
-  const budgetPressure = Math.max(0.7, 260 / Math.max(budget, 60));
-  const ranked = recipes
+  const budgetUpperBound = budget * 1.08 + 10;
+  const pricedRecipes = recipes
     .filter(isMainSituationRecipe)
     .filter((recipe) => !isGrainLedStaple(recipe))
-    .map((recipe) => ({
-      recipe,
-      score:
-        popularityScore(recipe) +
-        mainMealScore(recipe) -
-        recipe._count.recipeIngredients * budgetPressure -
-        totalMinutes(recipe) / 45,
-    }))
+    .map((recipe) => ({ recipe, cost: recipeCostEstimate(recipe) }))
+    .filter(({ cost }) => cost.estimatedCostInr !== null && cost.costConfidence >= 0.55);
+  const withinBudget = pricedRecipes.filter(
+    ({ cost }) => (cost.estimatedCostInr ?? Number.POSITIVE_INFINITY) <= budgetUpperBound,
+  );
+  const pool =
+    withinBudget.length > 0
+      ? withinBudget
+      : [...pricedRecipes]
+          .sort(
+            (left, right) =>
+              (left.cost.estimatedCostInr ?? Number.POSITIVE_INFINITY) -
+              (right.cost.estimatedCostInr ?? Number.POSITIVE_INFINITY),
+          )
+          .slice(0, 36);
+  const targetCost = Math.max(35, budget * (budget <= 100 ? 0.72 : 0.62));
+  const ranked = pool
+    .map(({ recipe, cost }) => {
+      const estimatedCost = cost.estimatedCostInr ?? budgetUpperBound;
+      const overBudget = Math.max(estimatedCost - budget, 0);
+      const rangeDistance = Math.abs(estimatedCost - targetCost);
+
+      return {
+        recipe,
+        score:
+          popularityScore(recipe) +
+          mainMealScore(recipe) +
+          (estimatedCost <= budgetUpperBound ? 420 : 0) +
+          (hasTypeSlug(recipe, "cooked-vegetable") ? 150 : 0) +
+          (hasTypeSlug(recipe, "protein") ? 90 : 0) -
+          rangeDistance * (budget <= 100 ? 1.4 : 3.2) -
+          overBudget * 5 -
+          cost.missingPriceCount * 45 -
+          cost.missingConversionCount * 80 -
+          totalMinutes(recipe) / 45,
+      };
+    })
     .sort((left, right) => right.score - left.score)
     .map(({ recipe }) => recipe);
 
-  return buildRecipePage(diversifyRecipes(ranked), pageSize, page, (recipe) =>
+  return buildRecipePage(ranked, pageSize, page, (recipe) =>
     matchLabelForGeneral(recipe, "budget"),
   );
 }

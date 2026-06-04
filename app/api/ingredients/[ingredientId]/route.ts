@@ -13,6 +13,9 @@ const updateIngredientSchema = z
     imageUrl: z.string().url().nullable().optional(),
     nutritionSource: z.string().trim().max(160).nullable().optional(),
     nutritionBasisGrams: z.number().finite().positive().max(1000).optional(),
+    marketPriceInr: z.number().finite().min(0).nullable().optional(),
+    marketPriceBasisGrams: z.number().finite().positive().max(100000).optional(),
+    marketPriceSource: z.string().trim().max(191).nullable().optional(),
     calories: nutritionValue,
     carbohydrate: nutritionValue,
     totalFat: nutritionValue,
@@ -98,6 +101,11 @@ export async function PATCH(req: Request, props: { params: Promise<{ ingredientI
     }
 
     const values = parsedValues.data;
+    const hasPricingUpdate = [
+      "marketPriceInr",
+      "marketPriceBasisGrams",
+      "marketPriceSource",
+    ].some((key) => Object.prototype.hasOwnProperty.call(values, key));
     const data = values.name
       ? {
           ...values,
@@ -112,6 +120,12 @@ export async function PATCH(req: Request, props: { params: Promise<{ ingredientI
       },
       data: {
         ...data,
+        ...(hasPricingUpdate
+          ? {
+              marketPriceUpdatedAt:
+                values.marketPriceInr === null ? null : new Date(),
+            }
+          : {}),
       },
     });
     return NextResponse.json(ingredient, { status: 200 });
