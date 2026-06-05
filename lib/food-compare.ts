@@ -1214,23 +1214,108 @@ function goalScore(food: FoodCompareFood, goal: FoodCompareGoalId) {
   }
 
   return (
-    food.health.score * 5 +
-    n.protein * 5.6 +
+    food.health.score * 4.2 +
+    n.protein * 4.8 +
     n.dietaryFiber * 7.6 +
     n.potassium * 0.006 +
     n.calcium * 0.008 +
     n.iron * 0.8 -
-    n.calories * 0.045 -
+    n.calories * 0.075 -
     n.sodium * 0.003 -
-    n.totalFat * 0.45
+    n.totalFat * 0.58
   );
 }
 
-function pickWinner(leftScore: number, rightScore: number): FoodCompareWinner {
-  const difference = leftScore - rightScore;
-  const tolerance = Math.max(5, (Math.abs(leftScore) + Math.abs(rightScore)) * 0.035);
+function lowerCalorieSide(left: FoodCompareFood, right: FoodCompareFood) {
+  return left.nutrients.calories < right.nutrients.calories ? "left" : "right";
+}
 
-  if (Math.abs(difference) <= tolerance) return "tie";
+function foodBySide(side: FoodCompareSide, left: FoodCompareFood, right: FoodCompareFood) {
+  return side === "left" ? left : right;
+}
+
+function oppositeSide(side: FoodCompareSide): FoodCompareSide {
+  return side === "left" ? "right" : "left";
+}
+
+function decisiveMetricWinner(
+  left: FoodCompareFood,
+  right: FoodCompareFood,
+  goal: FoodCompareGoalId,
+): FoodCompareWinner | null {
+  const calorieGap = Math.abs(left.nutrients.calories - right.nutrients.calories);
+  const calorieRatio = calorieGap / Math.max(left.nutrients.calories, right.nutrients.calories, 1);
+
+  if (goal === "lighter" && calorieGap >= 90 && calorieRatio >= 0.18) {
+    return lowerCalorieSide(left, right);
+  }
+
+  if (goal !== "balanced") return null;
+
+  const side = lowerCalorieSide(left, right);
+  const lowerCalorieFood = foodBySide(side, left, right);
+  const higherCalorieFood = foodBySide(oppositeSide(side), left, right);
+  const proteinGap = higherCalorieFood.nutrients.protein - lowerCalorieFood.nutrients.protein;
+  const fiberGap = higherCalorieFood.nutrients.dietaryFiber - lowerCalorieFood.nutrients.dietaryFiber;
+  const hasComparableProtein =
+    lowerCalorieFood.nutrients.protein >= higherCalorieFood.nutrients.protein * 0.82 ||
+    proteinGap <= 5;
+  const hasComparableFiber =
+    lowerCalorieFood.nutrients.dietaryFiber >= higherCalorieFood.nutrients.dietaryFiber * 0.7 ||
+    fiberGap <= 3;
+
+  if (calorieGap >= 150 && calorieRatio >= 0.24 && hasComparableProtein && hasComparableFiber) {
+    return side;
+  }
+
+  return null;
+}
+
+function metricsAreCloseEnoughForTie(
+  left: FoodCompareFood,
+  right: FoodCompareFood,
+  goal: FoodCompareGoalId,
+) {
+  const calorieGap = Math.abs(left.nutrients.calories - right.nutrients.calories);
+  const calorieRatio = calorieGap / Math.max(left.nutrients.calories, right.nutrients.calories, 1);
+  const proteinGap = Math.abs(left.nutrients.protein - right.nutrients.protein);
+  const proteinRatio = proteinGap / Math.max(left.nutrients.protein, right.nutrients.protein, 1);
+  const fiberGap = Math.abs(left.nutrients.dietaryFiber - right.nutrients.dietaryFiber);
+  const fiberRatio =
+    fiberGap / Math.max(left.nutrients.dietaryFiber, right.nutrients.dietaryFiber, 1);
+  const timeGap = Math.abs((left.timeMinutes ?? 999) - (right.timeMinutes ?? 999));
+
+  if (goal === "quick") return timeGap <= 8 && calorieRatio <= 0.22;
+  if (goal === "protein") return proteinRatio <= 0.12 && calorieRatio <= 0.28;
+  if (goal === "fiber") return fiberRatio <= 0.16 && calorieRatio <= 0.28;
+  if (goal === "lighter") return calorieGap <= 90 || calorieRatio <= 0.18;
+
+  return calorieGap <= 110 && calorieRatio <= 0.22;
+}
+
+function pickWinner(
+  leftScore: number,
+  rightScore: number,
+  left: FoodCompareFood,
+  right: FoodCompareFood,
+  goal: FoodCompareGoalId,
+): FoodCompareWinner {
+  const decisiveWinner = decisiveMetricWinner(left, right, goal);
+  if (decisiveWinner) return decisiveWinner;
+
+  const difference = leftScore - rightScore;
+  const tolerance = Math.max(
+    3,
+    Math.min(12, (Math.abs(leftScore) + Math.abs(rightScore)) * 0.015),
+  );
+
+  if (
+    Math.abs(difference) <= tolerance &&
+    metricsAreCloseEnoughForTie(left, right, goal)
+  ) {
+    return "tie";
+  }
+
   return difference > 0 ? "left" : "right";
 }
 
@@ -1490,7 +1575,7 @@ export async function buildFoodComparison({
 
   const leftScore = goalScore(left, safeFoodGoal);
   const rightScore = goalScore(right, safeFoodGoal);
-  const winner = pickWinner(leftScore, rightScore);
+  const winner = pickWinner(leftScore, rightScore, left, right, safeFoodGoal);
   const metrics = buildMetrics(left, right);
 
   return {

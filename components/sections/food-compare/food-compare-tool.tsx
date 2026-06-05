@@ -890,38 +890,38 @@ function WinnerModal({
   const visibleReasons = result.keyPoints.slice(0, 2);
 
   return (
-    <div className="fixed inset-0 z-[80] flex items-center justify-center bg-[#16110d]/58 px-4 py-8 backdrop-blur-sm">
-      <div className="relative w-full max-w-[36rem] overflow-hidden rounded-[1.15rem] border border-[#ead9c3] bg-[#fffdf8] shadow-[0_32px_100px_-26px_rgba(27,17,10,0.66)] dark:border-white/10 dark:bg-[#12211c]">
+    <div className="fixed inset-0 z-[120] flex items-center justify-center bg-[#16110d]/62 px-3 py-[calc(env(safe-area-inset-top)+0.75rem)] pb-[calc(env(safe-area-inset-bottom)+0.75rem)] backdrop-blur-sm sm:px-4 sm:py-8">
+      <div className="relative flex max-h-[86dvh] w-full max-w-[36rem] flex-col overflow-hidden rounded-[1rem] border border-[#ead9c3] bg-[#fffdf8] shadow-[0_32px_100px_-26px_rgba(27,17,10,0.66)] dark:border-white/10 dark:bg-[#12211c] sm:max-h-[calc(100dvh-4rem)] sm:rounded-[1.15rem]">
         <div className="absolute inset-x-0 top-0 h-1.5 bg-[#173629] dark:bg-[#f4b04d]" />
         <button
           type="button"
           onClick={onClose}
           aria-label="Close result"
-          className="absolute right-4 top-4 z-10 flex size-9 items-center justify-center rounded-full border border-[#ead9c3] bg-white text-[#6f5d4f] shadow-sm transition hover:border-[#b63a29] hover:text-[#b63a29] dark:border-white/10 dark:bg-white/[0.06] dark:text-white/70"
+          className="absolute right-3 top-3 z-10 flex size-8 items-center justify-center rounded-full border border-[#ead9c3] bg-white text-[#6f5d4f] shadow-sm transition hover:border-[#b63a29] hover:text-[#b63a29] dark:border-white/10 dark:bg-white/[0.06] dark:text-white/70 sm:right-4 sm:top-4 sm:size-9"
         >
           <X className="size-4" />
         </button>
 
-        <div className="px-5 pb-5 pt-8 text-center sm:px-7 sm:pb-7">
-          <div className="relative mx-auto flex size-20 items-center justify-center">
+        <div className="overflow-y-auto px-4 pb-4 pt-5 text-center sm:px-7 sm:pb-7 sm:pt-8">
+          <div className="relative mx-auto flex size-14 items-center justify-center sm:size-20">
             <span className="absolute inset-0 rounded-full bg-[#0f766e]/18 motion-safe:animate-ping dark:bg-[#f4b04d]/22" />
-            <span className={cn("relative flex size-16 items-center justify-center rounded-full shadow-[0_20px_54px_-24px_rgba(23,54,41,0.9)] motion-safe:animate-pulse", primaryPillClass)}>
-              <Trophy className="size-7" />
+            <span className={cn("relative flex size-11 items-center justify-center rounded-full shadow-[0_20px_54px_-24px_rgba(23,54,41,0.9)] motion-safe:animate-pulse sm:size-16", primaryPillClass)}>
+              <Trophy className="size-5 sm:size-7" />
             </span>
           </div>
 
-          <p className={cn("mt-3 text-xs font-semibold uppercase tracking-[0.18em]", accentTextClass)}>
+          <p className={cn("mt-2 text-[11px] font-semibold uppercase tracking-[0.18em] sm:mt-3 sm:text-xs", accentTextClass)}>
             Better pick
           </p>
-          <h3 className="mx-auto mt-2 max-w-lg text-2xl font-semibold leading-tight text-[#2f241d] dark:text-white sm:text-3xl">
+          <h3 className="mx-auto mt-1 max-w-lg text-xl font-semibold leading-tight text-[#2f241d] dark:text-white sm:mt-2 sm:text-3xl">
             {winnerFood ? winnerFood.label : "Both foods are close"}
           </h3>
 
-          <div className="mx-auto mt-4 flex max-w-lg items-center justify-center gap-3 rounded-lg border border-[#ead9c3] bg-white p-3 text-left dark:border-white/10 dark:bg-white/[0.05]">
+          <div className="mx-auto mt-3 flex max-w-lg items-center justify-center gap-3 rounded-lg border border-[#ead9c3] bg-white p-2.5 text-left dark:border-white/10 dark:bg-white/[0.05] sm:mt-4 sm:p-3">
             <FoodImage
               src={heroFood.imageUrl}
               title={heroFood.label}
-              className="size-20 rounded-lg"
+              className="size-14 rounded-lg sm:size-20"
             />
             <div className="min-w-0 flex-1">
               <span
@@ -932,33 +932,36 @@ function WinnerModal({
               >
                 {heroHealth.label}
               </span>
-              <p className="mt-2 text-sm leading-6 text-[#756354] dark:text-white/64">
+              <p className="mt-1.5 text-xs leading-5 text-[#756354] dark:text-white/64 sm:mt-2 sm:text-sm sm:leading-6">
                 {result.healthInsight.title}
               </p>
             </div>
           </div>
 
-          <p className="mx-auto mt-4 max-w-lg text-sm leading-7 text-[#756354] dark:text-white/64">
+          <p className="mx-auto mt-3 max-w-lg text-xs leading-6 text-[#756354] dark:text-white/64 sm:mt-4 sm:text-sm sm:leading-7">
             {result.healthInsight.body}
           </p>
 
           {otherFood && (
-            <p className="mx-auto mt-2 max-w-lg text-xs font-semibold text-[#8a6b35] dark:text-white/58">
+            <p className="mx-auto mt-2 max-w-lg text-[11px] font-semibold text-[#8a6b35] dark:text-white/58 sm:text-xs">
               Compared with {otherFood.label}
             </p>
           )}
 
           {visibleReasons.length > 0 && (
-            <div className="mt-4 grid gap-2 sm:grid-cols-2">
-              {visibleReasons.map((point) => (
+            <div className="mt-3 grid gap-2 sm:mt-4 sm:grid-cols-2">
+              {visibleReasons.map((point, index) => (
                 <div
                   key={`${point.title}-${point.body}`}
-                  className="rounded-lg border border-[#ead9c3] bg-[#fffaf1] p-3 text-left dark:border-white/10 dark:bg-white/[0.035]"
+                  className={cn(
+                    "rounded-lg border border-[#ead9c3] bg-[#fffaf1] p-3 text-left dark:border-white/10 dark:bg-white/[0.035]",
+                    index > 0 && "hidden sm:block",
+                  )}
                 >
-                  <p className={cn("text-xs font-semibold uppercase tracking-[0.14em]", accentTextClass)}>
+                  <p className={cn("text-[11px] font-semibold uppercase tracking-[0.14em] sm:text-xs", accentTextClass)}>
                     {point.title}
                   </p>
-                  <p className="mt-1 text-sm leading-6 text-[#5f5044] dark:text-white/64">
+                  <p className="mt-1 text-xs leading-5 text-[#5f5044] dark:text-white/64 sm:text-sm sm:leading-6">
                     {point.body}
                   </p>
                 </div>
@@ -967,7 +970,7 @@ function WinnerModal({
           )}
         </div>
 
-        <div className="flex flex-col gap-2 border-t border-[#ead9c3] bg-[#fffaf1] p-4 dark:border-white/10 dark:bg-white/[0.035] sm:flex-row sm:p-5">
+        <div className="flex flex-col gap-2 border-t border-[#ead9c3] bg-[#fffaf1] p-3 dark:border-white/10 dark:bg-white/[0.035] sm:flex-row sm:p-5">
           <button
             type="button"
             onClick={onViewReport}
@@ -979,7 +982,7 @@ function WinnerModal({
           <button
             type="button"
             onClick={onClose}
-            className="inline-flex min-h-11 flex-1 items-center justify-center rounded-lg border border-[#dfc6a8] bg-white px-4 py-2 text-sm font-semibold text-[#3f3027] transition hover:border-primary hover:text-primary dark:border-white/10 dark:bg-white/[0.06] dark:text-white"
+            className="hidden min-h-11 flex-1 items-center justify-center rounded-lg border border-[#dfc6a8] bg-white px-4 py-2 text-sm font-semibold text-[#3f3027] transition hover:border-primary hover:text-primary dark:border-white/10 dark:bg-white/[0.06] dark:text-white sm:inline-flex"
           >
             Close
           </button>
