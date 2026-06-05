@@ -31,6 +31,36 @@ const NextConfig = {
         destination: "/admin/dashboard",
         permanent: true,
       },
+      {
+        source: "/tools/what-can-i-cook-with-ingredients",
+        destination: "/tools/smart-recipe-finder",
+        permanent: true,
+      },
+      {
+        source: "/tools/what-to-cook-today",
+        destination: "/tools/smart-daily-menu",
+        permanent: true,
+      },
+      {
+        source: "/tools/budget-meal-planner",
+        destination: "/tools/smart-budget-meals",
+        permanent: true,
+      },
+      {
+        source: "/tools/menu-for-guests-at-home",
+        destination: "/tools/smart-guest-menu",
+        permanent: true,
+      },
+      {
+        source: "/tools/kids-meal-ideas",
+        destination: "/tools/smart-kids-meals",
+        permanent: true,
+      },
+      {
+        source: "/tools/food-compare",
+        destination: "/tools/smart-food-compare",
+        permanent: true,
+      },
     ];
   },
   async headers() {

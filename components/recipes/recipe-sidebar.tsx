@@ -1,13 +1,13 @@
 import { ArrowRight, Sparkles } from "lucide-react";
 import Link from "next/link";
-import type { MealTimes, RecipeCategories, RecipeTypes } from "@prisma/client";
 
 import RecipeSidebarWidget from "@/components/recipes/recipe-sidebar-widget";
+import type { RecipeSidebarTaxonomyItem } from "@/lib/public-content";
 
 interface RecipeSidebarProps {
-  recipeCategories: RecipeCategories[];
-  recipeMealTimes?: MealTimes[];
-  recipeTypes?: RecipeTypes[];
+  recipeCategories: RecipeSidebarTaxonomyItem[];
+  recipeMealTimes?: RecipeSidebarTaxonomyItem[];
+  recipeTypes?: RecipeSidebarTaxonomyItem[];
 }
 
 const RecipeSidebar = ({

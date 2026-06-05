@@ -46,21 +46,42 @@ const emptyTotals = (): RecipeNutritionTotals => ({
   zinc: 0,
 });
 
+const gramUnitShortNames = new Set(["g", "gm", "gram", "grams"]);
+const kilogramUnitShortNames = new Set(["kg", "kgs", "kilogram", "kilograms"]);
+const milligramUnitShortNames = new Set(["mg", "milligram", "milligrams"]);
+const milliliterUnitShortNames = new Set(["ml", "milliliter", "milliliters"]);
+const literUnitShortNames = new Set(["l", "ltr", "liter", "liters", "litre", "litres"]);
+
+function unitShortName(value: string | null | undefined) {
+  return (value ?? "").trim().toLowerCase().replace(/\s+/g, "");
+}
+
+export function recipeIngredientGrams(recipeIngredient: RecipeIngredientType) {
+  const { ingredient, quantity, unitId, unit } = recipeIngredient;
+  const matchingUnit = ingredient.IngredientUnitMeasurements.find(
+    (measurement) => measurement.unitId === unitId
+  );
+
+  if (matchingUnit) return matchingUnit.values * quantity;
+
+  const shortName = unitShortName(unit?.shortName);
+
+  if (gramUnitShortNames.has(shortName)) return quantity;
+  if (kilogramUnitShortNames.has(shortName)) return quantity * 1000;
+  if (milligramUnitShortNames.has(shortName)) return quantity / 1000;
+  if (milliliterUnitShortNames.has(shortName)) return quantity;
+  if (literUnitShortNames.has(shortName)) return quantity * 1000;
+
+  return null;
+}
+
 export function calculateRecipeNutrition(ingredients: RecipeIngredientType[]) {
   const totals = emptyTotals();
   const missingConversions: string[] = [];
 
   ingredients.forEach((recipeIngredient) => {
-    const { ingredient, quantity, unitId, unit } = recipeIngredient;
-    const matchingUnit = ingredient.IngredientUnitMeasurements.find(
-      (measurement) => measurement.unitId === unitId
-    );
-    const isGram = ["g", "gm"].includes(unit?.shortName?.toLowerCase() ?? "");
-    const grams = matchingUnit
-      ? matchingUnit.values * quantity
-      : isGram
-        ? quantity
-        : null;
+    const { ingredient, unit } = recipeIngredient;
+    const grams = recipeIngredientGrams(recipeIngredient);
 
     if (grams === null) {
       missingConversions.push(`${ingredient.name} (${unit?.title ?? "unknown unit"})`);

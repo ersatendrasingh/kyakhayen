@@ -7,6 +7,7 @@ import {
   Share2,
   Sparkles,
 } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 
 import Container from "@/components/container";
@@ -31,10 +32,10 @@ type ToolSearchParams = Promise<{
   ingredient?: string | string[];
 }>;
 
-const pagePath = "/tools/what-can-i-cook-with-ingredients";
-const pageTitle = "What Can I Cook With Ingredients I Have?";
+const pagePath = "/tools/smart-recipe-finder";
+const pageTitle = "Smart Recipe Finder";
 const pageDescription =
-  "Use this recipe finder by ingredients to search what you can cook with ingredients at home. Add bottle gourd, potato, onion, rice, lentils, spinach, cauliflower, curd, or leftovers and open matching Indian recipes.";
+  "Use Smart Recipe Finder to search what you can cook with ingredients at home. Add bottle gourd, potato, onion, rice, lentils, spinach, cauliflower, curd, or leftovers and open matching Indian recipes.";
 const pageSize = 6;
 
 const popularIngredientLinks = [
@@ -193,12 +194,14 @@ type FridgeRecipeRecord = Prisma.RecipesGetPayload<{
 export const revalidate = 900;
 
 export const metadata: Metadata = buildSeoMetadata({
-  title: `${pageTitle} | Kya Khayen`,
+  title: `${pageTitle}: Find Recipes by Ingredients | Kya Khayen`,
   description: pageDescription,
   path: pagePath,
   image: "/meta-images/home.png",
-  imageAlt: "What can I cook with ingredients at home recipe finder",
+  imageAlt: "Smart Recipe Finder by ingredients",
   keywords: [
+    "smart recipe finder",
+    "smart ingredient recipe finder",
     "what can I cook with ingredients",
     "what can I cook with ingredients I have",
     "what can I make with ingredients I have",
@@ -387,7 +390,7 @@ function webApplicationJsonLd() {
   return {
     "@context": "https://schema.org",
     "@type": "WebApplication",
-    name: "What Can I Cook With Ingredients Recipe Finder",
+    name: pageTitle,
     url: absoluteUrl(pagePath),
     applicationCategory: "LifestyleApplication",
     operatingSystem: "Web",
@@ -415,103 +418,6 @@ function faqJsonLd() {
   };
 }
 
-function FridgeHeroScene() {
-  return (
-    <div
-      className="relative min-h-[34rem] overflow-hidden bg-[#fff2d8] px-4 py-6 text-[#2e241c] sm:px-7 lg:min-h-full"
-      aria-hidden="true"
-    >
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_22%_20%,rgba(203,127,54,0.22),transparent_34%),radial-gradient(circle_at_80%_12%,rgba(76,122,84,0.18),transparent_26%),linear-gradient(135deg,rgba(255,255,255,0.9),rgba(248,230,194,0.62))]" />
-      <div className="absolute bottom-0 left-0 right-0 h-28 bg-[#d9b681]/38" />
-      <div className="absolute left-8 top-8 h-16 w-28 rounded-full bg-[#7b9c62]/18 blur-2xl" />
-      <div className="absolute right-8 top-12 h-24 w-24 rounded-full bg-primary/12 blur-2xl" />
-
-      <div className="fridge-scene relative mx-auto h-[32rem] max-w-[43rem]">
-        <div className="absolute left-2 top-6 h-24 w-44 rounded-[1.6rem] border border-[#e7cfae] bg-white/40 shadow-inner" />
-        <div className="absolute left-8 top-12 h-3 w-28 rounded-full bg-[#d8b47e]/70" />
-        <div className="absolute left-8 top-20 h-3 w-20 rounded-full bg-[#d8b47e]/55" />
-
-        <div className="absolute bottom-5 right-2 h-[29rem] w-[20rem] rounded-[1.8rem] border-[0.55rem] border-white bg-[#edf3f1] shadow-[0_34px_84px_-34px_rgba(40,28,20,0.92)]">
-          <div className="absolute -left-1 top-[7.4rem] h-1 w-[calc(100%+0.5rem)] bg-white/95 shadow-sm" />
-          <div className="absolute left-4 top-4 h-8 w-24 rounded-xl bg-white/64 shadow-inner" />
-          <div className="absolute inset-x-4 bottom-4 top-[9rem] rounded-[1.15rem] bg-[#eaf8f4] shadow-inner" />
-          <div className="fridge-glow absolute inset-x-5 bottom-5 top-[9.3rem] rounded-[1rem] bg-[#eefdf7]" />
-          <div className="absolute left-3 top-[8.8rem] h-24 w-1 rounded-full bg-[#d5c1a4]" />
-
-          <div className="absolute left-8 right-8 top-[12.8rem] h-0.5 rounded-full bg-[#c7d9d3]" />
-          <div className="absolute left-8 right-8 top-[18.4rem] h-0.5 rounded-full bg-[#c7d9d3]" />
-          <div className="absolute left-8 right-8 top-[23.4rem] h-0.5 rounded-full bg-[#c7d9d3]" />
-
-          <div className="absolute left-9 top-[10.3rem] h-12 w-20 rounded-full border border-[#bfd5c8] bg-[#dff1dc] shadow-sm">
-            <span className="absolute left-3 top-3 h-5 w-5 rounded-full bg-[#5a9d48]" />
-            <span className="absolute left-8 top-2 h-7 w-7 rounded-full bg-[#77b15e]" />
-            <span className="absolute right-3 top-4 h-5 w-5 rounded-full bg-[#4c8f41]" />
-          </div>
-          <div className="absolute right-10 top-[10.2rem] h-12 w-16 rounded-full bg-[#f5ead6]">
-            <span className="absolute left-4 top-2 h-9 w-9 rounded-full bg-[#efe1b4]" />
-            <span className="absolute left-8 top-3 h-8 w-8 rounded-full bg-[#f8f1cb]" />
-            <span className="absolute left-2 top-5 h-7 w-7 rounded-full bg-[#dfcd8f]" />
-          </div>
-
-          <div className="absolute left-9 top-[15rem] h-10 w-32 rounded-full bg-[#a9be50]" />
-          <div className="absolute right-9 top-[15.5rem] flex gap-1.5">
-            <span className="size-6 rounded-full bg-[#c9352d]" />
-            <span className="size-6 rounded-full bg-[#dd4b38]" />
-            <span className="size-6 rounded-full bg-[#b52b25]" />
-          </div>
-
-          <div className="absolute left-10 top-[20rem] h-12 w-20 rounded-b-full rounded-t-[0.75rem] border border-[#cee1dc] bg-white">
-            <span className="absolute inset-x-3 top-4 h-4 rounded-full bg-[#eef3ed]" />
-          </div>
-          <div className="absolute right-9 top-[19.8rem] flex h-14 w-20 flex-wrap gap-1.5 rounded-2xl bg-[#d7b36b]/24 p-2">
-            {Array.from({ length: 6 }).map((_, index) => (
-              <span
-                key={index}
-                className="size-5 rounded-full bg-[#c99b55]"
-              />
-            ))}
-          </div>
-
-          <div className="absolute bottom-8 left-9 flex gap-2">
-            <span className="h-8 w-8 rounded-full bg-[#743338]" />
-            <span className="h-8 w-8 rounded-full bg-[#8d3c3b]" />
-          </div>
-          <div className="absolute bottom-7 right-9 h-10 w-16 rounded-t-full bg-[#5f9d48]">
-            <span className="absolute bottom-1 left-3 h-8 w-2 rotate-[-18deg] rounded-full bg-[#2e7e40]" />
-            <span className="absolute bottom-1 left-7 h-8 w-2 rotate-[12deg] rounded-full bg-[#2e7e40]" />
-            <span className="absolute bottom-1 right-4 h-8 w-2 rotate-[28deg] rounded-full bg-[#2e7e40]" />
-          </div>
-
-          <div className="fridge-door absolute -right-[2.2rem] bottom-0 top-0 w-[8.7rem] rounded-[1.4rem] border-[0.45rem] border-white bg-[#f7f2ea] shadow-[-22px_22px_42px_-30px_rgba(40,28,20,0.92)]">
-            <span className="absolute left-4 top-8 h-20 w-12 rounded-2xl bg-white/78 shadow-inner" />
-            <span className="absolute left-4 top-[9.5rem] h-20 w-12 rounded-2xl bg-white/78 shadow-inner" />
-            <span className="absolute left-4 bottom-14 h-20 w-12 rounded-2xl bg-white/78 shadow-inner" />
-            <span className="absolute right-3 top-1/2 h-28 w-1 -translate-y-1/2 rounded-full bg-[#d1b895]" />
-            <span className="absolute left-2 top-[7.2rem] h-1 w-[calc(100%-1rem)] rounded-full bg-[#e5d7c0]" />
-          </div>
-        </div>
-
-        <div className="fridge-person absolute bottom-5 left-[7rem] h-[22rem] w-[18rem]">
-          <span className="absolute left-[7.4rem] top-7 size-16 rounded-full bg-[#c78a67]" />
-          <span className="absolute left-[6.1rem] top-3 h-20 w-20 rounded-full bg-[#2d1c17]" />
-          <span className="absolute left-[5.8rem] top-[4.9rem] h-20 w-16 rounded-full bg-[#2d1c17]" />
-          <span className="absolute left-[5.2rem] top-[6.6rem] h-[12.4rem] w-[8.6rem] rounded-[3rem_3rem_1.4rem_1.4rem] bg-[#f5dfb6] shadow-[inset_0_-18px_0_rgba(180,97,73,0.14)]" />
-          <span className="absolute left-[6.1rem] top-[7.6rem] h-2 w-2 rounded-full bg-[#477c68]" />
-          <span className="absolute left-[7.8rem] top-[8.8rem] h-2 w-2 rounded-full bg-[#477c68]" />
-          <span className="absolute left-[10rem] top-[7.9rem] h-2 w-2 rounded-full bg-[#477c68]" />
-          <span className="fridge-arm absolute left-[11rem] top-[9.2rem] h-5 w-[10.8rem] origin-left rounded-full bg-[#c98d69]">
-            <span className="absolute -right-2 -top-1 size-7 rounded-full bg-[#c98d69]" />
-          </span>
-          <span className="absolute left-[4.7rem] top-[9.5rem] h-5 w-20 -rotate-[42deg] rounded-full bg-[#c98d69]" />
-        </div>
-
-        <span className="picked-vegetable absolute left-[28rem] top-[16rem] h-8 w-24 rounded-full bg-[#a9be50] shadow-[0_12px_26px_-18px_rgba(35,68,26,0.8)]" />
-        <span className="absolute bottom-8 left-10 right-8 h-4 rounded-full bg-[#7d5938]/14 blur-md" />
-      </div>
-    </div>
-  );
-}
-
 export default async function FridgeToolPage({
   searchParams,
 }: {
@@ -527,7 +433,7 @@ export default async function FridgeToolPage({
     webApplicationJsonLd(),
     breadcrumbJsonLd([
       { name: "Home", path: "/" },
-      { name: "What Can I Cook With Ingredients?", path: pagePath },
+      { name: pageTitle, path: pagePath },
     ]),
     itemListJsonLd(
       "Recipes you can cook with ingredients at home",
@@ -546,131 +452,6 @@ export default async function FridgeToolPage({
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: jsonLd(schema) }}
       />
-      <style>{`
-        .fridge-question-line {
-          position: absolute;
-          inset: 0 auto auto 0;
-          display: block;
-          max-width: 100%;
-        }
-
-        .fridge-question-one {
-          animation: fridgeQuestionOne 7s infinite;
-        }
-
-        .fridge-question-two {
-          animation: fridgeQuestionTwo 7s infinite;
-        }
-
-        @keyframes fridgeQuestionOne {
-          0%, 42% {
-            opacity: 1;
-            transform: translateY(0);
-          }
-          50%, 92% {
-            opacity: 0;
-            transform: translateY(-0.22em);
-          }
-          100% {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-
-        @keyframes fridgeQuestionTwo {
-          0%, 42% {
-            opacity: 0;
-            transform: translateY(0.22em);
-          }
-          50%, 92% {
-            opacity: 1;
-            transform: translateY(0);
-          }
-          100% {
-            opacity: 0;
-            transform: translateY(0.22em);
-          }
-        }
-
-        .fridge-scene {
-          filter: drop-shadow(0 34px 52px rgba(44, 29, 18, 0.18));
-        }
-
-        .fridge-glow {
-          animation: fridgeGlow 4.8s ease-in-out infinite;
-        }
-
-        .fridge-door {
-          transform-origin: right center;
-          animation: fridgeDoorOpen 4.8s ease-in-out infinite;
-          transform-style: preserve-3d;
-        }
-
-        .fridge-arm {
-          animation: fridgeArmReach 4.8s ease-in-out infinite;
-        }
-
-        .picked-vegetable {
-          animation: fridgePickVegetable 4.8s ease-in-out infinite;
-        }
-
-        .fridge-person {
-          animation: fridgePersonLean 4.8s ease-in-out infinite;
-        }
-
-        @keyframes fridgeDoorOpen {
-          0%, 100% {
-            transform: perspective(900px) rotateY(-18deg) translateX(0);
-          }
-          28%, 78% {
-            transform: perspective(900px) rotateY(-56deg) translateX(-0.55rem);
-          }
-        }
-
-        @keyframes fridgeGlow {
-          0%, 100% {
-            opacity: 0.62;
-            box-shadow: inset 0 0 32px rgba(139, 217, 195, 0.16);
-          }
-          30%, 76% {
-            opacity: 1;
-            box-shadow: inset 0 0 46px rgba(139, 217, 195, 0.36), 0 0 42px rgba(255, 255, 255, 0.72);
-          }
-        }
-
-        @keyframes fridgeArmReach {
-          0%, 18%, 100% {
-            transform: rotate(-13deg) scaleX(0.78);
-          }
-          36%, 72% {
-            transform: rotate(-5deg) scaleX(1.08);
-          }
-        }
-
-        @keyframes fridgePickVegetable {
-          0%, 22% {
-            opacity: 1;
-            transform: translate(0, 0) rotate(0deg) scale(0.96);
-          }
-          42%, 68% {
-            opacity: 1;
-            transform: translate(-3.2rem, 1.3rem) rotate(-8deg) scale(1);
-          }
-          86%, 100% {
-            opacity: 0;
-            transform: translate(-6.5rem, 4.2rem) rotate(-14deg) scale(0.9);
-          }
-        }
-
-        @keyframes fridgePersonLean {
-          0%, 100% {
-            transform: translateX(0) rotate(0deg);
-          }
-          36%, 72% {
-            transform: translateX(0.4rem) rotate(1deg);
-          }
-        }
-      `}</style>
       <Container>
         <nav className="mb-5 flex flex-wrap items-center gap-2 text-xs font-semibold text-[#8b735f] dark:text-white/60">
           <Link href="/" className="hover:text-primary">
@@ -681,32 +462,17 @@ export default async function FridgeToolPage({
             Tools
           </Link>
           <span>/</span>
-          <span className="text-primary">
-            What Can I Cook With Ingredients?
-          </span>
+          <span className="text-primary">{pageTitle}</span>
         </nav>
 
         <section className="mb-7 overflow-hidden rounded-[1.6rem] bg-[#201713] text-white shadow-[0_30px_90px_-50px_rgba(32,23,19,0.9)]">
           <div className="grid gap-0 lg:grid-cols-[0.96fr_1.04fr]">
             <div className="p-6 sm:p-8 lg:p-10">
               <p className="mb-4 inline-flex items-center rounded-full border border-white/14 bg-white/8 px-3 py-1 text-xs font-semibold uppercase tracking-[0.22em] text-[#f2cf8b]">
-                Ingredient finder
+                Smart Recipe Finder
               </p>
               <h1 className="max-w-3xl text-4xl font-semibold leading-tight text-white sm:text-6xl">
-                <span className="sr-only">
-                  What&apos;s in your fridge? What can you cook today?
-                </span>
-                <span
-                  aria-hidden="true"
-                  className="relative block min-h-[6.6rem] sm:min-h-[8.8rem]"
-                >
-                  <span className="fridge-question-line fridge-question-one">
-                    What&apos;s in your fridge?
-                  </span>
-                  <span className="fridge-question-line fridge-question-two">
-                    What can you cook today?
-                  </span>
-                </span>
+                What&apos;s in your fridge?
               </h1>
               <p className="mt-3 max-w-2xl text-base leading-8 text-white/72 sm:text-lg">
                 Add what is actually available at home and open matching Indian
@@ -739,8 +505,16 @@ export default async function FridgeToolPage({
                 ))}
               </div>
             </div>
-            <div className="min-h-[32rem] bg-[#fff2d8]">
-              <FridgeHeroScene />
+            <div className="relative min-h-[22rem] overflow-hidden bg-[#201713] sm:min-h-[30rem] lg:min-h-full">
+              <Image
+                src="/assets/images/tools/ingredient-finder-hero.png"
+                alt="Kitchen fridge with ingredients for Smart Recipe Finder"
+                fill
+                sizes="(min-width: 1024px) 50vw, 100vw"
+                className="object-cover"
+                priority
+              />
+              <span className="absolute inset-0 bg-gradient-to-t from-[#201713]/44 via-[#201713]/10 to-transparent" />
             </div>
           </div>
         </section>

@@ -13,6 +13,8 @@ import RecipeReviewsSection from "@/components/recipes/recipe-reviews-section";
 import RecipeNotFound from "@/components/recipes/recipe-not-found";
 import RecipeReactions from "@/components/recipes/recipe-reactions";
 import RecipeCookingDock from "@/components/recipes/recipe-cooking-dock";
+import RecipeComparePrompt from "@/components/recipes/recipe-compare-prompt";
+import { fetchFoodCompareRecipePrompt } from "@/lib/food-compare";
 import { getPublicRelatedRecipes, getRecipeSidebarTaxonomy } from "@/lib/public-content";
 import { recipeCollectionHref } from "@/lib/recipe-collection-url";
 import { recipeContentUpdatedAt, recipePublishedAt } from "@/lib/recipe-publication";
@@ -65,10 +67,11 @@ function nutritionJsonLd(totals: ReturnType<typeof calculateRecipeNutrition>["to
 const SingleRecipe = async ({ recipe }: SingleRecipeProps) => {
   if (!recipe) return <RecipeNotFound />;
 
-  const [{ recipeCategories, recipeMealTimes, recipeTypes }, relatedRecipes] =
+  const [{ recipeCategories, recipeMealTimes, recipeTypes }, relatedRecipes, comparePrompt] =
     await Promise.all([
       getRecipeSidebarTaxonomy(),
-      getPublicRelatedRecipes(recipe.id, recipe.recipeCategoriesId),
+      getPublicRelatedRecipes(recipe.id),
+      fetchFoodCompareRecipePrompt(recipe.id),
     ]);
 
   const totalMinutes =
@@ -239,7 +242,26 @@ const SingleRecipe = async ({ recipe }: SingleRecipeProps) => {
         <BannerCard recipe={recipe} className="mb-8" />
         <div className="grid items-start gap-7 lg:grid-cols-[minmax(0,1fr)_320px]">
           <div className="min-w-0 space-y-8">
-            <RecipeDetails recipe={recipe} />
+            {comparePrompt && (
+              <RecipeComparePrompt
+                base={comparePrompt.base}
+                competitor={comparePrompt.competitor}
+                reason={comparePrompt.reason}
+              />
+            )}
+            <RecipeDetails
+              recipe={recipe}
+              nutritionComparePrompt={
+                comparePrompt ? (
+                  <RecipeComparePrompt
+                    base={comparePrompt.base}
+                    competitor={comparePrompt.competitor}
+                    reason={comparePrompt.reason}
+                    variant="nutrition"
+                  />
+                ) : null
+              }
+            />
             <RecipeReactions recipeId={recipe.id} />
             <RecipeReviewsSection
               recipeId={recipe.id}

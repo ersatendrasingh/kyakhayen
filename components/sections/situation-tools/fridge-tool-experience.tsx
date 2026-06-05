@@ -55,7 +55,7 @@ const quickAdditions = [
   { value: "potato", label: "Potato" },
 ];
 
-const ingredientToolPath = "/tools/what-can-i-cook-with-ingredients";
+const ingredientToolPath = "/tools/smart-recipe-finder";
 
 function buildToolUrl(ingredients: string[]) {
   const params = new URLSearchParams();
@@ -335,7 +335,7 @@ export default function FridgeToolExperience({
 
       if (navigator.share) {
         await navigator.share({
-          title: "What Can I Cook With Ingredients?",
+          title: "Smart Recipe Finder",
           text: shareText,
           url,
         });

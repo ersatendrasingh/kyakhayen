@@ -6,6 +6,7 @@ import {
   Heart,
   IndianRupee,
   Refrigerator,
+  Scale,
   Search,
   Sparkles,
   UsersRound,
@@ -24,17 +25,22 @@ import {
 } from "@/lib/seo";
 
 export const metadata: Metadata = buildSeoMetadata({
-  title: "Indian Cooking Tools: Recipe Finder, Meal Planner & Budget Meals",
+  title: "Smart Indian Cooking Tools: Recipe Finder, Food Compare & Meal Planner",
   description:
-    "Open free Indian cooking tools for what to cook today, recipes by ingredients, budget meal planning, guest menus, and family-friendly food ideas.",
+    "Open Smart Recipe Finder, Smart Food Compare, Smart Daily Menu, Smart Budget Meals, Smart Guest Menu, and Smart Kids Meals for Indian food decisions.",
   path: "/tools",
   image: "/meta-images/home.png",
   imageAlt: "Kya Khayen cooking tools",
   keywords: [
+    "smart cooking tools",
+    "smart recipe finder",
+    "smart food compare",
     "Indian cooking tools",
     "recipe finder by ingredients",
     "what to cook today",
     "Indian meal planner",
+    "food comparison tool",
+    "compare foods",
     "budget meal planner India",
     "guest menu ideas",
     "kids meal ideas",
@@ -81,30 +87,50 @@ const visualMap = {
   { image: string; accent: string; label: string }
 >;
 
+const compareTool = {
+  href: "/tools/smart-food-compare",
+  title: "Smart Food Compare",
+  shortTitle: "Food Compare",
+  eyebrow: "Smart comparison",
+  description:
+    "Compare two dishes by calories, protein, fiber, cooking time, and clear reasons for the better choice.",
+  highlights: ["Calories", "Protein", "Time"],
+};
+
+const compareVisual = {
+  image: "/assets/images/tools/food-compare-hero.png",
+  accent: "from-[#173629]/92 via-[#173629]/24",
+  label: "Compare before choosing",
+};
+
 const searchIntents = [
   {
     title: "What can I cook with potato and onion?",
-    href: "/tools/what-can-i-cook-with-ingredients?ingredients=potato%2Conion#fridge-tool",
+    href: "/tools/smart-recipe-finder?ingredients=potato%2Conion#fridge-tool",
   },
   {
     title: "What should I cook for dinner today?",
-    href: "/tools/what-to-cook-today?mealFocus=dinner#tool",
+    href: "/tools/smart-daily-menu?mealFocus=dinner#tool",
   },
   {
     title: "Recipes under Rs 150",
-    href: "/tools/budget-meal-planner?budget=150#tool",
+    href: "/tools/smart-budget-meals?budget=150#tool",
+  },
+  {
+    title: "Compare two foods",
+    href: "/tools/smart-food-compare#tool",
   },
   {
     title: "Quick snacks for guests at home",
-    href: "/tools/menu-for-guests-at-home?guestPlan=snacks&guestCount=5#tool",
+    href: "/tools/smart-guest-menu?guestPlan=snacks&guestCount=5#tool",
   },
   {
     title: "Kids lunch box ideas",
-    href: "/tools/kids-meal-ideas?foodType=veg#tool",
+    href: "/tools/smart-kids-meals?foodType=veg#tool",
   },
   {
     title: "Bottle gourd dinner ideas",
-    href: "/tools/what-can-i-cook-with-ingredients?ingredients=bottle%20gourd#fridge-tool",
+    href: "/tools/smart-recipe-finder?ingredients=bottle%20gourd#fridge-tool",
   },
 ];
 
@@ -117,7 +143,7 @@ const hubFaqs = [
   {
     question: "Can I find recipes from ingredients I already have?",
     answer:
-      "Yes. Open the ingredient finder, add one or more ingredients from your kitchen, and browse matching recipe cards.",
+      "Yes. Open Smart Recipe Finder, add one or more ingredients from your kitchen, and browse matching recipe cards.",
   },
   {
     question: "Do these tools open full recipes?",
@@ -137,28 +163,45 @@ const schema = [
     { name: "Tools", path: "/tools" },
   ]),
   itemListJsonLd(
-    "Kya Khayen Indian cooking tools",
-    toolPages.map((tool) => ({
-      name: tool.title,
-      path: tool.href,
-      image: visualMap[tool.mode].image,
-    })),
+    "Kya Khayen smart Indian cooking tools",
+    [
+      ...toolPages.map((tool) => ({
+        name: tool.title,
+        path: tool.href,
+        image: visualMap[tool.mode].image,
+      })),
+      {
+        name: compareTool.title,
+        path: compareTool.href,
+        image: compareVisual.image,
+      },
+    ],
   ),
   {
     "@context": "https://schema.org",
     "@type": "CollectionPage",
-    name: "Indian Cooking Tools",
+    name: "Smart Indian Cooking Tools",
     url: absoluteUrl("/tools"),
     description:
-      "Free Indian cooking tools for recipe ideas by ingredients, daily meals, budget meals, guests, and family-friendly food.",
-    hasPart: toolPages.map((tool) => ({
-      "@type": "WebApplication",
-      name: tool.title,
-      url: absoluteUrl(tool.href),
-      applicationCategory: "LifestyleApplication",
-      operatingSystem: "Web",
-      description: tool.description,
-    })),
+      "Smart Indian cooking tools for recipe ideas by ingredients, daily meals, budget meals, food comparison, guests, and family-friendly food.",
+    hasPart: [
+      ...toolPages.map((tool) => ({
+        "@type": "WebApplication",
+        name: tool.title,
+        url: absoluteUrl(tool.href),
+        applicationCategory: "LifestyleApplication",
+        operatingSystem: "Web",
+        description: tool.description,
+      })),
+      {
+        "@type": "WebApplication",
+        name: compareTool.title,
+        url: absoluteUrl(compareTool.href),
+        applicationCategory: "LifestyleApplication",
+        operatingSystem: "Web",
+        description: compareTool.description,
+      },
+    ],
   },
   {
     "@context": "https://schema.org",
@@ -189,7 +232,7 @@ function ToolCard({
     <Link
       href={tool.href}
       className={[
-        "group flex min-h-full flex-col overflow-hidden border border-[#ead9c3] bg-white shadow-sm transition hover:-translate-y-0.5 hover:border-[#d09b51] hover:shadow-xl hover:shadow-[#5c3219]/10 dark:border-white/10 dark:bg-white/[0.05]",
+        "group flex flex-col overflow-hidden border border-[#ead9c3] bg-white shadow-sm transition hover:-translate-y-0.5 hover:border-[#d09b51] hover:shadow-xl hover:shadow-[#5c3219]/10 dark:border-white/10 dark:bg-white/[0.05]",
         isFeatured ? "rounded-[1.45rem]" : "rounded-[1.2rem]",
       ].join(" ")}
     >
@@ -257,6 +300,85 @@ function ToolCard({
   );
 }
 
+function CompareToolCard({
+  variant = "compact",
+}: {
+  variant?: "featured" | "compact";
+}) {
+  const isFeatured = variant === "featured";
+
+  return (
+    <Link
+      href={compareTool.href}
+      className={[
+        "group flex flex-col overflow-hidden border border-[#d9e4d9] bg-white shadow-sm transition hover:-translate-y-0.5 hover:border-[#8fcabb] hover:shadow-xl hover:shadow-[#173629]/10 dark:border-white/10 dark:bg-white/[0.05]",
+        isFeatured ? "rounded-[1.45rem]" : "rounded-[1.2rem]",
+      ].join(" ")}
+    >
+      <span
+        className={[
+          "relative block overflow-hidden",
+          isFeatured ? "h-72 sm:h-80 lg:h-[22rem]" : "h-44 sm:h-48",
+        ].join(" ")}
+      >
+        <Image
+          src={compareVisual.image}
+          alt=""
+          fill
+          sizes={
+            isFeatured
+              ? "(min-width: 1024px) 42vw, 100vw"
+              : "(min-width: 1024px) 28vw, (min-width: 768px) 50vw, 100vw"
+          }
+          className="object-cover transition duration-700 group-hover:scale-105"
+        />
+        <span className={`absolute inset-0 bg-gradient-to-t ${compareVisual.accent} to-transparent`} />
+        <span className="absolute left-4 top-4 inline-flex items-center gap-2 rounded-full border border-[#d6f3e8]/24 bg-[#173629]/76 px-3 py-1.5 text-xs font-semibold text-[#d6f3e8] backdrop-blur">
+          <Scale className="size-3.5" />
+          {compareVisual.label}
+        </span>
+      </span>
+      <span className={["flex flex-1 flex-col", isFeatured ? "p-6 sm:p-7" : "p-5"].join(" ")}>
+        <span className="inline-flex rounded-full bg-[#e7f5ef] px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-[#0f766e] dark:bg-[#d6f3e8]/12 dark:text-[#d6f3e8]">
+          {compareTool.eyebrow}
+        </span>
+        <span
+          className={[
+            "mt-3 block font-semibold leading-tight text-[#2e241c] dark:text-white",
+            isFeatured ? "text-3xl sm:text-4xl" : "text-xl sm:text-2xl",
+          ].join(" ")}
+        >
+          {compareTool.title}
+        </span>
+        <span
+          className={[
+            "mt-3 block text-[#756354] dark:text-white/64",
+            isFeatured ? "text-base leading-8" : "text-sm leading-6",
+          ].join(" ")}
+        >
+          {compareTool.description}
+        </span>
+        <span className="mt-5 flex flex-wrap gap-2">
+          {compareTool.highlights.map((item) => (
+            <span
+              key={item}
+              className="rounded-full border border-[#cce6dc] bg-[#f7fbf5] px-3 py-1.5 text-xs font-semibold text-[#0f5f59] dark:border-white/10 dark:bg-white/[0.04] dark:text-white/72"
+            >
+              {item}
+            </span>
+          ))}
+        </span>
+        <span className="mt-auto pt-5 inline-flex items-center justify-between gap-3 text-sm font-semibold text-[#0f766e]">
+          <span>Open tool</span>
+          <span className="inline-flex size-9 items-center justify-center rounded-full bg-[#e7f5ef] text-[#0f766e] transition group-hover:translate-x-1 dark:bg-[#d6f3e8]/12 dark:text-[#d6f3e8]">
+            <ArrowRight className="size-4" />
+          </span>
+        </span>
+      </span>
+    </Link>
+  );
+}
+
 export default function ToolsPage() {
   const primaryTools = toolPages.slice(0, 3);
   const [featuredTool, ...supportingTools] = toolPages;
@@ -293,13 +415,13 @@ export default function ToolsPage() {
               </p>
               <div className="mt-7 flex flex-wrap gap-3">
                 <Link
-                  href="/tools/what-can-i-cook-with-ingredients"
+                  href="/tools/smart-recipe-finder"
                   className="inline-flex min-h-12 items-center justify-center gap-2 rounded-lg bg-primary px-5 py-3 text-sm font-semibold text-white transition hover:bg-primary/90"
                 >
                   Start with ingredients <ArrowRight className="size-4" />
                 </Link>
                 <Link
-                  href="/tools/what-to-cook-today"
+                  href="/tools/smart-daily-menu"
                   className="inline-flex min-h-12 items-center justify-center gap-2 rounded-lg border border-[#dfc6a8] bg-white px-5 py-3 text-sm font-semibold text-[#3a2b20] transition hover:border-primary hover:text-primary dark:border-white/10 dark:bg-white/[0.06] dark:text-white"
                 >
                   Plan today&apos;s food
@@ -352,15 +474,14 @@ export default function ToolsPage() {
                 Open the tool that matches today.
               </h2>
             </div>
-            <p className="max-w-xl text-sm leading-7 text-[#756354] dark:text-white/64">
-              Each page is built around a real food decision, then connects to
-              recipe cards instead of leaving you with a plain search box.
-            </p>
           </div>
 
-          <div className="grid gap-5 lg:grid-cols-[0.95fr_1.35fr]">
-            {featuredTool && <ToolCard tool={featuredTool} variant="featured" />}
-            <div className="grid gap-5 sm:grid-cols-2">
+          <div className="grid items-start gap-5 lg:grid-cols-[0.95fr_1.35fr]">
+            <div className="grid gap-5">
+              <CompareToolCard variant="featured" />
+              {featuredTool && <ToolCard tool={featuredTool} variant="featured" />}
+            </div>
+            <div className="grid content-start items-start gap-5 sm:grid-cols-2">
               {supportingTools.map((tool) => (
                 <ToolCard key={tool.slug} tool={tool} />
               ))}

@@ -46,8 +46,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: "/recipes", lastModified: "2026-05-30", changeFrequency: "daily" },
     { url: "/tools", lastModified: "2026-06-04", changeFrequency: "daily" },
     {
-      url: "/tools/what-can-i-cook-with-ingredients",
-      lastModified: "2026-06-04",
+      url: "/tools/smart-recipe-finder",
+      lastModified: "2026-06-05",
+      changeFrequency: "daily",
+    },
+    {
+      url: "/tools/smart-food-compare",
+      lastModified: "2026-06-05",
       changeFrequency: "daily",
     },
     { url: "/blog", lastModified: "2026-05-30", changeFrequency: "daily" },
@@ -88,10 +93,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     changeFrequency: route.changeFrequency as ChangeFrequency,
   }));
   const toolRoutes = toolPages
-    .filter((tool) => tool.href !== "/tools/what-can-i-cook-with-ingredients")
+    .filter((tool) => tool.href !== "/tools/smart-recipe-finder")
     .map((tool) => ({
       url: absoluteUrl(tool.href),
-      lastModified: "2026-06-04",
+      lastModified: "2026-06-05",
       changeFrequency,
     }));
 
