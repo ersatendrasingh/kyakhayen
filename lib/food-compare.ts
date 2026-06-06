@@ -119,6 +119,7 @@ const mainFoodTypeSlugs = new Set([
   "cooked-vegetable",
   "grains",
   "snacks",
+  "desserts",
 ]);
 
 const lowValueRecipeTypeSlugs = new Set([
@@ -252,6 +253,36 @@ const competitorFamilies = [
     id: "egg-protein",
     signals: ["egg", "omelette", "omelet", "anda", "bhurji"],
   },
+  {
+    id: "halwa",
+    signals: ["halwa", "sheera"],
+  },
+  {
+    id: "kheer",
+    signals: ["kheer", "payasam", "phirni"],
+  },
+  {
+    id: "laddu",
+    signals: ["laddu", "ladoo"],
+  },
+  {
+    id: "barfi",
+    signals: ["barfi", "burfi", "katli"],
+  },
+  {
+    id: "mithai",
+    signals: [
+      "mithai",
+      "sweet",
+      "dessert",
+      "gulab jamun",
+      "rasgulla",
+      "jalebi",
+      "rasmalai",
+      "kulfi",
+      "ice cream",
+    ],
+  },
 ];
 
 const relatedFamilyPairs = [
@@ -260,6 +291,10 @@ const relatedFamilyPairs = [
   ["noodles", "rice-meal"],
   ["paneer-tofu", "egg-protein"],
   ["dal-beans", "paneer-tofu"],
+  ["halwa", "kheer"],
+  ["laddu", "barfi"],
+  ["kheer", "mithai"],
+  ["halwa", "mithai"],
 ];
 
 const metricDefinitions = [
