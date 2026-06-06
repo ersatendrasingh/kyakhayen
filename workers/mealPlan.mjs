@@ -1,5 +1,5 @@
 import axios from "axios";
-import { Worker } from "bullmq";
+import { Queue, Worker } from "bullmq";
 import nextEnv from "@next/env";
 
 const { loadEnvConfig } = nextEnv;
@@ -24,6 +24,48 @@ const parsedWorkerTimeoutMs = Number(
 const WORKER_REQUEST_TIMEOUT_MS = Number.isFinite(parsedWorkerTimeoutMs)
   ? parsedWorkerTimeoutMs
   : 420000;
+const trafficPushSchedules = [
+  { slot: "breakfast", pattern: "0 6 * * *" },
+  { slot: "midMorning", pattern: "0 9 * * *" },
+  { slot: "lunch", pattern: "30 12 * * *" },
+  { slot: "evening", pattern: "30 16 * * *" },
+  { slot: "dinner", pattern: "30 20 * * *" },
+];
+
+if (!MEAL_PLAN_WORKER_SECRET) {
+  console.error(
+    "MEAL_PLAN_WORKER_SECRET is not configured; scheduled worker API calls will fail.",
+  );
+}
+
+async function ensureTrafficPushSchedules() {
+  const queue = new Queue("generateMealPlan", { connection });
+  try {
+    for (const schedule of trafficPushSchedules) {
+      await queue.add(
+        "sendTrafficPush",
+        { slot: schedule.slot },
+        {
+          jobId: `traffic-push-${schedule.slot}`,
+          repeat: {
+            pattern: schedule.pattern,
+            tz: "Asia/Kolkata",
+          },
+          removeOnComplete: true,
+          removeOnFail: 100,
+        },
+      );
+    }
+    console.log("Traffic push schedules ensured");
+  } finally {
+    await queue.close();
+  }
+}
+
+ensureTrafficPushSchedules().catch((error) => {
+  const message = error instanceof Error ? error.message : String(error);
+  console.error(`Unable to ensure traffic push schedules: ${message}`);
+});
 
 // Define the worker to process the queue
 const worker = new Worker(
@@ -35,8 +77,9 @@ const worker = new Worker(
         job.name === "mealReminder" || job.name === "membershipExpiryReminder";
       const isCampaignJob = job.name === "sendNotificationCampaign";
       const isContentPipelineJob = job.name === "publishContentPipelinePost";
+      const isTrafficPushJob = job.name === "sendTrafficPush";
       console.log(
-        `Starting job ${job.id}: ${isContentPipelineJob ? "Publishing scheduled content" : isDeliveryJob ? "Delivering meal plan day" : isPushAutomationJob ? "Sending automated push" : isCampaignJob ? "Sending scheduled campaign" : "Generating meal plan"}`,
+        `Starting job ${job.id}: ${isTrafficPushJob ? "Sending traffic push" : isContentPipelineJob ? "Publishing scheduled content" : isDeliveryJob ? "Delivering meal plan day" : isPushAutomationJob ? "Sending automated push" : isCampaignJob ? "Sending scheduled campaign" : "Generating meal plan"}`,
       );
 
       // Update progress to 10%
@@ -44,6 +87,8 @@ const worker = new Worker(
         percentage: 5,
         message: isContentPipelineJob
           ? "Preparing scheduled content publish"
+          : isTrafficPushJob
+          ? "Preparing traffic push"
           : isCampaignJob
           ? "Preparing scheduled broadcast"
           : isPushAutomationJob
@@ -55,6 +100,8 @@ const worker = new Worker(
 
       const endpoint = isContentPipelineJob
         ? "/api/admin/content-pipeline/dispatch"
+        : isTrafficPushJob
+        ? "/api/push/traffic"
         : isCampaignJob
         ? "/api/push/dispatch"
         : isPushAutomationJob
@@ -64,6 +111,8 @@ const worker = new Worker(
             : "/api/generate-meal-plan";
       const body = isContentPipelineJob
         ? { kind: "scheduledPost", postId: job.data.postId }
+        : isTrafficPushJob
+        ? { slot: job.data.slot }
         : isCampaignJob
         ? { campaignId: job.data.campaignId }
         : isPushAutomationJob
@@ -82,6 +131,8 @@ const worker = new Worker(
         percentage: 100,
         message: isContentPipelineJob
           ? "Scheduled content publish completed"
+          : isTrafficPushJob
+          ? "Traffic push completed"
           : isCampaignJob
           ? "Scheduled broadcast delivered"
           : isPushAutomationJob

@@ -1,35 +1,11 @@
-import { GetObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { render } from "react-email";
 import { NextResponse } from "next/server";
 
 import CustomerMealPlanMail from "@/emails/customer-meal-plan-mail";
 import { db } from "@/lib/db";
 import { generateMealPlanPdf } from "@/lib/generate-meal-plan-pdf";
-import { hydrateMealPlanRecipes } from "@/lib/hydrate-meal-plan-recipes";
 import { sendEmail } from "@/lib/mail";
-import type { MealPlanRoutineSlot } from "@/lib/meal-plan-routine";
-import type { RecipeWithCategory } from "@/types/recipe";
-
-type StoredMealPlanRecipe = RecipeWithCategory | { recipeId: string };
-
-function getPrivateStorage() {
-  const region = process.env.AWS_REGION;
-  const accessKeyId = process.env.AWS_ACCESS_KEY_ID;
-  const secretAccessKey = process.env.AWS_SECRET_ACCESS_KEY;
-  const bucket = process.env.AWS_PRIVATE_BUCKET_NAME;
-
-  if (!region || !accessKeyId || !secretAccessKey || !bucket) {
-    throw new Error("Private meal-plan storage is not configured.");
-  }
-
-  return {
-    bucket,
-    client: new S3Client({
-      region,
-      credentials: { accessKeyId, secretAccessKey },
-    }),
-  };
-}
+import { loadStoredMealPlanDay } from "@/lib/meal-plan-storage";
 
 export async function POST(request: Request) {
   const workerSecret =
@@ -92,24 +68,12 @@ export async function POST(request: Request) {
       });
     }
 
-    const storage = getPrivateStorage();
-    const object = await storage.client.send(
-      new GetObjectCommand({
-        Bucket: storage.bucket,
-        Key: `usersMealPlans/${userId}/${date}/diet.json`,
-      }),
-    );
-    const json = await object.Body?.transformToString();
-    if (!json) {
+    const storedDay = await loadStoredMealPlanDay(userId, date);
+    if (!storedDay) {
       return NextResponse.json("Meal plan document not found", {
         status: 404,
       });
     }
-    const { mealsByTime = {}, routineSlots } = JSON.parse(json) as {
-      mealsByTime?: Record<string, StoredMealPlanRecipe[]>;
-      routineSlots?: MealPlanRoutineSlot[];
-    };
-    const currentMealsByTime = await hydrateMealPlanRecipes(mealsByTime);
     const attachment = await generateMealPlanPdf(
       {
         name: user.name || "Member",
@@ -132,7 +96,13 @@ export async function POST(request: Request) {
           )
           .map(({ allergy }) => allergy.title),
       },
-      [{ date: planDate, mealsByTime: currentMealsByTime, routineSlots }],
+      [
+        {
+          date: planDate,
+          mealsByTime: storedDay.mealsByTime,
+          routineSlots: storedDay.routineSlots,
+        },
+      ],
       "Tomorrow's delivery",
     );
 

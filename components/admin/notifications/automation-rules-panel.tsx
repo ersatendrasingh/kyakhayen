@@ -47,8 +47,8 @@ const presets: Record<NotificationAutomationTrigger, Omit<RuleForm, "trigger" | 
   MEAL_REMINDER: {
     name: "Meal reminders",
     titleTemplate: "{{meal}} is coming up",
-    bodyTemplate: "Your planned dishes are ready to view. Open your meal plan before you start cooking.",
-    urlTemplate: "/meal-plan",
+    bodyTemplate: "Recipe pick: {{recipeTitle}}. Open it before you start cooking.",
+    urlTemplate: "/{{recipePath}}",
   },
   MEMBERSHIP_EXPIRY: {
     name: "Membership expiry reminder",
@@ -235,7 +235,7 @@ export function AutomationRulesPanel({ rules, segments }: { rules: NotificationA
             <Field label="Message template"><Textarea value={form.bodyTemplate} maxLength={300} rows={3} onChange={(event) => setForm((current) => ({ ...current, bodyTemplate: event.target.value }))} /></Field>
             <Field label="Open link template"><Input value={form.urlTemplate} onChange={(event) => setForm((current) => ({ ...current, urlTemplate: event.target.value }))} /></Field>
             <p className="rounded-xl bg-muted/40 px-3 py-2 text-xs text-muted-foreground">
-              Tokens: {form.trigger === NotificationAutomationTrigger.RECIPE_PUBLISHED ? "{{recipeTitle}}, {{recipePath}}, {{preference}}" : form.trigger === NotificationAutomationTrigger.MEAL_REMINDER ? "{{meal}}" : form.trigger === NotificationAutomationTrigger.MEMBERSHIP_EXPIRY ? "{{planName}}, {{expiryTiming}}, {{expiryAction}}" : form.trigger === NotificationAutomationTrigger.PAYMENT_SUCCESS ? "{{planName}}" : "No tokens required"}
+              Tokens: {form.trigger === NotificationAutomationTrigger.RECIPE_PUBLISHED ? "{{recipeTitle}}, {{recipePath}}, {{preference}}" : form.trigger === NotificationAutomationTrigger.MEAL_REMINDER ? "{{meal}}, {{recipeTitle}}, {{recipePath}}" : form.trigger === NotificationAutomationTrigger.MEMBERSHIP_EXPIRY ? "{{planName}}, {{expiryTiming}}, {{expiryAction}}" : form.trigger === NotificationAutomationTrigger.PAYMENT_SUCCESS ? "{{planName}}" : "No tokens required"}
             </p>
             <MediaField label="Notification image (optional)" value={form.imageUrl} onChange={(imageUrl) => setForm((current) => ({ ...current, imageUrl }))} accept="image" disabled={saving} description={form.trigger === NotificationAutomationTrigger.RECIPE_PUBLISHED ? "Leave empty to use the published recipe image" : "Choose an image from the media library"} />
           </div>

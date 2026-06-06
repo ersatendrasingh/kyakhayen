@@ -19,11 +19,13 @@ export async function runUserAutomationRules({
   userId,
   tokens = {},
   dedupeScope,
+  imageUrl,
 }: {
   trigger: NotificationAutomationTrigger;
   userId: string;
   tokens?: AutomationTokens;
   dedupeScope: string;
+  imageUrl?: string | null;
 }) {
   const rules = await db.notificationAutomationRule.findMany({
     where: { trigger, isActive: true, audience: NotificationAudience.USER },
@@ -37,7 +39,7 @@ export async function runUserAutomationRules({
       title: renderTemplate(rule.titleTemplate, tokens) || rule.titleTemplate,
       body: renderTemplate(rule.bodyTemplate, tokens) || rule.bodyTemplate,
       url: renderTemplate(rule.urlTemplate, tokens) || "/",
-      imageUrl: rule.imageUrl,
+      imageUrl: imageUrl ?? rule.imageUrl,
       automationRuleId: rule.id,
       createdByName: rule.createdByName || "Automation",
       dedupeKey: `${rule.id}-${dedupeScope}`,
