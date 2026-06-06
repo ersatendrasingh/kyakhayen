@@ -2,6 +2,10 @@ import type { Prisma } from "@prisma/client";
 import { NextResponse } from "next/server";
 
 import { db } from "@/lib/db";
+import {
+  filterPrimaryIngredientValues,
+  primaryIngredientSearchTerms,
+} from "@/lib/primary-ingredients";
 import { publishedRecipeWhere } from "@/lib/recipe-publication";
 
 const NON_VEG_TOKENS = ["chicken", "mutton", "fish", "prawn", "egg"];
@@ -57,6 +61,12 @@ const GUEST_AVOID_TYPE_SLUGS = new Set([
 const KIDS_FRIENDLY_TYPE_SLUGS = new Set(["meal", "grains", "protein", "snacks"]);
 const KIDS_AVOID_PATTERN =
   /\b(spicy|chilli|mirchi|schezwan|thecha|pickle|achaar|pepper fry)\b/;
+const BREAKFAST_TITLE_PATTERN =
+  /\b(breakfast|cheela|chila|oats|poha|upma|idli|dosa|uttapam|sandwich|toast|pancake)\b/;
+const MAIN_MEAL_TITLE_PATTERN =
+  /\b(sabzi|sabji|curry|dal|chana|channa|gravy|stuffed|bharwa|kofta|bharta|kadhi|masala)\b/;
+const LIGHT_MEAL_TITLE_PATTERN =
+  /\b(cheela|chila|oats|salad|kheer|dessert|smoothie|juice|shake|raita|chutney)\b/;
 
 const recipeSelect = {
   id: true,
@@ -76,6 +86,7 @@ const recipeSelect = {
   },
   recipeIngredients: {
     select: {
+      position: true,
       quantity: true,
       unitId: true,
       unit: { select: { title: true, shortName: true } },
@@ -150,6 +161,14 @@ function tokens(value: string) {
 
 function recipeIngredientNames(recipe: RecipeRecord) {
   return recipe.recipeIngredients.map((item) => normalize(item.ingredient.name));
+}
+
+function recipeIdentityText(recipe: RecipeRecord) {
+  return normalize(`${recipe.title} ${recipe.slug} ${recipe.metaSlug || ""}`);
+}
+
+function selectedSearchTerms(value: string) {
+  return primaryIngredientSearchTerms(value).map(normalize).filter(Boolean);
 }
 
 function recipeTokenSet(recipe: RecipeRecord) {
@@ -431,30 +450,112 @@ function textMatchWhere(value: string): Prisma.RecipesWhereInput[] {
 }
 
 function hasSelectedMatch(recipe: RecipeRecord, selected: string[]) {
-  const title = normalize(recipe.title);
-  const ingredientNames = recipeIngredientNames(recipe);
+  const identityText = recipeIdentityText(recipe);
 
   return selected.some((ingredient) => {
-    const normalized = normalize(ingredient);
+    const terms = selectedSearchTerms(ingredient);
 
-    return (
-      title.includes(normalized) ||
-      ingredientNames.some((name) => name.includes(normalized))
-    );
+    return terms.some((term) => identityText.includes(term));
   });
 }
 
-function scoreIngredientRecipe(recipe: RecipeRecord, selected: string[]) {
+function normalizedMealFocus(value: string) {
+  const focus = normalize(value).replace(/\s+/g, "-");
+
+  if (focus === "breakfast" || focus === "lunch" || focus === "dinner") {
+    return focus;
+  }
+
+  return "full-day";
+}
+
+function isAllowedForIngredientMealFocus(recipe: RecipeRecord, mealFocus: string) {
+  const focus = normalizedMealFocus(mealFocus);
+  const text = recipeDiscoveryText(recipe);
+
+  if (focus === "breakfast") {
+    if (
+      MAIN_MEAL_TITLE_PATTERN.test(text) &&
+      !BREAKFAST_TITLE_PATTERN.test(text) &&
+      !hasMealFocus(recipe, "breakfast")
+    ) {
+      return false;
+    }
+
+    return true;
+  }
+
+  if (focus === "lunch" || focus === "dinner") {
+    if (LIGHT_MEAL_TITLE_PATTERN.test(text) && !MAIN_MEAL_TITLE_PATTERN.test(text)) {
+      return false;
+    }
+
+    if (
+      hasMealFocus(recipe, "breakfast") &&
+      !hasMealFocus(recipe, "lunch") &&
+      !hasMealFocus(recipe, "dinner") &&
+      (BREAKFAST_TITLE_PATTERN.test(text) || isSnackRecipe(recipe))
+    ) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+function ingredientMealFocusScore(recipe: RecipeRecord, mealFocus: string) {
+  const focus = normalizedMealFocus(mealFocus);
+  const text = recipeDiscoveryText(recipe);
+
+  if (focus === "full-day") return 0;
+
+  if (focus === "breakfast") {
+    return (
+      (hasMealFocus(recipe, "breakfast") ? 420 : 0) +
+      (BREAKFAST_TITLE_PATTERN.test(text) ? 260 : 0) +
+      (hasAnyType(recipe, BREAKFAST_RECIPE_TYPE_SLUGS) ? 140 : 0) -
+      (MAIN_MEAL_TITLE_PATTERN.test(text) && !hasMealFocus(recipe, "breakfast")
+        ? 260
+        : 0) -
+      (hasAnyType(recipe, LUNCH_DINNER_RECIPE_TYPE_SLUGS) &&
+      !hasMealFocus(recipe, "breakfast")
+        ? 120
+        : 0)
+    );
+  }
+
+  return (
+    (isAssignedToMealFocus(recipe, focus) ? 420 : 0) +
+    (MAIN_MEAL_TITLE_PATTERN.test(text) ? 360 : 0) +
+    (hasAnyType(recipe, LUNCH_DINNER_RECIPE_TYPE_SLUGS) ? 220 : 0) -
+    (BREAKFAST_TITLE_PATTERN.test(text) ? 360 : 0) -
+    (LIGHT_MEAL_TITLE_PATTERN.test(text) ? 320 : 0) -
+    (isSnackRecipe(recipe) ? 260 : 0) -
+    (isLightRecipe(recipe) ? 180 : 0)
+  );
+}
+
+function scoreIngredientRecipe(
+  recipe: RecipeRecord,
+  selected: string[],
+  mealFocus: string,
+) {
   const title = normalize(recipe.title);
   const ingredientNames = recipeIngredientNames(recipe);
-  let score = popularityScore(recipe) + mainMealScore(recipe);
+  let score =
+    popularityScore(recipe) +
+    mainMealScore(recipe) +
+    ingredientMealFocusScore(recipe, mealFocus);
 
   selected.forEach((ingredient, index) => {
     const weight = index === 0 ? 70 : 34;
-    const ingredientTokens = tokens(ingredient);
+    const terms = selectedSearchTerms(ingredient);
+    const ingredientTokens = terms.flatMap(tokens);
     const exactIngredient = ingredientNames.some((name) => name === ingredient);
-    const partialIngredient = ingredientNames.some((name) => name.includes(ingredient));
-    const titleMatch = title.includes(ingredient);
+    const partialIngredient = terms.some((term) =>
+      ingredientNames.some((name) => name.includes(term)),
+    );
+    const titleMatch = terms.some((term) => title.includes(term));
     const tokenMatch = ingredientTokens.some((token) =>
       ingredientNames.some((name) => name.includes(token)),
     );
@@ -705,6 +806,7 @@ async function fetchIngredientRecipes(
   foodType: string,
   pageSize: number,
   page: number,
+  mealFocus: string,
 ) {
   if (selected.length === 0) return { recipes: [], total: 0 };
 
@@ -726,6 +828,7 @@ async function fetchIngredientRecipes(
   const selectedTokens = new Set(selected.flatMap(tokens));
   const ranked = recipes
     .filter(isAllowedSituationRecipe)
+    .filter((recipe) => isAllowedForIngredientMealFocus(recipe, mealFocus))
     .filter((recipe) => {
       const recipeTokens = recipeTokenSet(recipe);
       const hasUnselectedNonVeg = NON_VEG_TOKENS.some(
@@ -736,7 +839,7 @@ async function fetchIngredientRecipes(
     })
     .map((recipe) => ({
       recipe,
-      score: scoreIngredientRecipe(recipe, selected),
+      score: scoreIngredientRecipe(recipe, selected, mealFocus),
     }))
     .sort((left, right) => right.score - left.score)
     .map(({ recipe }) => recipe);
@@ -1011,10 +1114,15 @@ export async function GET(req: Request) {
       ]
         .flatMap((value) => value.split(","))
         .map(normalize)
-        .filter(Boolean)
-        .slice(0, 10);
+        .filter(Boolean);
 
-      result = await fetchIngredientRecipes(selected, foodType, pageSize, page);
+      result = await fetchIngredientRecipes(
+        filterPrimaryIngredientValues(selected, 10),
+        foodType,
+        pageSize,
+        page,
+        searchParams.get("mealFocus") || "full-day",
+      );
     } else if (mode === "daily") {
       result = await fetchDailyRecipes(
         searchParams.get("mealFocus") || "full-day",

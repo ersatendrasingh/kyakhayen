@@ -3,6 +3,10 @@ import { NextResponse } from "next/server";
 
 import { db } from "@/lib/db";
 import { normalizeIngredientDisplayName } from "@/lib/ingredients";
+import {
+  canonicalPrimaryIngredientValue,
+  isPrimaryIngredientValue,
+} from "@/lib/primary-ingredients";
 import { publishedRecipeWhere } from "@/lib/recipe-publication";
 
 function normalize(value: string) {
@@ -124,7 +128,9 @@ function queryMatchRank(ingredient: IngredientRecord, query: string) {
 }
 
 async function recipeTopicSuggestion(query: string, existingValues: Set<string>) {
-  if (query.length < 2 || existingValues.has(query)) return null;
+  if (query.length < 2 || existingValues.has(query) || !isPrimaryIngredientValue(query)) {
+    return null;
+  }
 
   const recipeCount = await db.recipes.count({
     where: {
@@ -165,7 +171,7 @@ async function recipeTopicSuggestion(query: string, existingValues: Set<string>)
 export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
-    const query = normalize(searchParams.get("q") || "");
+    const query = canonicalPrimaryIngredientValue(searchParams.get("q") || "");
     const limit = Math.min(
       Math.max(Number(searchParams.get("limit") || 18), 1),
       30,
@@ -198,6 +204,9 @@ export async function GET(req: Request) {
         queryRank: queryMatchRank(ingredient, query),
         score: scoreIngredient(ingredient, query),
       }))
+      .filter((suggestion) =>
+        isPrimaryIngredientValue(`${suggestion.label} ${suggestion.value}`),
+      )
       .sort((left, right) => {
         if (query && left.queryRank !== right.queryRank) {
           return right.queryRank - left.queryRank;

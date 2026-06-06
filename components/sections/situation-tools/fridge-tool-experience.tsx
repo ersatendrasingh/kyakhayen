@@ -4,10 +4,12 @@ import {
   ArrowRight,
   ChevronLeft,
   ChevronRight,
+  Clock3,
   Refrigerator,
   Share2,
   Sparkles,
 } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -17,7 +19,6 @@ import { IngredientPicker } from "@/components/sections/situation-tools/controls
 import {
   formatLabel,
   listLabels,
-  normalizeValue,
   readableList,
   recipeToSuggestion,
 } from "@/components/sections/situation-tools/recipe-formatters";
@@ -32,12 +33,20 @@ import type {
   RecipeSuggestion,
   SituationRecipe,
 } from "@/components/sections/situation-tools/types";
+import { shouldServeDirectMediaImage } from "@/lib/direct-media-image";
+import {
+  canonicalPrimaryIngredientValue,
+  filterPrimaryIngredientValues,
+  isPrimaryIngredientValue,
+  PRIMARY_INGREDIENT_HELP,
+} from "@/lib/primary-ingredients";
 import { cn } from "@/lib/utils";
 
 type FridgeToolExperienceProps = {
   initialIngredients: string[];
   initialIngredientLabels: Record<string, string>;
   initialRecipePage?: InitialRecipePage;
+  initialMealFocus?: string;
 };
 
 const foodTypes = [
@@ -46,21 +55,40 @@ const foodTypes = [
   { id: "any", label: "Any" },
 ];
 
+const mealFocusOptions = [
+  { id: "breakfast", label: "Breakfast" },
+  { id: "lunch", label: "Lunch" },
+  { id: "dinner", label: "Dinner" },
+  { id: "full-day", label: "Any" },
+];
+
 const quickAdditions = [
-  { value: "onion", label: "Onion" },
-  { value: "tomato", label: "Tomato" },
-  { value: "capsicum", label: "Capsicum" },
-  { value: "rice", label: "Rice" },
-  { value: "curd", label: "Curd" },
   { value: "potato", label: "Potato" },
+  { value: "bottle gourd", label: "Bottle gourd" },
+  { value: "ridge gourd", label: "Ridge gourd" },
+  { value: "colocasia", label: "Arbi" },
+  { value: "brinjal", label: "Brinjal" },
+  { value: "cauliflower", label: "Cauliflower" },
 ];
 
 const ingredientToolPath = "/tools/smart-recipe-finder";
+const fridgeRecipeFetchSize = recipePageSize + 1;
 
-function buildToolUrl(ingredients: string[]) {
+function defaultMealFocus() {
+  const hour = new Date().getHours();
+
+  if (hour >= 5 && hour < 11) return "breakfast";
+  if (hour >= 11 && hour < 16) return "lunch";
+  if (hour >= 16 && hour < 23) return "dinner";
+
+  return "dinner";
+}
+
+function buildToolUrl(ingredients: string[], mealFocus?: string) {
   const params = new URLSearchParams();
 
   if (ingredients.length > 0) params.set("ingredients", ingredients.join(","));
+  if (mealFocus) params.set("mealFocus", mealFocus);
 
   return `${ingredientToolPath}${params.size ? `?${params}` : ""}`;
 }
@@ -75,16 +103,21 @@ function currentUrlIngredients() {
   const params = new URLSearchParams(window.location.search);
   const raw = params.get("ingredients") ?? "";
 
-  return raw
-    .split(",")
-    .map(normalizeValue)
-    .filter(Boolean);
+  return filterPrimaryIngredientValues(raw.split(","), 10);
+}
+
+function currentUrlMealFocus() {
+  const params = new URLSearchParams(window.location.search);
+  const focus = params.get("mealFocus") ?? "";
+
+  return mealFocusOptions.some((item) => item.id === focus) ? focus : "";
 }
 
 function mapInitialRecipes(
   initialRecipePage: InitialRecipePage | undefined,
   selectedIngredients: string[],
   ingredientLabels: Record<string, string>,
+  mealFocus: string,
 ) {
   return (
     initialRecipePage?.recipes
@@ -93,7 +126,7 @@ function mapInitialRecipes(
           activeKey: "ingredients",
           selectedIngredients,
           ingredientLabels,
-          mealFocus: "full-day",
+          mealFocus,
           guestCount: 5,
           guestPlan: "full-meal",
           budget: 150,
@@ -107,8 +140,10 @@ export default function FridgeToolExperience({
   initialIngredients,
   initialIngredientLabels,
   initialRecipePage,
+  initialMealFocus,
 }: FridgeToolExperienceProps) {
   const router = useRouter();
+  const initialResolvedMealFocus = initialMealFocus || defaultMealFocus();
   const [selectedIngredients, setSelectedIngredients] = useState(initialIngredients);
   const [ingredientLabels, setIngredientLabels] = useState(initialIngredientLabels);
   const [ingredientInput, setIngredientInput] = useState("");
@@ -119,6 +154,7 @@ export default function FridgeToolExperience({
     useState(false);
   const [isIngredientPickerOpen, setIsIngredientPickerOpen] = useState(false);
   const [foodType, setFoodType] = useState("veg");
+  const [mealFocus, setMealFocus] = useState(initialResolvedMealFocus);
   const [recipePage, setRecipePage] = useState(0);
   const [recipeSuggestions, setRecipeSuggestions] = useState<RecipeSuggestion[]>(
     () =>
@@ -126,6 +162,7 @@ export default function FridgeToolExperience({
         initialRecipePage,
         initialIngredients,
         initialIngredientLabels,
+        initialResolvedMealFocus,
       ),
   );
   const [recipePagination, setRecipePagination] = useState<RecipePagination>(
@@ -143,12 +180,24 @@ export default function FridgeToolExperience({
   const [isRecipeLoading, setIsRecipeLoading] = useState(false);
   const [recipeError, setRecipeError] = useState(false);
   const [shareStatus, setShareStatus] = useState("Share");
+  const [ingredientNotice, setIngredientNotice] = useState<string | null>(null);
 
   const selectedIngredientText = readableList(
     listLabels(selectedIngredients, ingredientLabels),
     "your ingredients",
   );
   const recipeWord = recipePagination.total === 1 ? "recipe" : "recipes";
+  const bestSuggestion = recipeSuggestions[0] ?? null;
+  const supportingSuggestions = recipeSuggestions.slice(1, 4);
+  const listedSuggestions =
+    bestSuggestion && !isRecipeLoading ? recipeSuggestions.slice(1) : recipeSuggestions;
+  const foodTypeLabel = foodTypes.find((item) => item.id === foodType)?.label ?? "Veg";
+  const mealFocusLabel =
+    mealFocusOptions.find((item) => item.id === mealFocus)?.label ?? "Dinner";
+  const resultQuestion =
+    selectedIngredients.length > 0
+      ? `${selectedIngredientText} se kya banaye?`
+      : "Ghar ke ingredients se kya banaye?";
   const resultHeading =
     selectedIngredients.length > 0
       ? `You can cook ${recipePagination.total} ${recipeWord} with ${selectedIngredientText}.`
@@ -165,20 +214,32 @@ export default function FridgeToolExperience({
   const canGoNext = recipePagination.hasNext && !isRecipeLoading;
 
   const shareText = useMemo(
-    () =>
-      `${resultHeading}\n${recipeSuggestions
-        .slice(0, 5)
-        .map((item) => `- ${item.title}`)
-        .join("\n")}\n\nFind recipes with ingredients at home on Kya Khayen.`,
-    [recipeSuggestions, resultHeading],
+    () => {
+      const bestPick = bestSuggestion
+        ? `Best pick: ${bestSuggestion.title}\n${bestSuggestion.tag} | ${bestSuggestion.context}\n${bestSuggestion.meta}`
+        : "Add ingredients to get a best pick.";
+      const moreIdeas = supportingSuggestions
+        .map((item, index) => `${index + 1}. ${item.title}`)
+        .join("\n");
+
+      return `${resultQuestion}\n${resultHeading}\n\n${bestPick}${
+        moreIdeas ? `\n\nMore ideas:\n${moreIdeas}` : ""
+      }\n\nFind recipes with ingredients at home on Kya Khayen.`;
+    },
+    [bestSuggestion, resultHeading, resultQuestion, supportingSuggestions],
   );
 
   const resetRecipePage = () => setRecipePage(0);
 
   const addIngredientValue = (value: string, label?: string) => {
-    const normalized = normalizeValue(value);
+    const normalized = canonicalPrimaryIngredientValue(value);
 
     if (!normalized) return;
+    if (!isPrimaryIngredientValue(normalized)) {
+      setIngredientNotice(PRIMARY_INGREDIENT_HELP);
+      setIngredientInput("");
+      return;
+    }
 
     setSelectedIngredients((current) =>
       current.includes(normalized) ? current : [...current, normalized],
@@ -188,21 +249,29 @@ export default function FridgeToolExperience({
       [normalized]: label || formatLabel(normalized, current),
     }));
     setIngredientInput("");
+    setIngredientNotice(null);
     resetRecipePage();
   };
 
   const removeIngredient = (value: string) => {
     setSelectedIngredients((current) => current.filter((item) => item !== value));
+    setIngredientNotice(null);
     resetRecipePage();
   };
 
   useEffect(() => {
     const currentIngredients = currentUrlIngredients();
+    const currentMealFocus = currentUrlMealFocus();
 
-    if (areSameIngredients(currentIngredients, selectedIngredients)) return;
+    if (
+      areSameIngredients(currentIngredients, selectedIngredients) &&
+      currentMealFocus === mealFocus
+    ) {
+      return;
+    }
 
-    router.replace(buildToolUrl(selectedIngredients), { scroll: false });
-  }, [router, selectedIngredients]);
+    router.replace(buildToolUrl(selectedIngredients, mealFocus), { scroll: false });
+  }, [mealFocus, router, selectedIngredients]);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -245,7 +314,12 @@ export default function FridgeToolExperience({
   useEffect(() => {
     const controller = new AbortController();
 
-    if (selectedIngredients.length === 0) {
+    const primarySelectedIngredients = filterPrimaryIngredientValues(
+      selectedIngredients,
+      10,
+    );
+
+    if (primarySelectedIngredients.length === 0) {
       const timeoutId = window.setTimeout(() => {
         setRecipeSuggestions([]);
         setRecipePagination(emptyPagination);
@@ -261,10 +335,11 @@ export default function FridgeToolExperience({
 
     const params = new URLSearchParams();
     params.set("mode", "ingredients");
-    params.set("pageSize", String(recipePageSize));
+    params.set("pageSize", String(fridgeRecipeFetchSize));
     params.set("page", String(recipePage));
     params.set("foodType", foodType);
-    selectedIngredients.forEach((ingredient) => {
+    params.set("mealFocus", mealFocus);
+    primarySelectedIngredients.forEach((ingredient) => {
       params.append("ingredient", ingredient);
     });
 
@@ -295,7 +370,7 @@ export default function FridgeToolExperience({
               activeKey: "ingredients",
               selectedIngredients,
               ingredientLabels,
-              mealFocus: "full-day",
+              mealFocus,
               guestCount: 5,
               guestPlan: "full-meal",
               budget: 150,
@@ -325,13 +400,16 @@ export default function FridgeToolExperience({
     void fetchRecipes();
 
     return () => controller.abort();
-  }, [foodType, ingredientLabels, recipePage, selectedIngredients]);
+  }, [foodType, ingredientLabels, mealFocus, recipePage, selectedIngredients]);
 
   const handleShare = async () => {
     setShareStatus("Sharing");
 
     try {
-      const url = `${window.location.origin}${buildToolUrl(selectedIngredients)}`;
+      const url = `${window.location.origin}${buildToolUrl(
+        selectedIngredients,
+        mealFocus,
+      )}`;
 
       if (navigator.share) {
         await navigator.share({
@@ -396,8 +474,8 @@ export default function FridgeToolExperience({
               {resultHeading}
             </h2>
             <p className="mt-2 text-sm leading-6 text-[#786859] dark:text-white/66">
-              Search bottle gourd, potato, rice, lentils, cauliflower, spinach,
-              or anything available at home.
+              Search the real fridge item first: lauki, turai, aloo, arbi,
+              paneer, dal, rice, curd, or a fresh vegetable.
             </p>
           </div>
 
@@ -414,8 +492,13 @@ export default function FridgeToolExperience({
               setOpen={setIsIngredientPickerOpen}
               addValue={addIngredientValue}
               removeValue={removeIngredient}
-              placeholder="Search bottle gourd, rice, spinach..."
+              placeholder="Search lauki, turai, aloo, arbi..."
             />
+            {ingredientNotice && (
+              <p className="rounded-lg border border-[#f0c8a4] bg-[#fff5e6] px-3 py-2 text-xs font-semibold leading-5 text-[#8a4a20] dark:border-amber-300/20 dark:bg-amber-300/10 dark:text-amber-100">
+                {ingredientNotice}
+              </p>
+            )}
 
             <div>
               <p className="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-[#9b6e37] dark:text-[#efcb83]">
@@ -435,6 +518,32 @@ export default function FridgeToolExperience({
                       foodType === item.id
                         ? "border-[#b63a29] bg-[#b63a29] text-white shadow-sm"
                         : "border-[#ead9c3] bg-white text-[#5b493d] hover:border-[#cc9448] hover:bg-[#fff7e9] dark:border-white/10 dark:bg-white/[0.04] dark:text-white",
+                    )}
+                  >
+                    {item.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <p className="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-[#9b6e37] dark:text-[#efcb83]">
+                Meal time
+              </p>
+              <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                {mealFocusOptions.map((item) => (
+                  <button
+                    key={item.id}
+                    type="button"
+                    onClick={() => {
+                      setMealFocus(item.id);
+                      resetRecipePage();
+                    }}
+                    className={cn(
+                      "min-h-10 rounded-lg border px-2 text-xs font-semibold transition sm:text-sm",
+                      mealFocus === item.id
+                        ? "border-[#2f7d4f] bg-[#2f7d4f] text-white shadow-sm"
+                        : "border-[#ead9c3] bg-white text-[#5b493d] hover:border-[#2f7d4f] hover:bg-[#f3f8ea] dark:border-white/10 dark:bg-white/[0.04] dark:text-white",
                     )}
                   >
                     {item.label}
@@ -478,10 +587,10 @@ export default function FridgeToolExperience({
               {selectedIngredients.length} selected
             </span>
             <span className="rounded-md bg-[#f1e4cf] px-3 py-2 text-xs font-semibold text-[#6c513d] dark:bg-white/10 dark:text-white/72">
-              Shareable link
+              Primary items only
             </span>
             <span className="rounded-md bg-[#f1e4cf] px-3 py-2 text-xs font-semibold text-[#6c513d] dark:bg-white/10 dark:text-white/72">
-              Recipe cards
+              Spices skipped
             </span>
           </div>
         </div>
@@ -504,7 +613,7 @@ export default function FridgeToolExperience({
                 type="button"
                 disabled={!canGoPrevious}
                 onClick={() => setRecipePage((current) => Math.max(0, current - 1))}
-                className="flex size-10 items-center justify-center rounded-full border border-[#ead9c3] bg-white text-[#8a6d53] transition enabled:hover:border-[#d09b51] enabled:hover:text-primary disabled:cursor-not-allowed disabled:opacity-42 dark:border-white/10 dark:bg-white/[0.05] dark:text-white/70"
+                className="flex size-10 items-center justify-center rounded-full border border-[#ead9c3] bg-white text-[#8a6d53] transition enabled:hover:border-[#2f7d4f] enabled:hover:text-[#2f7d4f] disabled:cursor-not-allowed disabled:opacity-42 dark:border-white/10 dark:bg-white/[0.05] dark:text-white/70"
                 aria-label="Previous recipes"
               >
                 <ChevronLeft className="size-4" />
@@ -513,13 +622,127 @@ export default function FridgeToolExperience({
                 type="button"
                 disabled={!canGoNext}
                 onClick={() => setRecipePage((current) => current + 1)}
-                className="flex size-10 items-center justify-center rounded-full border border-[#ead9c3] bg-white text-[#8a6d53] transition enabled:hover:border-[#d09b51] enabled:hover:text-primary disabled:cursor-not-allowed disabled:opacity-42 dark:border-white/10 dark:bg-white/[0.05] dark:text-white/70"
+                className="flex size-10 items-center justify-center rounded-full border border-[#ead9c3] bg-white text-[#8a6d53] transition enabled:hover:border-[#2f7d4f] enabled:hover:text-[#2f7d4f] disabled:cursor-not-allowed disabled:opacity-42 dark:border-white/10 dark:bg-white/[0.05] dark:text-white/70"
                 aria-label="Next recipes"
               >
                 <ChevronRight className="size-4" />
               </button>
             </div>
           </div>
+
+          {!recipeError && bestSuggestion && !isRecipeLoading && (
+            <section className="mb-4 overflow-hidden rounded-[1.15rem] border border-[#e5d4ba] bg-[#fffdf7] shadow-[0_24px_70px_-46px_rgba(72,52,30,0.62)] dark:border-white/10 dark:bg-white/[0.05]">
+              <div className="grid gap-0 md:grid-cols-[0.94fr_1.06fr]">
+                <div className="relative min-h-[232px] overflow-hidden bg-[#e8f1df]">
+                  <Image
+                    src={bestSuggestion.imageUrl}
+                    alt={bestSuggestion.title}
+                    fill
+                    quality={75}
+                    unoptimized={shouldServeDirectMediaImage(
+                      bestSuggestion.imageUrl,
+                    )}
+                    sizes="(max-width: 768px) 100vw, 36vw"
+                    className="object-cover"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#102216]/82 via-transparent to-transparent" />
+                  <div className="absolute inset-x-0 bottom-0 p-4">
+                    <span className="inline-flex rounded-full bg-[#f7cf72] px-3 py-1.5 text-xs font-semibold text-[#2b2419] shadow-sm">
+                      Best fridge match
+                    </span>
+                    <Link
+                      href={bestSuggestion.href}
+                      className="mt-2 block line-clamp-2 text-sm font-semibold leading-5 text-white transition hover:text-[#f7cf72]"
+                    >
+                      {bestSuggestion.title}
+                    </Link>
+                  </div>
+                </div>
+
+                <div className="relative flex min-w-0 flex-col justify-between bg-[#fff7e4] p-4 text-[#263326] dark:bg-[#17231b] dark:text-white sm:p-5">
+                  <div className="absolute inset-y-0 right-0 w-1.5 bg-[#2f7d4f]" />
+                  <div className="min-w-0">
+                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#2f7d4f] dark:text-emerald-200">
+                      Aaj kya banaye?
+                    </p>
+                    <h2 className="mt-2 text-2xl font-semibold leading-tight text-[#1f2e22] dark:text-white sm:text-3xl">
+                      {resultQuestion}
+                    </h2>
+                    <div className="mt-4 border-l-4 border-[#2f7d4f] bg-white/72 px-3 py-3 dark:bg-white/8">
+                      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#9b4c32] dark:text-[#f4c483]">
+                        Best pick
+                      </p>
+                      <Link
+                        href={bestSuggestion.href}
+                        className="mt-1 block text-lg font-semibold leading-6 text-[#1f2e22] transition hover:text-[#2f7d4f] dark:text-white dark:hover:text-emerald-200"
+                      >
+                        {bestSuggestion.title}
+                      </Link>
+                    </div>
+
+                    <div className="mt-4 flex flex-wrap gap-2">
+                      <span className="inline-flex items-center gap-1 rounded-full bg-[#263326] px-3 py-1.5 text-xs font-semibold text-white dark:bg-white/12">
+                        <Clock3 className="size-3.5" />
+                        {bestSuggestion.tag}
+                      </span>
+                      <span className="rounded-full bg-[#f7cf72] px-3 py-1.5 text-xs font-semibold text-[#2b2419]">
+                        {bestSuggestion.context}
+                      </span>
+                      <span className="rounded-full border border-[#bdd7ad] bg-[#edf7e8] px-3 py-1.5 text-xs font-semibold text-[#446b34] dark:border-emerald-300/18 dark:bg-emerald-300/10 dark:text-emerald-100">
+                        {foodTypeLabel}
+                      </span>
+                      <span className="rounded-full border border-[#d7c7a7] bg-white/74 px-3 py-1.5 text-xs font-semibold text-[#715536] dark:border-white/12 dark:bg-white/8 dark:text-white/78">
+                        {mealFocusLabel}
+                      </span>
+                    </div>
+
+                    <p className="mt-4 rounded-lg border border-[#dfe8c9] bg-[#f4f9ec] px-3 py-3 text-sm font-semibold leading-6 text-[#456038] dark:border-emerald-300/14 dark:bg-emerald-300/10 dark:text-emerald-100">
+                      {bestSuggestion.meta}
+                    </p>
+
+                    {supportingSuggestions.length > 0 && (
+                      <div className="mt-4">
+                        <p className="mb-2 text-xs font-semibold uppercase tracking-[0.18em] text-[#8e6a3a] dark:text-white/56">
+                          More quick ideas
+                        </p>
+                        <div className="grid gap-2 sm:grid-cols-3">
+                          {supportingSuggestions.map((suggestion) => (
+                            <Link
+                              key={suggestion.key}
+                              href={suggestion.href}
+                              className="min-w-0 rounded-lg border border-[#ead7b8] bg-white/70 px-3 py-2 text-xs font-semibold leading-5 text-[#584636] transition hover:border-[#2f7d4f] hover:text-[#2f7d4f] dark:border-white/10 dark:bg-white/8 dark:text-white/78 dark:hover:border-emerald-200 dark:hover:text-emerald-100"
+                            >
+                              <span className="line-clamp-2">
+                                {suggestion.title}
+                              </span>
+                            </Link>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="mt-5 grid gap-2 sm:grid-cols-2">
+                    <button
+                      type="button"
+                      onClick={handleShare}
+                      className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-[#f2b84b] px-4 py-2 text-sm font-semibold text-[#231c12] transition hover:bg-[#ffd36f]"
+                    >
+                      <Share2 className="size-4" />
+                      {shareStatus}
+                    </button>
+                    <Link
+                      href={bestSuggestion.href}
+                      className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-[#2f7d4f] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#25683f]"
+                    >
+                      Open best recipe
+                      <ArrowRight className="size-4" />
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            </section>
+          )}
 
           {recipeError ? (
             <div className="rounded-lg border border-[#ead9c3] bg-white px-4 py-8 text-center dark:border-white/10 dark:bg-white/[0.04]">
@@ -530,23 +753,23 @@ export default function FridgeToolExperience({
                 Try again in a moment or search one ingredient at a time.
               </p>
             </div>
-          ) : recipeSuggestions.length > 0 ? (
+          ) : isRecipeLoading || listedSuggestions.length > 0 ? (
             <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
               {isRecipeLoading
                 ? Array.from({ length: recipePageSize }).map((_, index) => (
                     <RecipeResultSkeleton key={index} />
                   ))
-                : recipeSuggestions.map((suggestion) => (
+                : listedSuggestions.map((suggestion) => (
                     <RecipeResultCard key={suggestion.key} suggestion={suggestion} />
                   ))}
             </div>
-          ) : (
+          ) : bestSuggestion ? null : (
             <div className="rounded-lg border border-[#ead9c3] bg-white px-4 py-10 text-center dark:border-white/10 dark:bg-white/[0.04]">
               <p className="font-semibold text-[#2f241d] dark:text-white">
-                Add an ingredient to see recipe ideas.
+                Add a main ingredient to see recipe ideas.
               </p>
               <p className="mt-2 text-sm text-[#806c5d] dark:text-white/64">
-                Try bottle gourd, potato, onion, tomato, rice, lentils, spinach,
+                Try lauki, turai, aloo, arbi, paneer, rice, dal, curd, spinach,
                 or cauliflower.
               </p>
             </div>
@@ -554,7 +777,8 @@ export default function FridgeToolExperience({
 
           <div className="mt-4 grid gap-3 rounded-lg border border-[#ead9c3] bg-[#f5ead8] p-3 dark:border-white/10 dark:bg-white/[0.06] sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
             <p className="min-w-0 text-sm font-semibold leading-6 text-[#4b3a2e] dark:text-white/78">
-              Add one main ingredient and one supporting ingredient for tighter matches.
+              Start with a real fridge ingredient. Add onion, tomato, curd, or
+              rice second only when it is actually available.
             </p>
             <div className="grid grid-cols-2 gap-2 sm:flex sm:shrink-0">
               <button

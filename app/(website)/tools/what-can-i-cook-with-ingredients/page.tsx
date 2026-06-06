@@ -17,6 +17,10 @@ import type {
   SituationRecipe,
 } from "@/components/sections/situation-tools/types";
 import { db } from "@/lib/db";
+import {
+  filterPrimaryIngredientValues,
+  primaryIngredientSearchTerms,
+} from "@/lib/primary-ingredients";
 import { publishedRecipeAnd } from "@/lib/recipe-publication";
 import {
   absoluteUrl,
@@ -30,13 +34,20 @@ import {
 type ToolSearchParams = Promise<{
   ingredients?: string | string[];
   ingredient?: string | string[];
+  mealFocus?: string | string[];
 }>;
 
 const pagePath = "/tools/smart-recipe-finder";
 const pageTitle = "Smart Recipe Finder";
 const pageDescription =
   "Use Smart Recipe Finder to search what you can cook with ingredients at home. Add bottle gourd, potato, onion, rice, lentils, spinach, cauliflower, curd, or leftovers and open matching Indian recipes.";
-const pageSize = 6;
+const pageSize = 7;
+const BREAKFAST_TITLE_PATTERN =
+  /\b(breakfast|cheela|chila|oats|poha|upma|idli|dosa|uttapam|sandwich|toast|pancake)\b/;
+const MAIN_MEAL_TITLE_PATTERN =
+  /\b(sabzi|sabji|curry|dal|chana|channa|gravy|stuffed|bharwa|kofta|bharta|kadhi|masala)\b/;
+const LIGHT_MEAL_TITLE_PATTERN =
+  /\b(cheela|chila|oats|salad|kheer|dessert|smoothie|juice|shake|raita|chutney)\b/;
 
 const popularIngredientLinks = [
   {
@@ -258,9 +269,36 @@ function parseIngredients(params: Awaited<ToolSearchParams>) {
     .flatMap((value) => value.split(","))
     .map(normalizeToolValue)
     .filter(Boolean);
-  const uniqueValues = Array.from(new Set(values)).slice(0, 8);
+  const uniqueValues = filterPrimaryIngredientValues(values, 8);
 
-  return uniqueValues.length > 0 ? uniqueValues : ["bottle gourd"];
+  if (uniqueValues.length > 0) return uniqueValues;
+
+  return values.length > 0 ? [] : ["bottle gourd"];
+}
+
+function defaultMealFocus() {
+  const hour = new Date().getHours();
+
+  if (hour >= 5 && hour < 11) return "breakfast";
+  if (hour >= 11 && hour < 16) return "lunch";
+  if (hour >= 16 && hour < 23) return "dinner";
+
+  return "dinner";
+}
+
+function parseMealFocus(params: Awaited<ToolSearchParams>) {
+  const focus = normalizeToolValue(singleParam(params.mealFocus)).replace(
+    /\s+/g,
+    "-",
+  );
+
+  if (focus === "breakfast" || focus === "lunch" || focus === "dinner") {
+    return focus;
+  }
+
+  if (focus === "full-day") return "full-day";
+
+  return defaultMealFocus();
 }
 
 function ingredientWhere(value: string): Prisma.RecipesWhereInput[] {
@@ -302,10 +340,102 @@ function recipeText(recipe: FridgeRecipeRecord) {
   );
 }
 
-function scoreRecipe(recipe: FridgeRecipeRecord, ingredients: string[]) {
+function recipeIdentityText(recipe: FridgeRecipeRecord) {
+  return normalizeToolValue(`${recipe.title} ${recipe.slug} ${recipe.metaSlug || ""}`);
+}
+
+function selectedSearchTerms(value: string) {
+  return primaryIngredientSearchTerms(value).map(normalizeToolValue).filter(Boolean);
+}
+
+function hasSelectedIdentityMatch(recipe: FridgeRecipeRecord, ingredients: string[]) {
+  const identityText = recipeIdentityText(recipe);
+
+  return ingredients.some((ingredient) =>
+    selectedSearchTerms(ingredient).some((term) => identityText.includes(term)),
+  );
+}
+
+function hasMealFocus(recipe: FridgeRecipeRecord, focus: string) {
+  return recipe.recipeMealTime.some(
+    (item) => normalizeToolValue(item.mealTime.slug) === focus,
+  );
+}
+
+function hasRecipeType(recipe: FridgeRecipeRecord, slug: string) {
+  return recipe.recipeRecipeType.some(
+    (item) => normalizeToolValue(item.recipeType.slug) === slug,
+  );
+}
+
+function mealFocusScore(recipe: FridgeRecipeRecord, mealFocus: string) {
+  const text = recipeText(recipe);
+
+  if (mealFocus === "full-day") return 0;
+
+  if (mealFocus === "breakfast") {
+    return (
+      (hasMealFocus(recipe, "breakfast") ? 420 : 0) +
+      (BREAKFAST_TITLE_PATTERN.test(text) ? 260 : 0) +
+      (hasRecipeType(recipe, "meal") || hasRecipeType(recipe, "grains") ? 140 : 0) -
+      (MAIN_MEAL_TITLE_PATTERN.test(text) && !hasMealFocus(recipe, "breakfast")
+        ? 260
+        : 0)
+    );
+  }
+
+  return (
+    (hasMealFocus(recipe, mealFocus) ? 420 : 0) +
+    (MAIN_MEAL_TITLE_PATTERN.test(text) ? 360 : 0) +
+    (hasRecipeType(recipe, "meal") ||
+    hasRecipeType(recipe, "protein") ||
+    hasRecipeType(recipe, "cooked-vegetable")
+      ? 220
+      : 0) -
+    (BREAKFAST_TITLE_PATTERN.test(text) ? 360 : 0) -
+    (LIGHT_MEAL_TITLE_PATTERN.test(text) ? 320 : 0)
+  );
+}
+
+function isAllowedForMealFocus(recipe: FridgeRecipeRecord, mealFocus: string) {
+  const text = recipeText(recipe);
+
+  if (mealFocus === "breakfast") {
+    return !(
+      MAIN_MEAL_TITLE_PATTERN.test(text) &&
+      !BREAKFAST_TITLE_PATTERN.test(text) &&
+      !hasMealFocus(recipe, "breakfast")
+    );
+  }
+
+  if (mealFocus === "lunch" || mealFocus === "dinner") {
+    if (LIGHT_MEAL_TITLE_PATTERN.test(text) && !MAIN_MEAL_TITLE_PATTERN.test(text)) {
+      return false;
+    }
+
+    if (
+      hasMealFocus(recipe, "breakfast") &&
+      !hasMealFocus(recipe, "lunch") &&
+      !hasMealFocus(recipe, "dinner") &&
+      BREAKFAST_TITLE_PATTERN.test(text)
+    ) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+function scoreRecipe(
+  recipe: FridgeRecipeRecord,
+  ingredients: string[],
+  mealFocus: string,
+) {
   const text = recipeText(recipe);
   const title = normalizeToolValue(recipe.title);
-  let score = Math.log10(Math.max(recipe.views, 0) + 10) * 80;
+  let score =
+    Math.log10(Math.max(recipe.views, 0) + 10) * 80 +
+    mealFocusScore(recipe, mealFocus);
 
   ingredients.forEach((ingredient, index) => {
     const weight = index === 0 ? 280 : 130;
@@ -350,7 +480,19 @@ function publicRecipe(recipe: FridgeRecipeRecord, ingredients: string[]): Situat
 
 async function getInitialRecipePage(
   ingredients: string[],
+  mealFocus: string,
 ): Promise<InitialRecipePage> {
+  if (ingredients.length === 0) {
+    return {
+      recipes: [],
+      total: 0,
+      page: 0,
+      pageSize,
+      hasPrevious: false,
+      hasNext: false,
+    };
+  }
+
   const recipes = await db.recipes.findMany({
     where: publishedRecipeAnd([
       { imageUrl: { not: null } },
@@ -369,7 +511,13 @@ async function getInitialRecipePage(
     ],
   });
   const ranked = recipes
-    .sort((left, right) => scoreRecipe(right, ingredients) - scoreRecipe(left, ingredients));
+    .filter((recipe) => hasSelectedIdentityMatch(recipe, ingredients))
+    .filter((recipe) => isAllowedForMealFocus(recipe, mealFocus))
+    .sort(
+      (left, right) =>
+        scoreRecipe(right, ingredients, mealFocus) -
+        scoreRecipe(left, ingredients, mealFocus),
+    );
 
   return {
     recipes: ranked.slice(0, pageSize).map((recipe) => publicRecipe(recipe, ingredients)),
@@ -425,10 +573,11 @@ export default async function FridgeToolPage({
 }) {
   const params = await searchParams;
   const ingredients = parseIngredients(params);
+  const mealFocus = parseMealFocus(params);
   const ingredientLabels = Object.fromEntries(
     ingredients.map((ingredient) => [ingredient, titleCase(ingredient)]),
   );
-  const initialRecipePage = await getInitialRecipePage(ingredients);
+  const initialRecipePage = await getInitialRecipePage(ingredients, mealFocus);
   const schema = [
     webApplicationJsonLd(),
     breadcrumbJsonLd([
@@ -525,6 +674,7 @@ export default async function FridgeToolPage({
             initialIngredients={ingredients}
             initialIngredientLabels={ingredientLabels}
             initialRecipePage={initialRecipePage}
+            initialMealFocus={mealFocus}
           />
         </div>
 
