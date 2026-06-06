@@ -1,4 +1,5 @@
 import type { Prisma } from "@prisma/client";
+import { unstable_cache } from "next/cache";
 
 import {
   foodCompareGoals,
@@ -116,26 +117,26 @@ type CompareRecipe = Prisma.RecipesGetPayload<{ select: typeof recipeSelect }>;
 const mainFoodTypeSlugs = new Set([
   "meal",
   "protein",
-  "cooked-vegetable",
+  "cooked vegetable",
   "grains",
   "snacks",
   "desserts",
-]);
+].map(normalize));
 
 const lowValueRecipeTypeSlugs = new Set([
-  "drink-teas",
-  "drink-infusions",
-  "drink-juices",
-  "drink-coolers-sharbat",
-  "drink-smoothies",
-  "drink-shakes",
-  "drink-lassi-buttermilk",
-  "drink-detox",
-  "drink-hot-sips",
-  "morning-hydration",
+  "drink teas",
+  "drink infusions",
+  "drink juices",
+  "drink coolers sharbat",
+  "drink smoothies",
+  "drink shakes",
+  "drink lassi buttermilk",
+  "drink detox",
+  "drink hot sips",
+  "morning hydration",
   "chutneydips",
   "curdraita",
-]);
+].map(normalize));
 
 const friedSignals = [
   "deep fried",
@@ -496,6 +497,22 @@ function recipeCookingMethodSlugs(recipe: CompareRecipe) {
   return new Set(recipe.recipeCookingMethods.map((item) => normalize(item.cookingMethod.slug)));
 }
 
+function recipeTypeRawSlugs(recipe: CompareRecipe) {
+  return uniqueValues(recipe.recipeRecipeType.map((item) => item.recipeType.slug));
+}
+
+function recipeMealRawSlugs(recipe: CompareRecipe) {
+  return uniqueValues(recipe.recipeMealTime.map((item) => item.mealTime.slug));
+}
+
+function recipeCuisineRawSlugs(recipe: CompareRecipe) {
+  return uniqueValues(recipe.recipeCuisine.map((item) => item.cuisine.slug));
+}
+
+function recipeCookingMethodRawSlugs(recipe: CompareRecipe) {
+  return uniqueValues(recipe.recipeCookingMethods.map((item) => item.cookingMethod.slug));
+}
+
 function setOverlapCount(left: Set<string>, right: Set<string>) {
   let count = 0;
   left.forEach((item) => {
@@ -550,11 +567,27 @@ function relatedFamilyScore(left: Set<string>, right: Set<string>) {
   }, 0);
 }
 
+function competitorFamilySignals(families: Set<string>) {
+  const candidateFamilies = new Set(families);
+
+  relatedFamilyPairs.forEach(([first, second]) => {
+    if (families.has(first)) candidateFamilies.add(second);
+    if (families.has(second)) candidateFamilies.add(first);
+  });
+
+  return uniqueValues(
+    competitorFamilies
+      .filter((family) => candidateFamilies.has(family.id))
+      .flatMap((family) => family.signals)
+      .map(normalize)
+      .filter((signal) => signal.length >= 3),
+  );
+}
+
 function competitorMatchScore(base: CompareRecipe, candidate: CompareRecipe) {
   if (base.id === candidate.id) return -10000;
 
-  const candidateFood = mapFood(candidate);
-  if (!candidateFood) return -10000;
+  if (!isUsefulComparableFood(candidate)) return -10000;
 
   const baseTypes = recipeTypeSlugs(base);
   const candidateTypes = recipeTypeSlugs(candidate);
@@ -927,21 +960,19 @@ function queryRank(recipe: CompareRecipe, query: string) {
 }
 
 function scoreRecipe(recipe: CompareRecipe, query: string) {
-  const food = mapFood(recipe);
-  if (!food) return -10000;
+  if (!isUsefulComparableFood(recipe)) return -10000;
 
   const typeSlugs = recipeTypeSlugs(recipe);
   let score = Math.log10(Math.max(recipe.views, 0) + 10) * 70;
 
   if (typeSlugs.has("meal")) score += 180;
   if (typeSlugs.has("protein")) score += 170;
-  if (typeSlugs.has("cooked-vegetable")) score += 130;
+  if (typeSlugs.has("cooked vegetable")) score += 130;
   if (typeSlugs.has("grains")) score += 60;
   if (typeSlugs.has("snacks")) score -= 35;
-  if (food.protein >= 10) score += 80;
-  if (food.fiber >= 3) score += 50;
-  if (food.calories > 650) score -= 45;
-  if (food.timeMinutes && food.timeMinutes <= 35) score += 35;
+
+  const minutes = totalMinutes(recipe);
+  if (minutes && minutes <= 35) score += 35;
 
   if (query) score += queryRank(recipe, query) * 260;
 
@@ -990,7 +1021,85 @@ async function recipeCandidates(query = "", take = 120) {
   });
 }
 
-export async function fetchFoodCompareSuggestions({
+async function recipeCompetitorCandidates(baseRecipe: CompareRecipe, take = 220) {
+  const familySignals = competitorFamilySignals(recipeFamilies(baseRecipe)).slice(0, 18);
+  const titleSignals = [...recipeTitleTokens(baseRecipe)].slice(0, 8);
+  const typeSlugs = recipeTypeRawSlugs(baseRecipe);
+  const mealSlugs = recipeMealRawSlugs(baseRecipe);
+  const cuisineSlugs = recipeCuisineRawSlugs(baseRecipe);
+  const methodSlugs = recipeCookingMethodRawSlugs(baseRecipe);
+  const categorySlug = baseRecipe.RecipeCategories?.slug;
+  const categoryName = baseRecipe.RecipeCategories?.name;
+  const orConditions: Prisma.RecipesWhereInput[] = [];
+
+  if (categorySlug) orConditions.push({ RecipeCategories: { slug: categorySlug } });
+  if (categoryName) orConditions.push({ RecipeCategories: { name: categoryName } });
+
+  if (typeSlugs.length > 0) {
+    orConditions.push({
+      recipeRecipeType: { some: { recipeType: { slug: { in: typeSlugs } } } },
+    });
+  }
+
+  if (mealSlugs.length > 0) {
+    orConditions.push({
+      recipeMealTime: { some: { mealTime: { slug: { in: mealSlugs } } } },
+    });
+  }
+
+  if (cuisineSlugs.length > 0) {
+    orConditions.push({
+      recipeCuisine: { some: { cuisine: { slug: { in: cuisineSlugs } } } },
+    });
+  }
+
+  if (methodSlugs.length > 0) {
+    orConditions.push({
+      recipeCookingMethods: { some: { cookingMethod: { slug: { in: methodSlugs } } } },
+    });
+  }
+
+  [...familySignals, ...titleSignals].forEach((signal) => {
+    orConditions.push(
+      { title: { contains: signal } },
+      { slug: { contains: slugValue(signal) } },
+    );
+  });
+
+  if (orConditions.length === 0) return recipeCandidates("", Math.min(take, 140));
+
+  const targetedCandidates = await db.recipes.findMany({
+    where: {
+      AND: [
+        publishedRecipeWhere(),
+        { imageUrl: { not: null } },
+        { id: { not: baseRecipe.id } },
+        { OR: orConditions },
+      ],
+    },
+    select: recipeSelect,
+    orderBy: [
+      { views: "desc" },
+      { contentUpdatedAt: "desc" },
+      { updatedAt: "desc" },
+    ],
+    take,
+  });
+
+  if (targetedCandidates.length >= Math.min(24, take)) return targetedCandidates;
+
+  const fallbackCandidates = await recipeCandidates("", Math.min(140, take));
+
+  return Array.from(
+    new Map(
+      [...targetedCandidates, ...fallbackCandidates]
+        .filter((recipe) => recipe.id !== baseRecipe.id)
+        .map((recipe) => [recipe.id, recipe]),
+    ).values(),
+  );
+}
+
+async function fetchFoodCompareSuggestionsUncached({
   query = "",
   contextId,
   limit = 18,
@@ -1014,17 +1123,22 @@ export async function fetchFoodCompareSuggestions({
       .filter((term) => term !== normalizedQuery)
       .map((term) => recipeCandidates(term, 80)),
   ]);
+  const matchedRecipes = Array.from(
+    new Map(
+      [...exactRecipes, ...expandedRecipeLists.flat()].map((recipe) => [recipe.id, recipe]),
+    ).values(),
+  );
   const broadRecipes =
-    normalizedQuery.length >= 3 ? await recipeCandidates("", 900) : [];
+    normalizedQuery.length >= 3 && matchedRecipes.length < safeLimit * 4
+      ? await recipeCandidates("", 220)
+      : [];
   const recipes = Array.from(
     new Map(
-      [...exactRecipes, ...expandedRecipeLists.flat(), ...broadRecipes].map(
-        (recipe) => [recipe.id, recipe],
-      ),
+      [...matchedRecipes, ...broadRecipes].map((recipe) => [recipe.id, recipe]),
     ).values(),
   );
 
-  return recipes
+  const rankedRecipes = recipes
     .filter(isUsefulComparableFood)
     .map((recipe) => ({
       recipe,
@@ -1047,13 +1161,70 @@ export async function fetchFoodCompareSuggestions({
         return right.competitorScore - left.competitorScore;
       }
       return right.score - left.score;
-    })
-    .map((item) => mapSuggestion(item.recipe))
-    .filter((item): item is FoodCompareSuggestion => Boolean(item))
-    .slice(0, safeLimit);
+    });
+
+  const suggestions: FoodCompareSuggestion[] = [];
+
+  for (const item of rankedRecipes) {
+    const suggestion = mapSuggestion(item.recipe);
+    if (!suggestion) continue;
+
+    suggestions.push(suggestion);
+    if (suggestions.length >= safeLimit) break;
+  }
+
+  return suggestions;
 }
 
-export async function fetchFoodCompareCompetitors({
+const getCachedFoodCompareSuggestions = unstable_cache(
+  async (query: string, contextId: string | null, limit: number) =>
+    fetchFoodCompareSuggestionsUncached({ query, contextId, limit }),
+  ["food-compare-suggestions-v2"],
+  { revalidate: 900 },
+);
+
+export async function fetchFoodCompareSuggestions({
+  query = "",
+  contextId,
+  limit = 18,
+}: {
+  query?: string;
+  contextId?: string | null;
+  limit?: number;
+}) {
+  return getCachedFoodCompareSuggestions(
+    normalize(query),
+    contextId ?? null,
+    Math.min(Math.max(limit, 1), 30),
+  );
+}
+
+async function fetchFoodCompareCompetitorsForBase(baseRecipe: CompareRecipe, limit: number) {
+  const safeLimit = Math.min(Math.max(limit, 1), 8);
+  const candidates = await recipeCompetitorCandidates(baseRecipe, 220);
+  const rankedCandidates = candidates
+    .filter(isUsefulComparableFood)
+    .map((recipe) => ({
+      recipe,
+      matchScore: competitorMatchScore(baseRecipe, recipe),
+      reason: competitorMatchReason(baseRecipe, recipe),
+    }))
+    .filter((item) => item.matchScore >= 70)
+    .sort((left, right) => right.matchScore - left.matchScore);
+  const suggestions: Array<FoodCompareSuggestion & { reason: string }> = [];
+
+  for (const item of rankedCandidates) {
+    const suggestion = mapSuggestion(item.recipe);
+    if (!suggestion) continue;
+
+    suggestions.push({ ...suggestion, reason: item.reason });
+    if (suggestions.length >= safeLimit) break;
+  }
+
+  return suggestions;
+}
+
+async function fetchFoodCompareCompetitorsUncached({
   recipeId,
   limit = 4,
 }: {
@@ -1070,26 +1241,27 @@ export async function fetchFoodCompareCompetitors({
     return [];
   }
 
-  const candidates = await recipeCandidates("", 900);
-
-  return candidates
-    .filter(isUsefulComparableFood)
-    .map((recipe) => ({
-      recipe,
-      matchScore: competitorMatchScore(baseRecipe, recipe),
-      reason: competitorMatchReason(baseRecipe, recipe),
-    }))
-    .filter((item) => item.matchScore >= 70)
-    .sort((left, right) => right.matchScore - left.matchScore)
-    .map((item) => {
-      const suggestion = mapSuggestion(item.recipe);
-      return suggestion ? { ...suggestion, reason: item.reason } : null;
-    })
-    .filter((item): item is FoodCompareSuggestion & { reason: string } => Boolean(item))
-    .slice(0, safeLimit);
+  return fetchFoodCompareCompetitorsForBase(baseRecipe, safeLimit);
 }
 
-export async function fetchFoodCompareRecipePrompt(recipeId: string) {
+const getCachedFoodCompareCompetitors = unstable_cache(
+  async (recipeId: string, limit: number) =>
+    fetchFoodCompareCompetitorsUncached({ recipeId, limit }),
+  ["food-compare-competitors-v2"],
+  { revalidate: 1800 },
+);
+
+export async function fetchFoodCompareCompetitors({
+  recipeId,
+  limit = 4,
+}: {
+  recipeId: string;
+  limit?: number;
+}) {
+  return getCachedFoodCompareCompetitors(recipeId, Math.min(Math.max(limit, 1), 8));
+}
+
+async function fetchFoodCompareRecipePromptUncached(recipeId: string) {
   const baseRecipe = await db.recipes.findFirst({
     where: { id: recipeId, AND: [publishedRecipeWhere(), { imageUrl: { not: null } }] },
     select: recipeSelect,
@@ -1100,7 +1272,7 @@ export async function fetchFoodCompareRecipePrompt(recipeId: string) {
   const base = mapSuggestion(baseRecipe);
   if (!base) return null;
 
-  const competitors = await fetchFoodCompareCompetitors({ recipeId, limit: 1 });
+  const competitors = await fetchFoodCompareCompetitorsForBase(baseRecipe, 1);
   const competitor = competitors[0];
 
   if (!competitor) return null;
@@ -1112,7 +1284,17 @@ export async function fetchFoodCompareRecipePrompt(recipeId: string) {
   };
 }
 
-export async function fetchPopularFoodComparePairs() {
+const getCachedFoodCompareRecipePrompt = unstable_cache(
+  async (recipeId: string) => fetchFoodCompareRecipePromptUncached(recipeId),
+  ["food-compare-recipe-prompt-v2"],
+  { revalidate: 1800 },
+);
+
+export async function fetchFoodCompareRecipePrompt(recipeId: string) {
+  return getCachedFoodCompareRecipePrompt(recipeId);
+}
+
+async function fetchPopularFoodComparePairsUncached() {
   const preferredPairs = [
     ["poha", "upma"],
     ["roti", "rice"],
@@ -1155,6 +1337,16 @@ export async function fetchPopularFoodComparePairs() {
   }
 
   return pairs;
+}
+
+const getCachedPopularFoodComparePairs = unstable_cache(
+  async () => fetchPopularFoodComparePairsUncached(),
+  ["food-compare-popular-pairs-v2"],
+  { revalidate: 3600 },
+);
+
+export async function fetchPopularFoodComparePairs() {
+  return getCachedPopularFoodComparePairs();
 }
 
 export async function fetchDefaultCompareFoodIds() {
@@ -1213,19 +1405,21 @@ async function findComparableRecipe(id?: string | null, value?: string | null) {
 
   const recipes = await recipeCandidates(normalizedValue, 80);
 
-  return (
-    recipes
-      .filter(isUsefulComparableFood)
-      .map((recipe) => ({
-        recipe,
-        rank: queryRank(recipe, normalizedValue),
-        score: scoreRecipe(recipe, normalizedValue),
-      }))
-      .filter((item) => item.rank >= 0)
-      .sort((left, right) => right.rank - left.rank || right.score - left.score)
-      .map((item) => item.recipe)
-      .find((recipe) => mapFood(recipe)) ?? null
-  );
+  const rankedRecipes = recipes
+    .filter(isUsefulComparableFood)
+    .map((recipe) => ({
+      recipe,
+      rank: queryRank(recipe, normalizedValue),
+      score: scoreRecipe(recipe, normalizedValue),
+    }))
+    .filter((item) => item.rank >= 0)
+    .sort((left, right) => right.rank - left.rank || right.score - left.score);
+
+  for (const item of rankedRecipes) {
+    if (mapFood(item.recipe)) return item.recipe;
+  }
+
+  return null;
 }
 
 function goalScore(food: FoodCompareFood, goal: FoodCompareGoalId) {

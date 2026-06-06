@@ -12,7 +12,11 @@ export async function GET(req: Request) {
 
     return NextResponse.json(
       { suggestions },
-      { headers: { "Cache-Control": "no-store, max-age=0" } },
+      {
+        headers: {
+          "Cache-Control": "public, max-age=0, s-maxage=300, stale-while-revalidate=900",
+        },
+      },
     );
   } catch (error) {
     console.error("[FOOD_COMPARE_SUGGESTIONS]", error);

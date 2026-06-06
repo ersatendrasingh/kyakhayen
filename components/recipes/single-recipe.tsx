@@ -1,3 +1,5 @@
+import { Suspense } from "react";
+
 import { calculateRecipeNutrition } from "@/lib/calculate-recipe-nutrition";
 
 import BannerCard from "@/components/recipes/banner-card";
@@ -30,6 +32,30 @@ import type { RecipeWithCategory } from "@/types/recipe";
 
 interface SingleRecipeProps {
   recipe: RecipeWithCategory;
+}
+
+type RecipeComparePromptData = Awaited<ReturnType<typeof fetchFoodCompareRecipePrompt>>;
+type RecipeComparePromptVariant = "default" | "nutrition";
+
+async function RecipeComparePromptSlot({
+  promptPromise,
+  variant,
+}: {
+  promptPromise: Promise<RecipeComparePromptData>;
+  variant?: RecipeComparePromptVariant;
+}) {
+  const comparePrompt = await promptPromise;
+
+  if (!comparePrompt) return null;
+
+  return (
+    <RecipeComparePrompt
+      base={comparePrompt.base}
+      competitor={comparePrompt.competitor}
+      reason={comparePrompt.reason}
+      variant={variant}
+    />
+  );
 }
 
 function recipeDescriptionFallback(recipe: RecipeWithCategory) {
@@ -67,11 +93,11 @@ function nutritionJsonLd(totals: ReturnType<typeof calculateRecipeNutrition>["to
 const SingleRecipe = async ({ recipe }: SingleRecipeProps) => {
   if (!recipe) return <RecipeNotFound />;
 
-  const [{ recipeCategories, recipeMealTimes, recipeTypes }, relatedRecipes, comparePrompt] =
+  const comparePromptPromise = fetchFoodCompareRecipePrompt(recipe.id);
+  const [{ recipeCategories, recipeMealTimes, recipeTypes }, relatedRecipes] =
     await Promise.all([
       getRecipeSidebarTaxonomy(),
       getPublicRelatedRecipes(recipe.id),
-      fetchFoodCompareRecipePrompt(recipe.id),
     ]);
 
   const totalMinutes =
@@ -242,22 +268,16 @@ const SingleRecipe = async ({ recipe }: SingleRecipeProps) => {
         <BannerCard recipe={recipe} className="mb-8" />
         <div className="grid items-start gap-7 lg:grid-cols-[minmax(0,1fr)_320px]">
           <div className="min-w-0 space-y-8">
-            {comparePrompt && (
-              <RecipeComparePrompt
-                base={comparePrompt.base}
-                competitor={comparePrompt.competitor}
-                reason={comparePrompt.reason}
-              />
-            )}
+            <Suspense fallback={null}>
+              <RecipeComparePromptSlot promptPromise={comparePromptPromise} />
+            </Suspense>
             <RecipeDetails recipe={recipe} />
-            {comparePrompt && (
-              <RecipeComparePrompt
-                base={comparePrompt.base}
-                competitor={comparePrompt.competitor}
-                reason={comparePrompt.reason}
+            <Suspense fallback={null}>
+              <RecipeComparePromptSlot
+                promptPromise={comparePromptPromise}
                 variant="nutrition"
               />
-            )}
+            </Suspense>
             <RecipeReactions recipeId={recipe.id} />
             <RecipeReviewsSection
               recipeId={recipe.id}
