@@ -32,7 +32,11 @@ export type SituationRecipe = {
   } | null;
   recipeNutrient?: Array<{ nutrient: { title: string } }> | null;
   recipeIngredients?: Array<{
-    ingredient: { name: string; slug?: string | null };
+    ingredient: {
+      name: string;
+      slug?: string | null;
+      IngredientCategories?: { slug: string } | null;
+    };
   }> | null;
   recipeMealTime?: Array<{ mealTime: { title: string; slug: string } }> | null;
   recipeCuisine?: Array<{

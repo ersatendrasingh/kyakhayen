@@ -8,6 +8,7 @@ import {
   Search,
   Share2,
 } from "lucide-react";
+import dynamic from "next/dynamic";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
@@ -21,11 +22,9 @@ import {
 } from "@/components/sections/situation-tools/constants";
 import {
   buildResultCopy,
-  formatLabel,
   guestPlanLabel,
   listLabels,
   mealFocusLabel,
-  normalizeValue,
   readableList,
   recipeToSuggestion,
 } from "@/components/sections/situation-tools/recipe-formatters";
@@ -38,11 +37,9 @@ import {
   DailyMenuControls,
   FoodTypeControls,
   GuestPlannerControls,
-  IngredientsToolControls,
   MomsModeControls,
 } from "@/components/sections/situation-tools/tool-control-panels";
 import type {
-  IngredientSuggestion,
   InitialRecipePage,
   RecipePagination,
   RecipeSuggestion,
@@ -79,6 +76,19 @@ const situationImageMap = {
   },
 } satisfies Record<SituationKey, { src: string; alt: string; label: string }>;
 
+const homeInitialIngredients = ["paneer"];
+const homeInitialIngredientLabels = { paneer: "Paneer" };
+const HomeFridgeToolExperience = dynamic(
+  () => import("@/components/sections/situation-tools/fridge-tool-experience"),
+  {
+    loading: () => (
+      <div className="rounded-[1.35rem] border border-[#ead9c3] bg-[#fffaf1] p-6 text-sm font-semibold text-[#6d5847] shadow-[0_28px_80px_-44px_rgba(63,38,21,0.58)] dark:border-white/10 dark:bg-white/[0.04] dark:text-white/70">
+        Loading fridge finder...
+      </div>
+    ),
+  },
+);
+
 export default function HomeSituationTools({
   initialRecipePage,
 }: {
@@ -86,25 +96,16 @@ export default function HomeSituationTools({
 }) {
   const initialSuggestionContext = {
     activeKey: "ingredients" as SituationKey,
-    selectedIngredients: ["paneer"],
-    ingredientLabels: { paneer: "Paneer" },
+    selectedIngredients: homeInitialIngredients,
+    ingredientLabels: homeInitialIngredientLabels,
     mealFocus: "full-day",
     guestCount: 5,
     guestPlan: "full-meal",
     budget: 150,
   };
   const [activeKey, setActiveKey] = useState<SituationKey>("ingredients");
-  const [selectedIngredients, setSelectedIngredients] = useState<string[]>(["paneer"]);
-  const [ingredientLabels, setIngredientLabels] = useState<Record<string, string>>({
-    paneer: "Paneer",
-  });
-  const [ingredientInput, setIngredientInput] = useState("");
-  const [ingredientSuggestions, setIngredientSuggestions] = useState<
-    IngredientSuggestion[]
-  >([]);
-  const [isIngredientSuggestionLoading, setIsIngredientSuggestionLoading] =
-    useState(false);
-  const [isIngredientPickerOpen, setIsIngredientPickerOpen] = useState(false);
+  const selectedIngredients = homeInitialIngredients;
+  const ingredientLabels = homeInitialIngredientLabels;
   const [mealFocus, setMealFocus] = useState("full-day");
   const [guestCount, setGuestCount] = useState(5);
   const [guestPlan, setGuestPlan] = useState("full-meal");
@@ -175,70 +176,9 @@ export default function HomeSituationTools({
     return () => window.clearInterval(intervalId);
   }, []);
 
-  const addIngredientValue = (value: string, label?: string) => {
-    const normalized = normalizeValue(value);
-
-    if (!normalized) return;
-
-    setSelectedIngredients((current) =>
-      current.includes(normalized) ? current : [...current, normalized],
-    );
-    setIngredientLabels((current) => ({
-      ...current,
-      [normalized]: label || formatLabel(normalized, current),
-    }));
-    setIngredientInput("");
-    resetRecipePage();
-  };
-
-  const removeIngredient = (value: string) => {
-    setSelectedIngredients((current) => current.filter((item) => item !== value));
-    resetRecipePage();
-  };
-
   useEffect(() => {
-    const controller = new AbortController();
-    const query = ingredientInput.trim();
+    if (activeKey === "ingredients") return;
 
-    const timeoutId = window.setTimeout(async () => {
-      setIsIngredientSuggestionLoading(true);
-
-      try {
-        const params = new URLSearchParams();
-        if (query) params.set("q", query);
-        params.set("limit", "24");
-
-        const response = await fetch(`/api/ingredients/suggestions?${params}`, {
-          cache: "no-store",
-          headers: { "Cache-Control": "no-cache", Pragma: "no-cache" },
-          signal: controller.signal,
-        });
-
-        if (!response.ok) throw new Error("Failed to load ingredients");
-
-        const payload = (await response.json()) as {
-          suggestions?: IngredientSuggestion[];
-        };
-
-        setIngredientSuggestions(payload.suggestions ?? []);
-      } catch {
-        if (!controller.signal.aborted) {
-          setIngredientSuggestions([]);
-        }
-      } finally {
-        if (!controller.signal.aborted) {
-          setIsIngredientSuggestionLoading(false);
-        }
-      }
-    }, query ? 160 : 0);
-
-    return () => {
-      controller.abort();
-      window.clearTimeout(timeoutId);
-    };
-  }, [ingredientInput]);
-
-  useEffect(() => {
     const controller = new AbortController();
     const params = new URLSearchParams();
 
@@ -246,26 +186,6 @@ export default function HomeSituationTools({
     params.set("pageSize", String(recipePageSize));
     params.set("page", String(recipePage));
     params.set("foodType", foodType);
-
-    if (activeKey === "ingredients") {
-      if (selectedIngredients.length === 0) {
-        const timeoutId = window.setTimeout(() => {
-          setRecipeSuggestions([]);
-          setRecipePagination(emptyPagination);
-          setIsRecipeLoading(false);
-          setRecipeError(false);
-        }, 0);
-
-        return () => {
-          controller.abort();
-          window.clearTimeout(timeoutId);
-        };
-      }
-
-      selectedIngredients.forEach((ingredient) => {
-        params.append("ingredient", ingredient);
-      });
-    }
 
     if (activeKey === "daily") params.set("mealFocus", mealFocus);
     if (activeKey === "guests") {
@@ -307,35 +227,15 @@ export default function HomeSituationTools({
         const mappedSuggestions = (payload.recipes ?? [])
           .map((recipe) => recipeToSuggestion(recipe, suggestionContext))
           .filter((recipe): recipe is RecipeSuggestion => Boolean(recipe));
-        const shouldKeepInitialPaneer =
-          activeKey === "ingredients" &&
-          recipePage === 0 &&
-          foodType === "veg" &&
-          selectedIngredients.length === 1 &&
-          selectedIngredients[0] === "paneer" &&
-          mappedSuggestions.length === 0 &&
-          (initialRecipePage?.recipes.length ?? 0) > 0;
 
-        if (!shouldKeepInitialPaneer) {
-          setRecipeSuggestions(mappedSuggestions);
-        }
-        setRecipePagination(
-          shouldKeepInitialPaneer && initialRecipePage
-            ? {
-                total: initialRecipePage.total,
-                page: initialRecipePage.page,
-                pageSize: initialRecipePage.pageSize,
-                hasNext: initialRecipePage.hasNext,
-                hasPrevious: initialRecipePage.hasPrevious,
-              }
-            : {
-                total: payload.total ?? 0,
-                page: payload.page ?? recipePage,
-                pageSize: payload.pageSize ?? recipePageSize,
-                hasNext: Boolean(payload.hasNext),
-                hasPrevious: Boolean(payload.hasPrevious),
-              },
-        );
+        setRecipeSuggestions(mappedSuggestions);
+        setRecipePagination({
+          total: payload.total ?? 0,
+          page: payload.page ?? recipePage,
+          pageSize: payload.pageSize ?? recipePageSize,
+          hasNext: Boolean(payload.hasNext),
+          hasPrevious: Boolean(payload.hasPrevious),
+        });
       } catch {
         if (!controller.signal.aborted) {
           setRecipeSuggestions([]);
@@ -494,6 +394,18 @@ export default function HomeSituationTools({
             </div>
           </div>
 
+          {activeKey === "ingredients" ? (
+            <div className="bg-[linear-gradient(145deg,#fff9ef,#fffdf8)] p-3 dark:bg-[linear-gradient(145deg,rgba(255,255,255,0.055),rgba(255,255,255,0.025))] sm:p-4 lg:p-5">
+              <HomeFridgeToolExperience
+                initialIngredients={homeInitialIngredients}
+                initialIngredientLabels={homeInitialIngredientLabels}
+                initialRecipePage={initialRecipePage}
+                initialMealFocus="full-day"
+                syncUrl={false}
+                leftPanelVisual={situationImageMap.ingredients}
+              />
+            </div>
+          ) : (
           <div className="grid min-w-0 gap-0 lg:grid-cols-[0.82fr_1.18fr]">
             <div className="relative z-30 min-w-0 border-b border-[#ead9c3] bg-[#fffdf8]/64 p-4 dark:border-white/10 dark:bg-white/[0.03] sm:p-5 lg:border-b-0 lg:border-r">
               <div className="mb-4">
@@ -509,21 +421,6 @@ export default function HomeSituationTools({
               </div>
 
               <div className="space-y-4 rounded-lg border border-[#ead9c3] bg-white p-3 dark:border-white/10 dark:bg-white/[0.045] sm:p-4">
-                {activeKey === "ingredients" && (
-                  <IngredientsToolControls
-                    ingredientInput={ingredientInput}
-                    setIngredientInput={setIngredientInput}
-                    selectedIngredients={selectedIngredients}
-                    ingredientLabels={ingredientLabels}
-                    ingredientSuggestions={ingredientSuggestions}
-                    isIngredientSuggestionLoading={isIngredientSuggestionLoading}
-                    isIngredientPickerOpen={isIngredientPickerOpen}
-                    setIsIngredientPickerOpen={setIsIngredientPickerOpen}
-                    addIngredientValue={addIngredientValue}
-                    removeIngredient={removeIngredient}
-                  />
-                )}
-
                 {activeKey === "daily" && (
                   <DailyMenuControls
                     mealFocus={mealFocus}
@@ -688,6 +585,7 @@ export default function HomeSituationTools({
               </div>
             </div>
           </div>
+          )}
         </div>
       </Container>
     </section>

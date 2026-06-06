@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 
 import { emptyPagination, recipePageSize } from "@/components/sections/situation-tools/constants";
@@ -47,6 +47,12 @@ type FridgeToolExperienceProps = {
   initialIngredientLabels: Record<string, string>;
   initialRecipePage?: InitialRecipePage;
   initialMealFocus?: string;
+  syncUrl?: boolean;
+  leftPanelVisual?: {
+    src: string;
+    alt: string;
+    label: string;
+  };
 };
 
 const foodTypes = [
@@ -141,9 +147,14 @@ export default function FridgeToolExperience({
   initialIngredientLabels,
   initialRecipePage,
   initialMealFocus,
+  syncUrl = true,
+  leftPanelVisual,
 }: FridgeToolExperienceProps) {
   const router = useRouter();
-  const initialResolvedMealFocus = initialMealFocus || defaultMealFocus();
+  const [initialResolvedMealFocus] = useState(
+    () => initialMealFocus || defaultMealFocus(),
+  );
+  const skippedInitialRecipeFetchRef = useRef(false);
   const [selectedIngredients, setSelectedIngredients] = useState(initialIngredients);
   const [ingredientLabels, setIngredientLabels] = useState(initialIngredientLabels);
   const [ingredientInput, setIngredientInput] = useState("");
@@ -194,12 +205,17 @@ export default function FridgeToolExperience({
   const foodTypeLabel = foodTypes.find((item) => item.id === foodType)?.label ?? "Veg";
   const mealFocusLabel =
     mealFocusOptions.find((item) => item.id === mealFocus)?.label ?? "Dinner";
+  const hasSelectedIngredients = selectedIngredients.length > 0;
+  const hasNoExactMatches =
+    hasSelectedIngredients && !recipeError && recipePagination.total === 0;
   const resultQuestion =
-    selectedIngredients.length > 0
-      ? `${selectedIngredientText} se kya banaye?`
-      : "Ghar ke ingredients se kya banaye?";
+    hasSelectedIngredients
+      ? `What can you cook with ${selectedIngredientText}?`
+      : "What can you cook with what is at home?";
   const resultHeading =
-    selectedIngredients.length > 0
+    hasNoExactMatches
+      ? `No exact recipes found with only ${selectedIngredientText}.`
+      : hasSelectedIngredients
       ? `You can cook ${recipePagination.total} ${recipeWord} with ${selectedIngredientText}.`
       : "Add ingredients from your kitchen.";
   const totalRecipePages = Math.max(
@@ -209,7 +225,9 @@ export default function FridgeToolExperience({
   const pageLabel =
     recipePagination.total > 0
       ? `Page ${recipePagination.page + 1} of ${totalRecipePages}`
-      : "Start searching";
+      : hasSelectedIngredients
+        ? "No exact matches"
+        : "Start searching";
   const canGoPrevious = recipePagination.hasPrevious && !isRecipeLoading;
   const canGoNext = recipePagination.hasNext && !isRecipeLoading;
 
@@ -260,6 +278,8 @@ export default function FridgeToolExperience({
   };
 
   useEffect(() => {
+    if (!syncUrl) return;
+
     const currentIngredients = currentUrlIngredients();
     const currentMealFocus = currentUrlMealFocus();
 
@@ -271,12 +291,16 @@ export default function FridgeToolExperience({
     }
 
     router.replace(buildToolUrl(selectedIngredients, mealFocus), { scroll: false });
-  }, [mealFocus, router, selectedIngredients]);
+  }, [mealFocus, router, selectedIngredients, syncUrl]);
 
   useEffect(() => {
-    const controller = new AbortController();
     const query = ingredientInput.trim();
 
+    if (!query && !isIngredientPickerOpen) {
+      return;
+    }
+
+    const controller = new AbortController();
     const timeoutId = window.setTimeout(async () => {
       setIsIngredientSuggestionLoading(true);
 
@@ -309,7 +333,7 @@ export default function FridgeToolExperience({
       controller.abort();
       window.clearTimeout(timeoutId);
     };
-  }, [ingredientInput]);
+  }, [ingredientInput, isIngredientPickerOpen]);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -342,6 +366,25 @@ export default function FridgeToolExperience({
     primarySelectedIngredients.forEach((ingredient) => {
       params.append("ingredient", ingredient);
     });
+
+    const initialPrimaryIngredients = filterPrimaryIngredientValues(
+      initialIngredients,
+      10,
+    );
+    const canUseInitialRecipePage =
+      initialRecipePage &&
+      !skippedInitialRecipeFetchRef.current &&
+      recipePage === initialRecipePage.page &&
+      foodType === "veg" &&
+      mealFocus === initialResolvedMealFocus &&
+      areSameIngredients(primarySelectedIngredients, initialPrimaryIngredients);
+
+    if (canUseInitialRecipePage) {
+      skippedInitialRecipeFetchRef.current = true;
+      setRecipeError(false);
+      setIsRecipeLoading(false);
+      return;
+    }
 
     const fetchRecipes = async () => {
       setIsRecipeLoading(true);
@@ -400,7 +443,16 @@ export default function FridgeToolExperience({
     void fetchRecipes();
 
     return () => controller.abort();
-  }, [foodType, ingredientLabels, mealFocus, recipePage, selectedIngredients]);
+  }, [
+    foodType,
+    ingredientLabels,
+    initialIngredients,
+    initialRecipePage,
+    initialResolvedMealFocus,
+    mealFocus,
+    recipePage,
+    selectedIngredients,
+  ]);
 
   const handleShare = async () => {
     setShareStatus("Sharing");
@@ -582,6 +634,29 @@ export default function FridgeToolExperience({
             </div>
           </div>
 
+          {leftPanelVisual && (
+            <div className="mt-4 overflow-hidden rounded-[1rem] border border-[#ead9c3] bg-[#fff4df] shadow-sm dark:border-white/10 dark:bg-white/[0.045]">
+              <div className="relative h-52 sm:h-60 lg:h-64">
+                <Image
+                  src={leftPanelVisual.src}
+                  alt={leftPanelVisual.alt}
+                  fill
+                  sizes="(min-width: 1024px) 34vw, 100vw"
+                  className="object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#201713]/62 via-transparent to-transparent" />
+                <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between gap-3">
+                  <span className="rounded-full bg-[#201713]/78 px-3 py-1.5 text-xs font-semibold text-[#f2cf8b] backdrop-blur">
+                    {leftPanelVisual.label}
+                  </span>
+                  <span className="hidden rounded-full bg-white/88 px-3 py-1.5 text-xs font-semibold text-[#49362a] shadow-sm sm:inline-flex">
+                    Ingredient finder
+                  </span>
+                </div>
+              </div>
+            </div>
+          )}
+
           <div className="mt-4 flex flex-wrap gap-2">
             <span className="rounded-md bg-[#f1e4cf] px-3 py-2 text-xs font-semibold text-[#6c513d] dark:bg-white/10 dark:text-white/72">
               {selectedIngredients.length} selected
@@ -663,7 +738,7 @@ export default function FridgeToolExperience({
                   <div className="absolute inset-y-0 right-0 w-1.5 bg-[#2f7d4f]" />
                   <div className="min-w-0">
                     <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#2f7d4f] dark:text-emerald-200">
-                      Aaj kya banaye?
+                      What can you cook?
                     </p>
                     <h2 className="mt-2 text-2xl font-semibold leading-tight text-[#1f2e22] dark:text-white sm:text-3xl">
                       {resultQuestion}
@@ -766,19 +841,23 @@ export default function FridgeToolExperience({
           ) : bestSuggestion ? null : (
             <div className="rounded-lg border border-[#ead9c3] bg-white px-4 py-10 text-center dark:border-white/10 dark:bg-white/[0.04]">
               <p className="font-semibold text-[#2f241d] dark:text-white">
-                Add a main ingredient to see recipe ideas.
+                {hasSelectedIngredients
+                  ? `No exact recipes found with only ${selectedIngredientText}.`
+                  : "Add a main ingredient to see recipe ideas."}
               </p>
               <p className="mt-2 text-sm text-[#806c5d] dark:text-white/64">
-                Try lauki, turai, aloo, arbi, paneer, rice, dal, curd, spinach,
-                or cauliflower.
+                {hasSelectedIngredients
+                  ? "Add one more fridge ingredient you actually have, then search again. Capsicum, cabbage, cauliflower, curd, rice, or dal can help only when they are really available."
+                  : "Try lauki, turai, aloo, arbi, paneer, rice, dal, curd, spinach, or cauliflower."}
               </p>
             </div>
           )}
 
           <div className="mt-4 grid gap-3 rounded-lg border border-[#ead9c3] bg-[#f5ead8] p-3 dark:border-white/10 dark:bg-white/[0.06] sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
             <p className="min-w-0 text-sm font-semibold leading-6 text-[#4b3a2e] dark:text-white/78">
-              Start with a real fridge ingredient. Add onion, tomato, curd, or
-              rice second only when it is actually available.
+              Add another ingredient only when it is really available at home.
+              Recipes that need extra main vegetables stay hidden until you
+              select them.
             </p>
             <div className="grid grid-cols-2 gap-2 sm:flex sm:shrink-0">
               <button

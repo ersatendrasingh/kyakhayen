@@ -19,6 +19,9 @@ import type {
 import { db } from "@/lib/db";
 import {
   filterPrimaryIngredientValues,
+  isExtraPrimaryIngredientValue,
+  isSupportingPrimaryIngredientValue,
+  matchesSelectedPrimaryIngredient,
   primaryIngredientSearchTerms,
 } from "@/lib/primary-ingredients";
 import { publishedRecipeAnd } from "@/lib/recipe-publication";
@@ -42,6 +45,40 @@ const pageTitle = "Smart Recipe Finder";
 const pageDescription =
   "Use Smart Recipe Finder to search what you can cook with ingredients at home. Add bottle gourd, potato, onion, rice, lentils, spinach, cauliflower, curd, or leftovers and open matching Indian recipes.";
 const pageSize = 7;
+const BREAKFAST_RECIPE_TYPE_SLUGS = new Set(["meal", "grains", "protein", "snacks"]);
+const LUNCH_DINNER_RECIPE_TYPE_SLUGS = new Set([
+  "meal",
+  "protein",
+  "cooked-vegetable",
+]);
+const BREAKFAST_BLOCKED_TYPE_SLUGS = new Set([
+  "cooked-vegetable",
+  "vegetable-salad",
+  "soup",
+  "chutneydips",
+  "curdraita",
+  "desserts",
+]);
+const LIGHT_RECIPE_TYPE_SLUGS = new Set([
+  "snacks",
+  "soup",
+  "vegetable-salad",
+  "chutneydips",
+  "curdraita",
+  "desserts",
+]);
+const SUPPORT_ONLY_BLOCKED_TYPE_SLUGS = new Set([
+  "grains",
+  "meal",
+  "protein",
+  "snacks",
+]);
+const SUPPORT_ONLY_ALLOWED_TYPE_SLUGS = [
+  "vegetable-salad",
+  "soup",
+  "chutneydips",
+  "curdraita",
+] as const;
 const BREAKFAST_TITLE_PATTERN =
   /\b(breakfast|cheela|chila|oats|poha|upma|idli|dosa|uttapam|sandwich|toast|pancake)\b/;
 const MAIN_MEAL_TITLE_PATTERN =
@@ -177,7 +214,15 @@ const fridgeRecipeSelect = {
     take: 1,
   },
   recipeIngredients: {
-    select: { ingredient: { select: { name: true, slug: true } } },
+    select: {
+      ingredient: {
+        select: {
+          name: true,
+          slug: true,
+          IngredientCategories: { select: { slug: true } },
+        },
+      },
+    },
     take: 32,
   },
   recipeMealTime: {
@@ -201,6 +246,7 @@ const fridgeRecipeSelect = {
 type FridgeRecipeRecord = Prisma.RecipesGetPayload<{
   select: typeof fridgeRecipeSelect;
 }>;
+type FridgeRecipeIngredientRecord = FridgeRecipeRecord["recipeIngredients"][number];
 
 export const revalidate = 900;
 
@@ -242,6 +288,10 @@ function normalizeToolValue(value: string) {
 
 function slugValue(value: string) {
   return normalizeToolValue(value).replace(/\s+/g, "-");
+}
+
+function normalizedSlug(value: string) {
+  return slugValue(value);
 }
 
 function titleCase(value: string) {
@@ -301,26 +351,25 @@ function parseMealFocus(params: Awaited<ToolSearchParams>) {
   return defaultMealFocus();
 }
 
-function ingredientWhere(value: string): Prisma.RecipesWhereInput[] {
-  const normalized = normalizeToolValue(value);
+function ingredientWhere(value: string): Prisma.RecipesWhereInput {
   const slug = slugValue(value);
 
-  return [
-    { title: { contains: normalized } },
-    { slug: { contains: slug } },
-    {
-      recipeIngredients: {
-        some: {
-          ingredient: {
-            OR: [
-              { name: { contains: normalized } },
-              { slug: { contains: slug } },
-            ],
-          },
+  return {
+    recipeIngredients: {
+      some: {
+        ingredient: {
+          OR: [
+            { name: { contains: value } },
+            { slug: { contains: slug } },
+          ],
         },
       },
     },
-  ];
+  };
+}
+
+function ingredientSearchWhere(value: string) {
+  return selectedSearchTerms(value).map((term) => ingredientWhere(term));
 }
 
 function recipeText(recipe: FridgeRecipeRecord) {
@@ -340,31 +389,91 @@ function recipeText(recipe: FridgeRecipeRecord) {
   );
 }
 
-function recipeIdentityText(recipe: FridgeRecipeRecord) {
-  return normalizeToolValue(`${recipe.title} ${recipe.slug} ${recipe.metaSlug || ""}`);
-}
-
 function selectedSearchTerms(value: string) {
   return primaryIngredientSearchTerms(value).map(normalizeToolValue).filter(Boolean);
 }
 
-function hasSelectedIdentityMatch(recipe: FridgeRecipeRecord, ingredients: string[]) {
-  const identityText = recipeIdentityText(recipe);
+function recipeIngredientIdentity(recipeIngredient: FridgeRecipeIngredientRecord) {
+  return `${recipeIngredient.ingredient.name} ${
+    recipeIngredient.ingredient.slug ?? ""
+  }`;
+}
 
-  return ingredients.some((ingredient) =>
-    selectedSearchTerms(ingredient).some((term) => identityText.includes(term)),
+function hasSelectedIngredientMatch(recipe: FridgeRecipeRecord, ingredients: string[]) {
+  return recipe.recipeIngredients.some((recipeIngredient) =>
+    matchesSelectedPrimaryIngredient(recipeIngredientIdentity(recipeIngredient), ingredients),
   );
+}
+
+function hasNoExtraPrimaryIngredientMatch(
+  recipe: FridgeRecipeRecord,
+  ingredients: string[],
+) {
+  return recipe.recipeIngredients.every((recipeIngredient) => {
+    const categorySlug = recipeIngredient.ingredient.IngredientCategories?.slug;
+
+    return !isExtraPrimaryIngredientValue(
+      recipeIngredientIdentity(recipeIngredient),
+      ingredients,
+      categorySlug,
+    );
+  });
+}
+
+function hasOnlySupportingSelection(ingredients: string[]) {
+  return (
+    ingredients.length > 0 &&
+    ingredients.every((ingredient) => isSupportingPrimaryIngredientValue(ingredient))
+  );
+}
+
+function isAllowedForSelectedIngredientStrength(
+  recipe: FridgeRecipeRecord,
+  ingredients: string[],
+) {
+  if (!hasOnlySupportingSelection(ingredients)) return true;
+
+  return !hasAnyRecipeType(recipe, SUPPORT_ONLY_BLOCKED_TYPE_SLUGS);
 }
 
 function hasMealFocus(recipe: FridgeRecipeRecord, focus: string) {
   return recipe.recipeMealTime.some(
-    (item) => normalizeToolValue(item.mealTime.slug) === focus,
+    (item) => normalizedSlug(item.mealTime.slug) === normalizedSlug(focus),
   );
 }
 
 function hasRecipeType(recipe: FridgeRecipeRecord, slug: string) {
   return recipe.recipeRecipeType.some(
-    (item) => normalizeToolValue(item.recipeType.slug) === slug,
+    (item) => normalizedSlug(item.recipeType.slug) === normalizedSlug(slug),
+  );
+}
+
+function hasAnyRecipeType(recipe: FridgeRecipeRecord, slugs: Set<string>) {
+  return recipe.recipeRecipeType.some((item) =>
+    slugs.has(normalizedSlug(item.recipeType.slug)),
+  );
+}
+
+function isLightRecipe(recipe: FridgeRecipeRecord) {
+  return hasAnyRecipeType(recipe, LIGHT_RECIPE_TYPE_SLUGS);
+}
+
+function isSnackRecipe(recipe: FridgeRecipeRecord) {
+  return hasRecipeType(recipe, "snacks");
+}
+
+function hasLunchOrDinnerFocus(recipe: FridgeRecipeRecord) {
+  return hasMealFocus(recipe, "lunch") || hasMealFocus(recipe, "dinner");
+}
+
+function isLunchDinnerMainMeal(recipe: FridgeRecipeRecord, text: string) {
+  return (
+    hasLunchOrDinnerFocus(recipe) &&
+    hasAnyRecipeType(recipe, LUNCH_DINNER_RECIPE_TYPE_SLUGS) &&
+    !isSnackRecipe(recipe) &&
+    !isLightRecipe(recipe) &&
+    !BREAKFAST_TITLE_PATTERN.test(text) &&
+    !(LIGHT_MEAL_TITLE_PATTERN.test(text) && !MAIN_MEAL_TITLE_PATTERN.test(text))
   );
 }
 
@@ -401,26 +510,17 @@ function isAllowedForMealFocus(recipe: FridgeRecipeRecord, mealFocus: string) {
   const text = recipeText(recipe);
 
   if (mealFocus === "breakfast") {
-    return !(
-      MAIN_MEAL_TITLE_PATTERN.test(text) &&
-      !BREAKFAST_TITLE_PATTERN.test(text) &&
-      !hasMealFocus(recipe, "breakfast")
+    return (
+      hasMealFocus(recipe, "breakfast") &&
+      hasAnyRecipeType(recipe, BREAKFAST_RECIPE_TYPE_SLUGS) &&
+      !hasAnyRecipeType(recipe, BREAKFAST_BLOCKED_TYPE_SLUGS) &&
+      !LIGHT_MEAL_TITLE_PATTERN.test(text) &&
+      (!MAIN_MEAL_TITLE_PATTERN.test(text) || BREAKFAST_TITLE_PATTERN.test(text))
     );
   }
 
   if (mealFocus === "lunch" || mealFocus === "dinner") {
-    if (LIGHT_MEAL_TITLE_PATTERN.test(text) && !MAIN_MEAL_TITLE_PATTERN.test(text)) {
-      return false;
-    }
-
-    if (
-      hasMealFocus(recipe, "breakfast") &&
-      !hasMealFocus(recipe, "lunch") &&
-      !hasMealFocus(recipe, "dinner") &&
-      BREAKFAST_TITLE_PATTERN.test(text)
-    ) {
-      return false;
-    }
+    return isLunchDinnerMainMeal(recipe, text);
   }
 
   return true;
@@ -501,7 +601,20 @@ async function getInitialRecipePage(
           OR: [{ slug: { in: ["veg", "vegan"] } }, { name: { in: ["Veg", "Vegan"] } }],
         },
       },
-      { OR: ingredients.flatMap(ingredientWhere) },
+      { OR: ingredients.flatMap(ingredientSearchWhere) },
+      ...(hasOnlySupportingSelection(ingredients)
+        ? [
+            {
+              recipeRecipeType: {
+                some: {
+                  recipeType: {
+                    slug: { in: [...SUPPORT_ONLY_ALLOWED_TYPE_SLUGS] },
+                  },
+                },
+              },
+            } satisfies Prisma.RecipesWhereInput,
+          ]
+        : []),
     ]),
     select: fridgeRecipeSelect,
     orderBy: [
@@ -511,7 +624,9 @@ async function getInitialRecipePage(
     ],
   });
   const ranked = recipes
-    .filter((recipe) => hasSelectedIdentityMatch(recipe, ingredients))
+    .filter((recipe) => hasSelectedIngredientMatch(recipe, ingredients))
+    .filter((recipe) => hasNoExtraPrimaryIngredientMatch(recipe, ingredients))
+    .filter((recipe) => isAllowedForSelectedIngredientStrength(recipe, ingredients))
     .filter((recipe) => isAllowedForMealFocus(recipe, mealFocus))
     .sort(
       (left, right) =>

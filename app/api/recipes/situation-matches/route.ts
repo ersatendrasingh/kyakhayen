@@ -4,6 +4,9 @@ import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import {
   filterPrimaryIngredientValues,
+  isExtraPrimaryIngredientValue,
+  isSupportingPrimaryIngredientValue,
+  matchesSelectedPrimaryIngredient,
   primaryIngredientSearchTerms,
 } from "@/lib/primary-ingredients";
 import { publishedRecipeWhere } from "@/lib/recipe-publication";
@@ -49,6 +52,18 @@ const LIGHT_RECIPE_TYPE_SLUGS = new Set([
   "desserts",
   ...UTILITY_RECIPE_TYPE_SLUGS,
 ]);
+const SUPPORT_ONLY_BLOCKED_TYPE_SLUGS = new Set([
+  "grains",
+  "meal",
+  "protein",
+  "snacks",
+]);
+const SUPPORT_ONLY_ALLOWED_TYPE_SLUGS = [
+  "vegetable-salad",
+  "soup",
+  "chutneydips",
+  "curdraita",
+] as const;
 const GUEST_AVOID_TYPE_SLUGS = new Set([
   "grains",
   "soup",
@@ -97,6 +112,7 @@ const recipeSelect = {
           slug: true,
           marketPriceInr: true,
           marketPriceBasisGrams: true,
+          IngredientCategories: { select: { slug: true } },
           IngredientUnitMeasurements: {
             select: { unitId: true, values: true },
           },
@@ -145,6 +161,10 @@ function slugValue(value: string) {
   return normalize(value).replace(/\s+/g, "-");
 }
 
+function normalizedSlug(value: string) {
+  return slugValue(value);
+}
+
 function titleCase(value: string) {
   return value
     .split(" ")
@@ -161,10 +181,6 @@ function tokens(value: string) {
 
 function recipeIngredientNames(recipe: RecipeRecord) {
   return recipe.recipeIngredients.map((item) => normalize(item.ingredient.name));
-}
-
-function recipeIdentityText(recipe: RecipeRecord) {
-  return normalize(`${recipe.title} ${recipe.slug} ${recipe.metaSlug || ""}`);
 }
 
 function selectedSearchTerms(value: string) {
@@ -287,20 +303,22 @@ function recipeDiscoveryText(recipe: RecipeRecord) {
 
 function recipeTypeSlugSet(recipe: RecipeRecord) {
   return new Set(
-    recipe.recipeRecipeType.map((item) => normalize(item.recipeType.slug)),
+    recipe.recipeRecipeType.map((item) => normalizedSlug(item.recipeType.slug)),
   );
 }
 
 function recipeMealSlugSet(recipe: RecipeRecord) {
-  return new Set(recipe.recipeMealTime.map((item) => normalize(item.mealTime.slug)));
+  return new Set(recipe.recipeMealTime.map((item) => normalizedSlug(item.mealTime.slug)));
 }
 
 function hasAnyType(recipe: RecipeRecord, slugs: Set<string>) {
-  return recipe.recipeRecipeType.some((item) => slugs.has(normalize(item.recipeType.slug)));
+  return recipe.recipeRecipeType.some((item) =>
+    slugs.has(normalizedSlug(item.recipeType.slug)),
+  );
 }
 
 function hasTypeSlug(recipe: RecipeRecord, slug: string) {
-  return recipeTypeSlugSet(recipe).has(slug);
+  return recipeTypeSlugSet(recipe).has(normalizedSlug(slug));
 }
 
 function mainMealScore(recipe: RecipeRecord) {
@@ -427,36 +445,78 @@ function foodTypeWhere(foodType: string): Prisma.RecipesWhereInput {
   return {};
 }
 
-function textMatchWhere(value: string): Prisma.RecipesWhereInput[] {
-  const normalized = normalize(value);
-  const slug = slugValue(value);
+function ingredientSearchWhere(value: string) {
+  return selectedSearchTerms(value).map((term) => {
+    const slug = slugValue(term);
 
-  return [
-    { title: { contains: normalized } },
-    { slug: { contains: slug } },
-    {
+    return {
       recipeIngredients: {
         some: {
           ingredient: {
             OR: [
-              { name: { contains: normalized } },
+              { name: { contains: term } },
               { slug: { contains: slug } },
             ],
           },
         },
       },
-    },
-  ];
+    } satisfies Prisma.RecipesWhereInput;
+  });
 }
 
-function hasSelectedMatch(recipe: RecipeRecord, selected: string[]) {
-  const identityText = recipeIdentityText(recipe);
+function recipeIngredientIdentity(recipeIngredient: RecipeIngredientRecord) {
+  return `${recipeIngredient.ingredient.name} ${
+    recipeIngredient.ingredient.slug ?? ""
+  }`;
+}
 
-  return selected.some((ingredient) => {
-    const terms = selectedSearchTerms(ingredient);
+function hasSelectedIngredientMatch(recipe: RecipeRecord, selected: string[]) {
+  return recipe.recipeIngredients.some((recipeIngredient) =>
+    matchesSelectedPrimaryIngredient(recipeIngredientIdentity(recipeIngredient), selected),
+  );
+}
 
-    return terms.some((term) => identityText.includes(term));
+function hasNoExtraPrimaryIngredientMatch(recipe: RecipeRecord, selected: string[]) {
+  return recipe.recipeIngredients.every((recipeIngredient) => {
+    const categorySlug = recipeIngredient.ingredient.IngredientCategories?.slug;
+
+    return !isExtraPrimaryIngredientValue(
+      recipeIngredientIdentity(recipeIngredient),
+      selected,
+      categorySlug,
+    );
   });
+}
+
+function hasOnlySupportingSelection(selected: string[]) {
+  return (
+    selected.length > 0 &&
+    selected.every((ingredient) => isSupportingPrimaryIngredientValue(ingredient))
+  );
+}
+
+function isAllowedForSelectedIngredientStrength(
+  recipe: RecipeRecord,
+  selected: string[],
+) {
+  if (!hasOnlySupportingSelection(selected)) return true;
+
+  return !hasAnyType(recipe, SUPPORT_ONLY_BLOCKED_TYPE_SLUGS);
+}
+
+function hasLunchOrDinnerFocus(recipe: RecipeRecord) {
+  return hasMealFocus(recipe, "lunch") || hasMealFocus(recipe, "dinner");
+}
+
+function isLunchDinnerMainMeal(recipe: RecipeRecord, text: string) {
+  return (
+    hasLunchOrDinnerFocus(recipe) &&
+    hasAnyType(recipe, LUNCH_DINNER_RECIPE_TYPE_SLUGS) &&
+    !isSnackRecipe(recipe) &&
+    !isLightRecipe(recipe) &&
+    !BREAKFAST_TITLE_PATTERN.test(text) &&
+    !(LIGHT_MEAL_TITLE_PATTERN.test(text) && !MAIN_MEAL_TITLE_PATTERN.test(text))
+  );
 }
 
 function normalizedMealFocus(value: string) {
@@ -474,30 +534,17 @@ function isAllowedForIngredientMealFocus(recipe: RecipeRecord, mealFocus: string
   const text = recipeDiscoveryText(recipe);
 
   if (focus === "breakfast") {
-    if (
-      MAIN_MEAL_TITLE_PATTERN.test(text) &&
-      !BREAKFAST_TITLE_PATTERN.test(text) &&
-      !hasMealFocus(recipe, "breakfast")
-    ) {
-      return false;
-    }
-
-    return true;
+    return (
+      hasMealFocus(recipe, "breakfast") &&
+      hasAnyType(recipe, BREAKFAST_RECIPE_TYPE_SLUGS) &&
+      !hasAnyType(recipe, BREAKFAST_BLOCKED_TYPE_SLUGS) &&
+      !LIGHT_MEAL_TITLE_PATTERN.test(text) &&
+      (!MAIN_MEAL_TITLE_PATTERN.test(text) || BREAKFAST_TITLE_PATTERN.test(text))
+    );
   }
 
   if (focus === "lunch" || focus === "dinner") {
-    if (LIGHT_MEAL_TITLE_PATTERN.test(text) && !MAIN_MEAL_TITLE_PATTERN.test(text)) {
-      return false;
-    }
-
-    if (
-      hasMealFocus(recipe, "breakfast") &&
-      !hasMealFocus(recipe, "lunch") &&
-      !hasMealFocus(recipe, "dinner") &&
-      (BREAKFAST_TITLE_PATTERN.test(text) || isSnackRecipe(recipe))
-    ) {
-      return false;
-    }
+    return isLunchDinnerMainMeal(recipe, text);
   }
 
   return true;
@@ -814,7 +861,20 @@ async function fetchIngredientRecipes(
     where: recipeBaseWhere({
       AND: [
         foodTypeWhere(foodType),
-        { OR: selected.flatMap((ingredient) => textMatchWhere(ingredient)) },
+        { OR: selected.flatMap((ingredient) => ingredientSearchWhere(ingredient)) },
+        ...(hasOnlySupportingSelection(selected)
+          ? [
+              {
+                recipeRecipeType: {
+                  some: {
+                    recipeType: {
+                      slug: { in: [...SUPPORT_ONLY_ALLOWED_TYPE_SLUGS] },
+                    },
+                  },
+                },
+              } satisfies Prisma.RecipesWhereInput,
+            ]
+          : []),
       ],
     }),
     select: recipeSelect,
@@ -835,7 +895,12 @@ async function fetchIngredientRecipes(
         (token) => recipeTokens.has(token) && !selectedTokens.has(token),
       );
 
-      return hasSelectedMatch(recipe, selected) && !hasUnselectedNonVeg;
+      return (
+        hasSelectedIngredientMatch(recipe, selected) &&
+        hasNoExtraPrimaryIngredientMatch(recipe, selected) &&
+        isAllowedForSelectedIngredientStrength(recipe, selected) &&
+        !hasUnselectedNonVeg
+      );
     })
     .map((recipe) => ({
       recipe,

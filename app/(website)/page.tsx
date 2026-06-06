@@ -15,6 +15,10 @@ import LazyMembershipPromptModal from "@/components/sections/lazy-membership-pro
 import HomeEditorialStories from "@/components/sections/home-editorial-stories";
 import HomeSituationTools from "@/components/sections/home-situation-tools";
 import { db } from "@/lib/db";
+import {
+  isExtraPrimaryIngredientValue,
+  matchesSelectedPrimaryIngredient,
+} from "@/lib/primary-ingredients";
 import { publishedRecipeAnd, publishedRecipeWhere } from "@/lib/recipe-publication";
 import {
   buildSeoMetadata,
@@ -77,7 +81,15 @@ const homeSituationRecipeSelect = {
     take: 1,
   },
   recipeIngredients: {
-    select: { ingredient: { select: { name: true, slug: true } } },
+    select: {
+      ingredient: {
+        select: {
+          name: true,
+          slug: true,
+          IngredientCategories: { select: { slug: true } },
+        },
+      },
+    },
     take: 32,
   },
   recipeMealTime: {
@@ -179,6 +191,51 @@ function publicInitialSituationRecipe(recipe: HomeSituationRecipe) {
     ingredientCount: recipe._count.recipeIngredients,
     matchLabel: "Matches Paneer",
   };
+}
+
+function homeSituationIngredientIdentity(
+  recipeIngredient: HomeSituationRecipe["recipeIngredients"][number],
+) {
+  return `${recipeIngredient.ingredient.name} ${
+    recipeIngredient.ingredient.slug ?? ""
+  }`;
+}
+
+function homeSituationHasSelectedIngredientMatch(
+  recipe: HomeSituationRecipe,
+  selected: string[],
+) {
+  return recipe.recipeIngredients.some((recipeIngredient) =>
+    matchesSelectedPrimaryIngredient(
+      homeSituationIngredientIdentity(recipeIngredient),
+      selected,
+    ),
+  );
+}
+
+function homeSituationHasNoExtraPrimaryIngredientMatch(
+  recipe: HomeSituationRecipe,
+  selected: string[],
+) {
+  return recipe.recipeIngredients.every((recipeIngredient) => {
+    const categorySlug = recipeIngredient.ingredient.IngredientCategories?.slug;
+
+    return !isExtraPrimaryIngredientValue(
+      homeSituationIngredientIdentity(recipeIngredient),
+      selected,
+      categorySlug,
+    );
+  });
+}
+
+function isStrictHomeSituationIngredientMatch(
+  recipe: HomeSituationRecipe,
+  selected: string[],
+) {
+  return (
+    homeSituationHasSelectedIngredientMatch(recipe, selected) &&
+    homeSituationHasNoExtraPrimaryIngredientMatch(recipe, selected)
+  );
 }
 
 function uniqueByRecipeId<T extends { id: string }>(recipes: T[]) {
@@ -462,22 +519,16 @@ export default async function Home() {
           ...publishedRecipeWhere(),
           imageUrl: { not: null },
           RecipeCategories: { slug: { in: ["veg", "vegan"] } },
-          OR: [
-            { title: { contains: "paneer" } },
-            { slug: { contains: "paneer" } },
-            {
-              recipeIngredients: {
-                some: {
-                  ingredient: {
-                    OR: [
-                      { name: { contains: "paneer" } },
-                      { slug: { contains: "paneer" } },
-                    ],
-                  },
-                },
+          recipeIngredients: {
+            some: {
+              ingredient: {
+                OR: [
+                  { name: { contains: "paneer" } },
+                  { slug: { contains: "paneer" } },
+                ],
               },
             },
-          ],
+          },
         },
         select: homeSituationRecipeSelect,
         orderBy: [
@@ -485,6 +536,7 @@ export default async function Home() {
           { contentUpdatedAt: "desc" },
           { updatedAt: "desc" },
         ],
+        take: 48,
       }),
       db.recipeCategories.findMany({
         where: {
@@ -543,7 +595,12 @@ export default async function Home() {
       }),
     ]);
   const summerRecipes = pickSummerDrinkRecipes(summerDrinkCandidates);
-  const initialSituationRecipes = [...paneerSituationCandidates]
+  const initialSituationIngredients = ["paneer"];
+  const strictPaneerSituationCandidates = paneerSituationCandidates.filter(
+    (recipe) =>
+      isStrictHomeSituationIngredientMatch(recipe, initialSituationIngredients),
+  );
+  const initialSituationRecipes = [...strictPaneerSituationCandidates]
     .sort(
       (left, right) =>
         scoreInitialSituationRecipe(right) - scoreInitialSituationRecipe(left),
@@ -584,10 +641,10 @@ export default async function Home() {
           <HomeSituationTools
             initialRecipePage={{
               recipes: initialSituationRecipes,
-              total: paneerSituationCandidates.length,
+              total: strictPaneerSituationCandidates.length,
               page: 0,
               pageSize: 6,
-              hasNext: paneerSituationCandidates.length > 6,
+              hasNext: strictPaneerSituationCandidates.length > 6,
               hasPrevious: false,
             }}
           />
