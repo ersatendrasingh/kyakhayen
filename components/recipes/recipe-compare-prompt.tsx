@@ -67,7 +67,7 @@ export default function RecipeComparePrompt({
 }: RecipeComparePromptProps) {
   const isNutritionVariant = variant === "nutrition";
   const sectionClassName = isNutritionVariant
-    ? "border-t border-[#eadcc8] pt-5 dark:border-white/10"
+    ? "rounded-[1.75rem] border border-[#d9e4d9] bg-[#f7fbf5] p-4 shadow-sm dark:border-white/10 dark:bg-[#10221d] sm:p-5"
     : "rounded-[1.75rem] border border-[#d9e4d9] bg-[#f7fbf5] p-4 shadow-sm dark:border-white/10 dark:bg-[#10221d] sm:p-5";
 
   return (

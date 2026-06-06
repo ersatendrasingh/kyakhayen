@@ -249,19 +249,15 @@ const SingleRecipe = async ({ recipe }: SingleRecipeProps) => {
                 reason={comparePrompt.reason}
               />
             )}
-            <RecipeDetails
-              recipe={recipe}
-              nutritionComparePrompt={
-                comparePrompt ? (
-                  <RecipeComparePrompt
-                    base={comparePrompt.base}
-                    competitor={comparePrompt.competitor}
-                    reason={comparePrompt.reason}
-                    variant="nutrition"
-                  />
-                ) : null
-              }
-            />
+            <RecipeDetails recipe={recipe} />
+            {comparePrompt && (
+              <RecipeComparePrompt
+                base={comparePrompt.base}
+                competitor={comparePrompt.competitor}
+                reason={comparePrompt.reason}
+                variant="nutrition"
+              />
+            )}
             <RecipeReactions recipeId={recipe.id} />
             <RecipeReviewsSection
               recipeId={recipe.id}

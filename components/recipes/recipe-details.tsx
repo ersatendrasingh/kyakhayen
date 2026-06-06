@@ -8,7 +8,6 @@ import {
   Plus,
   Salad,
 } from "lucide-react";
-import type { ReactNode } from "react";
 import { useEffect, useRef, useState } from "react";
 
 import RecipeIngredients from "@/components/recipes/recipe-ingredients";
@@ -28,10 +27,9 @@ const tabs = [
 
 interface RecipeDetailsProps {
   recipe: RecipeWithCategory;
-  nutritionComparePrompt?: ReactNode;
 }
 
-const RecipeDetails = ({ recipe, nutritionComparePrompt }: RecipeDetailsProps) => {
+const RecipeDetails = ({ recipe }: RecipeDetailsProps) => {
   const [activeTab, setActiveTab] = useState<DetailTab>("overview");
   const [quantity, setQuantity] = useState(1);
   const overviewRef = useRef<HTMLElement>(null);
@@ -183,9 +181,6 @@ const RecipeDetails = ({ recipe, nutritionComparePrompt }: RecipeDetailsProps) =
           recipeIngredients={recipe.recipeIngredients}
           quantity={quantity}
         />
-        {nutritionComparePrompt && (
-          <div className="mt-6">{nutritionComparePrompt}</div>
-        )}
       </section>
     </div>
   );
