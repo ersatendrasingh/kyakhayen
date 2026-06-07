@@ -17,7 +17,7 @@ function renderTemplate(template: string | null, tokens: TemplateTokens) {
   return template.replace(/\{\{(\w+)\}\}/g, (_match, key: string) => tokens[key] || "");
 }
 
-function localDateKey(date: Date, timezone: string | null | undefined) {
+function localOccurrenceKey(date: Date, timezone: string | null | undefined) {
   const safeTimezone = timezone || "Asia/Kolkata";
   try {
     const parts = new Intl.DateTimeFormat("en-CA", {
@@ -25,12 +25,22 @@ function localDateKey(date: Date, timezone: string | null | undefined) {
       year: "numeric",
       month: "2-digit",
       day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+      hourCycle: "h23",
     }).formatToParts(date);
     const value = (type: string) => parts.find((part) => part.type === type)?.value || "";
-    return `${value("year")}-${value("month")}-${value("day")}`;
+    return `${value("year")}-${value("month")}-${value("day")}-${value("hour")}:${value("minute")}`;
   } catch {
-    return date.toISOString().slice(0, 10);
+    return date.toISOString().slice(0, 16);
   }
+}
+
+function scheduledOccurrence(scheduledFor: string | null | undefined, fallback: Date) {
+  if (!scheduledFor) return fallback;
+  const scheduledAt = new Date(scheduledFor);
+  return Number.isNaN(scheduledAt.getTime()) ? fallback : scheduledAt;
 }
 
 function recipeSelectionWhere(rule: {
@@ -91,7 +101,7 @@ async function pickTrafficRecipe(
   });
 }
 
-export async function runTrafficRecipeNotificationRule(ruleId: string) {
+export async function runTrafficRecipeNotificationRule(ruleId: string, scheduledFor?: string) {
   const rule = await db.notificationAutomationRule.findUnique({ where: { id: ruleId } });
   if (
     !rule ||
@@ -104,6 +114,7 @@ export async function runTrafficRecipeNotificationRule(ruleId: string) {
   const where = recipeSelectionWhere(rule);
   const recipe = await pickTrafficRecipe(where, rule.lastRecipeId);
   const ranAt = new Date();
+  const occurrenceAt = scheduledOccurrence(scheduledFor, ranAt);
 
   if (!recipe) {
     await db.notificationAutomationRule.update({
@@ -135,7 +146,7 @@ export async function runTrafficRecipeNotificationRule(ruleId: string) {
     imageUrl: rule.imageUrl || recipe.imageUrl,
     automationRuleId: rule.id,
     createdByName: rule.createdByName || "Traffic automation",
-    dedupeKey: `${rule.id}-traffic-${localDateKey(ranAt, rule.timezone)}`,
+    dedupeKey: `${rule.id}-traffic-${localOccurrenceKey(occurrenceAt, rule.timezone)}`,
   });
 
   const sentCampaign = await sendNotificationCampaign(campaign.id);

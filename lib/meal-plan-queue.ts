@@ -198,7 +198,7 @@ export async function scheduleTrafficNotificationRule(rule: TrafficRuleSchedule)
 
     await queue.add(
       TRAFFIC_RECIPE_JOB_NAME,
-      { ruleId: rule.id },
+      { ruleId: rule.id, scheduledFor: nextRunAt.toISOString() },
       {
         delay: Math.max(nextRunAt.getTime() - Date.now(), 0),
         jobId: trafficRuleJobId(rule.id, nextRunAt),

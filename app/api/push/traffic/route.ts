@@ -13,6 +13,7 @@ const requestSchema = z.discriminatedUnion("kind", [
   z.object({
     kind: z.literal("trafficRecipe"),
     ruleId: z.string().min(1),
+    scheduledFor: z.string().datetime().optional(),
   }),
   z.object({
     kind: z.literal("sync"),
@@ -46,7 +47,9 @@ export async function POST(request: Request) {
   }
 
   try {
-    return NextResponse.json(await runTrafficRecipeNotificationRule(parsed.data.ruleId));
+    return NextResponse.json(
+      await runTrafficRecipeNotificationRule(parsed.data.ruleId, parsed.data.scheduledFor),
+    );
   } finally {
     await rescheduleRule(parsed.data.ruleId);
   }

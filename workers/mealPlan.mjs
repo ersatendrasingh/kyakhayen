@@ -134,7 +134,11 @@ const worker = new Worker(
         : isCampaignJob
         ? { campaignId: job.data.campaignId }
         : isTrafficRecipeJob
-          ? { kind: "trafficRecipe", ruleId: job.data.ruleId }
+          ? {
+              kind: "trafficRecipe",
+              ruleId: job.data.ruleId,
+              scheduledFor: job.data.scheduledFor,
+            }
         : isPushAutomationJob
           ? { ...job.data, kind: job.name }
           : isDeliveryJob
