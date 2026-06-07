@@ -117,7 +117,7 @@ const seoHubs: SeoHub[] = [
     label: "Summer recipes",
     href: recipeCollectionHref("summer"),
     description: "Cooling drinks, light plates and warm-weather ideas.",
-    fallbackImage: "/assets/images/home-banner-1.webp",
+    fallbackImage: "/assets/images/smoothie.png",
     icon: Sun,
     where: {
       seasonality: "SEASONAL",

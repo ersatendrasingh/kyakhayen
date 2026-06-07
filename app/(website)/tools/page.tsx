@@ -29,7 +29,7 @@ export const metadata: Metadata = buildSeoMetadata({
   description:
     "Open Smart Recipe Finder, Smart Food Compare, Smart Daily Menu, Smart Budget Meals, Smart Guest Menu, and Smart Kids Meals for Indian food decisions.",
   path: "/tools",
-  image: "/meta-images/home.png",
+  image: "/meta-images/home-og-2026.png",
   imageAlt: "Kya Khayen cooking tools",
   keywords: [
     "smart cooking tools",

@@ -1,6 +1,6 @@
 "use client";
 
-import { Droplets, Flame, Leaf, ShieldCheck, Wheat } from "lucide-react";
+import { ShieldCheck } from "lucide-react";
 
 import { calculateRecipeNutrition } from "@/lib/calculate-recipe-nutrition";
 import type { RecipeIngredientType } from "@/types/recipe";
@@ -38,14 +38,7 @@ const RecipeNutritionFacts = ({
   }
 
   const scaled = (value: number) => value * quantity;
-  const macros = [
-    { label: "Energy", value: scaled(totals.calories).toFixed(0), unit: "kcal", icon: Flame },
-    { label: "Protein", value: scaled(totals.protein).toFixed(1), unit: "g", icon: Leaf },
-    { label: "Carbs", value: scaled(totals.carbohydrate).toFixed(1), unit: "g", icon: Wheat },
-    { label: "Total fat", value: scaled(totals.totalFat).toFixed(1), unit: "g", icon: Droplets },
-    { label: "Fiber", value: scaled(totals.dietaryFiber).toFixed(1), unit: "g", icon: Leaf },
-  ];
-  const macroBars = [
+  const nutrientBars = [
     { label: "Protein", value: scaled(totals.protein), target: 50, unit: "g" },
     { label: "Carbohydrates", value: scaled(totals.carbohydrate), target: 275, unit: "g" },
     { label: "Total fat", value: scaled(totals.totalFat), target: 78, unit: "g" },
@@ -102,10 +95,10 @@ const RecipeNutritionFacts = ({
         </div>
         <div className="rounded-[1.55rem] border border-[#eee1cf] bg-[#fcf7ed] p-5 dark:border-white/8 dark:bg-[#162e27]">
           <p className="mb-4 text-sm font-semibold text-[#342920] dark:text-[#eef2ed]">
-            Macro breakdown
+            Nutrient balance
           </p>
           <div className="space-y-4">
-            {macroBars.map(({ label, value, target, unit }) => (
+            {nutrientBars.map(({ label, value, target, unit }) => (
               <div key={label}>
                 <div className="mb-1.5 flex items-center justify-between text-sm">
                   <span className="text-[#75665a] dark:text-[#a7b5af]">{label}</span>
@@ -126,26 +119,6 @@ const RecipeNutritionFacts = ({
             Bars provide a simple visual reference against general daily values.
           </p>
         </div>
-      </div>
-
-      <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-5">
-        {macros.map(({ label, value, unit, icon: Icon }) => (
-          <div
-            key={label}
-            className="rounded-2xl border border-[#eee1cf] bg-[#faf3e6] p-3 text-center dark:border-white/8 dark:bg-[#162e27]"
-          >
-            <Icon className="mx-auto mb-2 size-4 text-[#ac7838] dark:text-[#d5ae66]" />
-            <p className="text-lg font-semibold text-[#30251d] dark:text-[#eef2ed]">
-              {value}
-              <span className="ml-1 text-[11px] font-normal text-[#826f61] dark:text-[#a7b5ae]">
-                {unit}
-              </span>
-            </p>
-            <p className="mt-1 text-xs text-[#78685b] dark:text-[#a8b6b0]">
-              {label}
-            </p>
-          </div>
-        ))}
       </div>
 
       <div className="mt-6 grid gap-5 md:grid-cols-2">

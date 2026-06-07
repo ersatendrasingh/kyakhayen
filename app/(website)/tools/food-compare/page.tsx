@@ -74,7 +74,7 @@ export const metadata: Metadata = buildSeoMetadata({
   title: `${pageTitle}: Calories, Protein, Fiber & Time | Kya Khayen`,
   description: pageDescription,
   path: pagePath,
-  image: "/meta-images/home.png",
+  image: "/meta-images/home-og-2026.png",
   imageAlt: "Kya Khayen food comparison tool",
   keywords: [
     "smart food compare",

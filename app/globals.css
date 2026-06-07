@@ -380,7 +380,7 @@ body {
     line-height: 1.85;
   }
 
-  .recipe-overview-copy .rich-content h2 {
+  .recipe-overview-copy h2 {
     margin-bottom: 0.8rem;
     color: #30251d;
     font-size: clamp(1.2rem, 2vw, 1.45rem);
@@ -388,7 +388,7 @@ body {
     line-height: 1.35;
   }
 
-  .recipe-overview-copy .rich-content h3 {
+  .recipe-overview-copy h3 {
     margin-top: 1.65rem;
     margin-bottom: 0.65rem;
     color: #382d24;
@@ -396,23 +396,23 @@ body {
     font-weight: 600;
   }
 
-  .recipe-overview-copy .rich-content ul {
+  .recipe-overview-copy ul {
     margin: 0.85rem 0 0;
     padding-left: 1.25rem;
     color: #5e5146;
     list-style: disc;
   }
 
-  .recipe-overview-copy .rich-content li {
+  .recipe-overview-copy li {
     margin-bottom: 0.45rem;
     line-height: 1.7;
   }
 
-  .recipe-overview-copy .rich-content li::marker {
+  .recipe-overview-copy li::marker {
     color: #ad7836;
   }
 
-  .recipe-overview-copy .rich-content blockquote {
+  .recipe-overview-copy blockquote {
     margin: 1.45rem 0;
     border-left: 3px solid #cea45d;
     border-radius: 0 0.9rem 0.9rem 0;

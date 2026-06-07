@@ -79,7 +79,7 @@ export default function PremiumHomeHero({
           muted
           playsInline
           preload="metadata"
-          poster="/assets/images/home-banner-1.webp"
+          poster="/assets/images/auth-kitchen-hero.webp"
           onEnded={nextVideo}
           aria-hidden="true"
         >

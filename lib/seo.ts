@@ -5,7 +5,7 @@ import { socialSameAs } from "@/lib/social-links";
 export const SITE_NAME = "Kya Khayen";
 export const SITE_TAGLINE = "Easy recipes, meal ideas, and weekly meal plans";
 export const DEFAULT_SITE_URL = "https://www.kyakhayen.com";
-export const DEFAULT_OG_IMAGE = "/meta-images/home.png";
+export const DEFAULT_OG_IMAGE = "/meta-images/home-og-2026.png";
 
 const INTERNAL_SEO_COPY_PATTERNS = [
   /\bseo\s*[- ]?\s*friendly\b/i,

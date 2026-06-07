@@ -290,7 +290,7 @@ export const metadata: Metadata = buildSeoMetadata({
   description:
     "Discover easy recipes, healthy meal ideas, quick breakfast inspiration, dinner recipes, seasonal dishes, meal plans and real-life kitchen situation tools with Kya Khayen.",
   path: "/",
-  image: "/meta-images/home.png",
+  image: "/meta-images/home-og-2026.png",
   imageAlt: "Kya Khayen recipes and weekly meal planning",
   keywords: [
     "easy recipes",

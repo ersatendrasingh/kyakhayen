@@ -254,7 +254,7 @@ export const metadata: Metadata = buildSeoMetadata({
   title: `${pageTitle}: Find Recipes by Ingredients | Kya Khayen`,
   description: pageDescription,
   path: pagePath,
-  image: "/meta-images/home.png",
+  image: "/meta-images/home-og-2026.png",
   imageAlt: "Smart Recipe Finder by ingredients",
   keywords: [
     "smart recipe finder",

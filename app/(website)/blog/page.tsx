@@ -60,7 +60,7 @@ export async function generateMetadata({
     title,
     description,
     path: `/blog${queryString.size ? `?${queryString.toString()}` : ""}`,
-    image: "/meta-images/home.png",
+    image: "/meta-images/home-og-2026.png",
     imageAlt: "Kya Khayen food stories and kitchen guides",
     noIndex: Boolean(filters.k && !filters.type),
     keywords: [

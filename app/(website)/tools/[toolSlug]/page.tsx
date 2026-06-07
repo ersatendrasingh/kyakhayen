@@ -40,7 +40,7 @@ export async function generateMetadata({
     title: `${tool.seoTitle} | Kya Khayen`,
     description: tool.description,
     path: tool.href,
-    image: "/meta-images/home.png",
+    image: "/meta-images/home-og-2026.png",
     imageAlt: tool.title,
     keywords: tool.keywords,
   });
