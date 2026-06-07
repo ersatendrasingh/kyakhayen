@@ -9,6 +9,8 @@ import {
   Eye,
   Flame,
   Share2,
+  BadgeCheck,
+  ChefHat,
   Sparkles,
   Star,
 } from "lucide-react";
@@ -26,6 +28,7 @@ import { useCurrentUser } from "@/hooks/use-current-user";
 import { calculateRecipeNutrition } from "@/lib/calculate-recipe-nutrition";
 import { formatDate } from "@/lib/formatDate";
 import { formatTime } from "@/lib/formatTime";
+import { recipeAuthorProfile } from "@/lib/recipe-author-profile";
 import { absoluteUrl, recipeHref, seoDescription } from "@/lib/seo";
 import { cn } from "@/lib/utils";
 import type { RecipeWithCategory } from "@/types/recipe";
@@ -55,6 +58,7 @@ const BannerCard = ({ recipe, className }: BannerCardProps) => {
       "Discover ingredients and easy steps to bring this recipe to your table.",
   );
   const recipeUrl = absoluteUrl(recipeHref(recipe));
+  const lastReviewedDate = formatDate(recipe.contentUpdatedAt ?? recipe.updatedAt);
   const cuisineTags = (recipe.recipeCuisine || [])
     .map((entry) => entry.cuisine.title)
     .slice(0, 2);
@@ -190,7 +194,36 @@ const BannerCard = ({ recipe, className }: BannerCardProps) => {
           {summary}
         </p>
 
-        <div className="mt-6 flex flex-wrap items-center gap-x-5 gap-y-3 border-y border-[#eadfce] py-4 text-sm text-[#635548] dark:border-white/10 dark:text-[#b6c2bb]">
+        <div className="mt-5 flex flex-col gap-4 border-y border-[#eadfce] py-4 sm:flex-row sm:items-center sm:justify-between dark:border-white/10">
+          <div className="flex min-w-0 items-center gap-3">
+            <span className="flex size-12 shrink-0 items-center justify-center rounded-full bg-[#18382d] text-sm font-semibold text-white shadow-sm dark:bg-[#d5ad61] dark:text-[#102019]">
+              {recipeAuthorProfile.initials}
+            </span>
+            <div className="min-w-0">
+              <p className="truncate text-sm font-semibold text-[#2f261f] dark:text-[#eef3ed]">
+                By {recipeAuthorProfile.name}
+              </p>
+              <p className="mt-1 flex flex-wrap items-center gap-1.5 text-xs leading-5 text-[#756657] dark:text-[#aebbb4]">
+                <ChefHat className="size-3.5 text-[#a37638] dark:text-[#d9b36b]" />
+                {recipeAuthorProfile.role}
+                <span className="text-[#c6ad91]">·</span>
+                {recipeAuthorProfile.kitchen}
+              </p>
+            </div>
+          </div>
+          <div className="flex flex-wrap gap-2 text-xs font-semibold text-[#705c49] dark:text-[#d7e0da]">
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-[#e1d2bd] bg-white/70 px-3 py-1.5 dark:border-white/10 dark:bg-white/7">
+              <BadgeCheck className="size-3.5 text-[#3f765f]" />
+              Kitchen tested
+            </span>
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-[#e1d2bd] bg-white/70 px-3 py-1.5 dark:border-white/10 dark:bg-white/7">
+              <CalendarDays className="size-3.5 text-[#a37638]" />
+              Updated {lastReviewedDate}
+            </span>
+          </div>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-x-5 gap-y-3 border-b border-[#eadfce] py-4 text-sm text-[#635548] dark:border-white/10 dark:text-[#b6c2bb]">
           <span className="flex items-center gap-1.5">
             <Star className="size-4 fill-[#dfb259] text-[#dfb259]" />
             {reviewsCount ? averageRating.toFixed(1) : "New"}{" "}

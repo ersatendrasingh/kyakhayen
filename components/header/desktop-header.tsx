@@ -4,6 +4,7 @@ import {
   BookOpenText,
   CalendarDays,
   CupSoda,
+  Leaf,
   LayoutGrid,
   MapPinned,
   Sparkles,
@@ -23,6 +24,7 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { getIngredientCollectionHubLinks } from "@/lib/ingredient-collection-hubs";
 import { recipeCollectionHref } from "@/lib/recipe-collection-url";
 import type {
   CategoryNavItem,
@@ -46,6 +48,7 @@ type PanelId =
   | "recipes"
   | "mealtimes"
   | "cuisines"
+  | "pantry"
   | "collections"
   | "drinks"
   | "wellness";
@@ -60,10 +63,12 @@ function CatalogueMenu({
   collapsed,
 }: DesktopHeaderProps & { collapsed: boolean }) {
   const [activePanel, setActivePanel] = useState<PanelId>("recipes");
+  const ingredientGuides = getIngredientCollectionHubLinks();
   const panels = [
     { id: "recipes" as const, label: "Recipes", kicker: "Find a plate", icon: BookOpenText },
     { id: "mealtimes" as const, label: "Mealtimes", kicker: "Cook by moment", icon: CalendarDays },
     { id: "cuisines" as const, label: "Cuisines", kicker: "Explore regions", icon: MapPinned },
+    { id: "pantry" as const, label: "Pantry", kicker: "Kitchen staples", icon: Leaf },
     { id: "collections" as const, label: "Collections", kicker: "Browse cravings", icon: Sparkles },
     { id: "drinks" as const, label: "Drinks", kicker: "Teas and coolers", icon: CupSoda },
     { id: "wellness" as const, label: "Wellness Goals", kicker: "Eat your way", icon: HeartPulse },
@@ -208,6 +213,55 @@ function CatalogueMenu({
                     <div className="absolute inset-0 bg-gradient-to-t from-[#17110c]/84 via-transparent to-transparent" />
                     <span className="absolute inset-x-3 bottom-3 text-sm font-semibold text-white">
                       {item.title}
+                    </span>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
+          {activePanel === "pantry" && (
+            <div className="flex min-h-[344px] flex-col">
+              <div className="flex items-end justify-between gap-4">
+                <div>
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[#a2773d]">
+                    Kitchen staples
+                  </p>
+                  <p className="mt-2 text-lg font-semibold text-[#2c211a]">
+                    Open recipes by what is already in the kitchen.
+                  </p>
+                </div>
+                <Link
+                  href="/tools/smart-recipe-finder"
+                  className="inline-flex items-center gap-2 rounded-full bg-[#edf3df] px-4 py-2 text-xs font-semibold text-[#2f5132]"
+                >
+                  Find by ingredients
+                </Link>
+              </div>
+              <div className="mt-4 grid flex-1 grid-cols-3 gap-3">
+                {ingredientGuides.map((item) => (
+                  <Link
+                    key={item.slug}
+                    href={item.href}
+                    className="group relative min-h-[143px] overflow-hidden rounded-2xl border border-[#eadbc8] bg-[#17372b] transition hover:border-[#d9aa60] hover:-translate-y-0.5"
+                  >
+                    <Image
+                      src={item.imageUrl}
+                      alt={`${item.label} recipes`}
+                      fill
+                      sizes="200px"
+                      className="object-cover transition duration-500 group-hover:scale-105"
+                    />
+                    <span className="absolute inset-0 bg-gradient-to-t from-[#130e0a]/88 via-[#130e0a]/18 to-transparent" />
+                    <span className="absolute inset-x-0 bottom-0 p-3 text-white">
+                      <span className="flex items-center justify-between gap-2">
+                        <span className="text-sm font-semibold">{item.label}</span>
+                        <span aria-hidden="true" className="text-[#f3cf8a]">
+                          -&gt;
+                        </span>
+                      </span>
+                      <span className="mt-1 block line-clamp-1 text-[11px] text-white/74">
+                        {item.description}
+                      </span>
                     </span>
                   </Link>
                 ))}

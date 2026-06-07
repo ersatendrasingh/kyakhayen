@@ -10,6 +10,7 @@ import RecipeSidebar from "@/components/recipes/recipe-sidebar";
 
 import Container from "@/components/container";
 
+import RecipeAuthorTrust from "@/components/recipes/recipe-author-trust";
 import RecipeCommentSection from "@/components/recipes/recipe-comments-section";
 import RecipeReviewsSection from "@/components/recipes/recipe-reviews-section";
 import RecipeNotFound from "@/components/recipes/recipe-not-found";
@@ -18,6 +19,7 @@ import RecipeCookingDock from "@/components/recipes/recipe-cooking-dock";
 import RecipeComparePrompt from "@/components/recipes/recipe-compare-prompt";
 import { fetchFoodCompareRecipePrompt } from "@/lib/food-compare";
 import { getPublicRelatedRecipes, getRecipeSidebarTaxonomy } from "@/lib/public-content";
+import { recipeAuthorProfile } from "@/lib/recipe-author-profile";
 import { recipeCollectionHref } from "@/lib/recipe-collection-url";
 import { recipeContentUpdatedAt, recipePublishedAt } from "@/lib/recipe-publication";
 import {
@@ -28,6 +30,7 @@ import {
   seoDescription,
   stripHtml,
 } from "@/lib/seo";
+import { socialSameAs } from "@/lib/social-links";
 import type { RecipeWithCategory } from "@/types/recipe";
 
 interface SingleRecipeProps {
@@ -192,8 +195,38 @@ const SingleRecipe = async ({ recipe }: SingleRecipeProps) => {
         }
       : {}),
     author: {
+      "@type": "Person",
+      name: recipeAuthorProfile.name,
+      jobTitle: recipeAuthorProfile.role,
+      description: recipeAuthorProfile.intro,
+      url: absoluteUrl(recipeAuthorProfile.url),
+      sameAs: socialSameAs,
+      worksFor: {
+        "@type": "Organization",
+        name: recipeAuthorProfile.brand,
+        url: absoluteUrl("/"),
+      },
+    },
+    publisher: {
       "@type": "Organization",
-      name: "Kya Khayen",
+      name: recipeAuthorProfile.brand,
+      url: absoluteUrl("/"),
+      sameAs: socialSameAs,
+      logo: {
+        "@type": "ImageObject",
+        url: absoluteUrl("/pwa/icon-512.png"),
+      },
+    },
+    editor: {
+      "@type": "Person",
+      name: recipeAuthorProfile.name,
+      jobTitle: recipeAuthorProfile.role,
+      url: absoluteUrl(recipeAuthorProfile.url),
+    },
+    reviewedBy: {
+      "@type": "Organization",
+      name: recipeAuthorProfile.kitchen,
+      url: absoluteUrl(recipeAuthorProfile.url),
     },
     datePublished: recipePublishedAt(recipe),
     dateModified: recipeContentUpdatedAt(recipe),
@@ -272,6 +305,7 @@ const SingleRecipe = async ({ recipe }: SingleRecipeProps) => {
               <RecipeComparePromptSlot promptPromise={comparePromptPromise} />
             </Suspense>
             <RecipeDetails recipe={recipe} />
+            <RecipeAuthorTrust recipe={recipe} />
             <Suspense fallback={null}>
               <RecipeComparePromptSlot
                 promptPromise={comparePromptPromise}

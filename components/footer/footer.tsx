@@ -1,14 +1,14 @@
 import Link from "next/link";
 import Image from "next/image";
-import { FaFacebook, FaInstagram, FaYoutube } from "react-icons/fa";
-import { FaXTwitter } from "react-icons/fa6";
 import { ArrowRight, Leaf, SunMedium } from "lucide-react";
 import { unstable_cache } from "next/cache";
 
 import Container from "@/components/container";
 import Copyrights from "@/components/footer/copyrights";
+import { SocialFollowLinks } from "@/components/social-follow-links";
 import { toolPages } from "@/components/sections/situation-tools/tool-page-config";
 import { db } from "@/lib/db";
+import { getIngredientCollectionHubLinks } from "@/lib/ingredient-collection-hubs";
 import { recipeCollectionHref } from "@/lib/recipe-collection-url";
 
 const getFooterNavigationData = unstable_cache(
@@ -74,6 +74,7 @@ const getFooterNavigationData = unstable_cache(
 const Footer = async () => {
   const { categories, mealTimes, cuisines, recipeTypes } =
     await getFooterNavigationData();
+  const ingredientGuides = getIngredientCollectionHubLinks();
 
   return (
     <footer className="site-footer border-t border-border bg-[#18130f] pt-12 text-white sm:pt-16">
@@ -199,6 +200,51 @@ const Footer = async () => {
             </nav>
           </div>
         </div>
+        <div className="mb-8 rounded-[1.5rem] border border-white/8 bg-[linear-gradient(145deg,rgba(255,255,255,0.055),rgba(255,255,255,0.02))] px-5 py-6 sm:px-7">
+          <div className="mb-5 flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.23em] text-[#f8d18a]">
+                Kitchen staples
+              </p>
+              <p className="mt-2 max-w-xl text-sm leading-6 text-white/58">
+                Start from the ingredient at home and open practical recipe ideas.
+              </p>
+            </div>
+            <Link
+              href="/tools/smart-recipe-finder"
+              className="inline-flex w-fit items-center gap-2 text-sm font-semibold text-[#f8d18a] transition hover:text-white"
+            >
+              Search by ingredients <ArrowRight className="size-4" />
+            </Link>
+          </div>
+          <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-6">
+            {ingredientGuides.map((item) => (
+              <Link
+                key={item.slug}
+                href={item.href}
+                className="group relative min-h-[126px] overflow-hidden rounded-2xl border border-white/10 bg-[#17372b] transition hover:border-[#d79b42]/55"
+              >
+                <Image
+                  src={item.imageUrl}
+                  alt={`${item.label} recipes`}
+                  fill
+                  sizes="(max-width: 640px) 50vw, 180px"
+                  className="object-cover transition duration-500 group-hover:scale-105"
+                />
+                <span className="absolute inset-0 bg-gradient-to-t from-[#130e0a]/88 via-[#130e0a]/18 to-transparent" />
+                <span className="absolute inset-x-0 bottom-0 p-3">
+                  <span className="flex items-center justify-between gap-3 text-sm font-semibold text-white group-hover:text-white">
+                    {item.label}
+                    <ArrowRight className="size-3.5 shrink-0 text-[#f8d18a] transition group-hover:translate-x-0.5" />
+                  </span>
+                  <span className="mt-1 block line-clamp-1 text-xs leading-5 text-white/68">
+                    {item.description}
+                  </span>
+                </span>
+              </Link>
+            ))}
+          </div>
+        </div>
         <div className="mb-8 rounded-[1.5rem] border border-white/8 bg-white/[0.025] px-5 py-6 sm:px-7">
           <div className="mb-4 flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
             <div>
@@ -268,42 +314,7 @@ const Footer = async () => {
           </div>
           <div className="flex items-center gap-4">
             <span className="text-sm text-white/58">Follow us</span>
-            <a
-              href="https://www.facebook.com/mailtokyakhayen"
-              target="_blank"
-              rel="noreferrer"
-              aria-label="Kya Khayen on Facebook"
-              className="text-white/62 transition hover:text-[#f8d18a]"
-            >
-              <FaFacebook className="size-5" />
-            </a>
-            <a
-              href="https://twitter.com/kyakhayen"
-              target="_blank"
-              rel="noreferrer"
-              aria-label="Kya Khayen on X"
-              className="text-white/62 transition hover:text-[#f8d18a]"
-            >
-              <FaXTwitter className="size-5" />
-            </a>
-            <a
-              href="https://www.youtube.com/channel/UC-kmoWXdqoZaUDSpemR2hCw"
-              target="_blank"
-              rel="noreferrer"
-              aria-label="Kya Khayen on YouTube"
-              className="text-white/62 transition hover:text-[#f8d18a]"
-            >
-              <FaYoutube className="size-5" />
-            </a>
-            <a
-              href="https://www.instagram.com/kyakhayen/"
-              target="_blank"
-              rel="noreferrer"
-              aria-label="Kya Khayen on Instagram"
-              className="text-white/62 transition hover:text-[#f8d18a]"
-            >
-              <FaInstagram className="size-5" />
-            </a>
+            <SocialFollowLinks variant="footer" />
           </div>
         </div>
       </Container>

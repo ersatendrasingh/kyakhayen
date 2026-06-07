@@ -7,6 +7,7 @@ import {
   getRecipeCategoryWhereForBrowse,
   getRecipeCategoryWhereForFoodPreference,
 } from "@/lib/recipe-category-compatibility";
+import { ingredientCollectionIngredientWhere } from "@/lib/ingredient-collection-hubs";
 import { publishedRecipeWhere } from "@/lib/recipe-publication";
 import type { RecipeWithCategory } from "@/types/recipe";
 
@@ -163,18 +164,14 @@ export const GetRecipes = async ({
     }
 
     if (searchType === "ingredient" && searchSlug) {
-      const ingredient = await db.ingredients.findFirst({
-        where: {
-          OR: [
-            { slug: searchSlug },
-            { name: { contains: searchSlug } },
-          ],
-        },
+      const ingredients = await db.ingredients.findMany({
+        where: ingredientCollectionIngredientWhere(searchSlug),
         select: { id: true },
       });
+      const ingredientIds = ingredients.map((ingredient) => ingredient.id);
 
-      if (!ingredient) return [];
-      where.recipeIngredients = { some: { ingredientId: ingredient.id } };
+      if (ingredientIds.length === 0) return [];
+      where.recipeIngredients = { some: { ingredientId: { in: ingredientIds } } };
     }
 
     if (foodPreferenceSlug && searchType !== "category") {

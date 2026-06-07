@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 
+import { socialSameAs } from "@/lib/social-links";
+
 export const SITE_NAME = "Kya Khayen";
 export const SITE_TAGLINE = "Easy recipes, meal ideas, and weekly meal plans";
 export const DEFAULT_SITE_URL = "https://www.kyakhayen.com";
@@ -211,7 +213,7 @@ export function organizationJsonLd() {
     name: SITE_NAME,
     url: getSiteUrl(),
     logo: absoluteUrl("/pwa/icon-512.png"),
-    sameAs: ["https://twitter.com/kyakhayen"],
+    sameAs: socialSameAs,
   };
 }
 

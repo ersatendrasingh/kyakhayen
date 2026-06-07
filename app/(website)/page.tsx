@@ -14,6 +14,7 @@ import PremiumHomeHero from "@/components/sections/premium-home-hero";
 import LazyMembershipPromptModal from "@/components/sections/lazy-membership-prompt-modal";
 import HomeEditorialStories from "@/components/sections/home-editorial-stories";
 import HomeSituationTools from "@/components/sections/home-situation-tools";
+import HomeSeoHubs from "@/components/sections/home-seo-hubs";
 import { db } from "@/lib/db";
 import {
   isExtraPrimaryIngredientValue,
@@ -636,6 +637,7 @@ export default async function Home() {
         videoUrls={heroVideoUrls}
       />
       <LazyMembershipPromptModal />
+      <HomeSeoHubs />
       <HomePreferenceProvider defaultPreference="veg">
         <div className="home-page-body relative isolate overflow-hidden">
           <HomeSituationTools

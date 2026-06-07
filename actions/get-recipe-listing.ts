@@ -8,6 +8,7 @@ import {
   getRecipeCategoryWhereForBrowse,
   getRecipeCategoryWhereForFoodPreference,
 } from "@/lib/recipe-category-compatibility";
+import { ingredientCollectionIngredientWhere } from "@/lib/ingredient-collection-hubs";
 import { publishedRecipeWhere } from "@/lib/recipe-publication";
 
 export type RecipeListingFilters = {
@@ -141,15 +142,14 @@ async function buildListingWhere({
   }
 
   if (searchType === "ingredient" && searchSlug) {
-    const ingredient = await db.ingredients.findFirst({
-      where: {
-        OR: [{ slug: searchSlug }, { name: { contains: searchSlug } }],
-      },
+    const ingredients = await db.ingredients.findMany({
+      where: ingredientCollectionIngredientWhere(searchSlug),
       select: { id: true },
     });
+    const ingredientIds = ingredients.map((ingredient) => ingredient.id);
 
-    if (!ingredient) return null;
-    where.recipeIngredients = { some: { ingredientId: ingredient.id } };
+    if (ingredientIds.length === 0) return null;
+    where.recipeIngredients = { some: { ingredientId: { in: ingredientIds } } };
   }
 
   if (foodPreferenceSlug && searchType !== "category") {
@@ -190,5 +190,30 @@ export const GetRecipeListingPage = async ({
   } catch (error) {
     console.error("[GET_RECIPE_LISTING_PAGE]", error);
     return { recipes: [], nextCursor: null };
+  }
+};
+
+export const GetRecipeListingHeroRecipes = async ({
+  limit = 4,
+  ...filters
+}: RecipeListingFilters & { limit?: number }): Promise<RecipeCardRecipe[]> => {
+  try {
+    const where = await buildListingWhere(filters);
+    if (!where) return [];
+
+    return await db.recipes.findMany({
+      where,
+      include: listingInclude,
+      orderBy: [
+        { views: "desc" },
+        { contentUpdatedAt: "desc" },
+        { updatedAt: "desc" },
+        { id: "desc" },
+      ],
+      take: limit,
+    });
+  } catch (error) {
+    console.error("[GET_RECIPE_LISTING_HERO_RECIPES]", error);
+    return [];
   }
 };

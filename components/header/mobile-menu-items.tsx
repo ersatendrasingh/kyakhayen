@@ -10,6 +10,7 @@ import {
   Sparkles,
   SunMedium,
 } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 
 import Logo from "@/components/logo";
@@ -23,6 +24,7 @@ import type {
   NavItem,
   SeasonNavItem,
 } from "@/components/header/navbar";
+import { getIngredientCollectionHubLinks } from "@/lib/ingredient-collection-hubs";
 import { recipeCollectionHref } from "@/lib/recipe-collection-url";
 
 type MobileMenuItemsProps = {
@@ -38,6 +40,10 @@ type MobileMenuItemsProps = {
 type DrawerLink = {
   label: string;
   href: string;
+};
+
+type DrawerImageLink = DrawerLink & {
+  imageUrl: string;
 };
 
 function DrawerGroup({
@@ -76,6 +82,52 @@ function DrawerGroup({
   );
 }
 
+function DrawerImageGroup({
+  label,
+  kicker,
+  links,
+}: {
+  label: string;
+  kicker: string;
+  links: DrawerImageLink[];
+}) {
+  return (
+    <details className="group border-b border-[#eadbc8]">
+      <summary className="flex cursor-pointer list-none items-center justify-between px-5 py-4 text-sm font-semibold text-[#45362c] marker:content-none [&::-webkit-details-marker]:hidden">
+        <span>
+          <span className="block text-[10px] uppercase tracking-[0.2em] text-[#a2773d]">
+            {kicker}
+          </span>
+          <span className="mt-1 block">{label}</span>
+        </span>
+        <ChevronDown className="size-4 text-[#997c5c] transition group-open:rotate-180" />
+      </summary>
+      <div className="grid grid-cols-2 gap-2 px-4 pb-4">
+        {links.map((link) => (
+          <SheetClose asChild key={link.href}>
+            <Link
+              href={link.href}
+              className="group relative h-[104px] cursor-pointer overflow-hidden rounded-xl border border-[#eadbc8] bg-[#17372b]"
+            >
+              <Image
+                src={link.imageUrl}
+                alt=""
+                fill
+                sizes="45vw"
+                className="object-cover transition duration-500 group-hover:scale-105"
+              />
+              <span className="absolute inset-0 bg-gradient-to-t from-[#140f0a]/84 via-transparent to-transparent" />
+              <span className="absolute inset-x-3 bottom-3 text-xs font-semibold text-white">
+                {link.label}
+              </span>
+            </Link>
+          </SheetClose>
+        ))}
+      </div>
+    </details>
+  );
+}
+
 function MobileSeasonIcon({ slug }: { slug: SeasonNavItem["slug"] }) {
   const Icon = slug === "rainy" ? CloudRain : slug === "winter" ? Snowflake : SunMedium;
 
@@ -96,6 +148,8 @@ export const MobileMenuItems = ({
   drinkItems,
   dietTypes,
 }: MobileMenuItemsProps) => {
+  const ingredientGuides = getIngredientCollectionHubLinks();
+
   return (
     <nav className="mobile-discovery-drawer flex h-full flex-col overflow-y-auto">
       <div className="border-b border-[#eadbc8] px-5 pb-4 pt-5">
@@ -149,6 +203,15 @@ export const MobileMenuItems = ({
         links={cuisines.slice(0, 8).map((cuisine) => ({
           label: cuisine.title,
           href: recipeCollectionHref(cuisine.slug),
+        }))}
+      />
+      <DrawerImageGroup
+        label="Pantry"
+        kicker="Kitchen staples"
+        links={ingredientGuides.map((item) => ({
+          label: item.label,
+          href: item.href,
+          imageUrl: item.imageUrl,
         }))}
       />
       <DrawerGroup

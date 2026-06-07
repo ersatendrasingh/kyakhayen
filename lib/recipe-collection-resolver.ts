@@ -1,6 +1,11 @@
 import { cache } from "react";
 
 import { db } from "@/lib/db";
+import {
+  getIngredientCollectionHub,
+  ingredientCollectionHubSlugs,
+  ingredientCollectionIngredientWhere,
+} from "@/lib/ingredient-collection-hubs";
 import { recipeCollectionHref } from "@/lib/recipe-collection-url";
 import { publishedRecipeWhere } from "@/lib/recipe-publication";
 
@@ -74,6 +79,7 @@ export const resolveRecipeCollectionRoute = cache(
     const season = await seasonRoute(slug);
     if (season) return season;
 
+    const ingredientHub = getIngredientCollectionHub(slug);
     const [category, cuisine, mealTime, recipeType, dietType, cookingMethod, ingredient] =
       await Promise.all([
         db.recipeCategories.findFirst({
@@ -126,7 +132,7 @@ export const resolveRecipeCollectionRoute = cache(
         }),
         db.ingredients.findFirst({
           where: {
-            slug,
+            ...ingredientCollectionIngredientWhere(slug),
             RecipeIngredients: { some: { recipe: visibleRecipeWhere } },
           },
           select: { name: true, slug: true },
@@ -139,6 +145,9 @@ export const resolveRecipeCollectionRoute = cache(
     if (recipeType) return route(recipeType.title, recipeType.slug, "recipeType");
     if (dietType) return route(dietType.title, dietType.slug, "dietType");
     if (cookingMethod) return route(cookingMethod.title, cookingMethod.slug, "cookingMethod");
+    if (ingredientHub && ingredient) {
+      return route(ingredientHub.title, ingredientHub.slug, "ingredient");
+    }
     if (ingredient?.slug) return route(ingredient.name, ingredient.slug, "ingredient");
 
     return null;
@@ -146,7 +155,15 @@ export const resolveRecipeCollectionRoute = cache(
 );
 
 export const getPublishedRecipeCollectionRoutes = cache(async () => {
-  const [categories, cuisines, mealTimes, recipeTypes, dietTypes, cookingMethods] =
+  const [
+    categories,
+    cuisines,
+    mealTimes,
+    recipeTypes,
+    dietTypes,
+    cookingMethods,
+    ingredientHubs,
+  ] =
     await Promise.all([
       db.recipeCategories.findMany({
         where: { isPublished: true, recipe: { some: visibleRecipeWhere } },
@@ -172,14 +189,35 @@ export const getPublishedRecipeCollectionRoutes = cache(async () => {
         where: { isPublished: true, recipeCookingMethod: { some: { recipe: visibleRecipeWhere } } },
         select: { title: true, slug: true },
       }),
+      Promise.all(
+        ingredientCollectionHubSlugs.map(async (slug) => {
+          const hub = getIngredientCollectionHub(slug);
+          if (!hub) return null;
+
+          const recipes = await db.recipes.count({
+            where: {
+              ...visibleRecipeWhere,
+              recipeIngredients: {
+                some: { ingredient: ingredientCollectionIngredientWhere(slug) },
+              },
+            },
+          });
+
+          return recipes > 0 ? route(hub.title, hub.slug, "ingredient") : null;
+        }),
+      ),
     ]);
 
   const seasons = (
     await Promise.all(Object.keys(seasonTitlesBySlug).map((slug) => seasonRoute(slug)))
   ).filter((item): item is RecipeCollectionRoute => Boolean(item));
+  const ingredientRoutes = ingredientHubs.filter(
+    (item): item is RecipeCollectionRoute => Boolean(item),
+  );
 
   return [
     ...seasons,
+    ...ingredientRoutes,
     ...categories.map((item) => route(item.name, item.slug, "category")),
     ...cuisines.map((item) => route(item.title, item.slug, "cuisine")),
     ...mealTimes.map((item) => route(item.title, item.slug, "mealTime")),

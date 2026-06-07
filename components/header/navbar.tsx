@@ -20,6 +20,7 @@ import {
   NavigationMenuList,
   NavigationMenuTrigger,
 } from "@/components/ui/navigation-menu";
+import { getIngredientCollectionHubLinks } from "@/lib/ingredient-collection-hubs";
 import { recipeCollectionHref } from "@/lib/recipe-collection-url";
 
 export type NavItem = {
@@ -83,6 +84,7 @@ export const Navbar = ({
   const navControlClass =
     "site-nav-control inline-flex h-9 w-max cursor-pointer items-center justify-center rounded-full !bg-transparent px-3.5 py-1.5 text-[13px] font-semibold text-[#493b31] transition-colors hover:!bg-transparent hover:!text-primary focus:!bg-transparent focus:!text-primary data-[state=open]:!bg-transparent data-[state=open]:!text-primary";
   const featuredDrink = drinkItems[0];
+  const ingredientGuides = getIngredientCollectionHubLinks();
 
   return (
     <nav className="site-navigation">
@@ -161,6 +163,64 @@ export const Navbar = ({
                       </Link>
                     ))}
                   </div>
+                </div>
+              </div>
+            </NavigationMenuContent>
+          </NavigationMenuItem>
+          <NavigationMenuItem>
+            <NavigationMenuTrigger className={navControlClass}>
+              Pantry
+            </NavigationMenuTrigger>
+            <NavigationMenuContent
+              className="mega-menu"
+              style={{
+                left: "-256px",
+                width: "min(820px, calc(100vw - 48px))",
+              }}
+            >
+              <div className="p-6">
+                <div className="mb-5 flex items-end justify-between gap-5">
+                  <div>
+                    <p className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.2em] text-[#9a6a33]">
+                      <Leaf className="size-4" /> Kitchen staples
+                    </p>
+                    <p className="mt-2 max-w-md text-lg font-semibold text-[#2c211a]">
+                      Start from what is already in the kitchen.
+                    </p>
+                  </div>
+                  <Link
+                    href="/tools/smart-recipe-finder"
+                    className="mega-chip whitespace-nowrap"
+                  >
+                    Find by ingredients
+                  </Link>
+                </div>
+                <div className="grid grid-cols-3 gap-3">
+                  {ingredientGuides.map((item) => (
+                    <Link
+                      key={item.slug}
+                      href={item.href}
+                      className="group relative min-h-[158px] overflow-hidden rounded-2xl border border-[#eadbc8] bg-[#17372b] transition hover:border-[#dfb36a] hover:-translate-y-0.5"
+                    >
+                      <Image
+                        src={item.imageUrl}
+                        alt={`${item.label} recipes`}
+                        fill
+                        sizes="250px"
+                        className="object-cover transition duration-500 group-hover:scale-105"
+                      />
+                      <span className="absolute inset-0 bg-gradient-to-t from-[#120d09]/88 via-[#120d09]/24 to-transparent" />
+                      <span className="absolute inset-x-0 bottom-0 p-4 text-white">
+                        <span className="flex items-center justify-between gap-3">
+                          <span className="text-lg font-semibold">{item.label}</span>
+                          <ArrowRight className="size-4 shrink-0 text-[#f3cf8a] transition group-hover:translate-x-0.5" />
+                        </span>
+                        <span className="mt-1 block line-clamp-1 text-xs text-white/76">
+                          {item.description}
+                        </span>
+                      </span>
+                    </Link>
+                  ))}
                 </div>
               </div>
             </NavigationMenuContent>

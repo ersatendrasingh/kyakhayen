@@ -1,13 +1,31 @@
 import type { Metadata } from "next";
-import { ArrowRight, CookingPot, Leaf, Sparkles, Sun, UtensilsCrossed } from "lucide-react";
+import {
+  ArrowRight,
+  BookOpenCheck,
+  CheckCircle2,
+  CookingPot,
+  HelpCircle,
+  Leaf,
+  ListChecks,
+  Sparkles,
+  Sun,
+  UtensilsCrossed,
+} from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 
-import { GetRecipeListingPage } from "@/actions/get-recipe-listing";
+import {
+  GetRecipeListingHeroRecipes,
+  GetRecipeListingPage,
+} from "@/actions/get-recipe-listing";
 import Container from "@/components/container";
 import type { RecipeCardRecipe } from "@/components/recipes/recipe-card";
 import RecipeResultsFeed from "@/components/recipes/recipe-results-feed";
 import { shouldServeDirectMediaImage } from "@/lib/direct-media-image";
+import {
+  getIngredientCollectionHub,
+  type IngredientCollectionHub,
+} from "@/lib/ingredient-collection-hubs";
 import { recipeCollectionHref } from "@/lib/recipe-collection-url";
 import {
   breadcrumbJsonLd,
@@ -85,6 +103,12 @@ const knownLabels: Record<string, string> = {
   "fruit-salad": "Fruit Salad",
   chutneydips: "Chutney and Dips",
   curdraita: "Curd and Raita",
+  paneer: "Paneer",
+  aloo: "Aloo",
+  dahi: "Dahi",
+  tomato: "Tomato",
+  rice: "Rice",
+  besan: "Besan",
 };
 
 function collectionLabel(slug?: string) {
@@ -279,6 +303,26 @@ function buildHeroContent({
     };
   }
 
+  if (type === "ingredient" && slug) {
+    const ingredientGuide = getIngredientCollectionHub(slug);
+    const ingredient = ingredientGuide?.title || collectionLabel(slug) || heading.replace(/\s+Recipes$/i, "");
+    const ingredientLower = ingredient.toLowerCase();
+
+    return {
+      eyebrow: `${ingredient} recipe guide`,
+      intro:
+        ingredientGuide?.heroIntro ||
+        `Explore ${ingredientLower} recipes with practical cooking ideas, clear recipe links and helpful ways to use this ingredient at home.`,
+      highlights: ingredientGuide?.highlights || [
+        `${ingredientLower} recipes`,
+        "easy meals",
+        "ingredient guide",
+        "home cooking",
+      ],
+      searchQuery: ingredientGuide?.searchQuery || `${ingredientLower} recipes`,
+    };
+  }
+
   return {
     eyebrow: "Curated recipe kitchen",
     intro:
@@ -289,25 +333,210 @@ function buildHeroContent({
 }
 
 function pickHeroRecipes(recipes: RecipeCardRecipe[]) {
-  const imageRecipes = recipes.filter((recipe) => recipe.imageUrl);
+  return recipes.filter((recipe) => recipe.imageUrl).slice(0, 4);
+}
 
-  return [...imageRecipes]
-    .sort(() => Math.random() - 0.5)
-    .slice(0, 4);
+const guideRecipeUses = [
+  "Quick start",
+  "Lunch or dinner",
+  "Family comfort",
+  "Something lighter",
+];
+
+function IngredientGuideSection({
+  guide,
+  recipes,
+}: {
+  guide: IngredientCollectionHub;
+  recipes: RecipeCardRecipe[];
+}) {
+  const recipeLinks = recipes.filter((recipe) => recipe.imageUrl).slice(0, 20);
+  const tableRows = guide.tableRows.map((row, index) => ({
+    ...row,
+    recipe: recipeLinks[index],
+    role: guideRecipeUses[index] || row.use,
+  }));
+
+  return (
+    <section className="pt-8 sm:pt-10">
+      <Container>
+        <div className="grid gap-6 lg:grid-cols-[minmax(0,1.45fr)_minmax(300px,0.75fr)] lg:items-start">
+          <div className="space-y-6">
+            <div className="rounded-[1.6rem] border border-[#e5d4bc] bg-[#fffdf8]/88 p-5 shadow-[0_20px_48px_-36px_rgba(61,39,18,0.45)] sm:p-7 dark:border-white/10 dark:bg-[#10241e]">
+              <p className="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.22em] text-[#a67636] dark:text-[#ddb66e]">
+                <BookOpenCheck className="size-3.5" />
+                Ingredient guide
+              </p>
+              <h2 className="mt-3 text-2xl font-semibold tracking-tight text-[#30251d] sm:text-3xl dark:text-[#eef3ed]">
+                How to use {guide.title} in everyday recipes
+              </h2>
+              <p className="mt-3 text-sm leading-7 text-[#726255] sm:text-base dark:text-[#a6b6ae]">
+                {guide.intro}
+              </p>
+
+              <div className="mt-6 overflow-hidden rounded-[1.15rem] border border-[#eadcc8] bg-white/74 dark:border-white/10 dark:bg-white/5">
+                <div className="hidden grid-cols-[0.82fr_1fr_1.12fr] border-b border-[#eadcc8] bg-[#f5ebdc] text-xs font-semibold uppercase tracking-[0.14em] text-[#70533c] md:grid dark:border-white/10 dark:bg-white/8 dark:text-[#d9c29b]">
+                  <div className="px-4 py-3">Use</div>
+                  <div className="px-4 py-3">Best pick</div>
+                  <div className="px-4 py-3">Start here</div>
+                </div>
+                {tableRows.map((row) => (
+                  <div
+                    key={row.use}
+                    className="grid gap-3 border-b border-[#eadcc8] p-4 text-sm last:border-b-0 md:grid-cols-[0.82fr_1fr_1.12fr] md:gap-0 md:p-0 dark:border-white/10"
+                  >
+                    <div className="font-semibold text-[#38291f] md:px-4 md:py-4 dark:text-[#eef3ed]">
+                      <span className="mb-1 block text-[10px] uppercase tracking-[0.16em] text-[#a67636] md:hidden">
+                        Use
+                      </span>
+                      <span>{row.use}</span>
+                    </div>
+                    <div className="text-[#6e5d50] md:px-4 md:py-4 dark:text-[#aebdb5]">
+                      <span className="mb-1 block text-[10px] font-semibold uppercase tracking-[0.16em] text-[#a67636] md:hidden">
+                        Best pick
+                      </span>
+                      <span>{row.pick}</span>
+                      <p className="mt-1 text-xs leading-5 text-[#8a7a6c] dark:text-[#8fa097]">
+                        {row.note}
+                      </p>
+                    </div>
+                    <div className="md:px-4 md:py-4">
+                      <span className="mb-1 block text-[10px] font-semibold uppercase tracking-[0.16em] text-[#a67636] md:hidden">
+                        Start here
+                      </span>
+                      {row.recipe ? (
+                        <Link
+                          href={recipeHref(row.recipe)}
+                          className="group inline-flex items-center gap-2 font-semibold text-[#b63325] underline-offset-4 hover:underline dark:text-[#f0ba78]"
+                        >
+                          {row.recipe.title}
+                          <ArrowRight className="size-3.5 transition group-hover:translate-x-0.5" />
+                        </Link>
+                      ) : (
+                        <span className="text-[#8a7a6c] dark:text-[#8fa097]">{row.role}</span>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="rounded-[1.6rem] border border-[#e5d4bc] bg-[#fffdf8]/88 p-5 shadow-[0_18px_42px_-36px_rgba(61,39,18,0.38)] sm:p-7 dark:border-white/10 dark:bg-[#10241e]">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#a67636] dark:text-[#ddb66e]">
+                Popular recipe links
+              </p>
+              <h3 className="mt-2 text-xl font-semibold text-[#30251d] sm:text-2xl dark:text-[#eef3ed]">
+                Top {guide.title} recipes to open next
+              </h3>
+              <div className="mt-5 grid gap-2 sm:grid-cols-2">
+                {recipeLinks.map((recipe, index) => (
+                  <Link
+                    key={recipe.id}
+                    href={recipeHref(recipe)}
+                    className="group flex items-center justify-between gap-4 rounded-2xl border border-[#eadcc8] bg-white/78 px-4 py-3 text-sm font-semibold text-[#493a2f] transition hover:border-[#d8b57c] hover:bg-[#fff8ec] dark:border-white/10 dark:bg-white/5 dark:text-[#eaf0ec] dark:hover:border-[#ddb66e]/50"
+                  >
+                    <span className="line-clamp-1">
+                      {String(index + 1).padStart(2, "0")}. {recipe.title}
+                    </span>
+                    <ArrowRight className="size-4 shrink-0 text-[#b63325] transition group-hover:translate-x-0.5 dark:text-[#f0ba78]" />
+                  </Link>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div className="space-y-6">
+            <aside className="relative overflow-hidden rounded-[1.6rem] border border-[#e5d4bc] bg-[#193a2f] p-5 text-white shadow-[0_20px_48px_-36px_rgba(25,58,47,0.5)] sm:p-6">
+              <div className="relative z-10 max-w-[22rem]">
+                <p className="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.22em] text-[#f0cf8f]">
+                  <ListChecks className="size-3.5" />
+                  Kitchen tips
+                </p>
+                <ul className="mt-5 space-y-4">
+                  {guide.tips.map((tip) => (
+                    <li key={tip} className="flex gap-3 text-sm leading-6 text-[#e8f0ea]">
+                      <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-[#f0cf8f]" />
+                      <span>{tip}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              <div className="-mx-5 -mb-5 mt-6 overflow-hidden border-t border-white/10 bg-[radial-gradient(circle_at_50%_58%,rgba(240,207,143,0.18),transparent_15rem),linear-gradient(180deg,rgba(255,255,255,0.035),rgba(0,0,0,0.12))] sm:-mx-6 sm:-mb-6">
+                <div
+                  className="pointer-events-none w-full overflow-hidden"
+                  aria-hidden="true"
+                >
+                  <Image
+                    src="/assets/images/collections/ingredient-guide-cook.png"
+                    alt=""
+                    width={900}
+                    height={1191}
+                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 46vw, 520px"
+                    className="block h-auto w-full drop-shadow-[0_18px_30px_rgba(0,0,0,0.3)]"
+                  />
+                </div>
+              </div>
+            </aside>
+
+            <div className="rounded-[1.6rem] border border-[#e5d4bc] bg-[#fffdf8]/88 p-5 shadow-[0_18px_42px_-36px_rgba(61,39,18,0.38)] sm:p-7 dark:border-white/10 dark:bg-[#10241e]">
+              <p className="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.22em] text-[#a67636] dark:text-[#ddb66e]">
+                <HelpCircle className="size-3.5" />
+                Quick Q&A
+              </p>
+              <div className="mt-5 space-y-4">
+                {guide.faqs.map((faq) => (
+                  <div
+                    key={faq.question}
+                    className="rounded-2xl border border-[#eadcc8] bg-white/70 p-4 dark:border-white/10 dark:bg-white/5"
+                  >
+                    <h3 className="text-sm font-semibold text-[#30251d] dark:text-[#eef3ed]">
+                      {faq.question}
+                    </h3>
+                    <p className="mt-2 text-sm leading-6 text-[#726255] dark:text-[#a6b6ae]">
+                      {faq.answer}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </Container>
+    </section>
+  );
+}
+
+function ingredientGuideFaqJsonLd(guide: IngredientCollectionHub) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: guide.faqs.map((faq) => ({
+      "@type": "Question",
+      name: faq.question,
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: faq.answer,
+      },
+    })),
+  };
 }
 
 export function buildRecipePageMetadata(
   query: RecipeSearchParams,
   canonicalPath?: string,
 ): Metadata {
-  const label = collectionLabel(query.k);
+  const ingredientGuide =
+    query.type === "ingredient" ? getIngredientCollectionHub(query.k) : null;
+  const label = ingredientGuide?.title || collectionLabel(query.k);
   const foodLabel =
     query.food && query.food !== query.k ? collectionLabel(query.food) : null;
   const collectionTitle = label
     ? `${foodLabel ? `${foodLabel} ` : ""}${label} Recipes`
     : "Easy Recipes and Meal Ideas";
   const title = `${collectionTitle} | Kya Khayen`;
-  const description = label
+  const description = ingredientGuide
+    ? `${ingredientGuide.title} recipe guide with top recipe links, cooking ideas, tips and practical Q&A for everyday Indian home cooking.`
+    : label
     ? `Discover ${collectionTitle.toLowerCase()} with beautiful images, cooking inspiration and everyday dishes from Kya Khayen.`
     : meta.description;
   const queryString = new URLSearchParams();
@@ -350,11 +579,17 @@ export async function renderRecipeListingPage({
   searchParams: RecipeSearchParams;
   canonicalPath?: string;
 }) {
-  const initialPage = await GetRecipeListingPage({
+  const listingFilters = {
     searchSlug: searchParams.k || undefined,
     searchType: searchParams.type || undefined,
     foodPreferenceSlug: searchParams.food || undefined,
-  });
+  };
+  const [initialPage, guideRecipeCandidates] = await Promise.all([
+    GetRecipeListingPage(listingFilters),
+    GetRecipeListingHeroRecipes({ ...listingFilters, limit: 20 }),
+  ]);
+  const ingredientGuide =
+    searchParams.type === "ingredient" ? getIngredientCollectionHub(searchParams.k) : null;
   const collection = collectionLabel(searchParams.k);
   const foodLabel =
     searchParams.food && searchParams.food !== searchParams.k
@@ -371,7 +606,9 @@ export async function renderRecipeListingPage({
     slug: searchParams.k,
     type: searchParams.type,
   });
-  const heroRecipes = pickHeroRecipes(initialPage.recipes);
+  const heroRecipes = pickHeroRecipes(
+    guideRecipeCandidates.length ? guideRecipeCandidates : initialPage.recipes,
+  );
   const heroRecipeCountLabel = initialPage.nextCursor
     ? `${initialPage.recipes.length}+`
     : String(initialPage.recipes.length);
@@ -397,12 +634,17 @@ export async function renderRecipeListingPage({
     { name: "Recipes", path: "/recipes" },
     ...(collection ? [{ name: heading, path: pagePath }] : []),
   ]);
+  const schema = [
+    listingSchema,
+    breadcrumbSchema,
+    ...(ingredientGuide ? [ingredientGuideFaqJsonLd(ingredientGuide)] : []),
+  ];
 
   return (
     <div className="recipe-listing-surface relative min-h-screen overflow-hidden bg-[radial-gradient(circle_at_86%_4%,rgba(70,122,89,0.15),transparent_29rem),radial-gradient(circle_at_10%_0%,rgba(206,157,76,0.16),transparent_25rem),linear-gradient(180deg,#fffaf1_0%,#f8efe3_58%,#fffaf2_100%)] pb-20">
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: jsonLd([listingSchema, breadcrumbSchema]) }}
+        dangerouslySetInnerHTML={{ __html: jsonLd(schema) }}
       />
       <section className="relative overflow-hidden border-b border-[#eadbc7] py-10 sm:py-14 lg:py-16 dark:border-white/10">
         <div className="pointer-events-none absolute right-0 top-0 hidden h-full w-[44%] bg-[radial-gradient(circle_at_50%_38%,rgba(234,184,89,0.22),transparent_22rem),radial-gradient(circle_at_76%_72%,rgba(61,100,73,0.18),transparent_19rem)] lg:block" />
@@ -529,6 +771,13 @@ export async function renderRecipeListingPage({
           </nav>
         </Container>
       </section>
+
+      {ingredientGuide && (
+        <IngredientGuideSection
+          guide={ingredientGuide}
+          recipes={guideRecipeCandidates.length ? guideRecipeCandidates : initialPage.recipes}
+        />
+      )}
 
       <section className="pt-8 sm:pt-10">
         <Container>

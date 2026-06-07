@@ -20,6 +20,9 @@ export type RecipeCardRecipe = {
   slug: string;
   metaSlug: string | null;
   imageUrl: string | null;
+  views?: number | null;
+  contentUpdatedAt?: Date | string | null;
+  updatedAt?: Date | string | null;
   RecipeCategories: { id?: string; name: string } | null;
   recipeCookingTime?: {
     prepTime: number;
