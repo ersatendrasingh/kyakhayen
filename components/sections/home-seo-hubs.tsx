@@ -147,34 +147,57 @@ const seoHubs: SeoHub[] = [
   },
 ];
 
+const seoHubCandidateLimit = 12;
+
 const getSeoHubImages = unstable_cache(
   async () => {
-    const recipes = await Promise.all(
+    const candidateGroups = await Promise.all(
       seoHubs.map((hub) =>
-        db.recipes.findFirst({
+        db.recipes.findMany({
           where: publishedRecipeAnd([{ imageUrl: { not: null } }, hub.where]),
-          select: { title: true, imageUrl: true },
+          select: { id: true, title: true, imageUrl: true },
           orderBy: [
             { views: "desc" },
             { contentUpdatedAt: "desc" },
             { updatedAt: "desc" },
             { id: "desc" },
           ],
+          take: seoHubCandidateLimit,
         }),
       ),
     );
+    const usedRecipeIds = new Set<string>();
+    const usedImageUrls = new Set<string>();
 
     return Object.fromEntries(
-      seoHubs.map((hub, index) => [
-        hub.href,
-        {
-          title: recipes[index]?.title ?? hub.label,
-          imageUrl: recipes[index]?.imageUrl ?? hub.fallbackImage,
-        },
-      ]),
+      seoHubs.map((hub, index) => {
+        const uniqueRecipe =
+          candidateGroups[index]?.find((recipe) => {
+            if (!recipe.imageUrl) return false;
+            return !usedRecipeIds.has(recipe.id) && !usedImageUrls.has(recipe.imageUrl);
+          }) ||
+          candidateGroups[index]?.find((recipe) => {
+            if (!recipe.imageUrl) return false;
+            return !usedImageUrls.has(recipe.imageUrl);
+          });
+        const imageUrl = uniqueRecipe?.imageUrl ?? hub.fallbackImage;
+
+        if (uniqueRecipe) {
+          usedRecipeIds.add(uniqueRecipe.id);
+        }
+        usedImageUrls.add(imageUrl);
+
+        return [
+          hub.href,
+          {
+            title: uniqueRecipe?.title ?? hub.label,
+            imageUrl,
+          },
+        ];
+      }),
     );
   },
-  ["home-seo-hub-images-v2"],
+  ["home-seo-hub-images-v3"],
   { revalidate: 900, tags: ["recipes"] },
 );
 
