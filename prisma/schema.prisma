@@ -629,6 +629,7 @@ enum NotificationSource {
   PAYMENT_SUCCESS
   PAYMENT_FAILED
   PREFERENCE_PROMOTION
+  TRAFFIC_RECIPE
 }
 
 enum NotificationAutomationTrigger {
@@ -638,6 +639,7 @@ enum NotificationAutomationTrigger {
   PAYMENT_SUCCESS
   PAYMENT_FAILED
   RECIPE_PUBLISHED
+  TRAFFIC_RECIPE
 }
 
 enum NotificationDeliveryStatus {
@@ -696,6 +698,13 @@ model NotificationAutomationRule {
   bodyTemplate  String                        @db.Text
   urlTemplate   String?
   imageUrl      String?
+  scheduleTime  String?                       @db.VarChar(5)
+  timezone      String                        @default("Asia/Kolkata") @db.VarChar(64)
+  daysOfWeek    String?                       @db.VarChar(32)
+  mealTimeId    String?
+  lastRecipeId  String?
+  lastRunAt     DateTime?
+  nextRunAt     DateTime?
   createdById   String?
   createdByName String?
   campaigns     NotificationCampaign[]
@@ -703,6 +712,8 @@ model NotificationAutomationRule {
   updatedAt     DateTime                      @updatedAt
 
   @@index([trigger, isActive])
+  @@index([trigger, isActive, nextRunAt])
+  @@index([mealTimeId])
 }
 
 model NotificationDelivery {

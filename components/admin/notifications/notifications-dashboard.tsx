@@ -39,6 +39,7 @@ type Campaign = NotificationCampaign & {
 type SegmentOptions = {
   foodStyles: Array<{ id: string; name: string }>;
   cuisines: Array<{ id: string; title: string }>;
+  mealTimes: Array<{ id: string; title: string }>;
 };
 
 function formatDate(value: Date | string | null) {
@@ -75,6 +76,7 @@ export function NotificationsDashboard({
   const router = useRouter();
   const [sending, setSending] = useState(false);
   const [syncingExpiries, setSyncingExpiries] = useState(false);
+  const [syncingTraffic, setSyncingTraffic] = useState(false);
   const [form, setForm] = useState({
     audience: "ALL_SUBSCRIBERS" as NotificationAudience,
     userId: "",
@@ -121,6 +123,21 @@ export function NotificationsDashboard({
       toast.error(error instanceof Error ? error.message : "Unable to sync reminders.");
     } finally {
       setSyncingExpiries(false);
+    }
+  }
+
+  async function syncTrafficRules() {
+    try {
+      setSyncingTraffic(true);
+      const response = await fetch("/api/admin/notifications/sync-traffic-rules", { method: "POST" });
+      const result = await response.json();
+      if (!response.ok) throw new Error(typeof result === "string" ? result : "Unable to sync traffic rules.");
+      toast.success(`${result.scheduled} recipe traffic schedules queued.`);
+      router.refresh();
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Unable to sync traffic rules.");
+    } finally {
+      setSyncingTraffic(false);
     }
   }
 
@@ -257,6 +274,7 @@ export function NotificationsDashboard({
             <MiniMetric label="Open rate" value={percent(deliveryTotals.opened, deliveryTotals.delivered)} icon={Eye} />
           </div>
           <AutomationRulesPanel rules={automationRules} segments={segments} />
+          <TrafficSyncPanel syncingTraffic={syncingTraffic} onSyncTraffic={() => void syncTrafficRules()} />
           <ExpirySyncPanel syncingExpiries={syncingExpiries} onSyncExpiries={() => void syncExpiryReminders()} />
           <section className="rounded-[28px] border bg-card p-5 shadow-sm sm:p-6">
             <h2 className="text-xl font-semibold">Broadcast report</h2>
@@ -275,6 +293,26 @@ export function NotificationsDashboard({
         </section>
       </div>
     </div>
+  );
+}
+
+function TrafficSyncPanel({
+  syncingTraffic,
+  onSyncTraffic,
+}: {
+  syncingTraffic: boolean;
+  onSyncTraffic: () => void;
+}) {
+  return (
+    <section className="rounded-[24px] border bg-card p-4 shadow-sm">
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-muted/35 px-4 py-3">
+        <p className="text-xs text-muted-foreground">Queue active recipe traffic rules after edits, deploys or worker restarts.</p>
+        <Button variant="outline" size="sm" onClick={onSyncTraffic} disabled={syncingTraffic}>
+          {syncingTraffic ? <LoaderCircle className="animate-spin" /> : <CalendarClock />}
+          Sync recipe traffic
+        </Button>
+      </div>
+    </section>
   );
 }
 

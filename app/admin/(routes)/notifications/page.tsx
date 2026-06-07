@@ -11,6 +11,7 @@ const NotificationsPage = async () => {
     scheduledCampaigns,
     foodStyles,
     cuisines,
+    mealTimes,
     automationRules,
   ] = await Promise.all([
     db.pushSubscription.count({ where: { isActive: true } }),
@@ -43,6 +44,7 @@ const NotificationsPage = async () => {
     db.notificationCampaign.count({ where: { status: "SCHEDULED" } }),
     db.recipeCategories.findMany({ select: { id: true, name: true }, orderBy: { name: "asc" } }),
     db.cuisines.findMany({ select: { id: true, title: true }, orderBy: { title: "asc" } }),
+    db.mealTimes.findMany({ select: { id: true, title: true }, orderBy: [{ position: "asc" }, { title: "asc" }] }),
     db.notificationAutomationRule.findMany({ orderBy: [{ isSystem: "desc" }, { createdAt: "desc" }] }),
   ]);
 
@@ -52,7 +54,7 @@ const NotificationsPage = async () => {
         subscribers={customers}
         campaigns={campaigns}
         automationRules={automationRules}
-        segments={{ foodStyles, cuisines }}
+        segments={{ foodStyles, cuisines, mealTimes }}
         activeDevices={activeDevices}
         reachedRecently={Number(reachedRecently[0]?.total || 0)}
         scheduledCampaigns={scheduledCampaigns}

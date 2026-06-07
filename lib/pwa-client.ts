@@ -127,7 +127,21 @@ function publicKeyBytes(key: string) {
 async function serviceWorkerRegistration() {
   const existing = await navigator.serviceWorker.getRegistration();
   if (existing) return existing;
-  return navigator.serviceWorker.ready;
+
+  return Promise.race([
+    navigator.serviceWorker.ready,
+    new Promise<ServiceWorkerRegistration>((_, reject) => {
+      window.setTimeout(
+        () =>
+          reject(
+            new Error(
+              "Push service worker is not ready yet. Please reload the installed app and try again.",
+            ),
+          ),
+        7000,
+      );
+    }),
+  ]);
 }
 
 async function responseMessage(response: Response, fallback: string) {

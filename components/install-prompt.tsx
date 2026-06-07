@@ -70,7 +70,11 @@ export default function InstallPrompt() {
   const pathname = usePathname();
 
   useEffect(() => {
-    if (process.env.NODE_ENV !== "development" || !("serviceWorker" in navigator)) {
+    if (
+      process.env.NODE_ENV !== "development" ||
+      process.env.NEXT_PUBLIC_CLEAR_DEV_PWA_CACHE !== "true" ||
+      !("serviceWorker" in navigator)
+    ) {
       return;
     }
 
@@ -83,7 +87,7 @@ export default function InstallPrompt() {
         await Promise.all(cacheNames.map((cacheName) => caches.delete(cacheName)));
       }
     })().catch(() => {
-      // Local cache cleanup should never block the page.
+      // Keep this cleanup opt-in because unregistering the service worker also removes push support.
     });
   }, []);
 
@@ -106,6 +110,9 @@ export default function InstallPrompt() {
       ) {
         return;
       }
+
+      const registration = await navigator.serviceWorker.getRegistration().catch(() => null);
+      if (!registration) return;
 
       const [configuration, existingSubscription] = await Promise.all([
         fetch("/api/push/public-key").then((response) => response.json()).catch(() => null),

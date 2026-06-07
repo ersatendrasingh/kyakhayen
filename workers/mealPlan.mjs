@@ -24,11 +24,65 @@ const parsedWorkerTimeoutMs = Number(
 const WORKER_REQUEST_TIMEOUT_MS = Number.isFinite(parsedWorkerTimeoutMs)
   ? parsedWorkerTimeoutMs
   : 420000;
+const TRAFFIC_SYNC_INTERVAL_MS = Number(
+  process.env.TRAFFIC_NOTIFICATION_SYNC_INTERVAL_MS || 6 * 60 * 60 * 1000,
+);
+const STARTUP_TRAFFIC_SYNC_RETRY_DELAYS_MS = [2000, 10000, 30000];
 
 if (!MEAL_PLAN_WORKER_SECRET) {
   console.error(
     "MEAL_PLAN_WORKER_SECRET is not configured; scheduled worker API calls will fail.",
   );
+}
+
+function wait(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function describeRequestError(error) {
+  if (axios.isAxiosError(error)) {
+    if (error.response) {
+      const body =
+        typeof error.response.data === "string"
+          ? error.response.data
+          : JSON.stringify(error.response.data);
+      return `HTTP ${error.response.status}${body ? `: ${body}` : ""}`;
+    }
+    return error.code || error.message || "Request failed";
+  }
+  return error instanceof Error ? error.message : String(error);
+}
+
+async function syncTrafficNotificationSchedules() {
+  if (!MEAL_PLAN_WORKER_SECRET) return false;
+  try {
+    const response = await axios.post(
+      `${APP_URL}/api/push/traffic`,
+      { kind: "sync" },
+      {
+        timeout: WORKER_REQUEST_TIMEOUT_MS,
+        headers: {
+          "x-meal-plan-worker-secret": MEAL_PLAN_WORKER_SECRET,
+        },
+      },
+    );
+    console.log(
+      `Traffic notification schedules synced: ${response.data.scheduled || 0}/${response.data.total || 0}`,
+    );
+    return true;
+  } catch (error) {
+    const message = describeRequestError(error);
+    console.error(`Traffic notification schedule sync failed: ${message}`);
+    return false;
+  }
+}
+
+async function syncTrafficNotificationSchedulesAfterStartup() {
+  for (const delayMs of STARTUP_TRAFFIC_SYNC_RETRY_DELAYS_MS) {
+    await wait(delayMs);
+    const synced = await syncTrafficNotificationSchedules();
+    if (synced) return;
+  }
 }
 
 // Define the worker to process the queue
@@ -37,12 +91,15 @@ const worker = new Worker(
   async (job) => {
     try {
       const isDeliveryJob = job.name === "deliverMealPlanDay";
+      const isTrafficRecipeJob = job.name === "trafficRecipeNotification";
       const isPushAutomationJob =
-        job.name === "mealReminder" || job.name === "membershipExpiryReminder";
+        job.name === "mealReminder" ||
+        job.name === "membershipExpiryReminder" ||
+        isTrafficRecipeJob;
       const isCampaignJob = job.name === "sendNotificationCampaign";
       const isContentPipelineJob = job.name === "publishContentPipelinePost";
       console.log(
-        `Starting job ${job.id}: ${isContentPipelineJob ? "Publishing scheduled content" : isDeliveryJob ? "Delivering meal plan day" : isPushAutomationJob ? "Sending automated push" : isCampaignJob ? "Sending scheduled campaign" : "Generating meal plan"}`,
+        `Starting job ${job.id}: ${isContentPipelineJob ? "Publishing scheduled content" : isDeliveryJob ? "Delivering meal plan day" : isTrafficRecipeJob ? "Sending traffic recipe push" : isPushAutomationJob ? "Sending automated push" : isCampaignJob ? "Sending scheduled campaign" : "Generating meal plan"}`,
       );
 
       // Update progress to 10%
@@ -52,6 +109,8 @@ const worker = new Worker(
           ? "Preparing scheduled content publish"
           : isCampaignJob
           ? "Preparing scheduled broadcast"
+          : isTrafficRecipeJob
+            ? "Preparing traffic recipe notification"
           : isPushAutomationJob
             ? "Preparing reminder notification"
             : isDeliveryJob
@@ -63,6 +122,8 @@ const worker = new Worker(
         ? "/api/admin/content-pipeline/dispatch"
         : isCampaignJob
         ? "/api/push/dispatch"
+        : isTrafficRecipeJob
+          ? "/api/push/traffic"
         : isPushAutomationJob
           ? "/api/push/automation"
           : isDeliveryJob
@@ -72,6 +133,8 @@ const worker = new Worker(
         ? { kind: "scheduledPost", postId: job.data.postId }
         : isCampaignJob
         ? { campaignId: job.data.campaignId }
+        : isTrafficRecipeJob
+          ? { kind: "trafficRecipe", ruleId: job.data.ruleId }
         : isPushAutomationJob
           ? { ...job.data, kind: job.name }
           : isDeliveryJob
@@ -90,6 +153,8 @@ const worker = new Worker(
           ? "Scheduled content publish completed"
           : isCampaignJob
           ? "Scheduled broadcast delivered"
+          : isTrafficRecipeJob
+            ? "Traffic recipe notification processed"
           : isPushAutomationJob
             ? "Reminder notification delivered"
             : isDeliveryJob
@@ -115,8 +180,10 @@ const worker = new Worker(
 
 // Event listener for when the job is completed
 worker.on("completed", (job, returnvalue) => {
+  const result =
+    typeof returnvalue === "string" ? returnvalue : JSON.stringify(returnvalue);
   console.log(
-    `Job ${job.id} completed successfully with result: ${returnvalue}`,
+    `Job ${job.id} completed successfully with result: ${result}`,
   );
 });
 
@@ -131,5 +198,14 @@ worker.on("error", (error) => {
   const message = error instanceof Error ? error.message : String(error);
   console.error(`Worker encountered an error: ${message}`);
 });
+
+void syncTrafficNotificationSchedulesAfterStartup();
+const trafficSyncTimer = setInterval(
+  () => void syncTrafficNotificationSchedules(),
+  Number.isFinite(TRAFFIC_SYNC_INTERVAL_MS)
+    ? TRAFFIC_SYNC_INTERVAL_MS
+    : 6 * 60 * 60 * 1000,
+);
+trafficSyncTimer.unref?.();
 
 console.log("Worker started");

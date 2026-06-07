@@ -1,12 +1,16 @@
 import withSerwistInit from "@serwist/next";
 
+const enableDevelopmentServiceWorker =
+  process.env.ENABLE_DEV_SERVICE_WORKER === "true" ||
+  process.env.NEXT_PUBLIC_ENABLE_DEV_SERVICE_WORKER === "true";
+
 /** @type {import('next').NextConfig} */
 const withSerwist = withSerwistInit({
   swSrc: "app/sw.ts",
   swDest: "public/sw.js",
   cacheOnNavigation: true,
   reloadOnOnline: true,
-  disable: process.env.NODE_ENV === "development",
+  disable: process.env.NODE_ENV === "development" && !enableDevelopmentServiceWorker,
 });
 
 const mediaRemotePattern = process.env.NEXT_PUBLIC_MEDIA_URL
