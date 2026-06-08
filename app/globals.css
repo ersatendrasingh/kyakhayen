@@ -380,6 +380,23 @@ body {
     line-height: 1.85;
   }
 
+  .recipe-rich-content a {
+    color: #ad3328;
+    font-weight: 650;
+    text-decoration-line: underline;
+    text-decoration-color: rgb(173 51 40 / 45%);
+    text-decoration-thickness: 0.08em;
+    text-underline-offset: 0.18em;
+    transition:
+      color 180ms ease,
+      text-decoration-color 180ms ease;
+  }
+
+  .recipe-rich-content a:hover {
+    color: #84231c;
+    text-decoration-color: #ad3328;
+  }
+
   .recipe-overview-copy h2 {
     margin-bottom: 0.8rem;
     color: #30251d;
@@ -1011,6 +1028,16 @@ body {
 
   .dark .recipe-overview-copy strong {
     color: #eef3ed;
+  }
+
+  .dark .recipe-rich-content a {
+    color: #f1b36d;
+    text-decoration-color: rgb(241 179 109 / 55%);
+  }
+
+  .dark .recipe-rich-content a:hover {
+    color: #ffd38e;
+    text-decoration-color: #ffd38e;
   }
 
   .dark .recipe-overview-copy li::marker {

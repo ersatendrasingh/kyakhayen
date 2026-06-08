@@ -30,6 +30,7 @@ type SeoMetadataInput = {
   type?: "website" | "article";
   noIndex?: boolean;
   keywords?: string[];
+  authors?: NonNullable<Metadata["authors"]>;
   publishedTime?: Date | string | null;
   modifiedTime?: Date | string | null;
 };
@@ -160,6 +161,7 @@ export function buildSeoMetadata({
   type = "website",
   noIndex = false,
   keywords,
+  authors,
   publishedTime,
   modifiedTime,
 }: SeoMetadataInput): Metadata {
@@ -180,6 +182,13 @@ export function buildSeoMetadata({
     ...(type === "article" && modifiedTime
       ? { modifiedTime: new Date(modifiedTime).toISOString() }
       : {}),
+    ...(type === "article" && authors
+      ? {
+          authors: Array.isArray(authors)
+            ? authors.map((author) => author.name)
+            : [authors.name],
+        }
+      : {}),
   };
 
   return {
@@ -188,7 +197,8 @@ export function buildSeoMetadata({
     description: cleanDescription,
     keywords,
     applicationName: SITE_NAME,
-    creator: SITE_NAME,
+    authors,
+    creator: Array.isArray(authors) ? authors[0]?.name || SITE_NAME : authors?.name || SITE_NAME,
     publisher: SITE_NAME,
     robots: noIndex ? noIndexRobots() : indexRobots(),
     alternates: { canonical },
