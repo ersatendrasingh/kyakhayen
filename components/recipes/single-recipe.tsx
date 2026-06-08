@@ -223,11 +223,12 @@ const SingleRecipe = async ({ recipe }: SingleRecipeProps) => {
       jobTitle: recipeAuthorProfile.role,
       url: absoluteUrl(recipeAuthorProfile.url),
     },
-    reviewedBy: {
+    contributor: {
       "@type": "Organization",
       name: recipeAuthorProfile.kitchen,
       url: absoluteUrl(recipeAuthorProfile.url),
     },
+    creditText: `Tested by ${recipeAuthorProfile.kitchen}`,
     datePublished: recipePublishedAt(recipe),
     dateModified: recipeContentUpdatedAt(recipe),
     prepTime: prepTime,

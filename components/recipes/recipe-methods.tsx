@@ -82,7 +82,7 @@ const RecipeMethods = ({ recipeMethods }: RecipeMethodsProps) => {
                 <Preview
                   value={method.description}
                   className={cn(
-                    "mt-3 text-sm leading-7 text-[#63564b] dark:text-[#b2c0b9]",
+                    "recipe-rich-content mt-3 text-sm leading-7 text-[#63564b] dark:text-[#b2c0b9]",
                     done && "line-through opacity-60",
                   )}
                 />
