@@ -55,6 +55,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       lastModified: "2026-06-05",
       changeFrequency: "daily",
     },
+    {
+      url: "/tools/smart-bmi-food-guide",
+      lastModified: "2026-06-08",
+      changeFrequency: "weekly",
+    },
     { url: "/blog", lastModified: "2026-05-30", changeFrequency: "daily" },
     {
       url: "/about-us",

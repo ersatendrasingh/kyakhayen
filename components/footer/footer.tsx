@@ -75,6 +75,10 @@ const Footer = async () => {
   const { categories, mealTimes, cuisines, recipeTypes } =
     await getFooterNavigationData();
   const ingredientGuides = getIngredientCollectionHubLinks();
+  const footerToolLinks = [
+    { slug: "smart-bmi-food-guide", href: "/tools/smart-bmi-food-guide", title: "Smart BMI & Food Guide" },
+    ...toolPages,
+  ];
 
   return (
     <footer className="site-footer border-t border-border bg-[#18130f] pt-12 text-white sm:pt-16">
@@ -263,7 +267,7 @@ const Footer = async () => {
             </Link>
           </div>
           <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-5">
-            {toolPages.map((tool) => (
+            {footerToolLinks.map((tool) => (
               <Link
                 key={tool.slug}
                 href={tool.href}

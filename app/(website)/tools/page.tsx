@@ -4,6 +4,7 @@ import {
   CalendarDays,
   CheckCircle2,
   Heart,
+  HeartPulse,
   IndianRupee,
   Refrigerator,
   Scale,
@@ -103,7 +104,27 @@ const compareVisual = {
   label: "Compare before choosing",
 };
 
+const bmiTool = {
+  href: "/tools/smart-bmi-food-guide",
+  title: "Smart BMI & Food Guide",
+  shortTitle: "BMI Food Guide",
+  eyebrow: "Wellness tool",
+  description:
+    "Calculate BMI, switch Indian/South Asian range, get healthy weight range, roti/rice portions, weekly check-ins, and recipe ideas.",
+  highlights: ["BMI", "Roti/rice", "Recipes"],
+};
+
+const bmiVisual = {
+  image: "/assets/images/auth-fruit-prep-hero.webp",
+  accent: "from-[#3c231d]/90 via-[#3c231d]/24",
+  label: "BMI plus food action",
+};
+
 const searchIntents = [
+  {
+    title: "BMI calculator with Indian food guide",
+    href: "/tools/smart-bmi-food-guide#tool",
+  },
   {
     title: "What can I cook with potato and onion?",
     href: "/tools/smart-recipe-finder?ingredients=potato%2Conion#fridge-tool",
@@ -175,6 +196,11 @@ const schema = [
         path: compareTool.href,
         image: compareVisual.image,
       },
+      {
+        name: bmiTool.title,
+        path: bmiTool.href,
+        image: bmiVisual.image,
+      },
     ],
   ),
   {
@@ -200,6 +226,14 @@ const schema = [
         applicationCategory: "LifestyleApplication",
         operatingSystem: "Web",
         description: compareTool.description,
+      },
+      {
+        "@type": "WebApplication",
+        name: bmiTool.title,
+        url: absoluteUrl(bmiTool.href),
+        applicationCategory: "LifestyleApplication",
+        operatingSystem: "Web",
+        description: bmiTool.description,
       },
     ],
   },
@@ -379,9 +413,87 @@ function CompareToolCard({
   );
 }
 
+function BmiToolCard({
+  variant = "compact",
+}: {
+  variant?: "featured" | "compact";
+}) {
+  const isFeatured = variant === "featured";
+
+  return (
+    <Link
+      href={bmiTool.href}
+      className={[
+        "group flex flex-col overflow-hidden border border-[#ead9c3] bg-white shadow-sm transition hover:-translate-y-0.5 hover:border-[#c84737] hover:shadow-xl hover:shadow-[#5c3219]/10 dark:border-white/10 dark:bg-white/[0.05]",
+        isFeatured ? "rounded-[1.45rem]" : "rounded-[1.2rem]",
+      ].join(" ")}
+    >
+      <span
+        className={[
+          "relative block overflow-hidden",
+          isFeatured ? "h-72 sm:h-80 lg:h-[22rem]" : "h-44 sm:h-48",
+        ].join(" ")}
+      >
+        <Image
+          src={bmiVisual.image}
+          alt=""
+          fill
+          sizes={
+            isFeatured
+              ? "(min-width: 1024px) 42vw, 100vw"
+              : "(min-width: 1024px) 28vw, (min-width: 768px) 50vw, 100vw"
+          }
+          className="object-cover transition duration-700 group-hover:scale-105"
+        />
+        <span className={`absolute inset-0 bg-gradient-to-t ${bmiVisual.accent} to-transparent`} />
+        <span className="absolute left-4 top-4 inline-flex items-center gap-2 rounded-full border border-[#f2cf8b]/24 bg-[#201713]/72 px-3 py-1.5 text-xs font-semibold text-[#f2cf8b] backdrop-blur">
+          <HeartPulse className="size-3.5" />
+          {bmiVisual.label}
+        </span>
+      </span>
+      <span className={["flex flex-1 flex-col", isFeatured ? "p-6 sm:p-7" : "p-5"].join(" ")}>
+        <span className="inline-flex rounded-full bg-[#f7e8df] px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-[#a04735] dark:bg-[#f2cf8b]/12 dark:text-[#f2cf8b]">
+          {bmiTool.eyebrow}
+        </span>
+        <span
+          className={[
+            "mt-3 block font-semibold leading-tight text-[#2e241c] dark:text-white",
+            isFeatured ? "text-3xl sm:text-4xl" : "text-xl sm:text-2xl",
+          ].join(" ")}
+        >
+          {bmiTool.title}
+        </span>
+        <span
+          className={[
+            "mt-3 block text-[#756354] dark:text-white/64",
+            isFeatured ? "text-base leading-8" : "text-sm leading-6",
+          ].join(" ")}
+        >
+          {bmiTool.description}
+        </span>
+        <span className="mt-5 flex flex-wrap gap-2">
+          {bmiTool.highlights.map((item) => (
+            <span
+              key={item}
+              className="rounded-full border border-[#ead9c3] bg-[#fffaf1] px-3 py-1.5 text-xs font-semibold text-[#6d4f2e] dark:border-white/10 dark:bg-white/[0.04] dark:text-white/72"
+            >
+              {item}
+            </span>
+          ))}
+        </span>
+        <span className="mt-auto pt-5 inline-flex items-center justify-between gap-3 text-sm font-semibold text-[#a04735]">
+          <span>Open tool</span>
+          <span className="inline-flex size-9 items-center justify-center rounded-full bg-[#f7e8df] text-[#a04735] transition group-hover:translate-x-1 dark:bg-[#f2cf8b]/12 dark:text-[#f2cf8b]">
+            <ArrowRight className="size-4" />
+          </span>
+        </span>
+      </span>
+    </Link>
+  );
+}
+
 export default function ToolsPage() {
   const primaryTools = toolPages.slice(0, 3);
-  const [featuredTool, ...supportingTools] = toolPages;
 
   return (
     <main className="home-surface min-h-screen pb-16 pt-8 sm:pt-12">
@@ -478,11 +590,11 @@ export default function ToolsPage() {
 
           <div className="grid items-start gap-5 lg:grid-cols-[0.95fr_1.35fr]">
             <div className="grid gap-5">
+              <BmiToolCard variant="featured" />
               <CompareToolCard variant="featured" />
-              {featuredTool && <ToolCard tool={featuredTool} variant="featured" />}
             </div>
             <div className="grid content-start items-start gap-5 sm:grid-cols-2">
-              {supportingTools.map((tool) => (
+              {toolPages.map((tool) => (
                 <ToolCard key={tool.slug} tool={tool} />
               ))}
             </div>
