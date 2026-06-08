@@ -997,17 +997,27 @@ body {
     color: #ecf2eb;
   }
 
-  .dark .recipe-overview-copy .rich-content h2,
-  .dark .recipe-overview-copy .rich-content h3 {
+  .dark .recipe-overview-copy h2,
+  .dark .recipe-overview-copy h3 {
     color: #edf2ec;
   }
 
-  .dark .recipe-overview-copy .rich-content ul,
-  .dark .recipe-overview-copy .rich-content blockquote {
-    color: #b4c1ba;
+  .dark .recipe-overview-copy p,
+  .dark .recipe-overview-copy ul,
+  .dark .recipe-overview-copy li,
+  .dark .recipe-overview-copy blockquote {
+    color: #b9c7c0;
   }
 
-  .dark .recipe-overview-copy .rich-content blockquote {
+  .dark .recipe-overview-copy strong {
+    color: #eef3ed;
+  }
+
+  .dark .recipe-overview-copy li::marker {
+    color: #ddb66e;
+  }
+
+  .dark .recipe-overview-copy blockquote {
     border-left-color: #d6ae64;
     background: #1b382f;
   }
