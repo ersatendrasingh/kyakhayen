@@ -11,6 +11,7 @@ import Image from "next/image";
 import Link from "next/link";
 
 import Container from "@/components/container";
+import SmartBmiCta from "@/components/sections/bmi-tool/smart-bmi-cta";
 import FridgeToolExperience from "@/components/sections/situation-tools/fridge-tool-experience";
 import type {
   InitialRecipePage,
@@ -792,6 +793,8 @@ export default async function FridgeToolPage({
             initialMealFocus={mealFocus}
           />
         </div>
+
+        <SmartBmiCta className="mt-12" />
 
         <section className="mt-14 overflow-hidden rounded-[1.4rem] border border-[#ead9c3] bg-[#fffaf1] dark:border-white/10 dark:bg-white/[0.04]">
           <div className="grid lg:grid-cols-[0.94fr_1.06fr]">

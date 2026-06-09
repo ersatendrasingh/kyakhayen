@@ -5,6 +5,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import Container from "@/components/container";
+import SmartBmiCta from "@/components/sections/bmi-tool/smart-bmi-cta";
 import SingleToolExperience from "@/components/sections/situation-tools/single-tool-experience";
 import {
   getInteractiveToolPage,
@@ -312,6 +313,8 @@ export default async function ToolDetailPage({
             defaultFoodType={defaultState.foodType}
           />
         </div>
+
+        <SmartBmiCta className="mt-12" />
 
         <section className="mt-14 overflow-hidden rounded-[1.6rem] border border-[#ead9c3] bg-[#fffaf1] p-5 shadow-[0_24px_74px_-58px_rgba(63,38,21,0.64)] dark:border-white/10 dark:bg-white/[0.04] sm:p-7">
           <div className="mb-6 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">

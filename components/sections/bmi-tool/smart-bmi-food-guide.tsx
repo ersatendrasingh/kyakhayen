@@ -37,6 +37,8 @@ type UnitSystem = "metric" | "imperial";
 type BmiMode = "south-asian" | "standard";
 type StapleChoice = "roti" | "rice" | "both";
 type FoodPreference = "any" | "veg" | "non-veg";
+type SexContext = "skip" | "female" | "male";
+type AgeContext = "under-20" | "adult" | "older";
 type BmiBand = "underweight" | "healthy" | "overweight" | "obese";
 
 type CheckIn = {
@@ -83,6 +85,18 @@ const stapleChoices = [
   { value: "rice", label: "Mostly rice" },
   { value: "both", label: "Roti + rice" },
 ] satisfies Array<{ value: StapleChoice; label: string }>;
+
+const sexChoices = [
+  { value: "skip", label: "Skip" },
+  { value: "female", label: "Female" },
+  { value: "male", label: "Male" },
+] satisfies Array<{ value: SexContext; label: string }>;
+
+const ageChoices = [
+  { value: "under-20", label: "Under 20" },
+  { value: "adult", label: "20-59" },
+  { value: "older", label: "60+" },
+] satisfies Array<{ value: AgeContext; label: string }>;
 
 function round1(value: number) {
   return Math.round(value * 10) / 10;
@@ -242,11 +256,13 @@ function portionGuide(result: BmiResult, staple: StapleChoice) {
   if (result.band === "underweight") {
     if (staple === "rice") {
       return {
+        breakfast: "Poha or upma with peanuts + curd, milk or a banana",
         lunch: "1.25 cups rice + dal or rajma + sabzi + curd",
         dinner: "Rice or khichdi + paneer/curd support + vegetables",
       };
     }
     return {
+      breakfast: "Paneer paratha, besan chilla with curd, or smoothie + nuts",
       lunch: "2-3 roti + dal/paneer/chana + sabzi + curd",
       dinner: "2 roti + protein-rich curry + salad + small ghee finish",
     };
@@ -255,17 +271,20 @@ function portionGuide(result: BmiResult, staple: StapleChoice) {
   if (result.band === "healthy") {
     if (staple === "rice") {
       return {
+        breakfast: "Idli, poha or upma + curd, fruit or sprouts",
         lunch: "1 cup rice + dal + sabzi + curd",
         dinner: "3/4-1 cup rice + curry + salad",
       };
     }
     if (staple === "both") {
       return {
+        breakfast: "Besan chilla, oats, poha or 1 stuffed roti + curd",
         lunch: "1 roti + 1/2 cup rice + dal + sabzi",
         dinner: "Choose either 2 roti or 1 cup rice with protein and salad",
       };
     }
     return {
+      breakfast: "Besan chilla, stuffed roti, oats or sprouts + curd",
       lunch: "2 roti + dal + sabzi + curd",
       dinner: "2 roti + lighter curry + salad",
     };
@@ -273,17 +292,20 @@ function portionGuide(result: BmiResult, staple: StapleChoice) {
 
   if (staple === "rice") {
     return {
+      breakfast: "Besan chilla, sprouts, curd bowl or lighter poha with peanuts",
       lunch: "3/4-1 cup rice + dal/protein + double vegetables",
       dinner: "1/2-3/4 cup rice or khichdi + salad + curd",
     };
   }
   if (staple === "both") {
     return {
+      breakfast: "Besan chilla, sprouts, curd or oats before roti/rice-heavy meals",
       lunch: "1 roti + 1/3-1/2 cup rice + dal + sabzi",
       dinner: "Pick roti or rice, not both, and add salad first",
     };
   }
   return {
+    breakfast: "Besan chilla, sprouts, curd or stuffed roti with less oil",
     lunch: "2 roti + dal/protein + sabzi + salad",
     dinner: "1-2 roti + lighter sabzi/curry + salad",
   };
@@ -340,11 +362,39 @@ function recipeReason(result: BmiResult) {
   return "A better fit for lighter, higher-satiety meals and portion-controlled plates.";
 }
 
+function contextNotes(ageContext: AgeContext, sexContext: SexContext) {
+  const notes = [
+    "For adults, BMI uses the same height and weight formula for male and female users. Sex context helps explain the result; it does not change the BMI number.",
+  ];
+
+  if (ageContext === "under-20") {
+    notes.push(
+      "Under 20: use this only as a rough screen. Children and teens need BMI-for-age percentile charts that include age and sex.",
+    );
+  } else if (ageContext === "older") {
+    notes.push(
+      "Age 60+: BMI can still be a screen, but weight goals should be gentler and checked with strength, appetite, health conditions and a qualified professional.",
+    );
+  } else {
+    notes.push("Age 20-59: adult BMI categories can be used as a screening range along with waist, food habits and health context.");
+  }
+
+  if (sexContext === "female") {
+    notes.push("Female context: pregnancy, postpartum phase, PCOS, menopause and iron needs can change the right food plan even when BMI is the same.");
+  } else if (sexContext === "male") {
+    notes.push("Male context: BMI is the same formula, but waist size, muscle mass and activity level can change how the result should be interpreted.");
+  }
+
+  return notes;
+}
+
 export default function SmartBmiFoodGuide({ recipes }: { recipes: BmiToolRecipe[] }) {
   const [unit, setUnit] = useState<UnitSystem>("metric");
   const [mode, setMode] = useState<BmiMode>("south-asian");
   const [foodPreference, setFoodPreference] = useState<FoodPreference>("veg");
   const [staple, setStaple] = useState<StapleChoice>("both");
+  const [sexContext, setSexContext] = useState<SexContext>("skip");
+  const [ageContext, setAgeContext] = useState<AgeContext>("adult");
   const [heightCm, setHeightCm] = useState(170);
   const [weightKg, setWeightKg] = useState(72);
   const [waistCm, setWaistCm] = useState(86);
@@ -370,6 +420,7 @@ export default function SmartBmiFoodGuide({ recipes }: { recipes: BmiToolRecipe[
   );
   const moves = result ? foodMoves(result, staple, foodPreference) : [];
   const portions = result ? portionGuide(result, staple) : null;
+  const notes = contextNotes(ageContext, sexContext);
   const recommendedRecipes = useMemo(() => {
     if (!result) return [];
     return recipes
@@ -417,6 +468,7 @@ export default function SmartBmiFoodGuide({ recipes }: { recipes: BmiToolRecipe[
         `BMI: ${round1(result.bmi)} (${result.label})`,
         `Healthy weight range: ${round1(result.healthyMinKg)}-${round1(result.healthyMaxKg)} kg`,
         `Target guide: ${round1(result.targetKg)} kg`,
+        `Age and sex context: ${ageChoices.find((item) => item.value === ageContext)?.label ?? "20-59"}, ${sexChoices.find((item) => item.value === sexContext)?.label ?? "Skip"}`,
         `Food focus: ${moves[0]}`,
         `Recipes: ${recommendedRecipes.slice(0, 3).map((recipe) => recipe.title).join(", ")}`,
       ].join("\n")
@@ -597,6 +649,50 @@ export default function SmartBmiFoodGuide({ recipes }: { recipes: BmiToolRecipe[
             <div className="grid gap-3 sm:grid-cols-2">
               <fieldset className="rounded-xl border border-[#ead9c3] p-3 dark:border-white/10">
                 <legend className="px-1 text-xs font-semibold uppercase tracking-[0.14em] text-[#806b58] dark:text-white/58">
+                  Age
+                </legend>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {ageChoices.map((item) => (
+                    <button
+                      key={item.value}
+                      type="button"
+                      onClick={() => setAgeContext(item.value)}
+                      className={`rounded-full px-3 py-2 text-xs font-semibold transition ${
+                        ageContext === item.value
+                          ? "bg-[#17372b] text-white dark:bg-[#f3ca7a] dark:text-[#20150c]"
+                          : "bg-[#f5ead8] text-[#6f5d4c] dark:bg-white/10 dark:text-white/68"
+                      }`}
+                    >
+                      {item.label}
+                    </button>
+                  ))}
+                </div>
+              </fieldset>
+
+              <fieldset className="rounded-xl border border-[#ead9c3] p-3 dark:border-white/10">
+                <legend className="px-1 text-xs font-semibold uppercase tracking-[0.14em] text-[#806b58] dark:text-white/58">
+                  Sex context
+                </legend>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {sexChoices.map((item) => (
+                    <button
+                      key={item.value}
+                      type="button"
+                      onClick={() => setSexContext(item.value)}
+                      className={`rounded-full px-3 py-2 text-xs font-semibold transition ${
+                        sexContext === item.value
+                          ? "bg-[#17372b] text-white dark:bg-[#f3ca7a] dark:text-[#20150c]"
+                          : "bg-[#f5ead8] text-[#6f5d4c] dark:bg-white/10 dark:text-white/68"
+                      }`}
+                    >
+                      {item.label}
+                    </button>
+                  ))}
+                </div>
+              </fieldset>
+
+              <fieldset className="rounded-xl border border-[#ead9c3] p-3 dark:border-white/10">
+                <legend className="px-1 text-xs font-semibold uppercase tracking-[0.14em] text-[#806b58] dark:text-white/58">
                   Food style
                 </legend>
                 <div className="mt-2 flex flex-wrap gap-2">
@@ -702,6 +798,9 @@ export default function SmartBmiFoodGuide({ recipes }: { recipes: BmiToolRecipe[
                   Waist-to-height ratio: {round1(result.waistRatio)}. {result.waistLabel}
                 </span>
               ) : null}
+              <span className="mt-2 block">{notes[0]}</span>
+              <span className="mt-2 block">{notes[1]}</span>
+              {notes[2] ? <span className="mt-2 block">{notes[2]}</span> : null}
             </div>
             {shareState && <p className="mt-3 text-sm font-semibold text-white/78">{shareState}</p>}
           </div>
@@ -738,22 +837,20 @@ export default function SmartBmiFoodGuide({ recipes }: { recipes: BmiToolRecipe[
               Keep the plate practical.
             </h2>
             <div className="mt-5 grid gap-3">
-              <div className="rounded-2xl bg-white p-4 dark:bg-white/[0.05]">
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#8b735f] dark:text-white/50">
-                  Lunch
-                </p>
-                <p className="mt-2 text-base font-semibold leading-7 text-[#2e241c] dark:text-white">
-                  {portions.lunch}
-                </p>
-              </div>
-              <div className="rounded-2xl bg-white p-4 dark:bg-white/[0.05]">
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#8b735f] dark:text-white/50">
-                  Dinner
-                </p>
-                <p className="mt-2 text-base font-semibold leading-7 text-[#2e241c] dark:text-white">
-                  {portions.dinner}
-                </p>
-              </div>
+              {[
+                { label: "Breakfast", value: portions.breakfast },
+                { label: "Lunch", value: portions.lunch },
+                { label: "Dinner", value: portions.dinner },
+              ].map((item) => (
+                <div key={item.label} className="rounded-2xl bg-white p-4 dark:bg-white/[0.05]">
+                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#8b735f] dark:text-white/50">
+                    {item.label}
+                  </p>
+                  <p className="mt-2 text-base font-semibold leading-7 text-[#2e241c] dark:text-white">
+                    {item.value}
+                  </p>
+                </div>
+              ))}
             </div>
           </div>
         </section>

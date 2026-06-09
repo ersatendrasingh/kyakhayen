@@ -20,28 +20,29 @@ import {
 const pagePath = "/tools/smart-bmi-food-guide";
 const pageTitle = "Smart BMI & Food Guide";
 const pageDescription =
-  "Use Smart BMI & Food Guide to calculate BMI, compare standard and Indian BMI ranges, check healthy weight range, get roti/rice portions, weekly check-ins, and recipe ideas from Kya Khayen.";
+  "Use Smart BMI & Food Guide as a BMI calculator for Indian adults, compare standard and South Asian BMI ranges, check healthy weight in kg, get roti/rice diet portions, meal plan ideas, and recipe suggestions from Kya Khayen.";
+const targetKeywords = [
+  "bmi calculator india",
+  "bmi calculator for indian adults",
+  "bmi calculator with diet plan",
+  "bmi calculator with meal plan",
+  "healthy weight calculator india",
+  "indian bmi chart male female",
+  "south asian bmi calculator",
+  "how much should i weigh for my height in kg",
+  "weight loss meal plan by BMI",
+  "bmi calculator with roti rice diet",
+];
 
 export const revalidate = 3600;
 
 export const metadata: Metadata = buildSeoMetadata({
-  title: "Smart BMI & Food Guide: Indian BMI Calculator with Meal Ideas",
+  title: "Smart BMI & Food Guide: BMI Calculator India with Diet Plan",
   description: pageDescription,
   path: pagePath,
   image: "/meta-images/home-og-2026.png",
   imageAlt: "Smart BMI and food guide by Kya Khayen",
-  keywords: [
-    "BMI calculator India",
-    "Indian BMI calculator",
-    "South Asian BMI calculator",
-    "BMI calculator with diet plan",
-    "BMI calculator with meal plan",
-    "healthy weight calculator India",
-    "BMI calculator with roti rice diet",
-    "weight loss meal plan by BMI",
-    "healthy weight range calculator",
-    "Indian food guide by BMI",
-  ],
+  keywords: targetKeywords,
 });
 
 const faqs = [
@@ -54,6 +55,26 @@ const faqs = [
     question: "Can I use Indian or South Asian BMI ranges?",
     answer:
       "Yes. The tool lets you switch between standard adult BMI ranges and an Indian/South Asian mode with lower action points.",
+  },
+  {
+    question: "Is this a BMI calculator for Indian adults, male or female?",
+    answer:
+      "Yes. Adults can use the Indian/South Asian mode as an Indian BMI chart reference for male and female users. Adult BMI uses the same height and weight formula for male and female users; the tool adds sex context for interpretation, not a different BMI formula.",
+  },
+  {
+    question: "Does age change BMI?",
+    answer:
+      "The adult BMI formula does not change by age, but interpretation does. Under 20 users need BMI-for-age percentile charts, while older adults should treat weight goals more gently and consider strength, appetite and medical history.",
+  },
+  {
+    question: "How much should I weigh for my height in kg?",
+    answer:
+      "Enter height and weight to see a healthy weight range in kg for the selected BMI mode, plus an approximate above-or-below range message.",
+  },
+  {
+    question: "Can this BMI calculator help with a diet plan or meal plan?",
+    answer:
+      "It gives food-first guidance, roti/rice portions, breakfast, lunch and dinner suggestions, recipe ideas, and a meal plan CTA based on the BMI result.",
   },
   {
     question: "Does this tool give medical advice?",
@@ -81,6 +102,11 @@ function webApplicationJsonLd() {
     applicationCategory: "LifestyleApplication",
     operatingSystem: "Web",
     description: pageDescription,
+    keywords: targetKeywords.join(", "),
+    audience: {
+      "@type": "Audience",
+      audienceType: "Indian and South Asian adults planning everyday food choices",
+    },
     offers: {
       "@type": "Offer",
       price: "0",
@@ -218,7 +244,7 @@ export default async function SmartBmiFoodGuidePage() {
                 Smart BMI & Food Guide
               </h1>
               <p className="mt-5 max-w-2xl text-base leading-8 text-[#756354] dark:text-white/64 sm:text-lg">
-                Calculate BMI, switch between standard and Indian/South Asian ranges, add waist context, then turn the result into roti/rice portions, recipe ideas and a weekly check-in habit.
+                Calculate BMI, switch between standard and Indian/South Asian ranges, add waist context, then turn the result into healthy weight in kg, roti/rice portions, breakfast ideas, recipe suggestions and a weekly check-in habit.
               </p>
               <div className="mt-7 grid gap-3 sm:flex sm:flex-wrap">
                 <a
@@ -274,11 +300,11 @@ export default async function SmartBmiFoodGuidePage() {
           {[
             {
               title: "BMI with Indian context",
-              body: "Switch between standard adult BMI and Indian/South Asian mode before reading the result.",
+              body: "Switch between standard adult BMI and Indian/South Asian mode before reading the result, useful for an Indian BMI chart style reference.",
             },
             {
               title: "Food-first recommendations",
-              body: "The tool turns the number into practical food moves, roti/rice portions and recipe links.",
+              body: "The tool turns the number into practical food moves, breakfast, roti/rice portions, recipe links and meal plan next steps.",
             },
             {
               title: "Designed for repeat use",
@@ -293,6 +319,36 @@ export default async function SmartBmiFoodGuidePage() {
               <p className="mt-2 text-sm leading-7 text-[#756354] dark:text-white/64">{item.body}</p>
             </article>
           ))}
+        </section>
+
+        <section className="mt-12 rounded-[1.5rem] border border-[#ead9c3] bg-white p-6 dark:border-white/10 dark:bg-white/[0.04] sm:p-7">
+          <p className="text-xs font-semibold uppercase tracking-[0.22em] text-primary dark:text-[#f3ca7a]">
+            BMI calculator India guide
+          </p>
+          <div className="mt-4 grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
+            <div>
+              <h2 className="text-3xl font-semibold leading-tight text-[#2e241c] dark:text-white">
+                Healthy weight in kg, without treating BMI like the whole story.
+              </h2>
+              <p className="mt-4 text-sm leading-7 text-[#756354] dark:text-white/64">
+                Smart BMI & Food Guide works as a BMI calculator India page, a healthy weight calculator India guide, and a practical food planner for Indian meals. Enter height and weight to answer “how much should I weigh for my height in kg”, then choose standard or South Asian BMI calculator mode.
+              </p>
+            </div>
+            <div className="grid gap-3">
+              {[
+                "Adult BMI is the same formula for male and female users, so the Indian BMI chart male female context is shown as an interpretation note rather than a different number.",
+                "Under 20 users should use BMI-for-age percentile guidance; this adult BMI calculator for Indian adults is not a pediatric diagnosis tool.",
+                "Food guidance turns the result into a BMI calculator with diet plan, BMI calculator with meal plan, weight loss meal plan by BMI, and BMI calculator with roti rice diet experience.",
+              ].map((item) => (
+                <p
+                  key={item}
+                  className="rounded-2xl border border-[#ead9c3] bg-[#fffaf2] p-4 text-sm leading-7 text-[#5f5145] dark:border-white/10 dark:bg-white/[0.04] dark:text-white/68"
+                >
+                  {item}
+                </p>
+              ))}
+            </div>
+          </div>
         </section>
 
         <section className="mt-12 rounded-[1.5rem] border border-[#ead9c3] bg-white p-6 dark:border-white/10 dark:bg-white/[0.04] sm:p-7">

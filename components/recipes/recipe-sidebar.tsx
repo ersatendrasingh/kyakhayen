@@ -2,6 +2,7 @@ import { ArrowRight, Sparkles } from "lucide-react";
 import Link from "next/link";
 
 import RecipeSidebarWidget from "@/components/recipes/recipe-sidebar-widget";
+import SmartBmiCta from "@/components/sections/bmi-tool/smart-bmi-cta";
 import type { RecipeSidebarTaxonomyItem } from "@/lib/public-content";
 
 interface RecipeSidebarProps {
@@ -36,6 +37,7 @@ const RecipeSidebar = ({
           <ArrowRight className="size-4" />
         </Link>
       </div>
+      <SmartBmiCta variant="sidebar" />
       <RecipeSidebarWidget
         title="Food preference"
         eyebrow="Choose your style"

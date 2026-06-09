@@ -15,6 +15,7 @@ import LazyMembershipPromptModal from "@/components/sections/lazy-membership-pro
 import HomeEditorialStories from "@/components/sections/home-editorial-stories";
 import HomeSituationTools from "@/components/sections/home-situation-tools";
 import HomeSeoHubs from "@/components/sections/home-seo-hubs";
+import SmartBmiCta from "@/components/sections/bmi-tool/smart-bmi-cta";
 import { db } from "@/lib/db";
 import {
   isExtraPrimaryIngredientValue,
@@ -650,6 +651,7 @@ export default async function Home() {
               hasPrevious: false,
             }}
           />
+          <SmartBmiCta variant="home" />
           <HomeFeaturedRecipes recipes={featuredRecipes} />
           <SeasonalSpotlight
             recipes={summerRecipes}

@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 
 import Container from "@/components/container";
+import SmartBmiCta from "@/components/sections/bmi-tool/smart-bmi-cta";
 import FoodCompareTool from "@/components/sections/food-compare/food-compare-tool";
 import {
   buildFoodComparison,
@@ -218,6 +219,8 @@ export default async function FoodComparePage({
           initialResult={initialResult}
           initialSuggestions={initialSuggestions}
         />
+
+        <SmartBmiCta className="mt-12" />
 
         {popularPairs.length > 0 && (
           <section className="mt-12">
