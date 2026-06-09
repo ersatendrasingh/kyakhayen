@@ -24,6 +24,7 @@ import {
   itemListJsonLd,
   jsonLd,
 } from "@/lib/seo";
+import SmartBmiCta from "@/components/sections/bmi-tool/smart-bmi-cta";
 
 type BlogPageProps = {
   searchParams: Promise<{ k?: string; type?: string }>;
@@ -125,12 +126,18 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
       take: 24,
     }),
     db.category.findMany({
-      where: { isPublished: true, PostCategory: { some: { post: { isPublished: true } } } },
+      where: {
+        isPublished: true,
+        PostCategory: { some: { post: { isPublished: true } } },
+      },
       include: { _count: { select: { PostCategory: true } } },
       orderBy: [{ position: "asc" }, { title: "asc" }],
     }),
     db.articleTag.findMany({
-      where: { isPublished: true, PostTag: { some: { post: { isPublished: true } } } },
+      where: {
+        isPublished: true,
+        PostTag: { some: { post: { isPublished: true } } },
+      },
       include: { _count: { select: { PostTag: true } } },
       orderBy: [{ position: "asc" }, { title: "asc" }],
       take: 8,
@@ -157,7 +164,11 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
           take: 1,
         },
       },
-      orderBy: [{ views: "desc" }, { contentUpdatedAt: "desc" }, { updatedAt: "desc" }],
+      orderBy: [
+        { views: "desc" },
+        { contentUpdatedAt: "desc" },
+        { updatedAt: "desc" },
+      ],
       take: 6,
     }),
   ]);
@@ -174,7 +185,9 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
   if (filters.type) queryString.set("type", filters.type);
   const blogPath = `/blog${queryString.size ? `?${queryString.toString()}` : ""}`;
   const listingSchema = itemListJsonLd(
-    filterLabel ? `${filterLabel} food stories` : "Food stories from Kya Khayen",
+    filterLabel
+      ? `${filterLabel} food stories`
+      : "Food stories from Kya Khayen",
     articles.map((article) => ({
       name: article.title,
       path: articleHref(article),
@@ -191,7 +204,9 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
     <main className="relative min-h-screen overflow-x-clip bg-[#fbf6ed] pb-20 text-[#30251e] dark:bg-[#091712] dark:text-[#eef2ec]">
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: jsonLd([listingSchema, breadcrumbSchema]) }}
+        dangerouslySetInnerHTML={{
+          __html: jsonLd([listingSchema, breadcrumbSchema]),
+        }}
       />
       <div className="pointer-events-none absolute inset-x-0 top-0 h-[620px] bg-[radial-gradient(circle_at_10%_12%,rgba(210,157,76,0.18),transparent_37%),radial-gradient(circle_at_88%_8%,rgba(187,57,43,0.10),transparent_32%)] dark:bg-[radial-gradient(circle_at_12%_8%,rgba(208,166,88,0.13),transparent_33%),radial-gradient(circle_at_90%_4%,rgba(178,60,43,0.16),transparent_27%)]" />
       <Container>
@@ -214,7 +229,10 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
               <p className="mb-4 text-xs font-semibold uppercase tracking-[0.22em] text-[#a77838] dark:text-[#d6aa60]">
                 Explore by collection
               </p>
-              <nav className="flex flex-wrap gap-2" aria-label="Article categories">
+              <nav
+                className="flex flex-wrap gap-2"
+                aria-label="Article categories"
+              >
                 <Link
                   href="/blog"
                   className={`rounded-full border px-4 py-2 text-sm transition ${
@@ -245,10 +263,16 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
           {filterLabel && (
             <div className="mt-10 flex items-center justify-between gap-4 border-y border-[#eadcc6] py-5 dark:border-white/10">
               <p className="text-sm text-[#786658] dark:text-[#a9b8b0]">
-                Showing <span className="font-semibold text-current">{filterLabel}</span>{" "}
+                Showing{" "}
+                <span className="font-semibold text-current">
+                  {filterLabel}
+                </span>{" "}
                 stories
               </p>
-              <Link href="/blog" className="text-sm font-semibold text-[#b83c2e] dark:text-[#e2b469]">
+              <Link
+                href="/blog"
+                className="text-sm font-semibold text-[#b83c2e] dark:text-[#e2b469]"
+              >
                 Clear filter
               </Link>
             </div>
@@ -257,11 +281,16 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
           {!lead ? (
             <section className="mt-14 rounded-[2rem] border border-dashed border-[#ddc9a9] bg-white/55 px-6 py-20 text-center dark:border-white/12 dark:bg-[#10241e]">
               <Sparkles className="mx-auto size-7 text-[#b78440] dark:text-[#dbad63]" />
-              <h2 className="mt-5 text-2xl font-semibold">No stories found here yet.</h2>
+              <h2 className="mt-5 text-2xl font-semibold">
+                No stories found here yet.
+              </h2>
               <p className="mt-3 text-sm text-[#756457] dark:text-[#acb9b2]">
                 Browse every story or try a different collection.
               </p>
-              <Link href="/blog" className="mt-7 inline-flex rounded-full bg-[#b83c2e] px-6 py-3 text-sm font-semibold text-white">
+              <Link
+                href="/blog"
+                className="mt-7 inline-flex rounded-full bg-[#b83c2e] px-6 py-3 text-sm font-semibold text-white"
+              >
                 View all stories
               </Link>
             </section>
@@ -339,6 +368,7 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
                       Save a useful method, discover a seasonal combination or
                       find one small change for tonight&apos;s table.
                     </p>
+                    <SmartBmiCta variant="sidebar" />
                     <JournalDayBoard
                       recipes={previewRecipes}
                       fallbackDayLabel={dayLabel}
@@ -364,9 +394,12 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
                       </div>
                     </div>
                     <div className="rounded-[1.5rem] border border-[#eadcc6] bg-white/70 p-5 dark:border-white/10 dark:bg-[#10241e]">
-                      <p className="text-lg font-semibold">Make it your table.</p>
+                      <p className="text-lg font-semibold">
+                        Make it your table.
+                      </p>
                       <p className="mt-2 text-sm leading-6 text-[#756457] dark:text-[#aab8b0]">
-                        Turn recipe inspiration into a meal plan built from your everyday choices.
+                        Turn recipe inspiration into a meal plan built from your
+                        everyday choices.
                       </p>
                       <div className="mt-5">
                         <HomeMealPlanAction variant="article" />

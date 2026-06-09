@@ -55,7 +55,9 @@ function CtaContent({ compact = false }: { compact?: boolean }) {
         </div>
       </div>
       <p className="mt-4 max-w-3xl text-sm leading-7 text-[#6f5d4c] dark:text-white/66">
-        Check Indian/South Asian BMI range, healthy weight in kg, waist-to-height context, breakfast, roti/rice portions and recipe ideas from Kya Khayen.
+        Check Indian/South Asian BMI range, healthy weight in kg,
+        waist-to-height context, breakfast, roti/rice portions and recipe ideas
+        from Kya Khayen.
       </p>
       <div className="mt-5 flex flex-wrap gap-2">
         {chips.map((chip) => (
@@ -103,7 +105,9 @@ export default function SmartBmiCta({
                       <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-[#f4cf83] text-[#17372b]">
                         <Icon className="size-4" />
                       </span>
-                      <span className="text-sm font-semibold leading-6">{item.label}</span>
+                      <span className="text-sm font-semibold leading-6">
+                        {item.label}
+                      </span>
                     </div>
                   );
                 })}
@@ -133,12 +137,13 @@ export default function SmartBmiCta({
               Food guide
             </span>
             <span className="mt-1 block text-lg font-semibold leading-tight text-[#2e241c] dark:text-white">
-              BMI se plate guide banao.
+              Build Your Plate with BMI Insights.
             </span>
           </span>
         </span>
         <span className="mt-3 block text-sm leading-6 text-[#6f5d4c] dark:text-white/64">
-          Healthy weight, breakfast, roti/rice portions and recipes in one quick tool.
+          Healthy weight, breakfast, roti/rice portions and recipes in one quick
+          tool.
         </span>
         <span className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-[#c83a2d] dark:text-[#f4cf83]">
           Open BMI guide

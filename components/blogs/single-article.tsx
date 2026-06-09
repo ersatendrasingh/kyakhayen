@@ -1,4 +1,12 @@
-import { ArrowLeft, ArrowRight, BookMarked, Clock3, Newspaper, ShieldCheck, Sparkles } from "lucide-react";
+import {
+  ArrowLeft,
+  ArrowRight,
+  BookMarked,
+  Clock3,
+  Newspaper,
+  ShieldCheck,
+  Sparkles,
+} from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -25,6 +33,7 @@ import {
   seoDescription,
 } from "@/lib/seo";
 import type { PostWithCategory } from "@/types/article";
+import SmartBmiCta from "../sections/bmi-tool/smart-bmi-cta";
 
 export default async function SingleArticle({
   article,
@@ -65,7 +74,11 @@ export default async function SingleArticle({
       metaSlug: true,
       imageUrl: true,
     },
-    orderBy: [{ views: "desc" }, { contentUpdatedAt: "desc" }, { updatedAt: "desc" }],
+    orderBy: [
+      { views: "desc" },
+      { contentUpdatedAt: "desc" },
+      { updatedAt: "desc" },
+    ],
     take: 2,
   });
   const { html, headings } = prepareArticleBody(article.content);
@@ -133,14 +146,20 @@ export default async function SingleArticle({
     ]
       .filter(Boolean)
       .join(", "),
-    wordCount: stripArticleHtml(article.content).split(/\s+/).filter(Boolean).length,
+    wordCount: stripArticleHtml(article.content).split(/\s+/).filter(Boolean)
+      .length,
     timeRequired: `PT${articleReadMinutes(article.content)}M`,
   };
   const breadcrumbSchema = breadcrumbJsonLd([
     { name: "Home", path: "/" },
     { name: "Food Stories", path: "/blog" },
     ...(category
-      ? [{ name: category.title, path: `/blog?k=${category.slug}&type=category` }]
+      ? [
+          {
+            name: category.title,
+            path: `/blog?k=${category.slug}&type=category`,
+          },
+        ]
       : []),
     { name: article.title, path: articleHref(article) },
   ]);
@@ -231,11 +250,15 @@ export default async function SingleArticle({
                 <dl className="mt-4 space-y-3 text-sm text-[#706053] dark:text-[#afbbb4]">
                   <div className="flex justify-between gap-3">
                     <dt>Reading time</dt>
-                    <dd className="font-semibold">{articleReadMinutes(article.content)} min</dd>
+                    <dd className="font-semibold">
+                      {articleReadMinutes(article.content)} min
+                    </dd>
                   </div>
                   <div className="flex justify-between gap-3">
                     <dt>Published</dt>
-                    <dd className="text-right font-semibold">{formatArticleDate(article.updatedAt)}</dd>
+                    <dd className="text-right font-semibold">
+                      {formatArticleDate(article.updatedAt)}
+                    </dd>
                   </div>
                 </dl>
               </div>
@@ -274,11 +297,12 @@ export default async function SingleArticle({
                   <Sparkles className="size-4" /> Plan from this story
                 </p>
                 <h2 className="mt-4 max-w-lg text-2xl font-semibold leading-tight">
-                  Turn today&apos;s inspiration into meals chosen for your table.
+                  Turn today&apos;s inspiration into meals chosen for your
+                  table.
                 </h2>
                 <p className="mt-3 max-w-xl text-sm leading-7 text-white/68">
-                  Pick the cuisines and everyday dishes you enjoy, then keep your
-                  next meals organised in one place.
+                  Pick the cuisines and everyday dishes you enjoy, then keep
+                  your next meals organised in one place.
                 </p>
                 <div className="mt-5 flex flex-wrap gap-2">
                   {editorialLinks.map((link) => (
@@ -317,7 +341,6 @@ export default async function SingleArticle({
                   />
                 </div>
               </section>
-
             </div>
 
             <aside className="space-y-5 lg:sticky lg:top-28">
@@ -337,12 +360,16 @@ export default async function SingleArticle({
                   ))}
                 </div>
               </div>
+              <SmartBmiCta variant="sidebar" />
               <div className="rounded-[1.45rem] bg-[#17382d] p-5 text-[#f2f1e8] dark:bg-[#152f27]">
                 <ShieldCheck className="size-5 text-[#dcb267]" />
-                <p className="mt-4 text-sm font-semibold">Food inspiration only</p>
+                <p className="mt-4 text-sm font-semibold">
+                  Food inspiration only
+                </p>
                 <p className="mt-2 text-xs leading-6 text-white/68">
                   Kya Khayen shares everyday cooking ideas, not medical,
-                  nutrition or allergy advice. Verify ingredients where safety matters.
+                  nutrition or allergy advice. Verify ingredients where safety
+                  matters.
                 </p>
               </div>
               {recipeIdeas.length > 0 && (
@@ -426,7 +453,8 @@ export default async function SingleArticle({
                 </h2>
               </div>
               <p className="max-w-sm text-sm leading-6 text-[#756457] dark:text-[#afbbb4]">
-                Ask a cooking question or share a practical tip with fellow home cooks.
+                Ask a cooking question or share a practical tip with fellow home
+                cooks.
               </p>
             </div>
             <ArticleComments
@@ -442,7 +470,9 @@ export default async function SingleArticle({
                   <p className="text-xs font-semibold uppercase tracking-[0.25em] text-[#a77838] dark:text-[#d6aa60]">
                     Continue reading
                   </p>
-                  <h2 className="mt-3 text-3xl font-semibold">Related food stories</h2>
+                  <h2 className="mt-3 text-3xl font-semibold">
+                    Related food stories
+                  </h2>
                 </div>
                 <Link
                   href="/blog"
