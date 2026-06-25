@@ -69,6 +69,28 @@ export function absoluteUrl(path = "/") {
   return `${getSiteUrl()}${normalizedPath === "/" ? "" : normalizedPath}`;
 }
 
+export function normalizePathSegment(value?: string | null) {
+  return (value || "")
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .replace(/-{2,}/g, "-");
+}
+
+function contentHref(content: { slug: string; metaSlug?: string | null }) {
+  const slug = normalizePathSegment(content.slug);
+  const metaSlug = normalizePathSegment(content.metaSlug);
+
+  if (!metaSlug || metaSlug === slug) return `/${slug}`;
+
+  const suffix = metaSlug.startsWith(`${slug}-`)
+    ? metaSlug.slice(slug.length + 1)
+    : metaSlug;
+
+  return suffix ? `/${slug}-${suffix}` : `/${slug}`;
+}
+
 export function stripHtml(value?: string | null) {
   return (value || "")
     .replace(/<script[\s\S]*?<\/script>/gi, " ")
@@ -117,11 +139,11 @@ export function seoDescription(
 }
 
 export function recipeHref(recipe: { slug: string; metaSlug?: string | null }) {
-  return `/${recipe.metaSlug ? `${recipe.slug}-${recipe.metaSlug}` : recipe.slug}`;
+  return contentHref(recipe);
 }
 
 export function articleHref(article: { slug: string; metaSlug?: string | null }) {
-  return `/${article.metaSlug ? `${article.slug}-${article.metaSlug}` : article.slug}`;
+  return contentHref(article);
 }
 
 export function indexRobots(): Metadata["robots"] {

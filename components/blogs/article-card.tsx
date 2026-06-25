@@ -5,6 +5,7 @@ import { useInView } from "react-intersection-observer";
 import Link from "next/link";
 
 import { PostWithCategory } from "@/types/article";
+import { articleHref } from "@/lib/seo";
 
 interface ArticleCardProps {
   article: PostWithCategory;
@@ -23,13 +24,7 @@ const ArticleCard = ({ article }: ArticleCardProps) => {
         inView ? "animate-slide-up" : ""
       }`}
     >
-      <Link
-        href={
-          article.metaSlug
-            ? `/${article.slug}-${article.metaSlug}`
-            : `/${article.slug}`
-        }
-      >
+      <Link href={articleHref(article)}>
         <div className="h-full flex flex-col">
           <div className="relative">
             <Image

@@ -3,6 +3,7 @@ import { revalidatePath } from "next/cache";
 
 import { currentUser } from "@/lib/auth";
 import { db } from "@/lib/db";
+import { normalizePathSegment } from "@/lib/seo";
 import { deleteFolderFromS3, getVerifiedPublicMediaKey } from "@/lib/s3utils";
 import { slugify } from "@/lib/slugify";
 
@@ -100,7 +101,12 @@ export async function PATCH(
     if (body.content !== undefined) data.content = body.content;
     if (body.metaTitle !== undefined) data.metaTitle = body.metaTitle;
     if (body.metaDescription !== undefined) data.metaDescription = body.metaDescription;
-    if (body.metaSlug !== undefined) data.metaSlug = body.metaSlug;
+    if (body.metaSlug !== undefined) {
+      data.metaSlug =
+        typeof body.metaSlug === "string"
+          ? normalizePathSegment(body.metaSlug) || null
+          : null;
+    }
     if (body.imageUrl !== undefined) {
       const imageUrl = body.imageUrl?.trim() || null;
       if (imageUrl && imageUrl !== current.imageUrl) {

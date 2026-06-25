@@ -6,6 +6,7 @@ import {
 
 import { db } from "@/lib/db";
 import { createNotificationCampaign, sendNotificationCampaign } from "@/lib/notifications";
+import { recipeHref } from "@/lib/seo";
 
 type AutomationTokens = Record<string, string | null | undefined>;
 
@@ -80,7 +81,7 @@ export async function runRecipePublishedAutomations(recipeId: string) {
 
     const tokens = {
       recipeTitle: recipe.title,
-      recipePath: recipe.metaSlug ? `${recipe.slug}-${recipe.metaSlug}` : recipe.slug,
+      recipePath: recipeHref(recipe).replace(/^\//, ""),
       preference: matchingPreference,
     };
     const campaign = await createNotificationCampaign({

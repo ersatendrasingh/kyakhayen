@@ -5,6 +5,7 @@ import { z } from "zod";
 import { db } from "@/lib/db";
 import { loadStoredMealPlanDay } from "@/lib/meal-plan-storage";
 import { runUserAutomationRules } from "@/lib/notification-automations";
+import { recipeHref } from "@/lib/seo";
 import type { RecipeWithCategory } from "@/types/recipe";
 
 const requestSchema = z.discriminatedUnion("kind", [
@@ -27,7 +28,7 @@ function normalizedMeal(value: string) {
 }
 
 function recipePath(recipe: Pick<RecipeWithCategory, "slug" | "metaSlug">) {
-  return recipe.metaSlug ? `${recipe.slug}-${recipe.metaSlug}` : recipe.slug;
+  return recipeHref(recipe).replace(/^\//, "");
 }
 
 function fallbackRecipeTitle(meal: string) {

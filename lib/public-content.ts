@@ -3,6 +3,7 @@ import type { Prisma } from "@prisma/client";
 
 import { db } from "@/lib/db";
 import { publishedRecipeAnd, publishedRecipeWhere } from "@/lib/recipe-publication";
+import { articleHref, recipeHref } from "@/lib/seo";
 import type { PostWithCategory } from "@/types/article";
 import type { RecipeWithCategory } from "@/types/recipe";
 
@@ -153,6 +154,10 @@ function routeSlugCandidates(routeSlug: string) {
   return candidates;
 }
 
+function trimRoutePath(path: string) {
+  return path.replace(/^\//, "");
+}
+
 function normalizeRecipe(recipe: Prisma.RecipesGetPayload<{ include: typeof publicRecipeInclude }>): RecipeWithCategory {
   return {
     ...recipe,
@@ -189,7 +194,9 @@ async function findRecipeByRouteSlug(routeSlug: string) {
   const recipe = combinedSlugCandidates
     .map((candidate) =>
       recipes.find(
-        (item) => item.slug === candidate.slug && item.metaSlug === candidate.metaSlug,
+        (item) =>
+          (item.slug === candidate.slug && item.metaSlug === candidate.metaSlug) ||
+          trimRoutePath(recipeHref(item)) === routeSlug,
       ),
     )
     .find((item): item is NonNullable<typeof item> => Boolean(item));
@@ -224,7 +231,9 @@ async function findRecipeMetadataByRouteSlug(routeSlug: string) {
   return combinedSlugCandidates
     .map((candidate) =>
       recipes.find(
-        (item) => item.slug === candidate.slug && item.metaSlug === candidate.metaSlug,
+        (item) =>
+          (item.slug === candidate.slug && item.metaSlug === candidate.metaSlug) ||
+          trimRoutePath(recipeHref(item)) === routeSlug,
       ),
     )
     .find((item): item is NonNullable<typeof item> => Boolean(item)) ?? null;
@@ -259,7 +268,9 @@ async function findArticleByRouteSlug(routeSlug: string): Promise<PostWithCatego
     combinedSlugCandidates
       .map((candidate) =>
         articles.find(
-          (item) => item.slug === candidate.slug && item.metaSlug === candidate.metaSlug,
+          (item) =>
+            (item.slug === candidate.slug && item.metaSlug === candidate.metaSlug) ||
+            trimRoutePath(articleHref(item)) === routeSlug,
         ),
       )
       .find((item): item is NonNullable<typeof item> => Boolean(item)) ?? null
@@ -295,7 +306,9 @@ async function findArticleMetadataByRouteSlug(routeSlug: string) {
     combinedSlugCandidates
       .map((candidate) =>
         articles.find(
-          (item) => item.slug === candidate.slug && item.metaSlug === candidate.metaSlug,
+          (item) =>
+            (item.slug === candidate.slug && item.metaSlug === candidate.metaSlug) ||
+            trimRoutePath(articleHref(item)) === routeSlug,
         ),
       )
       .find((item): item is NonNullable<typeof item> => Boolean(item)) ?? null
@@ -304,7 +317,7 @@ async function findArticleMetadataByRouteSlug(routeSlug: string) {
 
 export const getPublicRecipeByRouteSlug = unstable_cache(
   findRecipeByRouteSlug,
-  ["public-recipe-by-route-slug-v1"],
+  ["public-recipe-by-route-slug-v2"],
   {
     revalidate: PUBLIC_CONTENT_REVALIDATE_SECONDS,
     tags: ["recipes", "public-content"],
@@ -313,7 +326,7 @@ export const getPublicRecipeByRouteSlug = unstable_cache(
 
 export const getPublicRecipeMetadataByRouteSlug = unstable_cache(
   findRecipeMetadataByRouteSlug,
-  ["public-recipe-metadata-by-route-slug-v1"],
+  ["public-recipe-metadata-by-route-slug-v2"],
   {
     revalidate: PUBLIC_CONTENT_REVALIDATE_SECONDS,
     tags: ["recipes", "public-content"],
@@ -322,7 +335,7 @@ export const getPublicRecipeMetadataByRouteSlug = unstable_cache(
 
 export const getPublicArticleByRouteSlug = unstable_cache(
   findArticleByRouteSlug,
-  ["public-article-by-route-slug-v1"],
+  ["public-article-by-route-slug-v2"],
   {
     revalidate: PUBLIC_CONTENT_REVALIDATE_SECONDS,
     tags: ["articles", "public-content"],
@@ -331,7 +344,7 @@ export const getPublicArticleByRouteSlug = unstable_cache(
 
 export const getPublicArticleMetadataByRouteSlug = unstable_cache(
   findArticleMetadataByRouteSlug,
-  ["public-article-metadata-by-route-slug-v1"],
+  ["public-article-metadata-by-route-slug-v2"],
   {
     revalidate: PUBLIC_CONTENT_REVALIDATE_SECONDS,
     tags: ["articles", "public-content"],

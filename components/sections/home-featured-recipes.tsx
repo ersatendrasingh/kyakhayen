@@ -9,6 +9,7 @@ import {
   RecipeSteam,
   shouldShowRecipeSteam,
 } from "@/components/recipes/recipe-steam";
+import { recipeHref } from "@/lib/seo";
 
 type FeaturedRecipe = {
   id: string;
@@ -28,12 +29,6 @@ type FeaturedRecipe = {
 type HomeFeaturedRecipesProps = {
   recipes: FeaturedRecipe[];
 };
-
-function recipeHref(recipe: FeaturedRecipe) {
-  return recipe.metaSlug
-    ? `/${recipe.slug}-${recipe.metaSlug}`
-    : `/${recipe.slug}`;
-}
 
 function totalMinutes(recipe: FeaturedRecipe) {
   if (!recipe.recipeCookingTime) return null;

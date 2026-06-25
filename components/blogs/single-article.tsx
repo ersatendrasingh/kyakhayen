@@ -30,6 +30,7 @@ import {
   absoluteUrl,
   breadcrumbJsonLd,
   jsonLd,
+  recipeHref,
   seoDescription,
 } from "@/lib/seo";
 import type { PostWithCategory } from "@/types/article";
@@ -381,11 +382,7 @@ export default async function SingleArticle({
                     {recipeIdeas.map((recipe) => (
                       <Link
                         key={recipe.id}
-                        href={
-                          recipe.metaSlug
-                            ? `/${recipe.slug}-${recipe.metaSlug}`
-                            : `/${recipe.slug}`
-                        }
+                        href={recipeHref(recipe)}
                         className="group flex items-center gap-3 rounded-xl border border-[#eee1cd] bg-[#fcf7ee] p-2 transition hover:border-[#dfc28f] dark:border-white/8 dark:bg-[#142e26]"
                       >
                         <div className="relative size-14 shrink-0 overflow-hidden rounded-lg">

@@ -13,6 +13,7 @@ import {
 } from "@/components/recipes/recipe-steam";
 import { useHomePreference } from "@/components/sections/home-preference-context";
 import { recipeCollectionHref } from "@/lib/recipe-collection-url";
+import { recipeHref } from "@/lib/seo";
 
 import type { DiscoveryRecipe } from "./home-discovery";
 
@@ -27,12 +28,6 @@ export type FoodPreferenceStory = {
 type HomeFoodPreferenceProps = {
   preferences: FoodPreferenceStory[];
 };
-
-function recipeHref(recipe: DiscoveryRecipe) {
-  return recipe.metaSlug
-    ? `/${recipe.slug}-${recipe.metaSlug}`
-    : `/${recipe.slug}`;
-}
 
 function totalMinutes(recipe: DiscoveryRecipe) {
   if (!recipe.recipeCookingTime) return null;

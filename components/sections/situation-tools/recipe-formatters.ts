@@ -10,9 +10,10 @@ import type {
   SituationKey,
   SituationRecipe,
 } from "@/components/sections/situation-tools/types";
+import { recipeHref as canonicalRecipeHref } from "@/lib/seo";
 
 export function recipeHref(recipe: SituationRecipe) {
-  return recipe.metaSlug ? `/${recipe.slug}-${recipe.metaSlug}` : `/${recipe.slug}`;
+  return canonicalRecipeHref(recipe);
 }
 
 export function getTotalMinutes(recipe: SituationRecipe) {

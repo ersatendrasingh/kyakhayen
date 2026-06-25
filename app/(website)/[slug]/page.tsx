@@ -1,4 +1,4 @@
-import { notFound } from "next/navigation";
+import { notFound, permanentRedirect } from "next/navigation";
 import { Metadata } from "next";
 import SingleRecipe from "@/components/recipes/single-recipe";
 import SingleArticle from "@/components/blogs/single-article";
@@ -106,12 +106,22 @@ export default async function SlugPage(
   const recipe = await getPublicRecipeByRouteSlug(slug);
 
   if (recipe) {
+    const canonicalPath = recipeHref(recipe);
+    if (canonicalPath !== `/${slug}`) {
+      permanentRedirect(canonicalPath);
+    }
+
     return <SingleRecipe recipe={recipe} />;
   }
 
   const blog = await getPublicArticleByRouteSlug(slug);
 
   if (blog) {
+    const canonicalPath = articleHref(blog);
+    if (canonicalPath !== `/${slug}`) {
+      permanentRedirect(canonicalPath);
+    }
+
     return <SingleArticle article={blog} />;
   }
 
