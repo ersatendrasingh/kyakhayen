@@ -10,6 +10,7 @@ import {
   sortRoutineSlots,
   type MealPlanRoutineSlot,
 } from "@/lib/meal-plan-routine";
+import { absoluteUrl, recipeHref as publicRecipeHref } from "@/lib/seo";
 
 export type PdfMealPlanDay = {
   date: Date;
@@ -31,9 +32,6 @@ const pageWidth = 210;
 const pageHeight = 297;
 const margin = 16;
 const contentWidth = pageWidth - margin * 2;
-const websiteUrl = (
-  process.env.NEXT_PUBLIC_APP_URL || "https://www.kyakhayen.com"
-).replace(/\/+$/, "");
 const mealTimeOrder = [
   "early-morning",
   "breakfast",
@@ -48,8 +46,7 @@ function plainText(value: string) {
 }
 
 function recipeHref(recipe: RecipeWithCategory) {
-  const slug = recipe.metaSlug ? `${recipe.slug}-${recipe.metaSlug}` : recipe.slug;
-  return `${websiteUrl}/${slug}`;
+  return absoluteUrl(publicRecipeHref(recipe));
 }
 
 function totalMinutes(recipe: RecipeWithCategory) {
@@ -598,7 +595,7 @@ function addClosingPage(
   document.setFontSize(10);
   document.setTextColor(...pdfColours.forest);
   document.text("Explore recipes online", margin + 10, 178.5);
-  document.link(margin, 169, 76, 15, { url: `${websiteUrl}/recipes` });
+  document.link(margin, 169, 76, 15, { url: absoluteUrl("/recipes") });
   document.setFont("helvetica", "normal");
   document.setFontSize(9);
   document.setTextColor(213, 222, 212);

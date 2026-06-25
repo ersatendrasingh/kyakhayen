@@ -1,4 +1,5 @@
 import type { Post } from "@prisma/client";
+import { articleHref as canonicalArticleHref } from "@/lib/seo";
 
 type LinkableArticle = Pick<Post, "slug" | "metaSlug">;
 
@@ -8,9 +9,7 @@ export type ArticleSectionLink = {
 };
 
 export function articleHref(article: LinkableArticle) {
-  return article.metaSlug
-    ? `/${article.slug}-${article.metaSlug}`
-    : `/${article.slug}`;
+  return canonicalArticleHref(article);
 }
 
 export function formatArticleDate(date: Date) {

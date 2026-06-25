@@ -13,6 +13,7 @@ import {
   shouldShowRecipeSteam,
 } from "@/components/recipes/recipe-steam";
 import { recipeCollectionHref } from "@/lib/recipe-collection-url";
+import { recipeHref } from "@/lib/seo";
 
 export type DiscoveryRecipe = {
   id: string;
@@ -59,12 +60,6 @@ export type MealPlanDay = {
   dayLabel: string;
   meals: MealPlanMoment[];
 };
-
-function recipeHref(recipe: DiscoveryRecipe) {
-  return recipe.metaSlug
-    ? `/${recipe.slug}-${recipe.metaSlug}`
-    : `/${recipe.slug}`;
-}
 
 function totalMinutes(recipe: DiscoveryRecipe) {
   if (!recipe.recipeCookingTime) return null;

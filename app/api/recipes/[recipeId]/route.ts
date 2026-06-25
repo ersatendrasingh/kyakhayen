@@ -8,6 +8,7 @@ import {
 } from "@/lib/s3utils";
 import { currentUser } from "@/lib/auth";
 import { normalizeRecipeTitle } from "@/lib/recipe-seo";
+import { normalizePathSegment } from "@/lib/seo";
 import { slugify } from "@/lib/slugify";
 
 export async function DELETE(req: Request, props: { params: Promise<{ recipeId: string }> }) {
@@ -88,6 +89,12 @@ export async function PATCH(req: Request, props: { params: Promise<{ recipeId: s
     const data = Object.fromEntries(
       Object.entries(values).filter(([field]) => scalarFields.includes(field)),
     );
+    if (Object.prototype.hasOwnProperty.call(values, "metaSlug")) {
+      data.metaSlug =
+        typeof values.metaSlug === "string"
+          ? normalizePathSegment(values.metaSlug) || null
+          : null;
+    }
     const hasSeasonalityChange = Object.prototype.hasOwnProperty.call(
       payload,
       "seasonality"

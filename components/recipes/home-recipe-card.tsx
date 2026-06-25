@@ -8,6 +8,7 @@ import {
   shouldShowRecipeSteam,
 } from "@/components/recipes/recipe-steam";
 import { shouldServeDirectMediaImage } from "@/lib/direct-media-image";
+import { recipeHref } from "@/lib/seo";
 
 export type HomeRecipeCardRecipe = {
   id: string;
@@ -23,12 +24,6 @@ export type HomeRecipeCardRecipe = {
   } | null;
   recipeNutrient?: Array<{ nutrient: { title: string } }> | null;
 };
-
-function hrefForRecipe(recipe: HomeRecipeCardRecipe) {
-  return recipe.metaSlug
-    ? `/${recipe.slug}-${recipe.metaSlug}`
-    : `/${recipe.slug}`;
-}
 
 function getTotalMinutes(recipe: HomeRecipeCardRecipe) {
   if (!recipe.recipeCookingTime) return null;
@@ -49,7 +44,7 @@ export default function HomeRecipeCard({
 
   return (
     <Link
-      href={hrefForRecipe(recipe)}
+      href={recipeHref(recipe)}
       className="home-recipe-card group block overflow-hidden rounded-3xl border bg-card shadow-sm transition hover:-translate-y-1 hover:shadow-lg"
     >
       <div className="relative aspect-[1.45] overflow-hidden">

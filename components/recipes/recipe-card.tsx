@@ -12,6 +12,7 @@ import {
 } from "@/components/recipes/recipe-steam";
 import { shouldServeDirectMediaImage } from "@/lib/direct-media-image";
 import { handleRecipeClick } from "@/lib/handle-recipe-click";
+import { recipeHref } from "@/lib/seo";
 import { cn } from "@/lib/utils";
 
 export type RecipeCardRecipe = {
@@ -47,9 +48,7 @@ const RecipeCard = ({
   layout = "grid",
   imageLoad = "lazy",
 }: RecipeCardProps) => {
-  const href = recipe.metaSlug
-    ? `/${recipe.slug}-${recipe.metaSlug}`
-    : `/${recipe.slug}`;
+  const href = recipeHref(recipe);
   const imageSrc = recipe.imageUrl || "/meta-images/recipe-page.jpg";
   const imageLoadingProps =
     imageLoad === "priority"

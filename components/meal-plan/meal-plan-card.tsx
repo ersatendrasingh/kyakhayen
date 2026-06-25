@@ -3,15 +3,13 @@ import Link from "next/link";
 import { AlarmClock, ArrowUpRight, Leaf, Sparkles } from "lucide-react";
 import { RecipeWithCategory } from "@/types/recipe";
 import { formatTime } from "@/lib/formatTime";
+import { recipeHref } from "@/lib/seo";
 
 interface MealPlanCardProps {
   recipe: RecipeWithCategory;
 }
 
 const MealPlanCard = ({ recipe }: MealPlanCardProps) => {
-  const recipeHref = recipe.metaSlug
-    ? `/${recipe.slug}-${recipe.metaSlug}`
-    : `/${recipe.slug}`;
   const totalTime = recipe.recipeCookingTime
     ? recipe.recipeCookingTime.prepTime +
       recipe.recipeCookingTime.cookTime +
@@ -29,7 +27,7 @@ const MealPlanCard = ({ recipe }: MealPlanCardProps) => {
 
   return (
     <Link
-      href={recipeHref}
+      href={recipeHref(recipe)}
       className="group flex min-h-[118px] overflow-hidden rounded-xl border border-[#eadfcc] bg-white transition hover:border-[#d7b991] hover:shadow-sm dark:border-white/10 dark:bg-[#142b23] dark:hover:border-[#d9a556] dark:hover:shadow-none"
     >
       <div className="relative w-[104px] shrink-0 overflow-hidden bg-[#f6ead9] dark:bg-[#20382f]">

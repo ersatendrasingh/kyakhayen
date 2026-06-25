@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useState } from "react";
 
 import type { DiscoveryRecipe, MealPlanDay } from "@/components/sections/home-discovery";
+import { recipeHref } from "@/lib/seo";
 
 type JournalDayBoardProps = {
   recipes: DiscoveryRecipe[];
@@ -13,12 +14,6 @@ type JournalDayBoardProps = {
   fallbackDayLabel: string;
   fallbackTomorrowLabel: string;
 };
-
-function recipeHref(recipe: DiscoveryRecipe) {
-  return recipe.metaSlug
-    ? `/${recipe.slug}-${recipe.metaSlug}`
-    : `/${recipe.slug}`;
-}
 
 export default function JournalDayBoard({
   recipes,
