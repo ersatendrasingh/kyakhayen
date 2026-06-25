@@ -49,7 +49,7 @@ Paste the full output, including the `BEGIN` and `END` lines, into the GitHub en
 
 Optional variables/secrets:
 
-- `DEPLOY_HOST`: defaults to `13.206.210.16`
+- `DEPLOY_HOST`: defaults to `15.207.104.91`
 - `DEPLOY_USER`: defaults to `ubuntu`
 - `DEPLOY_PORT`: defaults to `22`
 - `DEPLOY_PATH`: defaults to `/opt/kasa/kyakhayen`
