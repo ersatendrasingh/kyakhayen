@@ -16,6 +16,7 @@
     "email": "email dev",
     "backup:db": "node scripts/backup-database.mjs",
     "recipe:nightly-batch": "node scripts/recipe-nightly-batch.mjs",
+    "recipe:tag-diet-body": "node scripts/tag-recipe-diet-body-types.mjs",
     "worker:mealPlan": "node workers/mealPlan.mjs",
     "worker": "npm run worker:mealPlan"
   },

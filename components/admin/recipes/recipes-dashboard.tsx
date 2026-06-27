@@ -14,9 +14,9 @@ import {
 import {
   BookOpen,
   CheckCircle2,
-  Clock3,
   Download,
   FilePenLine,
+  Gauge,
   Plus,
   RotateCcw,
   Search,
@@ -91,6 +91,7 @@ function buildPageHref(filters: RecipeFilters, page: number) {
   if (filters.ingredientId) params.set("ingredient", filters.ingredientId);
   if (filters.minTime) params.set("minTime", filters.minTime);
   if (filters.maxTime) params.set("maxTime", filters.maxTime);
+  if (filters.auditStatus) params.set("audit", filters.auditStatus);
   if (page > 1) params.set("page", String(page));
   const query = params.toString();
   return query ? `/admin/recipes?${query}` : "/admin/recipes";
@@ -114,6 +115,7 @@ const emptyFilters: RecipeFilters = {
   ingredientId: "",
   minTime: "",
   maxTime: "",
+  auditStatus: "",
 };
 
 const advancedFilterKeys = [
@@ -129,6 +131,7 @@ const advancedFilterKeys = [
   "ingredientId",
   "minTime",
   "maxTime",
+  "auditStatus",
 ] satisfies Array<keyof RecipeFilters>;
 
 function visiblePageNumbers(page: number, pageCount: number) {
@@ -184,7 +187,7 @@ export function RecipesDashboard({
     total: number;
     published: number;
     drafts: number;
-    averageMinutes: number;
+    averageAuditScore: number;
   };
   filters: RecipeFilters;
   page: number;
@@ -433,9 +436,9 @@ export function RecipesDashboard({
             { label: "Published", value: stats.published, icon: CheckCircle2 },
             { label: "Drafts", value: stats.drafts, icon: FilePenLine },
             {
-              label: "Avg Total Time",
-              value: stats.averageMinutes ? `${stats.averageMinutes}m` : "0m",
-              icon: Clock3,
+              label: "Avg Audit Score",
+              value: `${stats.averageAuditScore}/100`,
+              icon: Gauge,
             },
           ].map((stat) => (
             <div key={stat.label} className="admin-taxonomy-stat rounded-3xl px-5 py-5 backdrop-blur">
@@ -516,6 +519,9 @@ export function RecipesDashboard({
             <option value="missing-difficulty">Missing difficulty</option>
             <option value="needs-season-review">Needs season review</option>
             <option value="ready-to-publish">Ready to publish</option>
+            <option value="audit-fix-first">Audit: fix first</option>
+            <option value="audit-needs-work">Audit: needs work</option>
+            <option value="audit-good">Audit: good</option>
           </select>
           <Button
             type="button"
@@ -749,6 +755,27 @@ export function RecipesDashboard({
                   <option value="missing-difficulty">Missing difficulty</option>
                   <option value="needs-season-review">Needs season review</option>
                   <option value="ready-to-publish">Ready to publish</option>
+                  <option value="audit-fix-first">Audit: fix first</option>
+                  <option value="audit-needs-work">Audit: needs work</option>
+                  <option value="audit-good">Audit: good</option>
+                </select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="advanced-audit-status">Audit health</Label>
+                <select
+                  id="advanced-audit-status"
+                  value={filterValues.auditStatus}
+                  onChange={(event) =>
+                    setFilterValues((current) => ({ ...current, auditStatus: event.target.value }))
+                  }
+                  className="h-11 w-full rounded-xl border border-input bg-background px-3 text-sm"
+                >
+                  <option value="">Any audit score</option>
+                  <option value="fix-first">Fix first (red)</option>
+                  <option value="needs-work">Needs work (yellow)</option>
+                  <option value="good">Good or excellent (green)</option>
+                  <option value="excellent">Excellent only</option>
                 </select>
               </div>
 

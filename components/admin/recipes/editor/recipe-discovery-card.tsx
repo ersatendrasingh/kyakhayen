@@ -1,8 +1,8 @@
 "use client";
 
-import { type FormEvent, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ChevronDown, LoaderCircle, Search, SearchCheck, Tags, X } from "lucide-react";
+import { ChevronDown, LoaderCircle, Search, Tags, X } from "lucide-react";
 import { toast } from "sonner";
 
 import type {
@@ -14,8 +14,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 
 type SelectionKey =
@@ -66,11 +64,7 @@ export function RecipeDiscoveryCard({
   });
   const [openKey, setOpenKey] = useState<SelectionKey | null>(null);
   const [queries, setQueries] = useState<Partial<Record<SelectionKey, string>>>({});
-  const [metaTitle, setMetaTitle] = useState(recipe.metaTitle ?? "");
-  const [metaDescription, setMetaDescription] = useState(recipe.metaDescription ?? "");
-  const [metaSlug, setMetaSlug] = useState(recipe.metaSlug ?? "");
   const [savingTags, setSavingTags] = useState(false);
-  const [savingSeo, setSavingSeo] = useState(false);
 
   const totalSelected = Object.values(selections).reduce((total, selected) => total + selected.length, 0);
 
@@ -107,96 +101,36 @@ export function RecipeDiscoveryCard({
     }
   };
 
-  const saveSeo = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    try {
-      setSavingSeo(true);
-      const response = await fetch(`/api/recipes/${recipe.id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          metaTitle: metaTitle.trim() || null,
-          metaDescription: metaDescription.trim() || null,
-          metaSlug: metaSlug.trim() || null,
-        }),
-      });
-      if (!response.ok) throw new Error("Unable to save search metadata.");
-      toast.success("SEO details saved");
-      router.refresh();
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Unable to save SEO details.");
-    } finally {
-      setSavingSeo(false);
-    }
-  };
-
   return (
-    <div className="space-y-4">
-      <Card className="overflow-hidden rounded-2xl py-0">
-        <CardHeader className="border-b p-4">
-          <CardTitle className="flex items-center justify-between gap-3 text-sm">
-            <span className="flex items-center gap-2">
-              <Tags className="size-4 text-primary" />
-              Discovery tags
-            </span>
-            <Badge variant="secondary">{totalSelected} selected</Badge>
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3 p-4">
-          {groups.map((group) => (
-            <TagGroupPicker
-              key={group.key}
-              group={group}
-              selectedIds={selections[group.key]}
-              open={openKey === group.key}
-              query={queries[group.key] ?? ""}
-              onToggleOpen={() => setOpenKey((current) => current === group.key ? null : group.key)}
-              onQueryChange={(value) => setQueries((current) => ({ ...current, [group.key]: value }))}
-              onToggle={(id) => toggle(group.key, id)}
-            />
-          ))}
-          <Button onClick={() => void saveTags()} disabled={savingTags} className="mt-2 h-10 w-full rounded-xl">
-            {savingTags ? <LoaderCircle className="size-4 animate-spin" /> : null}
-            {savingTags ? "Saving..." : "Save discovery tags"}
-          </Button>
-        </CardContent>
-      </Card>
-
-      <Card className="overflow-hidden rounded-2xl py-0">
-        <CardHeader className="border-b p-4">
-          <CardTitle className="flex items-center gap-2 text-sm">
-            <SearchCheck className="size-4 text-primary" />
-            Search preview
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="p-4">
-          <form onSubmit={saveSeo} className="space-y-4">
-            <div className="space-y-2">
-              <div className="flex justify-between gap-2">
-                <Label htmlFor="recipe-meta-title">Meta title</Label>
-                <span className="text-xs text-muted-foreground">{metaTitle.length}/60</span>
-              </div>
-              <Input id="recipe-meta-title" value={metaTitle} onChange={(event) => setMetaTitle(event.target.value)} maxLength={60} placeholder="Search result title" className="h-10 rounded-xl" />
-            </div>
-            <div className="space-y-2">
-              <div className="flex justify-between gap-2">
-                <Label htmlFor="recipe-meta-description">Meta description</Label>
-                <span className="text-xs text-muted-foreground">{metaDescription.length}/160</span>
-              </div>
-              <Textarea id="recipe-meta-description" value={metaDescription} onChange={(event) => setMetaDescription(event.target.value)} maxLength={160} placeholder="Short search-friendly summary" className="min-h-24 rounded-xl" />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="recipe-meta-slug">Meta slug</Label>
-              <Input id="recipe-meta-slug" value={metaSlug} onChange={(event) => setMetaSlug(event.target.value)} placeholder="Optional canonical slug" className="h-10 rounded-xl" />
-            </div>
-            <Button disabled={savingSeo} type="submit" variant="outline" className="h-10 w-full rounded-xl">
-              {savingSeo ? <LoaderCircle className="size-4 animate-spin" /> : null}
-              {savingSeo ? "Saving..." : "Save SEO"}
-            </Button>
-          </form>
-        </CardContent>
-      </Card>
-    </div>
+    <Card className="overflow-hidden rounded-2xl py-0">
+      <CardHeader className="border-b p-4">
+        <CardTitle className="flex items-center justify-between gap-3 text-sm">
+          <span className="flex items-center gap-2">
+            <Tags className="size-4 text-primary" />
+            Discovery tags
+          </span>
+          <Badge variant="secondary">{totalSelected} selected</Badge>
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-3 p-4">
+        {groups.map((group) => (
+          <TagGroupPicker
+            key={group.key}
+            group={group}
+            selectedIds={selections[group.key]}
+            open={openKey === group.key}
+            query={queries[group.key] ?? ""}
+            onToggleOpen={() => setOpenKey((current) => current === group.key ? null : group.key)}
+            onQueryChange={(value) => setQueries((current) => ({ ...current, [group.key]: value }))}
+            onToggle={(id) => toggle(group.key, id)}
+          />
+        ))}
+        <Button onClick={() => void saveTags()} disabled={savingTags} className="mt-2 h-10 w-full rounded-xl">
+          {savingTags ? <LoaderCircle className="size-4 animate-spin" /> : null}
+          {savingTags ? "Saving..." : "Save discovery tags"}
+        </Button>
+      </CardContent>
+    </Card>
   );
 }
 

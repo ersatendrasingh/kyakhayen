@@ -22,6 +22,10 @@ export type RecipeListRecord = {
     title: string;
   }>;
   totalMinutes: number | null;
+  auditScore: number;
+  auditGrade: "Excellent" | "Good" | "Needs work" | "Weak";
+  auditCriticalCount: number;
+  auditWarningCount: number;
   ingredientCount: number;
   methodCount: number;
 };
@@ -49,4 +53,5 @@ export type RecipeFilters = {
   ingredientId: string;
   minTime: string;
   maxTime: string;
+  auditStatus: string;
 };

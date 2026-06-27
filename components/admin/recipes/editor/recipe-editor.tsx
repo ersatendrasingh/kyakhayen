@@ -82,9 +82,9 @@ export function RecipeEditor({
             formOptions={options.forms}
           />
           <RecipeStepsCard recipeId={recipe.id} steps={recipe.steps} />
+          <RecipeSeoAuditCard recipe={recipe} />
         </div>
         <aside className="min-w-0 space-y-4 xl:sticky xl:top-24">
-          <RecipeSeoAuditCard recipe={recipe} />
           <RecipeMediaSettingsCard
             recipe={recipe}
             categories={options.categories}

@@ -2,6 +2,7 @@ import { Prisma, RecipeSeasonality } from "@prisma/client";
 
 import { RecipesDashboard } from "@/components/admin/recipes/recipes-dashboard";
 import type { RecipeListRecord } from "@/components/admin/recipes/recipe-types";
+import { auditRecipeContent } from "@/lib/recipe-content-audit";
 import { db } from "@/lib/db";
 
 const PAGE_SIZE = 12;
@@ -24,6 +25,7 @@ type RecipeSearchParams = Promise<{
   ingredient?: string | string[];
   minTime?: string | string[];
   maxTime?: string | string[];
+  audit?: string | string[];
   page?: string | string[];
 }>;
 
@@ -103,6 +105,16 @@ const RecipesPage = async ({
   const ingredientId = singleParam(params.ingredient);
   const minTime = singleParam(params.minTime);
   const maxTime = singleParam(params.maxTime);
+  const auditParam = singleParam(params.audit);
+  const auditStatus =
+    auditParam ||
+    (status === "audit-fix-first"
+      ? "fix-first"
+      : status === "audit-needs-work"
+        ? "needs-work"
+        : status === "audit-good"
+          ? "good"
+          : "");
   const minTimeValue = minuteParam(minTime);
   const maxTimeValue = minuteParam(maxTime);
   const requestedPage = Math.max(
@@ -114,6 +126,8 @@ const RecipesPage = async ({
       ? { isPublished: true }
       : status === "draft"
         ? { isPublished: false }
+        : status.startsWith("audit-")
+          ? {}
         : status === "incomplete"
           ? { NOT: contentReadyFilter }
           : status === "needs-tags"
@@ -186,8 +200,6 @@ const RecipesPage = async ({
   const [
     total,
     published,
-    averageTime,
-    totalFiltered,
     categories,
     cuisines,
     mealTimes,
@@ -203,10 +215,6 @@ const RecipesPage = async ({
   ] = await Promise.all([
     db.recipes.count(),
     db.recipes.count({ where: { isPublished: true } }),
-    db.recipeCookingTime.aggregate({
-      _avg: { totalTime: true },
-    }),
-    db.recipes.count({ where }),
     db.recipeCategories.findMany({
       orderBy: [{ position: "asc" }, { name: "asc" }],
       select: { id: true, name: true },
@@ -260,13 +268,9 @@ const RecipesPage = async ({
     }),
   ]);
 
-  const pageCount = Math.max(Math.ceil(totalFiltered / PAGE_SIZE), 1);
-  const page = Math.min(requestedPage, pageCount);
-  const entries = await db.recipes.findMany({
+  const allEntries = await db.recipes.findMany({
     where,
     orderBy: [{ updatedAt: "desc" }, { title: "asc" }],
-    skip: (page - 1) * PAGE_SIZE,
-    take: PAGE_SIZE,
     include: {
       RecipeCategories: { select: { id: true, name: true } },
       recipeDifficulty: { select: { id: true, title: true } },
@@ -277,39 +281,136 @@ const RecipesPage = async ({
       recipeCookingTime: {
         select: { prepTime: true, cookTime: true, restTime: true, totalTime: true },
       },
-      _count: { select: { recipeIngredients: true, recipeMethods: true } },
+      recipeIngredients: {
+        select: {
+          quantity: true,
+          ingredient: { select: { name: true } },
+        },
+        orderBy: { position: "asc" },
+      },
+      recipeMethods: {
+        select: {
+          title: true,
+          description: true,
+          imageUrl: true,
+          videoUrl: true,
+          isPublished: true,
+        },
+        orderBy: { position: "asc" },
+      },
+      recipeCuisine: { select: { cuisineId: true } },
+      recipeCookingMethods: { select: { cookingMethodId: true } },
+      recipeMealTime: { select: { mealTimeId: true } },
+      recipeDietType: { select: { dietTypeId: true } },
+      recipeRecipeType: { select: { recipeTypeId: true } },
+      recipeBodyTypes: { select: { bodyTypeId: true } },
     },
   });
 
-  const averageMinutes = Math.round(
-    averageTime._avg.totalTime ?? 0
-  );
-
-  const recipes: RecipeListRecord[] = entries.map((recipe) => ({
-    id: recipe.id,
-    title: recipe.title,
-    slug: recipe.slug,
-    description: recipe.description,
-    imageUrl: recipe.imageUrl,
-    isPublished: recipe.isPublished,
-    updatedAt: recipe.updatedAt.toISOString(),
-    category: recipe.RecipeCategories,
-    difficulty: recipe.recipeDifficulty,
-    seasonality: recipe.seasonality,
-    seasons: recipe.recipeSeasonTags.length
+  const auditedEntries = allEntries.map((recipe) => {
+    const seasons = recipe.recipeSeasonTags.length
       ? recipe.recipeSeasonTags.map((tag) => tag.season)
       : recipe.recipeSeasons
         ? [recipe.recipeSeasons]
-        : [],
-    totalMinutes: recipe.recipeCookingTime
+        : [];
+    const audit = auditRecipeContent({
+      title: recipe.title,
+      slug: recipe.slug,
+      metaTitle: recipe.metaTitle,
+      metaDescription: recipe.metaDescription,
+      metaSlug: recipe.metaSlug,
+      description: recipe.description,
+      imageUrl: recipe.imageUrl,
+      recipeCategoriesId: recipe.recipeCategoriesId,
+      recipeDifficultyId: recipe.recipeDifficultyId,
+      seasonality: recipe.seasonality,
+      isPublished: recipe.isPublished,
+      contentUpdatedAt: recipe.contentUpdatedAt?.toISOString() ?? null,
+      ingredients: recipe.recipeIngredients.map((ingredient) => ({
+        ingredientName: ingredient.ingredient.name,
+        quantity: Number(ingredient.quantity),
+      })),
+      steps: recipe.recipeMethods.map((step) => ({
+        title: step.title,
+        description: step.description,
+        imageUrl: step.imageUrl,
+        videoUrl: step.videoUrl,
+        isPublished: step.isPublished,
+      })),
+      recipeCookingTime: recipe.recipeCookingTime,
+      cuisineIds: recipe.recipeCuisine.map((tag) => tag.cuisineId),
+      cookingMethodIds: recipe.recipeCookingMethods.map((tag) => tag.cookingMethodId),
+      mealTimeIds: recipe.recipeMealTime.map((tag) => tag.mealTimeId),
+      dietTypeIds: recipe.recipeDietType.map((tag) => tag.dietTypeId),
+      recipeTypeIds: recipe.recipeRecipeType.map((tag) => tag.recipeTypeId),
+      bodyTypeIds: recipe.recipeBodyTypes.map((tag) => tag.bodyTypeId),
+      seasonIds: seasons.map((season) => season.id),
+    });
+
+    const totalMinutes = recipe.recipeCookingTime
       ? recipe.recipeCookingTime.totalTime ||
         recipe.recipeCookingTime.prepTime +
           recipe.recipeCookingTime.cookTime +
           recipe.recipeCookingTime.restTime
-      : null,
-    ingredientCount: recipe._count.recipeIngredients,
-    methodCount: recipe._count.recipeMethods,
-  }));
+      : null;
+
+    return {
+      recipe,
+      audit,
+      seasons,
+      record: {
+        id: recipe.id,
+        title: recipe.title,
+        slug: recipe.slug,
+        description: recipe.description,
+        imageUrl: recipe.imageUrl,
+        isPublished: recipe.isPublished,
+        updatedAt: recipe.updatedAt.toISOString(),
+        category: recipe.RecipeCategories,
+        difficulty: recipe.recipeDifficulty,
+        seasonality: recipe.seasonality,
+        seasons,
+        totalMinutes,
+        auditScore: Math.round((audit.score / audit.maxScore) * 100),
+        auditGrade: audit.grade,
+        auditCriticalCount: audit.criticalCount,
+        auditWarningCount: audit.warningCount,
+        ingredientCount: recipe.recipeIngredients.length,
+        methodCount: recipe.recipeMethods.length,
+      } satisfies RecipeListRecord,
+    };
+  });
+
+  const filteredEntries = auditedEntries.filter(({ audit, record }) => {
+    if (!auditStatus) return true;
+    if (auditStatus === "fix-first") {
+      return audit.criticalCount > 0 || audit.grade === "Weak";
+    }
+    if (auditStatus === "needs-work") {
+      return audit.grade === "Needs work" && audit.criticalCount === 0;
+    }
+    if (auditStatus === "good") {
+      return audit.grade === "Good" || audit.grade === "Excellent";
+    }
+    if (auditStatus === "excellent") {
+      return audit.grade === "Excellent";
+    }
+    if (auditStatus === "weak") {
+      return record.auditGrade === "Weak";
+    }
+    return true;
+  });
+
+  const totalFiltered = filteredEntries.length;
+  const pageCount = Math.max(Math.ceil(totalFiltered / PAGE_SIZE), 1);
+  const page = Math.min(requestedPage, pageCount);
+  const recipes: RecipeListRecord[] = filteredEntries
+    .slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
+    .map((entry) => entry.record);
+  const averageAuditScore = Math.round(
+    (filteredEntries.reduce((sum, entry) => sum + entry.record.auditScore, 0) || 0) /
+      Math.max(filteredEntries.length, 1),
+  );
 
   return (
     <RecipesDashboard
@@ -331,6 +432,7 @@ const RecipesPage = async ({
         ingredientId,
         minTime,
         maxTime,
+        auditStatus,
         page,
       ].join(":")}
       recipes={recipes}
@@ -350,7 +452,7 @@ const RecipesPage = async ({
         total,
         published,
         drafts: total - published,
-        averageMinutes,
+        averageAuditScore,
       }}
       filters={{
         search,
@@ -370,6 +472,7 @@ const RecipesPage = async ({
         ingredientId,
         minTime,
         maxTime,
+        auditStatus,
       }}
       page={page}
       pageCount={pageCount}
