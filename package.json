@@ -15,6 +15,7 @@
     "postinstall": "prisma generate",
     "email": "email dev",
     "backup:db": "node scripts/backup-database.mjs",
+    "recipe:nightly-batch": "node scripts/recipe-nightly-batch.mjs",
     "worker:mealPlan": "node workers/mealPlan.mjs",
     "worker": "npm run worker:mealPlan"
   },

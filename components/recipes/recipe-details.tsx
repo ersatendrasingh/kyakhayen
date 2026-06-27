@@ -7,6 +7,7 @@ import {
   Minus,
   Plus,
   Salad,
+  Sparkles,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
@@ -14,12 +15,15 @@ import RecipeIngredients from "@/components/recipes/recipe-ingredients";
 import RecipeMethods from "@/components/recipes/recipe-methods";
 import RecipeNutritionFacts from "@/components/recipes/recipe-nutrition-facts";
 import RecipeOverview from "@/components/recipes/recipe-overview";
+import RecipeSmartGuide from "@/components/recipes/recipe-smart-guide";
+import type { HomeRecipeCardRecipe } from "@/components/recipes/home-recipe-card";
 import type { RecipeWithCategory } from "@/types/recipe";
 
-type DetailTab = "overview" | "ingredients" | "methods" | "nutrition";
+type DetailTab = "overview" | "guide" | "ingredients" | "methods" | "nutrition";
 
 const tabs = [
   { key: "overview" as DetailTab, label: "Overview", icon: BookOpen },
+  { key: "guide" as DetailTab, label: "Guide", icon: Sparkles },
   { key: "ingredients" as DetailTab, label: "Ingredients", icon: Salad },
   { key: "methods" as DetailTab, label: "Steps", icon: ListChecks },
   { key: "nutrition" as DetailTab, label: "Nutrition", icon: CookingPot },
@@ -27,12 +31,14 @@ const tabs = [
 
 interface RecipeDetailsProps {
   recipe: RecipeWithCategory;
+  relatedRecipes?: HomeRecipeCardRecipe[];
 }
 
-const RecipeDetails = ({ recipe }: RecipeDetailsProps) => {
+const RecipeDetails = ({ recipe, relatedRecipes = [] }: RecipeDetailsProps) => {
   const [activeTab, setActiveTab] = useState<DetailTab>("overview");
   const [quantity, setQuantity] = useState(1);
   const overviewRef = useRef<HTMLElement>(null);
+  const guideRef = useRef<HTMLElement>(null);
   const ingredientsRef = useRef<HTMLElement>(null);
   const methodsRef = useRef<HTMLElement>(null);
   const nutritionRef = useRef<HTMLElement>(null);
@@ -47,7 +53,7 @@ const RecipeDetails = ({ recipe }: RecipeDetailsProps) => {
       },
       { threshold: 0.28, rootMargin: "-100px 0px -34% 0px" },
     );
-    [overviewRef, ingredientsRef, methodsRef, nutritionRef].forEach((ref) => {
+    [overviewRef, guideRef, ingredientsRef, methodsRef, nutritionRef].forEach((ref) => {
       if (ref.current) observer.observe(ref.current);
     });
     return () => observer.disconnect();
@@ -58,11 +64,13 @@ const RecipeDetails = ({ recipe }: RecipeDetailsProps) => {
     const sectionRef =
       key === "overview"
         ? overviewRef
-        : key === "ingredients"
-          ? ingredientsRef
-          : key === "methods"
-            ? methodsRef
-            : nutritionRef;
+        : key === "guide"
+          ? guideRef
+          : key === "ingredients"
+            ? ingredientsRef
+            : key === "methods"
+              ? methodsRef
+              : nutritionRef;
     sectionRef.current?.scrollIntoView({
       behavior: "smooth",
       block: "start",
@@ -102,6 +110,21 @@ const RecipeDetails = ({ recipe }: RecipeDetailsProps) => {
           About {recipe.title}
         </h2>
         <RecipeOverview recipe={recipe} />
+      </section>
+
+      <section
+        id="recipe-guide"
+        ref={guideRef}
+        data-tab="guide"
+        className="recipe-detail-panel scroll-mt-36 rounded-[1.75rem] border border-[#eadcc8] bg-[#fffdf8] p-5 shadow-sm sm:p-7 dark:border-white/10 dark:bg-[#10221d]"
+      >
+        <p className="mb-2 text-xs font-semibold uppercase tracking-[0.24em] text-[#a47a3f] dark:text-[#d6ad63]">
+          Cook smarter
+        </p>
+        <h2 className="mb-6 text-2xl font-semibold text-[#2e251f] dark:text-[#f2f3ed]">
+          Recipe guide
+        </h2>
+        <RecipeSmartGuide recipe={recipe} relatedRecipes={relatedRecipes} />
       </section>
 
       <section

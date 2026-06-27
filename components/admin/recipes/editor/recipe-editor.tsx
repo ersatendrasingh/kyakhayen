@@ -6,6 +6,7 @@ import { RecipeInfoCard } from "@/components/admin/recipes/editor/recipe-info-ca
 import { RecipeIngredientsCard } from "@/components/admin/recipes/editor/recipe-ingredients-card";
 import { RecipeMediaSettingsCard } from "@/components/admin/recipes/editor/recipe-media-settings-card";
 import { RecipeOverviewCard } from "@/components/admin/recipes/editor/recipe-overview-card";
+import { RecipeSeoAuditCard } from "@/components/admin/recipes/editor/recipe-seo-audit-card";
 import { RecipeStepsCard } from "@/components/admin/recipes/editor/recipe-steps-card";
 import { Badge } from "@/components/ui/badge";
 import type {
@@ -83,6 +84,7 @@ export function RecipeEditor({
           <RecipeStepsCard recipeId={recipe.id} steps={recipe.steps} />
         </div>
         <aside className="min-w-0 space-y-4 xl:sticky xl:top-24">
+          <RecipeSeoAuditCard recipe={recipe} />
           <RecipeMediaSettingsCard
             recipe={recipe}
             categories={options.categories}

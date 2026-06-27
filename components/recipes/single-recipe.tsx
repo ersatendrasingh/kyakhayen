@@ -22,6 +22,7 @@ import { getPublicRelatedRecipes, getRecipeSidebarTaxonomy } from "@/lib/public-
 import { recipeAuthorProfile } from "@/lib/recipe-author-profile";
 import { recipeCollectionHref } from "@/lib/recipe-collection-url";
 import { recipeContentUpdatedAt, recipePublishedAt } from "@/lib/recipe-publication";
+import { faqJsonLdFromRecipeGuide } from "@/lib/recipe-smart-guide";
 import {
   absoluteUrl,
   breadcrumbJsonLd,
@@ -291,12 +292,13 @@ const SingleRecipe = async ({ recipe }: SingleRecipeProps) => {
     },
     { name: recipe.title, path: recipeHref(recipe) },
   ]);
+  const faqSchema = faqJsonLdFromRecipeGuide(recipe);
 
   return (
     <div className="recipe-page-body relative w-full overflow-x-clip pb-28 pt-5 sm:pt-8">
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: jsonLd([jsonLdData, breadcrumbSchema]) }}
+        dangerouslySetInnerHTML={{ __html: jsonLd([jsonLdData, breadcrumbSchema, faqSchema]) }}
       />
       <Container>
         <BannerCard recipe={recipe} className="mb-8" />
@@ -305,7 +307,7 @@ const SingleRecipe = async ({ recipe }: SingleRecipeProps) => {
             <Suspense fallback={null}>
               <RecipeComparePromptSlot promptPromise={comparePromptPromise} />
             </Suspense>
-            <RecipeDetails recipe={recipe} />
+            <RecipeDetails recipe={recipe} relatedRecipes={relatedRecipes} />
             <RecipeAuthorTrust recipe={recipe} />
             <Suspense fallback={null}>
               <RecipeComparePromptSlot
