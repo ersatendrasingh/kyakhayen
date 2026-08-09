@@ -21,11 +21,13 @@ Set these in Vercel Project Settings for Production:
 - `NEXT_PUBLIC_APP_URL=https://www.kyakhayen.com`
 - `AUTH_URL=https://www.kyakhayen.com`
 - `AUTH_TRUST_HOST=true`
-- `DATABASE_URL=<production mysql url>`
+- `DATABASE_URL=<production mysql url>`; add `?sslaccept=strict` if the provider requires secure transport.
 - `REDIS_URL=<managed redis tcp/tls url>`
 - `MEAL_PLAN_WORKER_SECRET=<random secret>`
 - `CRON_SECRET=<different random secret>`
 - Existing S3, Razorpay, email, social, web-push, and OAuth variables from the EC2 `.env`.
+
+On Vercel, the Prisma client also adds `sslaccept=strict` automatically for MySQL URLs that do not already include SSL settings. This keeps builds from failing when the database rejects insecure transport.
 
 Optional worker tuning:
 
