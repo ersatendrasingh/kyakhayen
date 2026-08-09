@@ -1,16 +1,17 @@
 # Kyakhayen Deployment
 
-## Vercel Migration
+## Vercel Hobby Runtime
 
-Kyakhayen can run on Vercel without the PM2 worker by using Vercel Cron to wake a short-lived BullMQ worker. The app still uses the same S3 buckets for media and private meal-plan JSON/PDF generation.
+Kyakhayen runs on Vercel Hobby with Upstash Redis as the BullMQ queue backend. The worker also runs on Vercel as a short-lived Next.js function at `/api/cron/meal-plan-worker`.
 
-### Vercel Runtime Layout
+Do not register frequent jobs in `vercel.json` on the Hobby plan. Vercel Hobby only allows cron schedules that run once per day, so expressions such as `* * * * *` or `0 */6 * * *` make deployment fail. Use an external free HTTP scheduler, such as cron-job.org, to wake the Vercel worker endpoint instead.
+
+### Runtime Layout
 
 - Web app: Vercel Next.js production deployment.
-- Cron worker: `vercel.json` calls `/api/cron/meal-plan-worker` every minute.
-- Traffic notification repair: `/api/cron/traffic-sync` every 6 hours.
-- Membership reminder repair: `/api/cron/expiry-reminders` daily.
-- Queue backend: use managed Redis via `REDIS_URL` or host/port/password/TLS env vars. Do not use `127.0.0.1` on Vercel.
+- Queue backend: Upstash Redis through `REDIS_URL`.
+- Worker execution: Vercel function `/api/cron/meal-plan-worker`.
+- Worker wake-up: cron-job.org calls the Vercel function on a schedule.
 - Storage: keep `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_REGION`, `AWS_MEDIA_BUCKET_NAME`, and `AWS_PRIVATE_BUCKET_NAME` unchanged.
 
 ### Required Vercel Environment Variables
@@ -32,18 +33,36 @@ Optional worker tuning:
 - `VERCEL_WORKER_CONCURRENCY=1`
 - `MEAL_PLAN_WORKER_TIMEOUT_MS=240000`
 
-### Cutover Checklist
+### Free Scheduler Setup
+
+Create these cron-job.org jobs against the production Vercel domain. Add this request header to every job:
+
+```text
+Authorization: Bearer <CRON_SECRET>
+```
+
+Recommended jobs:
+
+| Purpose | URL | Schedule |
+| --- | --- | --- |
+| Process queued meal plans, push jobs, campaigns, and scheduled content | `https://www.kyakhayen.com/api/cron/meal-plan-worker` | Every minute |
+| Repair traffic notification schedules | `https://www.kyakhayen.com/api/cron/traffic-sync` | Every 6 hours |
+| Repair membership expiry reminders | `https://www.kyakhayen.com/api/cron/expiry-reminders` | Daily |
+
+The worker endpoint processes jobs from Upstash Redis for a bounded window and then exits, which fits Vercel's serverless runtime model.
+
+### Vercel Deployment Checklist
 
 1. Create a managed Redis instance reachable from Vercel and set `REDIS_URL`.
 2. Copy all production env vars from EC2 to Vercel, keeping S3 values unchanged.
-3. Deploy the app to Vercel and verify `/api/cron/traffic-sync` with `Authorization: Bearer $CRON_SECRET`.
-4. Trigger personalization on a test user and confirm `/api/meal-plan/generation/<jobId>` progresses after the next cron tick.
-5. Keep EC2 PM2 running until Vercel cron logs show jobs being processed.
-6. Stop only `kyakhayen-meal-plan-worker` on EC2 first; keep web traffic on EC2 until Vercel health checks pass.
+3. Deploy the app to Vercel.
+4. Verify `/api/cron/traffic-sync` with `Authorization: Bearer $CRON_SECRET`.
+5. Configure the cron-job.org jobs listed above.
+6. Trigger personalization on a test user and confirm `/api/meal-plan/generation/<jobId>` progresses after the next worker tick.
 7. Switch DNS to Vercel.
-8. After DNS is stable, stop the EC2 web process.
+8. After DNS is stable, stop the EC2 services.
 
-Vercel Cron invokes GET routes on production deployments, and failed cron invocations are not automatically retried by Vercel. The queue jobs still own retries where BullMQ attempts are configured.
+Failed scheduler calls are not automatically retried by Vercel. The queue jobs still own retries where BullMQ attempts are configured.
 
 Kyakhayen follows the same AWS + GitHub Actions + PM2 pattern as the KASA site, with two extra production concerns: Prisma/MySQL migrations and the meal-plan background worker.
 
