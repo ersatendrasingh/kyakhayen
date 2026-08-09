@@ -8,6 +8,10 @@ import { runUserAutomationRules } from "@/lib/notification-automations";
 import { recipeHref } from "@/lib/seo";
 import type { RecipeWithCategory } from "@/types/recipe";
 
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+export const maxDuration = 300;
+
 const requestSchema = z.discriminatedUnion("kind", [
   z.object({
     kind: z.literal("mealReminder"),

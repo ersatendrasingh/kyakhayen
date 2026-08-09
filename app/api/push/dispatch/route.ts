@@ -3,6 +3,10 @@ import { z } from "zod";
 
 import { sendNotificationCampaign } from "@/lib/notifications";
 
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+export const maxDuration = 300;
+
 const requestSchema = z.object({ campaignId: z.string().min(1) });
 
 export async function POST(request: Request) {

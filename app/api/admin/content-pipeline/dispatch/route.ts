@@ -4,6 +4,10 @@ import { z } from "zod";
 import { parseRequestJson } from "@/lib/content-pipeline/api-error";
 import { runScheduledContentPost } from "@/lib/content-pipeline/scheduling";
 
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+export const maxDuration = 300;
+
 const requestSchema = z.object({
   kind: z.literal("scheduledPost"),
   postId: z.string().min(1),

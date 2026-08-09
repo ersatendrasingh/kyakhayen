@@ -1,5 +1,50 @@
 # Kyakhayen Deployment
 
+## Vercel Migration
+
+Kyakhayen can run on Vercel without the PM2 worker by using Vercel Cron to wake a short-lived BullMQ worker. The app still uses the same S3 buckets for media and private meal-plan JSON/PDF generation.
+
+### Vercel Runtime Layout
+
+- Web app: Vercel Next.js production deployment.
+- Cron worker: `vercel.json` calls `/api/cron/meal-plan-worker` every minute.
+- Traffic notification repair: `/api/cron/traffic-sync` every 6 hours.
+- Membership reminder repair: `/api/cron/expiry-reminders` daily.
+- Queue backend: use managed Redis via `REDIS_URL` or host/port/password/TLS env vars. Do not use `127.0.0.1` on Vercel.
+- Storage: keep `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_REGION`, `AWS_MEDIA_BUCKET_NAME`, and `AWS_PRIVATE_BUCKET_NAME` unchanged.
+
+### Required Vercel Environment Variables
+
+Set these in Vercel Project Settings for Production:
+
+- `NEXT_PUBLIC_APP_URL=https://www.kyakhayen.com`
+- `AUTH_URL=https://www.kyakhayen.com`
+- `AUTH_TRUST_HOST=true`
+- `DATABASE_URL=<production mysql url>`
+- `REDIS_URL=<managed redis tcp/tls url>`
+- `MEAL_PLAN_WORKER_SECRET=<random secret>`
+- `CRON_SECRET=<different random secret>`
+- Existing S3, Razorpay, email, social, web-push, and OAuth variables from the EC2 `.env`.
+
+Optional worker tuning:
+
+- `VERCEL_WORKER_CRON_TIMEOUT_MS=240000`
+- `VERCEL_WORKER_CONCURRENCY=1`
+- `MEAL_PLAN_WORKER_TIMEOUT_MS=240000`
+
+### Cutover Checklist
+
+1. Create a managed Redis instance reachable from Vercel and set `REDIS_URL`.
+2. Copy all production env vars from EC2 to Vercel, keeping S3 values unchanged.
+3. Deploy the app to Vercel and verify `/api/cron/traffic-sync` with `Authorization: Bearer $CRON_SECRET`.
+4. Trigger personalization on a test user and confirm `/api/meal-plan/generation/<jobId>` progresses after the next cron tick.
+5. Keep EC2 PM2 running until Vercel cron logs show jobs being processed.
+6. Stop only `kyakhayen-meal-plan-worker` on EC2 first; keep web traffic on EC2 until Vercel health checks pass.
+7. Switch DNS to Vercel.
+8. After DNS is stable, stop the EC2 web process.
+
+Vercel Cron invokes GET routes on production deployments, and failed cron invocations are not automatically retried by Vercel. The queue jobs still own retries where BullMQ attempts are configured.
+
 Kyakhayen follows the same AWS + GitHub Actions + PM2 pattern as the KASA site, with two extra production concerns: Prisma/MySQL migrations and the meal-plan background worker.
 
 ## Runtime Layout

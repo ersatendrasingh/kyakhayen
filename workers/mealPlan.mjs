@@ -6,10 +6,16 @@ const { loadEnvConfig } = nextEnv;
 loadEnvConfig(process.cwd());
 
 // Define Redis connection options
-const connection = {
-  host: process.env.REDIS_SERVER_HOST || "127.0.0.1",
-  port: parseInt(process.env.REDIS_SERVER_PORT || "6379"),
-};
+const connection = process.env.REDIS_URL
+  ? { url: process.env.REDIS_URL }
+  : {
+      host: process.env.REDIS_SERVER_HOST || "127.0.0.1",
+      port: parseInt(process.env.REDIS_SERVER_PORT || "6379"),
+      ...(process.env.REDIS_SERVER_PASSWORD
+        ? { password: process.env.REDIS_SERVER_PASSWORD }
+        : {}),
+      ...(process.env.REDIS_SERVER_TLS === "true" ? { tls: {} } : {}),
+    };
 
 const APP_URL =
   process.env.INTERNAL_APP_URL ||
@@ -108,42 +114,42 @@ const worker = new Worker(
         message: isContentPipelineJob
           ? "Preparing scheduled content publish"
           : isCampaignJob
-          ? "Preparing scheduled broadcast"
-          : isTrafficRecipeJob
-            ? "Preparing traffic recipe notification"
-          : isPushAutomationJob
-            ? "Preparing reminder notification"
-            : isDeliveryJob
-              ? "Preparing daily meal-plan delivery"
-              : "Starting your personalized meal plan",
+            ? "Preparing scheduled broadcast"
+            : isTrafficRecipeJob
+              ? "Preparing traffic recipe notification"
+              : isPushAutomationJob
+                ? "Preparing reminder notification"
+                : isDeliveryJob
+                  ? "Preparing daily meal-plan delivery"
+                  : "Starting your personalized meal plan",
       });
 
       const endpoint = isContentPipelineJob
         ? "/api/admin/content-pipeline/dispatch"
         : isCampaignJob
-        ? "/api/push/dispatch"
-        : isTrafficRecipeJob
-          ? "/api/push/traffic"
-        : isPushAutomationJob
-          ? "/api/push/automation"
-          : isDeliveryJob
-            ? "/api/deliver-meal-plan-day"
-            : "/api/generate-meal-plan";
+          ? "/api/push/dispatch"
+          : isTrafficRecipeJob
+            ? "/api/push/traffic"
+            : isPushAutomationJob
+              ? "/api/push/automation"
+              : isDeliveryJob
+                ? "/api/deliver-meal-plan-day"
+                : "/api/generate-meal-plan";
       const body = isContentPipelineJob
         ? { kind: "scheduledPost", postId: job.data.postId }
         : isCampaignJob
-        ? { campaignId: job.data.campaignId }
-        : isTrafficRecipeJob
-          ? {
-              kind: "trafficRecipe",
-              ruleId: job.data.ruleId,
-              scheduledFor: job.data.scheduledFor,
-            }
-        : isPushAutomationJob
-          ? { ...job.data, kind: job.name }
-          : isDeliveryJob
-            ? { userId: job.data.userId, date: job.data.date }
-            : { userId: job.data.userId, jobId: job.id };
+          ? { campaignId: job.data.campaignId }
+          : isTrafficRecipeJob
+            ? {
+                kind: "trafficRecipe",
+                ruleId: job.data.ruleId,
+                scheduledFor: job.data.scheduledFor,
+              }
+            : isPushAutomationJob
+              ? { ...job.data, kind: job.name }
+              : isDeliveryJob
+                ? { userId: job.data.userId, date: job.data.date }
+                : { userId: job.data.userId, jobId: job.id };
       const response = await axios.post(`${APP_URL}${endpoint}`, body, {
         timeout: WORKER_REQUEST_TIMEOUT_MS,
         headers: {
@@ -156,14 +162,14 @@ const worker = new Worker(
         message: isContentPipelineJob
           ? "Scheduled content publish completed"
           : isCampaignJob
-          ? "Scheduled broadcast delivered"
-          : isTrafficRecipeJob
-            ? "Traffic recipe notification processed"
-          : isPushAutomationJob
-            ? "Reminder notification delivered"
-            : isDeliveryJob
-              ? "Daily meal-plan PDF delivered"
-              : "Your meal plan is ready",
+            ? "Scheduled broadcast delivered"
+            : isTrafficRecipeJob
+              ? "Traffic recipe notification processed"
+              : isPushAutomationJob
+                ? "Reminder notification delivered"
+                : isDeliveryJob
+                  ? "Daily meal-plan PDF delivered"
+                  : "Your meal plan is ready",
       });
       console.log(`Job ${job.id}: Progress 100% - complete`);
 
@@ -186,9 +192,7 @@ const worker = new Worker(
 worker.on("completed", (job, returnvalue) => {
   const result =
     typeof returnvalue === "string" ? returnvalue : JSON.stringify(returnvalue);
-  console.log(
-    `Job ${job.id} completed successfully with result: ${result}`,
-  );
+  console.log(`Job ${job.id} completed successfully with result: ${result}`);
 });
 
 // Event listener for when the job fails

@@ -7,6 +7,10 @@ import { generateMealPlanPdf } from "@/lib/generate-meal-plan-pdf";
 import { sendEmail } from "@/lib/mail";
 import { loadStoredMealPlanDay } from "@/lib/meal-plan-storage";
 
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+export const maxDuration = 300;
+
 export async function POST(request: Request) {
   const workerSecret =
     process.env.MEAL_PLAN_WORKER_SECRET ||

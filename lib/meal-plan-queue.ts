@@ -3,11 +3,7 @@ import { Queue } from "bullmq";
 import { formatISO } from "date-fns";
 
 import { db } from "@/lib/db";
-
-const mealPlanQueueConnection = {
-  host: process.env.REDIS_SERVER_HOST || "127.0.0.1",
-  port: Number(process.env.REDIS_SERVER_PORT || "6379"),
-};
+import { getRedisConnection } from "@/lib/redis-connection";
 
 const DEFAULT_TRAFFIC_TIMEZONE = "Asia/Kolkata";
 const ALL_DAYS_OF_WEEK = [0, 1, 2, 3, 4, 5, 6];
@@ -20,7 +16,7 @@ type TrafficRuleSchedule = Pick<
 
 export function getMealPlanQueue() {
   return new Queue("generateMealPlan", {
-    connection: mealPlanQueueConnection,
+    connection: getRedisConnection(),
   });
 }
 
