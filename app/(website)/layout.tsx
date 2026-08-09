@@ -4,6 +4,8 @@ import MobileMenu from "@/components/header/mobile-menu";
 import ScrollToTopButton from "@/components/scroll-to-top-button";
 import { ModeToggle } from "@/components/mode-toggle";
 
+export const dynamic = "force-dynamic";
+
 const WebsiteLayout = ({ children }: { children: React.ReactNode }) => {
   return (
     <div className="flex min-h-svh flex-col bg-[#fcf8f0] dark:bg-[#091712]">
