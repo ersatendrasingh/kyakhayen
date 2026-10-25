@@ -8,12 +8,12 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import Container from "@/components/container";
 import RecipeCard from "@/components/recipes/recipe-card";
-import { RecipeWithCategory } from "@/types/recipe";
+import type { RecipeCardRecipe } from "@/components/recipes/recipe-card";
 
 import { getPopularRecipes } from "@/actions/get-popular-recipes";
 
 const PopularRecipes = () => {
-  const [recipes, setRecipes] = useState<RecipeWithCategory[]>([]);
+  const [recipes, setRecipes] = useState<RecipeCardRecipe[]>([]);
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [loading, setLoading] = useState<boolean>(false);
   const [allLoaded, setAllLoaded] = useState<boolean>(false);

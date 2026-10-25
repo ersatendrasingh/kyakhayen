@@ -5,7 +5,7 @@ import type { Prisma } from "@prisma/client";
 import { db } from "@/lib/db";
 import { getRecipeCategoryWhereForBrowse } from "@/lib/recipe-category-compatibility";
 import { publishedRecipeWhere } from "@/lib/recipe-publication";
-import { RecipeWithCategory } from "@/types/recipe";
+import type { RecipeCardRecipe } from "@/components/recipes/recipe-card";
 
 type GetRecipes = {
   title?: string;
@@ -24,7 +24,7 @@ export const getPopularRecipes = async ({
   page = 1,
   pageSize = PAGE_SIZE,
 }: GetRecipes): Promise<{
-  recipes: RecipeWithCategory[];
+  recipes: RecipeCardRecipe[];
   hasMore: boolean;
 }> => {
   try {
@@ -60,12 +60,8 @@ export const getPopularRecipes = async ({
       }
     }
 
-    // Fetch the total count of recipes
-    const totalRecipesCount = await db.recipes.count({
-      where: whereClause,
-    });
-
-    // Fetch the recipes with pagination
+    // Fetch one extra card to determine whether another page exists. A count
+    // query on every client pagination request was needlessly expensive.
     const recipes = await db.recipes.findMany({
       where: whereClause,
       include: {
@@ -73,88 +69,30 @@ export const getPopularRecipes = async ({
           select: {
             id: true,
             name: true,
-            slug: true,
-            imageUrl: true,
-            isPublished: true,
-            position: true,
-          },
-        },
-        recipeIngredients: {
-          include: {
-            unit: true,
-            ingredientForm: true,
-            ingredient: {
-              include: {
-                IngredientUnitMeasurements: true,
-              },
-            },
-          },
-          orderBy: {
-            position: "asc",
-          },
-        },
-        recipeMethods: {
-          orderBy: {
-            position: "asc",
-          },
-        },
-        recipeCookingMethods: {
-          include: {
-            cookingMethod: true,
           },
         },
         recipeCuisine: {
-          include: {
-            cuisine: true,
-          },
-        },
-        recipeDietType: {
-          where: {
-            dietType: {
-              isPublished: true,
-            },
-          },
-          include: {
-            dietType: true,
-          },
-        },
-        recipeRecipeType: {
-          where: {
-            recipeType: {
-              isPublished: true,
-            },
-          },
-          include: {
-            recipeType: true,
-          },
+          select: { cuisine: { select: { title: true } } },
+          take: 1,
         },
         recipeNutrient: {
           where: {
-            nutrient: {
-              isPublished: true,
-            },
+            nutrient: { isPublished: true },
           },
-          include: {
-            nutrient: true,
-          },
+          select: { nutrient: { select: { title: true } } },
+          take: 1,
         },
         recipeCookingTime: true,
-        recipeMealTime: true,
-        recipeDifficulty: true,
-        recipeSeasons: true,
-        Review: true, // Include Review to match the RecipeWithCategory type
-        recipeComments: true, // Include recipeComments to match the RecipeWithCategory type
+        Review: { select: { rating: true } },
       },
-      orderBy: {
-        contentUpdatedAt: "desc",
-      },
+      orderBy: [{ views: "desc" }, { contentUpdatedAt: "desc" }, { id: "desc" }],
       skip: (page - 1) * pageSize,
-      take: pageSize,
+      take: pageSize + 1,
     });
 
-    const hasMore = page * pageSize < totalRecipesCount;
+    const hasMore = recipes.length > pageSize;
 
-    return { recipes, hasMore };
+    return { recipes: hasMore ? recipes.slice(0, pageSize) : recipes, hasMore };
   } catch (error) {
     console.error("[GET_RECIPES_ERROR]", error);
     return { recipes: [], hasMore: false };

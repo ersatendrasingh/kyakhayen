@@ -26,6 +26,7 @@ import { capitalizeName } from "@/lib/formateName";
 import { recipeCollectionHref } from "@/lib/recipe-collection-url";
 import { cn } from "@/lib/utils";
 import { RecipeWithCategory } from "@/types/recipe";
+import type { RecipeCardRecipe } from "@/components/recipes/recipe-card";
 import AccountPageHeading from "../_components/account-page-heading";
 
 type ActivityKey = "saved" | "recent" | "reviewed";
@@ -38,7 +39,7 @@ const UserDashboard = () => {
     reviewed: [],
   });
   const [activeActivity, setActiveActivity] = useState<ActivityKey>("saved");
-  const [popularRecipes, setPopularRecipes] = useState<RecipeWithCategory[]>([]);
+  const [popularRecipes, setPopularRecipes] = useState<RecipeCardRecipe[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {

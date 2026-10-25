@@ -89,6 +89,13 @@ const BannerCard = ({ recipe, className }: BannerCardProps) => {
       : undefined;
 
   useEffect(() => {
+    const viewKey = `recipe-view:${recipe.id}`;
+    const lastViewedAt = Number(sessionStorage.getItem(viewKey) || 0);
+    const viewCooldownMs = 6 * 60 * 60 * 1000;
+
+    if (lastViewedAt > 0 && Date.now() - lastViewedAt < viewCooldownMs) return;
+    sessionStorage.setItem(viewKey, String(Date.now()));
+
     const body = JSON.stringify({ recipeId: recipe.id });
 
     if (navigator.sendBeacon) {

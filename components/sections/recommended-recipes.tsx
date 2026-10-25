@@ -8,7 +8,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import Container from "@/components/container";
 import RecipeCard from "@/components/recipes/recipe-card";
-import { RecipeWithCategory } from "@/types/recipe";
+import type { RecipeCardRecipe } from "@/components/recipes/recipe-card";
 import { getRecommendedRecipes } from "@/actions/get-recommended-recipes";
 
 interface RecommendedRecipesProps {
@@ -20,7 +20,7 @@ const RecommendedRecipes = ({
   userId,
   isPersonalized,
 }: RecommendedRecipesProps) => {
-  const [recipes, setRecipes] = useState<RecipeWithCategory[]>([]);
+  const [recipes, setRecipes] = useState<RecipeCardRecipe[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(false);
   const [allLoaded, setAllLoaded] = useState(false);
